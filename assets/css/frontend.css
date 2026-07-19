@@ -226,6 +226,105 @@
 	color: var(--wek-accent);
 }
 
+.we-formkit__label--repeater {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.35rem;
+}
+
+.we-formkit__repeater {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.we-formkit__repeater-rows {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.we-formkit__repeater-row {
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius);
+	background: var(--wek-accent-soft);
+	padding: 0.85rem 1rem;
+}
+
+.we-formkit__repeater-row-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin-bottom: 0.75rem;
+}
+
+.we-formkit__repeater-row-label {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--wek-muted);
+}
+
+.we-formkit__repeater-remove {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	color: var(--wek-danger);
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 0.15rem 0.25rem;
+}
+
+.we-formkit__repeater-remove:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.we-formkit__repeater-fields {
+	display: grid;
+	gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+	.we-formkit__repeater-fields {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.we-formkit__repeater-control--textarea {
+		grid-column: 1 / -1;
+	}
+}
+
+.we-formkit__label--nested {
+	font-size: 0.9rem;
+}
+
+.we-formkit__repeater-actions {
+	margin: 0;
+}
+
+.we-formkit__repeater-add {
+	appearance: none;
+	border: 1px dashed var(--wek-accent);
+	background: transparent;
+	color: var(--wek-accent);
+	font: inherit;
+	font-weight: 600;
+	border-radius: 999px;
+	padding: 0.45rem 1rem;
+	cursor: pointer;
+}
+
+.we-formkit__repeater-add:hover,
+.we-formkit__repeater-add:focus-visible {
+	background: var(--wek-accent-soft);
+}
+
+.we-formkit__repeater-add:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
 .we-formkit-error {
 	color: var(--wek-danger);
 	font-weight: 600;

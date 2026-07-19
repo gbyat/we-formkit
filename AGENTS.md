@@ -9,7 +9,7 @@ Use this file to continue development without re-deriving decisions from chat hi
 | Area | State |
 |------|--------|
 | Template scaffold (scripts, CI, preflight, Sighthound) | Done |
-| Field type registry + 18 core field classes | Done |
+| Field type registry + 19 core field classes (incl. repeater) | Done |
 | Date relative constraints (`days\|weeks\|months\|years`, `past\|future`) | Done |
 | CPTs, capabilities, settings, uninstall | Done |
 | Form_Schema + Conditional | Done |
@@ -31,7 +31,7 @@ Use this file to continue development without re-deriving decisions from chat hi
 - **GitHub:** `gbyat/we-formkit`
 - **Source language:** English only in PHP/JS strings; German via PO later.
 - **Field model:** one PHP class per type + registry.
-- **Core field catalog:** `text`, `email`, `tel`, `url`, `textarea`, `number`, `select`, `radio`, `radio_image`, `checkbox`, `checkboxes`, `date`, `time`, `datetime`, `consent`, `html`, `hidden`, `upload`.
+- **Core field catalog:** `text`, `email`, `tel`, `url`, `textarea`, `number`, `select`, `radio`, `radio_image`, `checkbox`, `checkboxes`, `date`, `time`, `datetime`, `consent`, `html`, `hidden`, `upload`, `repeater` (clonable nested field group).
 - **Security tooling:** preflight + Sighthound — keep; do not ship `vendor/` / `node_modules/` in release ZIPs.
 
 ## Naming conventions

@@ -47,6 +47,7 @@ final class Field_Type_Registry {
 		$this->register( new Fields\Html_Field() );
 		$this->register( new Fields\Hidden_Field() );
 		$this->register( new Fields\Upload_Field() );
+		$this->register( new Fields\Repeater_Field() );
 
 		/**
 		 * Allow third-party plugins to register custom field types.

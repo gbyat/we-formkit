@@ -8,6 +8,7 @@
 namespace Webentwicklerin\WeFormkit\Admin;
 
 use Webentwicklerin\WeFormkit\Capabilities;
+use Webentwicklerin\WeFormkit\Fields\Repeater_Field;
 use Webentwicklerin\WeFormkit\Form_Schema;
 use Webentwicklerin\WeFormkit\Plugin;
 use Webentwicklerin\WeFormkit\Post_Types;
@@ -215,17 +216,22 @@ final class Form_Editor {
 			);
 		}
 
+		$theme = self::theme_ui_tokens();
+
 		wp_localize_script(
 			'we-formkit-admin-form',
 			'weFormkitAdmin',
 			array(
-				'fieldTypes' => $field_types,
-				'i18n'       => array(
+				'fieldTypes'        => $field_types,
+				'theme'             => $theme,
+				'i18n'              => array(
 					'section'        => __( 'Section', 'we-formkit' ),
 					'field'          => __( 'Field', 'we-formkit' ),
 					'remove'         => __( 'Remove', 'we-formkit' ),
 					'addField'       => __( 'Add field', 'we-formkit' ),
 					'addSection'     => __( 'Add section', 'we-formkit' ),
+					'fieldsLibrary'  => __( 'Fields', 'we-formkit' ),
+					'themeColors'    => __( 'Theme colors', 'we-formkit' ),
 					'label'          => __( 'Label', 'we-formkit' ),
 					'id'             => __( 'Field ID', 'we-formkit' ),
 					'type'           => __( 'Type', 'we-formkit' ),
@@ -238,7 +244,7 @@ final class Form_Editor {
 					'showValue'      => __( 'Value', 'we-formkit' ),
 					'none'           => __( 'Always visible', 'we-formkit' ),
 					'confirmDel'     => __( 'Remove this item?', 'we-formkit' ),
-					'empty'          => __( 'No sections yet. Click “Add section” to start.', 'we-formkit' ),
+					'empty'          => __( 'No sections yet. Add a section or pick a field from the library.', 'we-formkit' ),
 					'loadError'      => __( 'Form builder failed to load. Hard-refresh the page or check the browser console.', 'we-formkit' ),
 					'width'          => __( 'Width', 'we-formkit' ),
 					'widthFull'      => __( 'Full width', 'we-formkit' ),
@@ -255,9 +261,146 @@ final class Form_Editor {
 					'sectionTitle'   => __( 'Title', 'we-formkit' ),
 					'sectionId'      => __( 'Section ID', 'we-formkit' ),
 					'moved'          => __( 'Item moved.', 'we-formkit' ),
+					'placeholder'    => __( 'Placeholder', 'we-formkit' ),
+					'maxFiles'       => __( 'Max files', 'we-formkit' ),
+					'maxFileSize'    => __( 'Max file size (MB)', 'we-formkit' ),
+					'allowedMime'    => __( 'Allowed MIME types', 'we-formkit' ),
+					'storageMode'    => __( 'Storage mode', 'we-formkit' ),
+					'htmlContent'    => __( 'HTML content', 'we-formkit' ),
+					'defaultValue'   => __( 'Default value', 'we-formkit' ),
+					'constraints'    => __( 'Date constraints', 'we-formkit' ),
+					'minConstraint'  => __( 'Minimum', 'we-formkit' ),
+					'maxConstraint'  => __( 'Maximum', 'we-formkit' ),
+					'repeaterFields' => __( 'Fields in each row', 'we-formkit' ),
+					'repeaterHint'   => __( 'These fields are cloned together when someone adds another row.', 'we-formkit' ),
+					'minRows'        => __( 'Minimum rows', 'we-formkit' ),
+					'maxRows'        => __( 'Maximum rows', 'we-formkit' ),
+					'addRowLabel'    => __( 'Add row button label', 'we-formkit' ),
+					'addNestedField' => __( 'Add field to row', 'we-formkit' ),
+					'nestedField'    => __( 'Row field', 'we-formkit' ),
+					'removeNested'   => __( 'Remove from row', 'we-formkit' ),
 				),
+				'repeaterItemTypes' => Repeater_Field::allowed_item_types(),
 			)
 		);
+	}
+
+	/**
+	 * Theme-aware UI tokens for the admin builder.
+	 *
+	 * @return array{accent:string,accentSoft:string,palette:list<array{slug:string,name:string,color:string}>}
+	 */
+	private static function theme_ui_tokens() {
+		$palette = self::theme_color_palette();
+		$accent  = self::pick_accent_color( $palette );
+
+		/**
+		 * Filter Formkit admin builder theme tokens.
+		 *
+		 * @param array{accent:string,accentSoft:string,palette:list<array{slug:string,name:string,color:string}>} $tokens Tokens.
+		 */
+		return apply_filters(
+			'we_formkit_admin_theme_tokens',
+			array(
+				'accent'     => $accent,
+				'accentSoft' => self::soft_tint( $accent ),
+				'palette'    => $palette,
+			)
+		);
+	}
+
+	/**
+	 * @return list<array{slug:string,name:string,color:string}>
+	 */
+	private static function theme_color_palette() {
+		$out = array();
+
+		if ( class_exists( '\WP_Theme_JSON_Resolver' ) ) {
+			$settings = \WP_Theme_JSON_Resolver::get_merged_data()->get_settings();
+			$sources  = array();
+			if ( ! empty( $settings['color']['palette']['theme'] ) && is_array( $settings['color']['palette']['theme'] ) ) {
+				$sources[] = $settings['color']['palette']['theme'];
+			}
+			if ( ! empty( $settings['color']['palette']['custom'] ) && is_array( $settings['color']['palette']['custom'] ) ) {
+				$sources[] = $settings['color']['palette']['custom'];
+			}
+			foreach ( $sources as $group ) {
+				foreach ( $group as $color ) {
+					if ( empty( $color['color'] ) ) {
+						continue;
+					}
+					$out[] = array(
+						'slug'  => isset( $color['slug'] ) ? sanitize_key( (string) $color['slug'] ) : '',
+						'name'  => isset( $color['name'] ) ? sanitize_text_field( (string) $color['name'] ) : '',
+						'color' => sanitize_hex_color( (string) $color['color'] ) ? (string) $color['color'] : sanitize_text_field( (string) $color['color'] ),
+					);
+				}
+			}
+		}
+
+		if ( empty( $out ) ) {
+			$support = get_theme_support( 'editor-color-palette' );
+			if ( is_array( $support ) && ! empty( $support[0] ) && is_array( $support[0] ) ) {
+				foreach ( $support[0] as $color ) {
+					if ( empty( $color['color'] ) ) {
+						continue;
+					}
+					$out[] = array(
+						'slug'  => isset( $color['slug'] ) ? sanitize_key( (string) $color['slug'] ) : '',
+						'name'  => isset( $color['name'] ) ? sanitize_text_field( (string) $color['name'] ) : '',
+						'color' => (string) $color['color'],
+					);
+				}
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * @param list<array{slug:string,name:string,color:string}> $palette Palette.
+	 * @return string
+	 */
+	private static function pick_accent_color( array $palette ) {
+		$prefer = array( 'primary', 'accent', 'brand', 'main', 'secondary' );
+		foreach ( $prefer as $slug ) {
+			foreach ( $palette as $color ) {
+				if ( ( $color['slug'] ?? '' ) === $slug && ! empty( $color['color'] ) ) {
+					return (string) $color['color'];
+				}
+			}
+		}
+		foreach ( $palette as $color ) {
+			$hex = strtolower( (string) ( $color['color'] ?? '' ) );
+			if ( '' === $hex || preg_match( '/^#?(fff|ffffff|000|000000|f[5-9a-f]{5}|[0-3]{6})$/', $hex ) ) {
+				continue;
+			}
+			return (string) $color['color'];
+		}
+		return '#0f5c4c';
+	}
+
+	/**
+	 * Soft background tint derived from accent (fallback when theme has no soft color).
+	 *
+	 * @param string $hex Hex color.
+	 * @return string
+	 */
+	private static function soft_tint( $hex ) {
+		$hex = ltrim( (string) $hex, '#' );
+		if ( 3 === strlen( $hex ) ) {
+			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+		}
+		if ( ! preg_match( '/^[0-9a-fA-F]{6}$/', $hex ) ) {
+			return '#e4f2ee';
+		}
+		$r = hexdec( substr( $hex, 0, 2 ) );
+		$g = hexdec( substr( $hex, 2, 2 ) );
+		$b = hexdec( substr( $hex, 4, 2 ) );
+		$r = (int) round( $r * 0.12 + 255 * 0.88 );
+		$g = (int) round( $g * 0.12 + 255 * 0.88 );
+		$b = (int) round( $b * 0.12 + 255 * 0.88 );
+		return sprintf( '#%02x%02x%02x', $r, $g, $b );
 	}
 
 	/**

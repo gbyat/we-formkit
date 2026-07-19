@@ -27,6 +27,20 @@
 				values[ id ] = [];
 				return;
 			}
+			if ( type === 'repeater' ) {
+				values[ id ] = qsa( fieldEl, '[data-wek-repeater-row]' ).map( function ( row ) {
+					const rowVals = {};
+					qsa( row, '[data-wek-repeater-input]' ).forEach( function ( input ) {
+						const subId = input.getAttribute( 'data-sub-id' );
+						if ( ! subId ) {
+							return;
+						}
+						rowVals[ subId ] = input.value;
+					} );
+					return rowVals;
+				} );
+				return;
+			}
 			if ( type === 'checkboxes' ) {
 				values[ id ] = qsa( fieldEl, 'input[type="checkbox"]:checked' ).map( function ( el ) {
 					return el.value;
@@ -205,6 +219,97 @@
 		status.classList.toggle( 'is-success', ! isError && !! message );
 	}
 
+	function rowLabelText( index ) {
+		const cfg = window.weFormkit || {};
+		const base = ( cfg.i18n && cfg.i18n.rowLabel ) || 'Row %d';
+		return String( base ).replace( '%d', String( index + 1 ) );
+	}
+
+	function reindexRepeater( repeater ) {
+		const fieldId = repeater.getAttribute( 'data-field-id' ) || '';
+		const rows = qsa( repeater, '[data-wek-repeater-row]' );
+		rows.forEach( function ( row, index ) {
+			const label = qs( row, '[data-wek-repeater-row-label]' );
+			if ( label ) {
+				label.textContent = rowLabelText( index );
+			}
+			qsa( row, '[data-wek-repeater-input]' ).forEach( function ( input ) {
+				const subId = input.getAttribute( 'data-sub-id' );
+				if ( ! subId ) {
+					return;
+				}
+				input.name = fieldId + '[' + index + '][' + subId + ']';
+				const newId = 'wek-field-' + fieldId + '-' + index + '-' + subId;
+				input.id = newId;
+				const wrap = input.closest( '.we-formkit__repeater-control' );
+				const lab = wrap ? qs( wrap, 'label' ) : null;
+				if ( lab ) {
+					lab.setAttribute( 'for', newId );
+				}
+			} );
+		} );
+
+		const minItems = parseInt( repeater.getAttribute( 'data-min-items' ) || '0', 10 );
+		const maxItems = parseInt( repeater.getAttribute( 'data-max-items' ) || '50', 10 );
+		const addBtn = qs( repeater, '[data-wek-repeater-add]' );
+		if ( addBtn ) {
+			addBtn.disabled = rows.length >= maxItems;
+			addBtn.hidden = rows.length >= maxItems;
+		}
+		rows.forEach( function ( row ) {
+			const removeBtn = qs( row, '[data-wek-repeater-remove]' );
+			if ( removeBtn ) {
+				removeBtn.disabled = rows.length <= Math.max( 1, minItems || 1 );
+			}
+		} );
+	}
+
+	function initRepeaters( form ) {
+		qsa( form, '[data-wek-repeater]' ).forEach( function ( repeater ) {
+			if ( repeater.getAttribute( 'data-wek-repeater-ready' ) ) {
+				return;
+			}
+			repeater.setAttribute( 'data-wek-repeater-ready', '1' );
+
+			const rowsHost = qs( repeater, '[data-wek-repeater-rows]' );
+			const template = qs( repeater, '[data-wek-repeater-template]' );
+			if ( ! rowsHost || ! template ) {
+				return;
+			}
+
+			reindexRepeater( repeater );
+
+			repeater.addEventListener( 'click', function ( event ) {
+				const addBtn = event.target.closest( '[data-wek-repeater-add]' );
+				const removeBtn = event.target.closest( '[data-wek-repeater-remove]' );
+
+				if ( addBtn && repeater.contains( addBtn ) ) {
+					event.preventDefault();
+					const maxItems = parseInt( repeater.getAttribute( 'data-max-items' ) || '50', 10 );
+					if ( qsa( repeater, '[data-wek-repeater-row]' ).length >= maxItems ) {
+						return;
+					}
+					const frag = template.content.cloneNode( true );
+					rowsHost.appendChild( frag );
+					reindexRepeater( repeater );
+					return;
+				}
+
+				if ( removeBtn && repeater.contains( removeBtn ) ) {
+					event.preventDefault();
+					const row = removeBtn.closest( '[data-wek-repeater-row]' );
+					const minItems = parseInt( repeater.getAttribute( 'data-min-items' ) || '0', 10 );
+					const rows = qsa( repeater, '[data-wek-repeater-row]' );
+					if ( ! row || rows.length <= Math.max( 1, minItems || 1 ) ) {
+						return;
+					}
+					row.parentNode.removeChild( row );
+					reindexRepeater( repeater );
+				}
+			} );
+		} );
+	}
+
 	function initRoot( root ) {
 		const form = qs( root, '[data-wek-form]' );
 		if ( ! form || form.getAttribute( 'data-wek-ready' ) ) {
@@ -219,6 +324,7 @@
 			applyConditionals( root );
 		} );
 		applyConditionals( root );
+		initRepeaters( form );
 
 		form.addEventListener( 'submit', function ( event ) {
 			event.preventDefault();

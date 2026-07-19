@@ -23,7 +23,30 @@
 		'html',
 		'hidden',
 		'upload',
+		'repeater',
 	];
+
+	const FIELD_ICONS = {
+		text: 'T',
+		email: '@',
+		tel: 'P',
+		url: 'U',
+		textarea: 'A',
+		number: '#',
+		select: 'S',
+		radio: 'R',
+		radio_image: 'I',
+		checkbox: 'C',
+		checkboxes: 'M',
+		date: 'D',
+		time: 'H',
+		datetime: 'DT',
+		consent: 'OK',
+		html: '<>',
+		hidden: '·',
+		upload: 'F',
+		repeater: '↻',
+	};
 
 	function getFieldTypes() {
 		const fromAdmin =
@@ -56,6 +79,7 @@
 	function boot() {
 		const i18n = ( window.weFormkitAdmin && window.weFormkitAdmin.i18n ) || {};
 		const fieldTypes = getFieldTypes();
+		const theme = ( window.weFormkitAdmin && window.weFormkitAdmin.theme ) || {};
 		const root = document.getElementById( 'wek-builder' );
 		const hidden = document.getElementById( 'wek_schema_json' );
 		const introInput = document.getElementById( 'wek_intro' );
@@ -545,6 +569,256 @@
 			);
 		}
 
+		function getRepeaterItemTypes() {
+			const allowed =
+				window.weFormkitAdmin && Array.isArray( window.weFormkitAdmin.repeaterItemTypes )
+					? window.weFormkitAdmin.repeaterItemTypes
+					: [ 'text', 'email', 'tel', 'url', 'number', 'textarea', 'select', 'date', 'time', 'datetime' ];
+			return allowed
+				.map( function ( typeId ) {
+					const meta = fieldTypes.find( function ( item ) {
+						return item.type === typeId;
+					} );
+					return {
+						value: typeId,
+						label: ( meta && meta.label ) || typeId,
+					};
+				} )
+				.filter( Boolean );
+		}
+
+		function ensureRepeaterDefaults( field ) {
+			const opts = ensureTypeOptions( field );
+			if ( opts.min_items == null ) {
+				opts.min_items = 1;
+			}
+			if ( opts.max_items == null ) {
+				opts.max_items = 5;
+			}
+			if ( opts.add_button_label == null ) {
+				opts.add_button_label = '';
+			}
+			if ( ! Array.isArray( opts.fields ) ) {
+				opts.fields = [];
+			}
+			return opts;
+		}
+
+		function renderRepeaterFieldsEditor( field ) {
+			const opts = ensureRepeaterDefaults( field );
+			const wrap = el( 'div', { className: 'wek-builder__repeater-options' } );
+
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.repeaterHint ||
+						'These fields are cloned together when someone adds another row.',
+				} )
+			);
+
+			wrap.appendChild(
+				fieldRow(
+					i18n.minRows || 'Minimum rows',
+					numberInput( opts.min_items, function ( v ) {
+						const n = parseInt( v, 10 );
+						opts.min_items = isNaN( n ) ? 0 : Math.max( 0, n );
+						syncHidden();
+					}, { min: '0' } )
+				)
+			);
+			wrap.appendChild(
+				fieldRow(
+					i18n.maxRows || 'Maximum rows',
+					numberInput( opts.max_items, function ( v ) {
+						const n = parseInt( v, 10 );
+						opts.max_items = isNaN( n ) ? 5 : Math.max( 1, n );
+						syncHidden();
+					}, { min: '1' } )
+				)
+			);
+			wrap.appendChild(
+				fieldRow(
+					i18n.addRowLabel || 'Add row button label',
+					textInput( opts.add_button_label || '', function ( v ) {
+						opts.add_button_label = v;
+						syncHidden();
+					} )
+				)
+			);
+
+			wrap.appendChild(
+				el( 'strong', {
+					className: 'wek-builder__repeater-fields-title',
+					text: i18n.repeaterFields || 'Fields in each row',
+				} )
+			);
+
+			const list = el( 'div', { className: 'wek-builder__repeater-fields' } );
+
+			function refreshList() {
+				list.innerHTML = '';
+				opts.fields.forEach( function ( child, index ) {
+					list.appendChild( renderNestedFieldCard( field, child, index ) );
+				} );
+			}
+
+			function renderNestedFieldCard( parentField, child, index ) {
+				const card = el( 'div', { className: 'wek-builder__nested-field' } );
+				card.appendChild(
+					el( 'div', { className: 'wek-builder__nested-field-head' }, [
+						el( 'strong', {
+							text: ( i18n.nestedField || 'Row field' ) + ' ' + ( index + 1 ),
+						} ),
+						el( 'button', {
+							type: 'button',
+							className: 'button-link-delete',
+							text: i18n.removeNested || 'Remove from row',
+							onClick: function () {
+								opts.fields.splice( index, 1 );
+								syncHidden();
+								refreshList();
+								render();
+							},
+						} ),
+					] )
+				);
+
+				const typeChoices = getRepeaterItemTypes();
+				card.appendChild(
+					fieldRow(
+						i18n.type || 'Type',
+						selectInput( child.type || 'text', typeChoices, function ( v ) {
+							child.type = v;
+							if ( [ 'select' ].indexOf( v ) !== -1 && ! Array.isArray( child.options ) ) {
+								child.options = [];
+							}
+							syncHidden();
+							refreshList();
+						} )
+					)
+				);
+				card.appendChild(
+					fieldRow(
+						i18n.id || 'Field ID',
+						textInput( child.id || '', function ( v ) {
+							child.id = String( v || '' )
+								.toLowerCase()
+								.replace( /[^a-z0-9_-]/g, '_' );
+							syncHidden();
+						} )
+					)
+				);
+				card.appendChild(
+					fieldRow(
+						i18n.label || 'Label',
+						textInput( child.label || '', function ( v ) {
+							child.label = v;
+							syncHidden();
+							const preview = root.querySelector(
+								'.wek-builder__field[data-s="' +
+									selection.sIndex +
+									'"][data-f="' +
+									selection.fIndex +
+									'"] .wek-builder__field-preview'
+							);
+							if ( preview ) {
+								preview.textContent = repeaterPreviewText( parentField );
+							}
+						} )
+					)
+				);
+				card.appendChild(
+					fieldRow(
+						i18n.placeholder || 'Placeholder',
+						textInput( child.placeholder || '', function ( v ) {
+							child.placeholder = v;
+							syncHidden();
+						} )
+					)
+				);
+
+				const req = el( 'input', { type: 'checkbox' } );
+				req.checked = !! child.required;
+				req.addEventListener( 'change', function () {
+					child.required = req.checked;
+					syncHidden();
+				} );
+				card.appendChild(
+					el( 'p', { className: 'wek-builder__row' }, [
+						el( 'label', { className: 'wek-builder__check' }, [
+							req,
+							' ' + ( i18n.required || 'Required' ),
+						] ),
+					] )
+				);
+
+				if ( child.type === 'select' ) {
+					if ( ! Array.isArray( child.options ) ) {
+						child.options = [];
+					}
+					card.appendChild( renderOptionsEditor( child ) );
+				}
+
+				return card;
+			}
+
+			refreshList();
+			wrap.appendChild( list );
+
+			const addType = el( 'select' );
+			getRepeaterItemTypes().forEach( function ( item ) {
+				addType.appendChild( el( 'option', { value: item.value, text: item.label } ) );
+			} );
+
+			wrap.appendChild(
+				el( 'div', { className: 'wek-builder__repeater-add-row' }, [
+					addType,
+					el( 'button', {
+						type: 'button',
+						className: 'button button-secondary',
+						text: i18n.addNestedField || 'Add field to row',
+						onClick: function () {
+							const typeId = addType.value || 'text';
+							const meta = fieldTypes.find( function ( item ) {
+								return item.type === typeId;
+							} );
+							opts.fields.push( {
+								id: typeId + '_' + Date.now().toString( 36 ),
+								type: typeId,
+								label: ( meta && meta.label ) || typeId,
+								help: '',
+								required: false,
+								placeholder: '',
+								type_options: {},
+								width: 'full',
+								options: [],
+								show_when: null,
+							} );
+							syncHidden();
+							refreshList();
+							render();
+						},
+					} ),
+				] )
+			);
+
+			return wrap;
+		}
+
+		function repeaterPreviewText( field ) {
+			const opts = field.type_options || {};
+			const nested = Array.isArray( opts.fields ) ? opts.fields : [];
+			if ( ! nested.length ) {
+				return i18n.repeaterFields || 'Fields in each row';
+			}
+			return nested
+				.map( function ( child ) {
+					return child.label || child.id || child.type;
+				} )
+				.join( ' · ' );
+		}
+
 		function shouldShowPlaceholder( type ) {
 			return (
 				[
@@ -557,6 +831,7 @@
 					'select',
 					'radio_image',
 					'upload',
+					'repeater',
 				].indexOf( type ) === -1
 			);
 		}
@@ -768,6 +1043,10 @@
 
 				if ( field.type === 'hidden' ) {
 					panel.appendChild( renderHiddenDefaultEditor( field ) );
+				}
+
+				if ( field.type === 'repeater' ) {
+					panel.appendChild( renderRepeaterFieldsEditor( field ) );
 				}
 			} else if ( isField && activeTab === 'appearance' ) {
 				const field = selected.field;
@@ -1108,10 +1387,19 @@
 
 			const main = el( 'div', { className: 'wek-builder__field-main' }, [
 				handle,
-				el( 'span', {
-					className: 'wek-builder__field-label',
-					text: field.label || field.id || i18n.field || 'Field',
-				} ),
+				el( 'div', { className: 'wek-builder__field-body' }, [
+					el( 'span', {
+						className: 'wek-builder__field-label',
+						text: field.label || field.id || i18n.field || 'Field',
+					} ),
+					el( 'span', {
+						className: 'wek-builder__field-preview',
+						text:
+							field.type === 'repeater'
+								? repeaterPreviewText( field )
+								: field.placeholder || field.help || field.type || '',
+					} ),
+				] ),
 				el( 'span', { className: 'wek-builder__badge', text: field.type || 'text' } ),
 			] );
 			card.appendChild( main );
@@ -1217,9 +1505,199 @@
 			return box;
 		}
 
+		function addFieldOfType( typeId ) {
+			const typeMeta = fieldTypes.find( function ( item ) {
+				return item.type === typeId;
+			} );
+			let sIndex = 0;
+			if ( selection && typeof selection.sIndex === 'number' ) {
+				sIndex = selection.sIndex;
+			} else if ( schema.sections.length ) {
+				sIndex = schema.sections.length - 1;
+			} else {
+				schema.sections.push( {
+					id: 'section_' + Date.now(),
+					title: i18n.section || 'Section',
+					intro: '',
+					show_when: null,
+					fields: [],
+				} );
+				sIndex = 0;
+			}
+			const section = schema.sections[ sIndex ];
+			section.fields = section.fields || [];
+			const typeOptions = {};
+			if ( typeId === 'repeater' ) {
+				typeOptions.min_items = 1;
+				typeOptions.max_items = 5;
+				typeOptions.add_button_label = '';
+				typeOptions.fields = [
+					{
+						id: 'name',
+						type: 'text',
+						label: 'Name',
+						help: '',
+						required: false,
+						placeholder: '',
+						type_options: {},
+						width: 'full',
+						options: [],
+						show_when: null,
+					},
+					{
+						id: 'website',
+						type: 'url',
+						label: 'Website',
+						help: '',
+						required: false,
+						placeholder: 'https://',
+						type_options: {},
+						width: 'full',
+						options: [],
+						show_when: null,
+					},
+				];
+			}
+			section.fields.push( {
+				id: 'field_' + Date.now(),
+				type: typeId || 'text',
+				label: ( typeMeta && typeMeta.label ) || i18n.field || 'Field',
+				help: '',
+				required: false,
+				placeholder: '',
+				type_options: typeOptions,
+				width: 'full',
+				options: [],
+				show_when: null,
+			} );
+			selection = {
+				type: 'field',
+				sIndex: sIndex,
+				fIndex: section.fields.length - 1,
+			};
+			activeTab = 'general';
+			syncHidden();
+			render();
+		}
+
+		function applyThemeTokens() {
+			const host = document.querySelector( '.wek-admin' ) || root;
+			if ( ! host || ! theme ) {
+				return;
+			}
+			if ( theme.accent ) {
+				host.style.setProperty( '--wek-accent', theme.accent );
+			}
+			if ( theme.accentSoft ) {
+				host.style.setProperty( '--wek-accent-soft', theme.accentSoft );
+			}
+		}
+
+		function renderLibrary() {
+			const panel = el( 'aside', { className: 'wek-builder-library' } );
+			panel.appendChild(
+				el( 'div', { className: 'wek-builder-library__head' }, [
+					el( 'h3', {
+						className: 'wek-builder-library__title',
+						text: i18n.fieldsLibrary || 'Fields',
+					} ),
+				] )
+			);
+
+			if ( theme.palette && theme.palette.length ) {
+				const palette = el( 'div', {
+					className: 'wek-builder-palette',
+					title: i18n.themeColors || 'Theme colors',
+				} );
+				theme.palette.slice( 0, 12 ).forEach( function ( swatch ) {
+					const color = swatch && swatch.color ? String( swatch.color ) : '';
+					if ( ! color ) {
+						return;
+					}
+					const btn = el( 'button', {
+						type: 'button',
+						className:
+							'wek-builder-palette__swatch' +
+							( theme.accent && color.toLowerCase() === String( theme.accent ).toLowerCase()
+								? ' is-accent'
+								: '' ),
+						title: ( swatch.name || swatch.slug || color ) + '',
+						style: 'background:' + color,
+						'aria-label': swatch.name || swatch.slug || color,
+					} );
+					btn.addEventListener( 'click', function () {
+						const host = document.querySelector( '.wek-admin' ) || root;
+						if ( ! host ) {
+							return;
+						}
+						const soft = ( function ( hex ) {
+							const raw = String( hex || '' ).replace( '#', '' );
+							let full = raw;
+							if ( raw.length === 3 ) {
+								full = raw[ 0 ] + raw[ 0 ] + raw[ 1 ] + raw[ 1 ] + raw[ 2 ] + raw[ 2 ];
+							}
+							if ( ! /^[0-9a-fA-F]{6}$/.test( full ) ) {
+								return '#e4f2ee';
+							}
+							const mix = function ( channel ) {
+								return Math.round( channel * 0.12 + 255 * 0.88 );
+							};
+							const toHex = function ( n ) {
+								const h = n.toString( 16 );
+								return h.length === 1 ? '0' + h : h;
+							};
+							return (
+								'#' +
+								toHex( mix( parseInt( full.slice( 0, 2 ), 16 ) ) ) +
+								toHex( mix( parseInt( full.slice( 2, 4 ), 16 ) ) ) +
+								toHex( mix( parseInt( full.slice( 4, 6 ), 16 ) ) )
+							);
+						} )( color );
+						host.style.setProperty( '--wek-accent', color );
+						host.style.setProperty( '--wek-accent-soft', soft );
+						theme.accent = color;
+						theme.accentSoft = soft;
+						Array.prototype.forEach.call( palette.querySelectorAll( '.wek-builder-palette__swatch' ), function ( node ) {
+							node.classList.toggle( 'is-accent', node === btn );
+						} );
+					} );
+					palette.appendChild( btn );
+				} );
+				panel.appendChild( palette );
+			}
+
+			const grid = el( 'div', { className: 'wek-builder-library__grid' } );
+			fieldTypes.forEach( function ( item ) {
+				const typeId = item.type;
+				grid.appendChild(
+					el( 'button', {
+						type: 'button',
+						className: 'wek-builder-library__item',
+						title: item.label || typeId,
+						onClick: function () {
+							addFieldOfType( typeId );
+						},
+					}, [
+						el( 'span', {
+							className: 'wek-builder-library__icon',
+							text: FIELD_ICONS[ typeId ] || typeId.slice( 0, 2 ).toUpperCase(),
+						} ),
+						el( 'span', {
+							className: 'wek-builder-library__label',
+							text: item.label || typeId,
+						} ),
+					] )
+				);
+			} );
+			panel.appendChild( grid );
+			return panel;
+		}
+
 		function render() {
+			applyThemeTokens();
 			root.innerHTML = '';
 			const layout = el( 'div', { className: 'wek-builder-layout' } );
+			const library = renderLibrary();
 			const canvas = el( 'div', { className: 'wek-builder-canvas' } );
 			const aside = el( 'aside', {
 				className: 'wek-builder-sidebar',
@@ -1237,7 +1715,7 @@
 				canvas.appendChild(
 					el( 'p', {
 						className: 'description',
-						text: i18n.empty || 'No sections yet. Click “Add section” to start.',
+						text: i18n.empty || 'No sections yet. Add a section or pick a field from the library.',
 					} )
 				);
 			}
@@ -1270,6 +1748,7 @@
 			);
 
 			renderSidebar( aside );
+			layout.appendChild( library );
 			layout.appendChild( canvas );
 			layout.appendChild( aside );
 			root.appendChild( layout );

@@ -223,6 +223,10 @@ final class Frontend {
 					'submitting' => __( 'Submitting…', 'we-formkit' ),
 					'error'      => __( 'Something went wrong. Please try again.', 'we-formkit' ),
 					'required'   => __( 'This field is required.', 'we-formkit' ),
+					'addRow'     => __( 'Add another', 'we-formkit' ),
+					'removeRow'  => __( 'Remove', 'we-formkit' ),
+					/* translators: %d: row number (1-based). */
+					'rowLabel'   => __( 'Row %d', 'we-formkit' ),
 				),
 			)
 		);
@@ -500,6 +504,8 @@ final class Frontend {
 				<?php if ( ! empty( $field['help'] ) ) : ?>
 					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 				<?php endif; ?>
+			<?php elseif ( 'repeater' === $type ) : ?>
+				<?php self::render_repeater( $field, $input_id, $desc_id, $error_id, $req ); ?>
 			<?php else : ?>
 				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
@@ -526,6 +532,190 @@ final class Frontend {
 			<?php endif; ?>
 			<?php if ( 'html' !== $type && 'hidden' !== $type ) : ?>
 				<p class="we-formkit__error" id="<?php echo esc_attr( $error_id ); ?>" data-wek-error hidden></p>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render a repeater (clonable field group).
+	 *
+	 * @param array<string, mixed> $field    Field.
+	 * @param string               $input_id Base input id.
+	 * @param string               $desc_id  Help id.
+	 * @param string               $error_id Error id.
+	 * @param bool                 $req      Required.
+	 * @return void
+	 */
+	private static function render_repeater( array $field, $input_id, $desc_id, $error_id, $req ) {
+		$id        = (string) $field['id'];
+		$min_items = isset( $field['type_options']['min_items'] ) ? max( 0, (int) $field['type_options']['min_items'] ) : 1;
+		$max_items = isset( $field['type_options']['max_items'] ) ? max( 1, (int) $field['type_options']['max_items'] ) : 5;
+		$min_items = min( $min_items, $max_items );
+		$initial   = max( 1, $min_items > 0 ? $min_items : 1 );
+		$add_label = (string) ( $field['type_options']['add_button_label'] ?? '' );
+		if ( '' === $add_label ) {
+			$add_label = __( 'Add another', 'we-formkit' );
+		}
+		$item_fields = array();
+		if ( $field['type_options']['fields'] ?? null ) {
+			$item_fields = is_array( $field['type_options']['fields'] ) ? $field['type_options']['fields'] : array();
+		}
+		?>
+		<div class="we-formkit__label we-formkit__label--repeater" id="<?php echo esc_attr( $input_id . '-label' ); ?>">
+			<?php echo esc_html( $field['label'] ); ?>
+			<?php if ( $req ) : ?>
+				<span class="we-formkit__req" aria-hidden="true">*</span>
+			<?php endif; ?>
+		</div>
+		<?php if ( ! empty( $field['help'] ) ) : ?>
+			<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
+		<?php endif; ?>
+
+		<?php if ( empty( $item_fields ) ) : ?>
+			<p class="we-formkit__help"><?php esc_html_e( 'This repeater has no fields configured yet.', 'we-formkit' ); ?></p>
+			<?php
+			return;
+		endif;
+		?>
+
+		<div
+			class="we-formkit__repeater"
+			data-wek-repeater
+			data-field-id="<?php echo esc_attr( $id ); ?>"
+			data-min-items="<?php echo esc_attr( (string) $min_items ); ?>"
+			data-max-items="<?php echo esc_attr( (string) $max_items ); ?>"
+			aria-labelledby="<?php echo esc_attr( $input_id . '-label' ); ?>"
+			aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
+		>
+			<div class="we-formkit__repeater-rows" data-wek-repeater-rows>
+				<?php for ( $i = 0; $i < $initial; $i++ ) : ?>
+					<?php self::render_repeater_row( $field, $item_fields, $i, false ); ?>
+				<?php endfor; ?>
+			</div>
+			<p class="we-formkit__repeater-actions">
+				<button type="button" class="we-formkit__repeater-add" data-wek-repeater-add>
+					<?php echo esc_html( $add_label ); ?>
+				</button>
+			</p>
+			<template data-wek-repeater-template>
+				<?php self::render_repeater_row( $field, $item_fields, '__INDEX__', true ); ?>
+			</template>
+		</div>
+		<?php
+	}
+
+	/**
+	 * @param array<string, mixed>        $field       Parent repeater field.
+	 * @param array<int, array<string, mixed>> $item_fields Nested fields.
+	 * @param int|string                  $index       Row index or placeholder.
+	 * @param bool                        $is_template Whether rendering inside a template.
+	 * @return void
+	 */
+	private static function render_repeater_row( array $field, array $item_fields, $index, $is_template ) {
+		$parent_id = (string) $field['id'];
+		$index_str = (string) $index;
+		?>
+		<div class="we-formkit__repeater-row" data-wek-repeater-row>
+			<div class="we-formkit__repeater-row-head">
+				<span class="we-formkit__repeater-row-label" data-wek-repeater-row-label>
+					<?php
+					if ( $is_template ) {
+						esc_html_e( 'Row', 'we-formkit' );
+					} else {
+						printf(
+							/* translators: %d: row number (1-based). */
+							esc_html__( 'Row %d', 'we-formkit' ),
+							(int) $index + 1
+						);
+					}
+					?>
+				</span>
+				<button type="button" class="we-formkit__repeater-remove" data-wek-repeater-remove>
+					<?php esc_html_e( 'Remove', 'we-formkit' ); ?>
+				</button>
+			</div>
+			<div class="we-formkit__repeater-fields">
+				<?php foreach ( $item_fields as $child ) : ?>
+					<?php self::render_repeater_control( $parent_id, $child, $index_str ); ?>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * @param string               $parent_id Parent field id.
+	 * @param array<string, mixed> $child     Nested field.
+	 * @param string               $index     Row index string.
+	 * @return void
+	 */
+	private static function render_repeater_control( $parent_id, array $child, $index ) {
+		$cid   = (string) ( $child['id'] ?? '' );
+		$ctype = (string) ( $child['type'] ?? 'text' );
+		if ( '' === $cid ) {
+			return;
+		}
+
+		$registry = Plugin::instance()->field_registry();
+		$type_obj = $registry ? $registry->get( $ctype ) : null;
+		$name     = sprintf( '%s[%s][%s]', $parent_id, $index, $cid );
+		$input_id = sprintf( 'wek-field-%s-%s-%s', $parent_id, $index, $cid );
+		$req      = ! empty( $child['required'] );
+		$label    = (string) ( $child['label'] ?? $cid );
+		?>
+		<div class="we-formkit__repeater-control we-formkit__repeater-control--<?php echo esc_attr( $ctype ); ?>">
+			<label class="we-formkit__label we-formkit__label--nested" for="<?php echo esc_attr( $input_id ); ?>">
+				<?php echo esc_html( $label ); ?>
+				<?php if ( $req ) : ?>
+					<span class="we-formkit__req" aria-hidden="true">*</span>
+				<?php endif; ?>
+			</label>
+			<?php if ( 'textarea' === $ctype ) : ?>
+				<textarea
+					id="<?php echo esc_attr( $input_id ); ?>"
+					name="<?php echo esc_attr( $name ); ?>"
+					rows="3"
+					placeholder="<?php echo esc_attr( (string) ( $child['placeholder'] ?? '' ) ); ?>"
+					data-wek-repeater-input
+					data-sub-id="<?php echo esc_attr( $cid ); ?>"
+					<?php echo $req ? 'required' : ''; ?>
+				></textarea>
+			<?php elseif ( 'select' === $ctype ) : ?>
+				<select
+					id="<?php echo esc_attr( $input_id ); ?>"
+					name="<?php echo esc_attr( $name ); ?>"
+					data-wek-repeater-input
+					data-sub-id="<?php echo esc_attr( $cid ); ?>"
+					<?php echo $req ? 'required' : ''; ?>
+				>
+					<option value=""><?php esc_html_e( 'Please select…', 'we-formkit' ); ?></option>
+					<?php foreach ( ( $child['options'] ?? array() ) as $option ) : ?>
+						<option value="<?php echo esc_attr( (string) ( $option['value'] ?? '' ) ); ?>">
+							<?php echo esc_html( (string) ( $option['label'] ?? $option['value'] ?? '' ) ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			<?php else : ?>
+				<?php
+				$input_attrs = $type_obj ? $type_obj->render_attributes( $child ) : array( 'type' => $ctype );
+				// Nested required is handled below; avoid double attrs from type class when parent row is empty.
+				unset( $input_attrs['required'], $input_attrs['aria-required'] );
+				if ( 'datetime' === $ctype && ( ! isset( $input_attrs['type'] ) || 'datetime' === $input_attrs['type'] ) ) {
+					$input_attrs['type'] = 'datetime-local';
+				}
+				?>
+				<input
+					<?php echo self::html_attrs( $input_attrs ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					id="<?php echo esc_attr( $input_id ); ?>"
+					name="<?php echo esc_attr( $name ); ?>"
+					data-wek-repeater-input
+					data-sub-id="<?php echo esc_attr( $cid ); ?>"
+					<?php echo $req ? 'required' : ''; ?>
+				/>
+			<?php endif; ?>
+			<?php if ( ! empty( $child['help'] ) ) : ?>
+				<p class="we-formkit__help"><?php echo esc_html( (string) $child['help'] ); ?></p>
 			<?php endif; ?>
 		</div>
 		<?php
