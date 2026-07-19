@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-07-19
+
+- Enhance form submission handling in frontend.js by adding autosubmit functionality and preventing duplicate submissions. Update localization strings in class-frontend.php for improved user guidance during manual submission.
 ## [0.1.11] - 2026-07-19
 
 - Update nonce handling in frontend.js and class files to ensure consistent security verification for API requests.
