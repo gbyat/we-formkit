@@ -1,0 +1,232 @@
+.we-formkit {
+	--wek-bg: #f7f5f2;
+	--wek-surface: #ffffff;
+	--wek-ink: #1c1b19;
+	--wek-muted: #5c574f;
+	--wek-line: #d9d3c8;
+	--wek-accent: #0f5c4c;
+	--wek-accent-soft: #e4f2ee;
+	--wek-danger: #8a1f1f;
+	--wek-radius: 12px;
+	--wek-space: 1.25rem;
+	color: var(--wek-ink);
+	background: linear-gradient(180deg, var(--wek-bg) 0%, #fff 48%);
+	border: 1px solid var(--wek-line);
+	border-radius: calc(var(--wek-radius) + 4px);
+	padding: clamp(1.25rem, 3vw, 2rem);
+	max-width: 52rem;
+	margin: 0 auto;
+	font-family: "Source Sans 3", "Segoe UI", sans-serif;
+	line-height: 1.5;
+}
+
+.we-formkit__header {
+	margin-bottom: 1.75rem;
+}
+
+.we-formkit__title {
+	margin: 0 0 0.5rem;
+	font-family: "Fraunces", Georgia, serif;
+	font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+	font-weight: 600;
+	letter-spacing: -0.02em;
+}
+
+.we-formkit__intro,
+.we-formkit__section-intro,
+.we-formkit__help {
+	color: var(--wek-muted);
+	margin: 0.35rem 0 0;
+	font-size: 0.95rem;
+}
+
+.we-formkit__section {
+	background: var(--wek-surface);
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius);
+	padding: var(--wek-space);
+	margin: 0 0 1rem;
+}
+
+.we-formkit__section-title {
+	margin: 0 0 1rem;
+	font-size: 1.15rem;
+}
+
+.we-formkit__fields {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: 0.85rem 1rem;
+}
+
+.we-formkit__field {
+	margin: 0;
+	grid-column: span 6;
+}
+
+.we-formkit__field--width-half {
+	grid-column: span 6;
+}
+
+.we-formkit__field--width-third {
+	grid-column: span 6;
+}
+
+@media (min-width: 640px) {
+	.we-formkit__field--width-half {
+		grid-column: span 3;
+	}
+
+	.we-formkit__field--width-third {
+		grid-column: span 2;
+	}
+}
+
+.we-formkit__field.is-hidden,
+.we-formkit__section.is-hidden {
+	display: none !important;
+}
+
+.we-formkit__honeypot {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+}
+
+.we-formkit__label,
+.we-formkit__fieldset legend {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.35rem;
+}
+
+.we-formkit__req {
+	color: var(--wek-danger);
+	margin-left: 0.15rem;
+}
+
+.we-formkit input[type="text"],
+.we-formkit input[type="email"],
+.we-formkit input[type="tel"],
+.we-formkit input[type="url"],
+.we-formkit input[type="date"],
+.we-formkit input[type="time"],
+.we-formkit input[type="datetime-local"],
+.we-formkit input[type="number"],
+.we-formkit input[type="file"],
+.we-formkit textarea,
+.we-formkit select {
+	width: 100%;
+	box-sizing: border-box;
+	border: 1px solid var(--wek-line);
+	border-radius: 8px;
+	padding: 0.65rem 0.75rem;
+	font: inherit;
+	background: #fff;
+	color: inherit;
+}
+
+.we-formkit input:focus,
+.we-formkit textarea:focus,
+.we-formkit select:focus {
+	outline: 2px solid var(--wek-accent);
+	outline-offset: 1px;
+	border-color: var(--wek-accent);
+}
+
+.we-formkit__choices {
+	display: grid;
+	gap: 0.45rem;
+}
+
+@media (min-width: 640px) {
+	.we-formkit__choices {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.we-formkit__choice,
+.we-formkit__control--choice {
+	display: flex;
+	gap: 0.55rem;
+	align-items: flex-start;
+	padding: 0.45rem 0.55rem;
+	border-radius: 8px;
+	background: var(--wek-accent-soft);
+}
+
+.we-formkit__choice--image {
+	flex-direction: column;
+	align-items: stretch;
+}
+
+.we-formkit__choice-image {
+	display: block;
+	width: 100%;
+	max-height: 8rem;
+	object-fit: cover;
+	border-radius: 6px;
+}
+
+.we-formkit__error {
+	color: var(--wek-danger);
+	font-size: 0.9rem;
+	margin: 0.35rem 0 0;
+}
+
+.we-formkit__field.is-invalid input,
+.we-formkit__field.is-invalid textarea,
+.we-formkit__field.is-invalid select {
+	border-color: var(--wek-danger);
+}
+
+.we-formkit__actions {
+	margin: 1.25rem 0 0;
+}
+
+.we-formkit__submit {
+	appearance: none;
+	border: 0;
+	border-radius: 999px;
+	background: var(--wek-accent);
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	padding: 0.8rem 1.4rem;
+	cursor: pointer;
+}
+
+.we-formkit__submit:hover,
+.we-formkit__submit:focus-visible {
+	filter: brightness(1.05);
+}
+
+.we-formkit__submit:disabled {
+	opacity: 0.65;
+	cursor: wait;
+}
+
+.we-formkit__status {
+	min-height: 1.25rem;
+	margin-bottom: 1rem;
+	font-weight: 600;
+}
+
+.we-formkit__status.is-error {
+	color: var(--wek-danger);
+}
+
+.we-formkit__status.is-success {
+	color: var(--wek-accent);
+}
+
+.we-formkit-error {
+	color: var(--wek-danger);
+	font-weight: 600;
+}

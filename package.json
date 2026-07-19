@@ -1,0 +1,55 @@
+{
+	"name": "we-formkit",
+	"version": "0.1.0",
+	"description": "Modular WordPress form builder with typed fields, entries, and a developer module API.",
+	"scripts": {
+		"build": "npm run zip",
+		"wp-cli:install": "node scripts/install-wp-cli.js",
+		"pot": "node scripts/update-pot.js",
+		"make-pot": "npm run pot",
+		"i18n:seed": "node scripts/seed-locale.js",
+		"i18n:po": "node scripts/seed-locale.js && node scripts/update-po.js",
+		"i18n:normalize": "node scripts/normalize-translation-encoding.js --write",
+		"i18n:sync": "node scripts/sync-catalog-keys.js",
+		"i18n:check": "node scripts/normalize-translation-encoding.js --check",
+		"i18n:translate": "npm run i18n:normalize && npm run i18n:sync && node scripts/apply-locale-catalog.js",
+		"i18n:mo": "node scripts/make-mo.js",
+		"i18n:json": "node scripts/make-json.js",
+		"json": "npm run i18n:json",
+		"i18n": "npm run pot && npm run i18n:po && npm run i18n:translate && npm run i18n:mo && npm run i18n:json && npm run i18n:check",
+		"sync:version": "node scripts/sync-version.js",
+		"release:patch": "node scripts/release.js patch",
+		"release:minor": "node scripts/release.js minor",
+		"release:major": "node scripts/release.js major",
+		"release:patch:local": "node scripts/release.js patch --local",
+		"release:minor:local": "node scripts/release.js minor --local",
+		"release:major:local": "node scripts/release.js major --local",
+		"zip": "node scripts/build-release-zip.js",
+		"preflight": "node scripts/preflight-deploy.js",
+		"preflight:warn": "node scripts/preflight-deploy.js --warn-only",
+		"scan:sighthound": "node scripts/run-sighthound.js",
+		"scan:sighthound:sarif": "node scripts/run-sighthound.js --sarif",
+		"hooks:install": "node scripts/install-git-hooks.js",
+		"prepush": "node scripts/git-hooks/pre-push.js",
+		"pack": "npm run build"
+	},
+	"engines": {
+		"node": ">=24"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/gbyat/we-formkit.git"
+	},
+	"keywords": [
+		"wordpress",
+		"plugin",
+		"i18n"
+	],
+	"author": "webentwicklerin, Gabriele Laesser <hello@webentwicklerin.at>",
+	"license": "GPL-2.0-or-later",
+	"type": "commonjs",
+	"devDependencies": {
+		"archiver": "^7.0.1",
+		"iconv-lite": "^0.7.2"
+	}
+}

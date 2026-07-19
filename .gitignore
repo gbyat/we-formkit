@@ -1,0 +1,27 @@
+node_modules/
+vendor/
+composer.phar
+wp-cli.phar
+
+# Editor / local tooling
+.vscode/
+.cursor/
+TASK-LOG.md
+
+# OS / logs
+Thumbs.db
+.DS_Store
+*.log
+release_notes.txt
+
+# Composer / PHP tool caches
+.phpcs-cache
+.phpunit.result.cache
+
+# Local release ZIPs (npm run zip / npm run pack)
+*.zip
+releases/
+
+# Sighthound local SARIF output
+sighthound-*.sarif
+results.sarif

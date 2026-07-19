@@ -1,0 +1,19 @@
+{
+	"slug": "we-formkit",
+	"name": "WE Formkit",
+	"description": "Modular WordPress form builder with typed fields, entries, and a developer module API.",
+	"textDomain": "we-formkit",
+	"versionConstant": "WE_FORMKIT_VERSION",
+	"githubRepo": "gbyat/we-formkit",
+	"namespace": "Webentwicklerin\\WeFormkit",
+	"prefixSnake": "we_formkit",
+	"prefixUpper": "WE_FORMKIT",
+	"locales": ["de_DE"],
+	"hasBlocks": true,
+	"potExclude": "node_modules,vendor,scripts,assets/vendor",
+	"jsonHandleAliases": {},
+	"zipInclude": {
+		"files": ["we-formkit.php", "uninstall.php", "CHANGELOG.md", "README.md", "readme.txt", "LICENSE"],
+		"directories": ["includes", "languages", "assets"]
+	}
+}

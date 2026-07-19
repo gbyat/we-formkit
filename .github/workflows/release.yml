@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate Release Inputs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@8358ee0e2e8afe63c2fb8253d1d52085811ab1e5 # v2
+        with:
+          php-version: "8.5"
+          tools: composer
+
+      - name: Install dependencies
+        run: |
+          if [ -f composer.json ]; then
+            composer install --no-interaction --prefer-dist
+          fi
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f package.json ]; then
+            npm install
+          fi
+
+      - name: Dependency preflight (strict)
+        run: |
+          if [ -f scripts/preflight-deploy.js ]; then
+            node scripts/preflight-deploy.js
+          fi
+
+      - name: Validate tag/version consistency
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          node scripts/validate-release.js "${VERSION}"
+
+      - name: Run PHPCS (non-blocking)
+        continue-on-error: true
+        run: |
+          if [ -f vendor/bin/phpcs ]; then
+            vendor/bin/phpcs --standard=phpcs.xml.dist
+          fi
+
+  build_release:
+    name: Build and Publish Release
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@8358ee0e2e8afe63c2fb8253d1d52085811ab1e5 # v2
+        with:
+          php-version: "8.5"
+          tools: composer
+
+      - name: Install npm dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Read plugin slug
+        id: plugin
+        run: echo "slug=$(node -p "require('./plugin.config.json').slug")" >> "$GITHUB_OUTPUT"
+
+      - name: Build and package plugin
+        run: npm run build
+
+      - name: Prepare release notes
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          node scripts/extract-release-notes.js "${VERSION}" release_notes.txt
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          files: ${{ steps.plugin.outputs.slug }}.zip
+          body_path: release_notes.txt
+          generate_release_notes: false
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
