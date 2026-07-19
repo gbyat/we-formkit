@@ -546,9 +546,7 @@
 			const fetchOpts = {
 				method: 'POST',
 				credentials: 'same-origin',
-				headers: {
-					'X-WP-Nonce': liveCfg.nonce,
-				},
+				headers: {},
 			};
 
 			if ( useMultipart ) {
