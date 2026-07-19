@@ -13,7 +13,8 @@ Use this file to continue development without re-deriving decisions from chat hi
 | Date relative constraints (`days\|weeks\|months\|years`, `past\|future`) | Done |
 | CPTs, capabilities, settings, uninstall | Done |
 | Form_Schema + Conditional | Done |
-| Spam + Rest_Api (JSON + multipart upload) + Notifications + Retention | Done |
+| Spam + Rest_Api (JSON + multipart upload) + Retention | Done |
+| Notifications (admin + submitter, CC/BCC, fields, footer, upload attachments) | Done |
 | Admin builder / tabs / entries UI | Done |
 | Frontend + Gutenberg block | Done |
 | Entry PDF print export | Done |

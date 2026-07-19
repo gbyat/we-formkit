@@ -1,0 +1,270 @@
+<?php
+/**
+ * Per-form email notification configs (Gravity-inspired).
+ *
+ * @package Webentwicklerin\WeFormkit
+ */
+
+namespace Webentwicklerin\WeFormkit;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Read/write notification definitions for a form.
+ */
+final class Form_Notifications {
+
+	public const META = '_wek_form_notifications';
+
+	/**
+	 * @param int $form_id Form ID.
+	 * @return list<array<string, mixed>>
+	 */
+	public static function get( $form_id ) {
+		$form_id = (int) $form_id;
+		$raw     = get_post_meta( $form_id, self::META, true );
+
+		if ( is_string( $raw ) && '' !== $raw ) {
+			$decoded = json_decode( $raw, true );
+			if ( is_array( $decoded ) ) {
+				return self::normalize_list( $decoded );
+			}
+		}
+		if ( is_array( $raw ) ) {
+			return self::normalize_list( $raw );
+		}
+
+		return self::normalize_list( self::migrate_legacy( $form_id ) );
+	}
+
+	/**
+	 * @param int                        $form_id Form ID.
+	 * @param list<array<string, mixed>> $list    Notifications.
+	 * @return void
+	 */
+	public static function save( $form_id, array $items ) {
+		$form_id = (int) $form_id;
+		$clean   = self::normalize_list( $items );
+		update_post_meta( $form_id, self::META, wp_json_encode( $clean, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+
+		// Keep legacy single-email meta in sync with first admin-style static recipient.
+		$legacy = '';
+		foreach ( $clean as $item ) {
+			if ( ! empty( $item['enabled'] ) && 'email' === $item['to_mode'] && '' !== $item['to'] ) {
+				$legacy = self::first_email( $item['to'] );
+				break;
+			}
+		}
+		update_post_meta( $form_id, Form_Schema::META_NOTIFY_EMAIL, $legacy );
+	}
+
+	/**
+	 * Default templates (admin + submitter confirmation).
+	 *
+	 * @return list<array<string, mixed>>
+	 */
+	public static function defaults() {
+		return array(
+			array(
+				'id'             => 'admin',
+				'name'           => __( 'Admin notification', 'we-formkit' ),
+				'enabled'        => true,
+				'to_mode'        => 'email',
+				'to'             => '',
+				'to_field'       => '',
+				'from_name'      => '',
+				'from_email'     => '',
+				'reply_to_mode'  => 'field',
+				'reply_to'       => '',
+				'reply_to_field' => '',
+				'cc'             => '',
+				'bcc'            => '',
+				'subject'        => __( '[Formkit] New submission: {form_title}', 'we-formkit' ),
+				'message'        => __( "A new form was submitted.\n\n{all_fields}\n\nOpen submission: {submission_url}", 'we-formkit' ),
+				'include_fields' => 'all',
+				'field_ids'      => array(),
+				'footer'         => '',
+				'attach_uploads' => true,
+			),
+			array(
+				'id'             => 'user',
+				'name'           => __( 'Confirmation to submitter', 'we-formkit' ),
+				'enabled'        => false,
+				'to_mode'        => 'field',
+				'to'             => '',
+				'to_field'       => '',
+				'from_name'      => '',
+				'from_email'     => '',
+				'reply_to_mode'  => 'email',
+				'reply_to'       => '',
+				'reply_to_field' => '',
+				'cc'             => '',
+				'bcc'            => '',
+				'subject'        => __( 'We received your submission: {form_title}', 'we-formkit' ),
+				'message'        => __( "Thank you. We have received your submission.\n\n{all_fields}", 'we-formkit' ),
+				'include_fields' => 'all',
+				'field_ids'      => array(),
+				'footer'         => '',
+				'attach_uploads' => false,
+			),
+		);
+	}
+
+	/**
+	 * @param list<array<string, mixed>> $list Raw list.
+	 * @return list<array<string, mixed>>
+	 */
+	public static function normalize_list( array $items ) {
+		$out = array();
+		foreach ( $items as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$out[] = self::normalize_one( $item );
+		}
+		if ( empty( $out ) ) {
+			return self::defaults();
+		}
+		return $out;
+	}
+
+	/**
+	 * @param array<string, mixed> $input Input.
+	 * @return array<string, mixed>
+	 */
+	public static function normalize_one( array $input ) {
+		$id = sanitize_key( (string) ( $input['id'] ?? '' ) );
+		if ( '' === $id ) {
+			$id = 'n_' . wp_generate_password( 8, false, false );
+		}
+
+		$to_mode = sanitize_key( (string) ( $input['to_mode'] ?? 'email' ) );
+		if ( ! in_array( $to_mode, array( 'email', 'field' ), true ) ) {
+			$to_mode = 'email';
+		}
+
+		$reply_mode = sanitize_key( (string) ( $input['reply_to_mode'] ?? 'none' ) );
+		if ( ! in_array( $reply_mode, array( 'none', 'email', 'field' ), true ) ) {
+			$reply_mode = 'none';
+		}
+
+		$include = sanitize_key( (string) ( $input['include_fields'] ?? 'all' ) );
+		if ( ! in_array( $include, array( 'all', 'selected', 'none' ), true ) ) {
+			$include = 'all';
+		}
+
+		$field_ids = array();
+		if ( isset( $input['field_ids'] ) && is_array( $input['field_ids'] ) ) {
+			foreach ( $input['field_ids'] as $fid ) {
+				$fid = sanitize_key( (string) $fid );
+				if ( '' !== $fid ) {
+					$field_ids[] = $fid;
+				}
+			}
+		}
+
+		return array(
+			'id'             => $id,
+			'name'           => sanitize_text_field( (string) ( $input['name'] ?? __( 'Notification', 'we-formkit' ) ) ),
+			'enabled'        => ! empty( $input['enabled'] ),
+			'to_mode'        => $to_mode,
+			'to'             => self::sanitize_email_list( (string) ( $input['to'] ?? '' ) ),
+			'to_field'       => sanitize_key( (string) ( $input['to_field'] ?? '' ) ),
+			'from_name'      => sanitize_text_field( (string) ( $input['from_name'] ?? '' ) ),
+			'from_email'     => sanitize_email( (string) ( $input['from_email'] ?? '' ) ),
+			'reply_to_mode'  => $reply_mode,
+			'reply_to'       => sanitize_email( (string) ( $input['reply_to'] ?? '' ) ),
+			'reply_to_field' => sanitize_key( (string) ( $input['reply_to_field'] ?? '' ) ),
+			'cc'             => self::sanitize_email_list( (string) ( $input['cc'] ?? '' ) ),
+			'bcc'            => self::sanitize_email_list( (string) ( $input['bcc'] ?? '' ) ),
+			'subject'        => sanitize_text_field( (string) ( $input['subject'] ?? '' ) ),
+			'message'        => sanitize_textarea_field( (string) ( $input['message'] ?? '' ) ),
+			'include_fields' => $include,
+			'field_ids'      => $field_ids,
+			'footer'         => sanitize_textarea_field( (string) ( $input['footer'] ?? '' ) ),
+			'attach_uploads' => ! empty( $input['attach_uploads'] ),
+		);
+	}
+
+	/**
+	 * Sanitize POST payload for notifications.
+	 *
+	 * @param array<string, mixed> $posted Posted `wek_notifications` array.
+	 * @return list<array<string, mixed>>
+	 */
+	public static function from_request( array $posted ) {
+		$list = array();
+		foreach ( $posted as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+			if ( empty( $row['enabled'] ) ) {
+				$row['enabled'] = false;
+			} else {
+				$row['enabled'] = true;
+			}
+			if ( empty( $row['attach_uploads'] ) ) {
+				$row['attach_uploads'] = false;
+			} else {
+				$row['attach_uploads'] = true;
+			}
+			if ( isset( $row['field_ids'] ) && ! is_array( $row['field_ids'] ) ) {
+				$row['field_ids'] = array_filter( array_map( 'strval', (array) $row['field_ids'] ) );
+			}
+			$list[] = $row;
+		}
+		return self::normalize_list( $list );
+	}
+
+	/**
+	 * @param int $form_id Form ID.
+	 * @return list<array<string, mixed>>
+	 */
+	private static function migrate_legacy( $form_id ) {
+		$defaults = self::defaults();
+		$legacy   = (string) get_post_meta( $form_id, Form_Schema::META_NOTIFY_EMAIL, true );
+		if ( is_email( $legacy ) ) {
+			$defaults[0]['to'] = $legacy;
+		}
+		return $defaults;
+	}
+
+	/**
+	 * @param string $list Comma-separated emails.
+	 * @return string
+	 */
+	public static function sanitize_email_list( $emails ) {
+		$parts = preg_split( '/[,;]+/', (string) $emails );
+		if ( ! is_array( $parts ) ) {
+			$parts = array();
+		}
+		$out = array();
+		foreach ( $parts as $part ) {
+			$email = sanitize_email( trim( $part ) );
+			if ( is_email( $email ) ) {
+				$out[] = $email;
+			}
+		}
+		return implode( ', ', array_unique( $out ) );
+	}
+
+	/**
+	 * @param string $emails Email list.
+	 * @return string
+	 */
+	private static function first_email( $emails ) {
+		$parts = preg_split( '/[,;]+/', (string) $emails );
+		if ( ! is_array( $parts ) ) {
+			$parts = array();
+		}
+		foreach ( $parts as $part ) {
+			$email = sanitize_email( trim( $part ) );
+			if ( is_email( $email ) ) {
+				return $email;
+			}
+		}
+		return '';
+	}
+}

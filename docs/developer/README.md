@@ -47,6 +47,11 @@ add_action(
 | `we_formkit_register_modules` | During module bootstrap |
 | `we_formkit_module_registered` | After each module is added |
 | `we_formkit_submission_created` | After a submission is stored `( $submission_id, $context )` |
+| `we_formkit_notification_mail` | Filter mail args before `wp_mail` `( $mail, $notification, $submission_id, $form_id )` |
+
+### Notification merge tags
+
+Usable in subject, message, and footer: `{all_fields}`, `{form_title}`, `{submission_url}`, `{submission_id}`, `{form_id}`, `{date}`, `{site_name}`, `{admin_email}`, `{field:FIELD_ID}`, `{footer}`.
 
 ## REST
 
@@ -55,7 +60,7 @@ Public submit endpoint: `POST /wp-json/we-formkit/v1/submit`
 - JSON body: `{ nonce, form_id, token?, _wek_started, website_url, values }`
 - Multipart: same fields plus file inputs named by field id (use `id[]` for multiple)
 
-Nonce action: `we_formkit_submit`.
+Nonce: WordPress REST cookie nonce (`wp_rest`), sent as `X-WP-Nonce` and in the body.
 
 ## Naming
 

@@ -342,6 +342,7 @@ final class Rest_Api {
 						'size'          => $size,
 						'mime'          => $mime,
 						'url'           => $url ? $url : (string) wp_get_attachment_url( (int) $attachment_id ),
+						'path'          => $path,
 					);
 				} else {
 					$stored[] = array(
@@ -350,6 +351,7 @@ final class Rest_Api {
 						'size'  => $size,
 						'mime'  => $mime,
 						'url'   => $url,
+						'path'  => $path,
 					);
 				}
 			}
