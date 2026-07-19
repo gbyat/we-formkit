@@ -125,7 +125,15 @@ final class Rest_Form_Settings {
 			return new \WP_Error( 'we_formkit_create_failed', __( 'Could not create form.', 'we-formkit' ), array( 'status' => 500 ) );
 		}
 
-		Form_Schema::save( $form_id, array( 'version' => 1, 'title' => $title, 'intro' => '', 'sections' => array() ) );
+		Form_Schema::save(
+			$form_id,
+			array(
+				'version'  => 1,
+				'title'    => $title,
+				'intro'    => '',
+				'sections' => array(),
+			)
+		);
 
 		$result = self::persist( $form_id, $params );
 		if ( is_wp_error( $result ) ) {
@@ -203,10 +211,10 @@ final class Rest_Form_Settings {
 		}
 
 		return array(
-			'form_id'       => (int) $form_id,
-			'secret_url'    => $secret_url,
-			'secret_token'  => (string) ( $secret['token'] ?? '' ),
-			'settings'      => array(
+			'form_id'      => (int) $form_id,
+			'secret_url'   => $secret_url,
+			'secret_token' => (string) ( $secret['token'] ?? '' ),
+			'settings'     => array(
 				'title'          => (string) ( $schema['title'] ?? get_the_title( $form_id ) ),
 				'slug'           => (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true ),
 				'intro'          => (string) ( $schema['intro'] ?? '' ),

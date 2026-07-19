@@ -551,7 +551,8 @@ final class Form_Editor {
 	private static function enqueue_settings_assets( $form_id, $title, $slug, array $secret, $privacy, array $schema, $secret_url ) {
 		$asset_file = WE_FORMKIT_PATH . 'build/admin-form-settings.asset.php';
 		$script     = WE_FORMKIT_URL . 'build/admin-form-settings.js';
-		$style      = WE_FORMKIT_URL . 'build/admin-form-settings.css';
+		$style_file = WE_FORMKIT_PATH . 'build/style-admin-form-settings.css';
+		$style_url  = WE_FORMKIT_URL . 'build/style-admin-form-settings.css';
 
 		if ( ! file_exists( $asset_file ) || ! file_exists( WE_FORMKIT_PATH . 'build/admin-form-settings.js' ) ) {
 			return;
@@ -570,11 +571,22 @@ final class Form_Editor {
 		);
 		wp_set_script_translations( 'we-formkit-admin-form-settings', 'we-formkit', WE_FORMKIT_PATH . 'languages' );
 
-		if ( file_exists( WE_FORMKIT_PATH . 'build/admin-form-settings.css' ) ) {
+		if ( file_exists( $style_file ) ) {
+			$style_deps = array( 'wp-components' );
+			$dv_style   = WE_FORMKIT_PATH . 'build/dataviews.css';
+			if ( file_exists( $dv_style ) ) {
+				wp_enqueue_style(
+					'we-formkit-dataviews',
+					WE_FORMKIT_URL . 'build/dataviews.css',
+					array( 'wp-components' ),
+					$ver
+				);
+				$style_deps[] = 'we-formkit-dataviews';
+			}
 			wp_enqueue_style(
 				'we-formkit-admin-form-settings',
-				$style,
-				array( 'wp-components' ),
+				$style_url,
+				$style_deps,
 				$ver
 			);
 		}

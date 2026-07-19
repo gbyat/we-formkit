@@ -19,6 +19,7 @@ Use this file to continue development without re-deriving decisions from chat hi
 | Entry PDF print export | Done |
 | Module registry + `docs/developer/` | Done |
 | GF importer / AI PDF assist | Deferred (modules) |
+| Form Settings (DataForm React + REST) | Done (needs WP 6.9+) |
 | Live WP smoke (create form → submit → entry) | **Not verified** |
 
 ## Locked product decisions
