@@ -150,7 +150,7 @@
 
 .we-formkit__choices {
 	display: grid;
-	gap: 0.45rem;
+	gap: 0.5rem;
 }
 
 @media (min-width: 640px) {
@@ -162,16 +162,181 @@
 .we-formkit__choice,
 .we-formkit__control--choice {
 	display: flex;
-	gap: 0.55rem;
-	align-items: flex-start;
-	padding: 0.45rem 0.55rem;
-	border-radius: 8px;
+	gap: 0.65rem;
+	align-items: center;
+	padding: 0.55rem 0.7rem;
+	border: 1px solid transparent;
+	border-radius: 10px;
 	background: var(--wek-accent-soft);
+	cursor: pointer;
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease,
+		box-shadow 0.15s ease;
+}
+
+.we-formkit__choice:hover,
+.we-formkit__control--choice:hover {
+	background: color-mix(in srgb, var(--wek-accent-soft) 70%, #fff);
+	border-color: color-mix(in srgb, var(--wek-accent) 22%, transparent);
+}
+
+.we-formkit__choice:has(:focus-visible),
+.we-formkit__control--choice:has(:focus-visible) {
+	border-color: var(--wek-accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--wek-accent) 22%, transparent);
+}
+
+.we-formkit__choice:has(:checked),
+.we-formkit__control--choice:has(:checked) {
+	background: color-mix(in srgb, var(--wek-accent-soft) 55%, #fff);
+	border-color: color-mix(in srgb, var(--wek-accent) 45%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wek-accent) 18%, transparent);
+}
+
+.we-formkit__choice span,
+.we-formkit__control--choice label {
+	flex: 1;
+	min-width: 0;
+	line-height: 1.4;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+/* Custom radio / checkbox — native input kept for a11y */
+.we-formkit__choice input[type="checkbox"],
+.we-formkit__choice input[type="radio"],
+.we-formkit__control--choice input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	flex: 0 0 auto;
+	width: 1.15rem;
+	height: 1.15rem;
+	margin: 0;
+	box-sizing: border-box;
+	border: 1.5px solid color-mix(in srgb, var(--wek-accent) 35%, var(--wek-line));
+	background: #fff;
+	box-shadow: inset 0 1px 2px rgba(28, 27, 25, 0.06);
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease,
+		box-shadow 0.15s ease,
+		transform 0.12s ease;
+	cursor: pointer;
+	position: relative;
+	vertical-align: middle;
+}
+
+.we-formkit__choice input[type="checkbox"],
+.we-formkit__control--choice input[type="checkbox"] {
+	border-radius: 5px;
+}
+
+.we-formkit__choice input[type="radio"] {
+	border-radius: 50%;
+}
+
+.we-formkit__choice input[type="checkbox"]:hover,
+.we-formkit__choice input[type="radio"]:hover,
+.we-formkit__control--choice input[type="checkbox"]:hover {
+	border-color: var(--wek-accent);
+}
+
+.we-formkit__choice input[type="checkbox"]:checked,
+.we-formkit__control--choice input[type="checkbox"]:checked {
+	background: var(--wek-accent);
+	border-color: var(--wek-accent);
+	box-shadow:
+		inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+		0 1px 2px color-mix(in srgb, var(--wek-accent) 28%, transparent);
+}
+
+.we-formkit__choice input[type="radio"]:checked {
+	background: #fff;
+	border-color: var(--wek-accent);
+	border-width: 2px;
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--wek-accent) 15%, transparent);
+}
+
+.we-formkit__choice input[type="checkbox"]:checked::after,
+.we-formkit__control--choice input[type="checkbox"]:checked::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 45%;
+	width: 0.28rem;
+	height: 0.5rem;
+	border: solid #fff;
+	border-width: 0 2px 2px 0;
+	transform: translate(-50%, -55%) rotate(45deg);
+}
+
+.we-formkit__choice input[type="radio"]:checked::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--wek-accent);
+	transform: translate(-50%, -50%) scale(1);
+	animation: wek-radio-pop 0.18s ease-out;
+}
+
+@keyframes wek-radio-pop {
+	from {
+		transform: translate(-50%, -50%) scale(0.55);
+		opacity: 0.6;
+	}
+	to {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
+	}
+}
+
+.we-formkit__choice input[type="checkbox"]:focus,
+.we-formkit__choice input[type="radio"]:focus,
+.we-formkit__control--choice input[type="checkbox"]:focus {
+	outline: none;
+}
+
+.we-formkit__choice input[type="checkbox"]:focus-visible,
+.we-formkit__choice input[type="radio"]:focus-visible,
+.we-formkit__control--choice input[type="checkbox"]:focus-visible {
+	outline: 2px solid var(--wek-accent);
+	outline-offset: 2px;
+}
+
+.we-formkit__choice input[type="checkbox"]:disabled,
+.we-formkit__choice input[type="radio"]:disabled,
+.we-formkit__control--choice input[type="checkbox"]:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.we-formkit__choice,
+	.we-formkit__control--choice,
+	.we-formkit__choice input[type="checkbox"],
+	.we-formkit__choice input[type="radio"],
+	.we-formkit__control--choice input[type="checkbox"] {
+		transition: none;
+	}
+
+	.we-formkit__choice input[type="radio"]:checked::after {
+		animation: none;
+	}
 }
 
 .we-formkit__choice--image {
 	flex-direction: column;
 	align-items: stretch;
+	gap: 0.5rem;
+}
+
+.we-formkit__choice--image input[type="radio"] {
+	align-self: flex-start;
 }
 
 .we-formkit__choice-image {
