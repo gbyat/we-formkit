@@ -18,6 +18,7 @@
 		"json": "npm run i18n:json",
 		"i18n": "npm run pot && npm run i18n:po && npm run i18n:translate && npm run i18n:mo && npm run i18n:json && npm run i18n:check",
 		"sync:version": "node scripts/sync-version.js",
+		"changelog:draft": "node scripts/promote-changelog.js --draft",
 		"release:patch": "node scripts/release.js patch",
 		"release:minor": "node scripts/release.js minor",
 		"release:major": "node scripts/release.js major",
