@@ -229,6 +229,7 @@ final class Frontend {
 					/* translators: %d: row number (1-based). */
 					'rowLabel'      => __( 'Row %d', 'we-formkit' ),
 					'autofillReady' => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
+					'autofillManual' => __( 'Test fill applied. Click Submit form when ready.', 'we-formkit' ),
 					'autofillDone'  => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
 				),
 			)

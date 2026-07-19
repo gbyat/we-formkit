@@ -497,12 +497,24 @@
 			false
 		);
 		window.setTimeout( function () {
+			if ( form.getAttribute( 'data-wek-submitting' ) === '1' ) {
+				return;
+			}
 			if ( typeof form.requestSubmit === 'function' ) {
 				form.requestSubmit();
 			} else {
 				form.dispatchEvent( new Event( 'submit', { bubbles: true, cancelable: true } ) );
 			}
 		}, waitMs );
+	}
+
+	function wantsAutosubmit() {
+		try {
+			const params = new URLSearchParams( window.location.search );
+			return params.get( 'wek_autosubmit' ) === '1';
+		} catch ( e ) {
+			return false;
+		}
 	}
 
 	function initRoot( root ) {
@@ -524,11 +536,27 @@
 		const cfg = window.weFormkit || {};
 		if ( cfg.autofill && wantsAutofill() ) {
 			autofillForm( form, root );
-			scheduleAutofillSubmit( form, root, cfg );
+			if ( wantsAutosubmit() ) {
+				scheduleAutofillSubmit( form, root, cfg );
+			} else {
+				setStatus(
+					root,
+					( cfg.i18n && cfg.i18n.autofillManual ) ||
+						'Test fill applied. Click Submit form when ready.',
+					false
+				);
+			}
 		}
 
 		form.addEventListener( 'submit', function ( event ) {
 			event.preventDefault();
+			event.stopPropagation();
+
+			if ( form.getAttribute( 'data-wek-submitting' ) === '1' ) {
+				return;
+			}
+			form.setAttribute( 'data-wek-submitting', '1' );
+
 			clearErrors( form );
 			setStatus( root, '', false );
 
@@ -573,6 +601,7 @@
 					} );
 				} )
 				.then( function ( result ) {
+					form.removeAttribute( 'data-wek-submitting' );
 					if ( submitBtn ) {
 						submitBtn.disabled = false;
 						submitBtn.textContent = 'Submit form';
@@ -607,6 +636,7 @@
 					} );
 				} )
 				.catch( function () {
+					form.removeAttribute( 'data-wek-submitting' );
 					if ( submitBtn ) {
 						submitBtn.disabled = false;
 						submitBtn.textContent = 'Submit form';
