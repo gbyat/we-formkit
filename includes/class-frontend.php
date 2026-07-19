@@ -214,19 +214,22 @@ final class Frontend {
 			'we-formkit-form',
 			'weFormkit',
 			array(
-				'restUrl' => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/submit' ) ),
-				'nonce'   => wp_create_nonce( 'we_formkit_submit' ),
-				'formId'  => $form_id,
-				'token'   => $token,
-				'started' => time(),
-				'i18n'    => array(
-					'submitting' => __( 'Submitting…', 'we-formkit' ),
-					'error'      => __( 'Something went wrong. Please try again.', 'we-formkit' ),
-					'required'   => __( 'This field is required.', 'we-formkit' ),
-					'addRow'     => __( 'Add another', 'we-formkit' ),
-					'removeRow'  => __( 'Remove', 'we-formkit' ),
+				'restUrl'  => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/submit' ) ),
+				'nonce'    => wp_create_nonce( 'we_formkit_submit' ),
+				'formId'   => $form_id,
+				'token'    => $token,
+				'started'  => time(),
+				'autofill' => Capabilities::can_manage(),
+				'i18n'     => array(
+					'submitting'    => __( 'Submitting…', 'we-formkit' ),
+					'error'         => __( 'Something went wrong. Please try again.', 'we-formkit' ),
+					'required'      => __( 'This field is required.', 'we-formkit' ),
+					'addRow'        => __( 'Add another', 'we-formkit' ),
+					'removeRow'     => __( 'Remove', 'we-formkit' ),
 					/* translators: %d: row number (1-based). */
-					'rowLabel'   => __( 'Row %d', 'we-formkit' ),
+					'rowLabel'      => __( 'Row %d', 'we-formkit' ),
+					'autofillReady' => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
+					'autofillDone'  => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
 				),
 			)
 		);

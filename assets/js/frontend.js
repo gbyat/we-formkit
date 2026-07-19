@@ -310,6 +310,201 @@
 		} );
 	}
 
+	function setNativeValue( input, value ) {
+		const proto = Object.getPrototypeOf( input );
+		const desc = Object.getOwnPropertyDescriptor( proto, 'value' );
+		if ( desc && desc.set ) {
+			desc.set.call( input, value );
+		} else {
+			input.value = value;
+		}
+		input.dispatchEvent( new Event( 'input', { bubbles: true } ) );
+		input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	}
+
+	function fillFileInput( input ) {
+		if ( typeof DataTransfer === 'undefined' || typeof File === 'undefined' ) {
+			return;
+		}
+		try {
+			const file = new File(
+				[ 'WE Formkit smoke test\n' ],
+				'wek-smoke-test.txt',
+				{ type: 'text/plain' }
+			);
+			const dt = new DataTransfer();
+			dt.items.add( file );
+			input.files = dt.files;
+			input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		} catch ( e ) {
+			// File fill not supported in this browser context.
+		}
+	}
+
+	function sampleForType( type, name ) {
+		const stamp = String( Date.now() ).slice( -5 );
+		switch ( type ) {
+			case 'email':
+				return 'smoke+' + stamp + '@example.com';
+			case 'tel':
+				return '+43 1 234 5678';
+			case 'url':
+				return 'https://example.com/wek-smoke';
+			case 'number':
+				return '42';
+			case 'date':
+				return new Date().toISOString().slice( 0, 10 );
+			case 'time':
+				return '10:30';
+			case 'datetime':
+				return new Date().toISOString().slice( 0, 16 );
+			case 'textarea':
+				return 'WE Formkit smoke test — auto-filled textarea (' + stamp + ').';
+			case 'hidden':
+				return 'smoke-hidden-' + stamp;
+			default:
+				return 'Smoke ' + ( name || 'value' ) + ' ' + stamp;
+		}
+	}
+
+	function autofillForm( form, root ) {
+		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
+			if ( fieldEl.classList.contains( 'is-hidden' ) || fieldEl.getAttribute( 'aria-hidden' ) === 'true' ) {
+				return;
+			}
+			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+			const labelEl = qs( fieldEl, '.we-formkit__label, legend' );
+			const label = labelEl ? labelEl.textContent.replace( /\*/, '' ).trim() : 'field';
+
+			if ( type === 'html' ) {
+				return;
+			}
+
+			if ( type === 'upload' ) {
+				qsa( fieldEl, 'input[type="file"]' ).forEach( fillFileInput );
+				return;
+			}
+
+			if ( type === 'checkbox' || type === 'consent' ) {
+				const box = qs( fieldEl, 'input[type="checkbox"]' );
+				if ( box && ! box.checked ) {
+					box.checked = true;
+					box.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+				return;
+			}
+
+			if ( type === 'radio' || type === 'radio_image' ) {
+				const radios = qsa( fieldEl, 'input[type="radio"]' );
+				if ( radios.length && ! radios.some( function ( r ) { return r.checked; } ) ) {
+					radios[ 0 ].checked = true;
+					radios[ 0 ].dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+				return;
+			}
+
+			if ( type === 'checkboxes' ) {
+				const boxes = qsa( fieldEl, 'input[type="checkbox"]' );
+				if ( boxes.length ) {
+					boxes[ 0 ].checked = true;
+					boxes[ 0 ].dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+				return;
+			}
+
+			if ( type === 'repeater' ) {
+				qsa( fieldEl, '[data-wek-repeater-input]' ).forEach( function ( input ) {
+					if ( input.type === 'checkbox' ) {
+						input.checked = true;
+					} else if ( input.tagName === 'SELECT' ) {
+						if ( input.options.length > 1 ) {
+							input.selectedIndex = 1;
+						} else if ( input.options.length ) {
+							input.selectedIndex = 0;
+						}
+					} else {
+						setNativeValue( input, sampleForType( input.type || 'text', input.getAttribute( 'data-sub-id' ) ) );
+					}
+					input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				} );
+				return;
+			}
+
+			const select = qs( fieldEl, 'select' );
+			if ( select ) {
+				if ( select.options.length > 1 ) {
+					select.selectedIndex = 1;
+				} else if ( select.options.length ) {
+					select.selectedIndex = 0;
+				}
+				select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				return;
+			}
+
+			const input = qs( fieldEl, 'input:not([type="hidden"]):not([type="file"]), textarea' );
+			if ( input ) {
+				setNativeValue( input, sampleForType( type || input.type, label ) );
+			}
+
+			const hidden = qs( fieldEl, 'input[type="hidden"]' );
+			if ( hidden && type === 'hidden' ) {
+				setNativeValue( hidden, sampleForType( 'hidden', label ) );
+			}
+		} );
+
+		applyConditionals( root );
+		// Second pass: newly revealed conditional fields.
+		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
+			if ( fieldEl.classList.contains( 'is-hidden' ) ) {
+				return;
+			}
+			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+			if ( type === 'html' || type === 'upload' || type === 'checkbox' || type === 'consent' || type === 'radio' || type === 'radio_image' || type === 'checkboxes' || type === 'repeater' ) {
+				return;
+			}
+			const input = qs( fieldEl, 'input:not([type="file"]), textarea, select' );
+			if ( ! input ) {
+				return;
+			}
+			if ( input.tagName === 'SELECT' ) {
+				if ( ! input.value && input.options.length ) {
+					input.selectedIndex = Math.min( 1, input.options.length - 1 );
+					input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+				return;
+			}
+			if ( ! String( input.value || '' ).trim() ) {
+				setNativeValue( input, sampleForType( type || input.type, 'extra' ) );
+			}
+		} );
+	}
+
+	function wantsAutofill() {
+		try {
+			const params = new URLSearchParams( window.location.search );
+			return params.get( 'wek_autofill' ) === '1';
+		} catch ( e ) {
+			return false;
+		}
+	}
+
+	function scheduleAutofillSubmit( form, root, cfg ) {
+		const started = Number( cfg.started ) || Math.floor( Date.now() / 1000 );
+		const waitMs = Math.max( 500, ( 3.2 - ( Date.now() / 1000 - started ) ) * 1000 );
+		setStatus(
+			root,
+			( cfg.i18n && cfg.i18n.autofillReady ) || 'Test fill applied. Submitting automatically…',
+			false
+		);
+		window.setTimeout( function () {
+			if ( typeof form.requestSubmit === 'function' ) {
+				form.requestSubmit();
+			} else {
+				form.dispatchEvent( new Event( 'submit', { bubbles: true, cancelable: true } ) );
+			}
+		}, waitMs );
+	}
+
 	function initRoot( root ) {
 		const form = qs( root, '[data-wek-form]' );
 		if ( ! form || form.getAttribute( 'data-wek-ready' ) ) {
@@ -326,12 +521,18 @@
 		applyConditionals( root );
 		initRepeaters( form );
 
+		const cfg = window.weFormkit || {};
+		if ( cfg.autofill && wantsAutofill() ) {
+			autofillForm( form, root );
+			scheduleAutofillSubmit( form, root, cfg );
+		}
+
 		form.addEventListener( 'submit', function ( event ) {
 			event.preventDefault();
 			clearErrors( form );
 			setStatus( root, '', false );
 
-			const cfg = window.weFormkit || {};
+			const liveCfg = window.weFormkit || {};
 			const values = collectValues( form );
 			const honeypot = qs( form, '[name="website_url"]' );
 			const useMultipart = formHasFiles( form );
@@ -339,32 +540,32 @@
 			const submitBtn = qs( form, '[type="submit"]' );
 			if ( submitBtn ) {
 				submitBtn.disabled = true;
-				submitBtn.textContent = ( cfg.i18n && cfg.i18n.submitting ) || 'Submitting…';
+				submitBtn.textContent = ( liveCfg.i18n && liveCfg.i18n.submitting ) || 'Submitting…';
 			}
 
 			const fetchOpts = {
 				method: 'POST',
 				credentials: 'same-origin',
 				headers: {
-					'X-WP-Nonce': cfg.nonce,
+					'X-WP-Nonce': liveCfg.nonce,
 				},
 			};
 
 			if ( useMultipart ) {
-				fetchOpts.body = buildMultipartBody( form, cfg, values, honeypot );
+				fetchOpts.body = buildMultipartBody( form, liveCfg, values, honeypot );
 			} else {
 				fetchOpts.headers[ 'Content-Type' ] = 'application/json';
 				fetchOpts.body = JSON.stringify( {
-					nonce: cfg.nonce,
-					form_id: cfg.formId,
-					token: cfg.token || '',
-					_wek_started: cfg.started,
+					nonce: liveCfg.nonce,
+					form_id: liveCfg.formId,
+					token: liveCfg.token || '',
+					_wek_started: liveCfg.started,
 					website_url: honeypot ? honeypot.value : '',
 					values: values,
 				} );
 			}
 
-			fetch( cfg.restUrl, fetchOpts )
+			fetch( liveCfg.restUrl, fetchOpts )
 				.then( function ( response ) {
 					return response.json().then( function ( data ) {
 						return { ok: response.ok, status: response.status, data: data };
@@ -377,7 +578,12 @@
 					}
 
 					if ( result.ok && result.data && result.data.success ) {
-						setStatus( root, result.data.message || 'OK', false );
+						const okMsg =
+							wantsAutofill() && liveCfg.autofill
+								? ( liveCfg.i18n && liveCfg.i18n.autofillDone ) ||
+								  result.data.message
+								: result.data.message || 'OK';
+						setStatus( root, okMsg, false );
 						form.reset();
 						applyConditionals( root );
 						form.setAttribute( 'hidden', 'hidden' );
@@ -387,7 +593,7 @@
 					const errData = result.data || {};
 					const message =
 						( errData.message ) ||
-						( cfg.i18n && cfg.i18n.error ) ||
+						( liveCfg.i18n && liveCfg.i18n.error ) ||
 						'Something went wrong.';
 					setStatus( root, message, true );
 
@@ -406,7 +612,7 @@
 					}
 					setStatus(
 						root,
-						( cfg.i18n && cfg.i18n.error ) || 'Something went wrong.',
+						( liveCfg.i18n && liveCfg.i18n.error ) || 'Something went wrong.',
 						true
 					);
 				} );
