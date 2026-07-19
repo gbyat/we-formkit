@@ -217,14 +217,11 @@ final class Form_Editor {
 			);
 		}
 
-		$theme = self::theme_ui_tokens();
-
 		wp_localize_script(
 			'we-formkit-admin-form',
 			'weFormkitAdmin',
 			array(
 				'fieldTypes'        => $field_types,
-				'theme'             => $theme,
 				'i18n'              => array(
 					'section'             => __( 'Section', 'we-formkit' ),
 					'field'               => __( 'Field', 'we-formkit' ),
@@ -232,7 +229,6 @@ final class Form_Editor {
 					'addField'            => __( 'Add field', 'we-formkit' ),
 					'addSection'          => __( 'Add section', 'we-formkit' ),
 					'fieldsLibrary'       => __( 'Fields', 'we-formkit' ),
-					'themeColors'         => __( 'Theme colors', 'we-formkit' ),
 					'label'               => __( 'Label', 'we-formkit' ),
 					'id'                  => __( 'Field ID', 'we-formkit' ),
 					'type'                => __( 'Type', 'we-formkit' ),
@@ -285,28 +281,6 @@ final class Form_Editor {
 					'repeaterTypeBlocked' => __( 'This field type cannot be used inside a repeater.', 'we-formkit' ),
 				),
 				'repeaterItemTypes' => Repeater_Field::allowed_item_types(),
-			)
-		);
-	}
-
-	/**
-	 * Theme-aware UI tokens for the admin builder chrome.
-	 *
-	 * @return array{accent:string,accentSoft:string}
-	 */
-	private static function theme_ui_tokens() {
-		$colors = Form_Style::theme_defaults();
-
-		/**
-		 * Filter Formkit admin builder theme tokens.
-		 *
-		 * @param array{accent:string,accentSoft:string} $tokens Tokens.
-		 */
-		return apply_filters(
-			'we_formkit_admin_theme_tokens',
-			array(
-				'accent'     => $colors['accent'],
-				'accentSoft' => $colors['accent_soft'],
 			)
 		);
 	}

@@ -79,7 +79,6 @@
 	function boot() {
 		const i18n = ( window.weFormkitAdmin && window.weFormkitAdmin.i18n ) || {};
 		const fieldTypes = getFieldTypes();
-		const theme = ( window.weFormkitAdmin && window.weFormkitAdmin.theme ) || {};
 		const root = document.getElementById( 'wek-builder' );
 		const hidden = document.getElementById( 'wek_schema_json' );
 		const introInput = document.getElementById( 'wek_intro' );
@@ -1814,19 +1813,6 @@
 			render();
 		}
 
-		function applyThemeTokens() {
-			const host = document.querySelector( '.wek-admin' ) || root;
-			if ( ! host || ! theme ) {
-				return;
-			}
-			if ( theme.accent ) {
-				host.style.setProperty( '--wek-accent', theme.accent );
-			}
-			if ( theme.accentSoft ) {
-				host.style.setProperty( '--wek-accent-soft', theme.accentSoft );
-			}
-		}
-
 		function renderLibrary() {
 			const panel = el( 'aside', { className: 'wek-builder-library' } );
 			panel.appendChild(
@@ -1866,7 +1852,6 @@
 		}
 
 		function render() {
-			applyThemeTokens();
 			root.innerHTML = '';
 			const layout = el( 'div', { className: 'wek-builder-layout' } );
 			const library = renderLibrary();

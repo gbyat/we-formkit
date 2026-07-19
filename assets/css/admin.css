@@ -1,11 +1,12 @@
 /**
  * WE Formkit admin — modern builder chrome.
- * Accent defaults to Formkit teal; overridden by active theme palette when available.
+ * Fixed Formkit teal tokens (accessible contrast). Theme/form colors apply on the frontend only.
  */
 
 .wek-admin {
 	--wek-accent: #0f5c4c;
 	--wek-accent-soft: #e4f2ee;
+	--wek-accent-on-soft: #0a4539;
 	--wek-accent-ink: #ffffff;
 	--wek-danger: #b32d2e;
 	--wek-surface: #ffffff;
@@ -194,7 +195,7 @@
 	height: 1.6rem;
 	border-radius: 6px;
 	background: var(--wek-accent-soft);
-	color: var(--wek-accent);
+	color: var(--wek-accent-on-soft);
 	font-size: 11px;
 	font-weight: 700;
 	line-height: 1;
@@ -536,7 +537,7 @@
 	border-radius: 999px;
 	background: var(--wek-accent-soft);
 	border: 0;
-	color: var(--wek-accent);
+	color: var(--wek-accent-on-soft);
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.03em;
@@ -574,7 +575,7 @@
 .wek-admin .wek-builder__resize:hover,
 .wek-admin .wek-builder__resize:focus {
 	background: var(--wek-accent-soft);
-	color: var(--wek-accent);
+	color: var(--wek-accent-on-soft);
 	outline: none;
 }
 
