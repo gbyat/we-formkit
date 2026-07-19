@@ -19,17 +19,17 @@ if (!fs.existsSync(languagesDir)) {
 }
 
 /**
+ * @return {string}
+ */
+function makePotModulePath() {
+	return path.join(rootDir, 'node_modules', '@wp-blocks', 'make-pot', 'lib', 'makePot.js');
+}
+
+/**
  * @return {void}
  */
 function runMakePotForBlocks() {
-	const makePot = path.join(
-		rootDir,
-		'node_modules',
-		'@wp-blocks',
-		'make-pot',
-		'lib',
-		'makePot.js'
-	);
+	const makePot = makePotModulePath();
 
 	if (!fs.existsSync(makePot)) {
 		throw new Error('@wp-blocks/make-pot not found. Run npm install in the plugin directory.');
@@ -71,22 +71,34 @@ function runMakePotForBlocks() {
 	}
 }
 
+/**
+ * @return {void}
+ */
+function runMakePotWithWpCli() {
+	runWp([
+		'i18n',
+		'make-pot',
+		'.',
+		potFile,
+		`--domain=${textDomain}`,
+		`--exclude=${config.potExclude || 'node_modules,vendor,scripts,assets/vendor'}`,
+		'--skip-block-json',
+	]);
+}
+
 try {
-	if (config.hasBlocks) {
+	if (config.hasBlocks && fs.existsSync(makePotModulePath())) {
 		runMakePotForBlocks();
-		console.log(`POT file updated: ${potFile}`);
 	} else {
-		runWp([
-			'i18n',
-			'make-pot',
-			'.',
-			potFile,
-			`--domain=${textDomain}`,
-			`--exclude=${config.potExclude || 'node_modules,vendor,scripts,assets/vendor'}`,
-			'--skip-block-json',
-		]);
-		console.log(`POT file updated: ${potFile}`);
+		if (config.hasBlocks) {
+			console.warn(
+				'@wp-blocks/make-pot not installed — falling back to WP-CLI make-pot. ' +
+					'Install @wp-blocks/make-pot for the blocks toolchain, or set hasBlocks=false.'
+			);
+		}
+		runMakePotWithWpCli();
 	}
+	console.log(`POT file updated: ${potFile}`);
 } catch (error) {
 	console.error('POT build failed.');
 	console.error(error instanceof Error ? error.message : String(error));

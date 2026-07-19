@@ -9,7 +9,7 @@
 	"prefixSnake": "we_formkit",
 	"prefixUpper": "WE_FORMKIT",
 	"locales": ["de_DE"],
-	"hasBlocks": true,
+	"hasBlocks": false,
 	"potExclude": "node_modules,vendor,scripts,assets/vendor",
 	"jsonHandleAliases": {},
 	"zipInclude": {
