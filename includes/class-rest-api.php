@@ -40,6 +40,8 @@ final class Rest_Api {
 				'permission_callback' => '__return_true',
 			)
 		);
+
+		Rest_Form_Settings::register_routes();
 	}
 
 	/**

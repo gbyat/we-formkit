@@ -1,0 +1,49 @@
+.wek-dataform-settings {
+	max-width: 720px;
+	margin-top: 1rem;
+}
+
+.wek-dataform-settings .components-notice {
+	margin: 0 0 1rem;
+}
+
+.wek-dataform-settings__actions {
+	margin-top: 1.25rem;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.wek-dataform-settings__secret {
+	margin-top: 1.25rem;
+	padding: 1rem;
+	border: 1px solid #d9d3c8;
+	border-radius: 8px;
+	background: #fff;
+}
+
+.wek-dataform-settings__secret .large-text {
+	width: 100%;
+	margin-top: 0.35rem;
+}
+
+.wek-dataform-color {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+}
+
+.wek-dataform-color input[type='color'] {
+	width: 2.5rem;
+	height: 2rem;
+	padding: 0;
+	border: 1px solid #c4beb3;
+	border-radius: 6px;
+	background: transparent;
+	cursor: pointer;
+}
+
+.wek-dataform-color code {
+	font-size: 12px;
+	color: #5c574f;
+}

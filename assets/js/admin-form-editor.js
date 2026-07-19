@@ -1838,68 +1838,6 @@
 				] )
 			);
 
-			if ( theme.palette && theme.palette.length ) {
-				const palette = el( 'div', {
-					className: 'wek-builder-palette',
-					title: i18n.themeColors || 'Theme colors',
-				} );
-				theme.palette.slice( 0, 12 ).forEach( function ( swatch ) {
-					const color = swatch && swatch.color ? String( swatch.color ) : '';
-					if ( ! color ) {
-						return;
-					}
-					const btn = el( 'button', {
-						type: 'button',
-						className:
-							'wek-builder-palette__swatch' +
-							( theme.accent && color.toLowerCase() === String( theme.accent ).toLowerCase()
-								? ' is-accent'
-								: '' ),
-						title: ( swatch.name || swatch.slug || color ) + '',
-						style: 'background:' + color,
-						'aria-label': swatch.name || swatch.slug || color,
-					} );
-					btn.addEventListener( 'click', function () {
-						const host = document.querySelector( '.wek-admin' ) || root;
-						if ( ! host ) {
-							return;
-						}
-						const soft = ( function ( hex ) {
-							const raw = String( hex || '' ).replace( '#', '' );
-							let full = raw;
-							if ( raw.length === 3 ) {
-								full = raw[ 0 ] + raw[ 0 ] + raw[ 1 ] + raw[ 1 ] + raw[ 2 ] + raw[ 2 ];
-							}
-							if ( ! /^[0-9a-fA-F]{6}$/.test( full ) ) {
-								return '#e4f2ee';
-							}
-							const mix = function ( channel ) {
-								return Math.round( channel * 0.12 + 255 * 0.88 );
-							};
-							const toHex = function ( n ) {
-								const h = n.toString( 16 );
-								return h.length === 1 ? '0' + h : h;
-							};
-							return (
-								'#' +
-								toHex( mix( parseInt( full.slice( 0, 2 ), 16 ) ) ) +
-								toHex( mix( parseInt( full.slice( 2, 4 ), 16 ) ) ) +
-								toHex( mix( parseInt( full.slice( 4, 6 ), 16 ) ) )
-							);
-						} )( color );
-						host.style.setProperty( '--wek-accent', color );
-						host.style.setProperty( '--wek-accent-soft', soft );
-						theme.accent = color;
-						theme.accentSoft = soft;
-						Array.prototype.forEach.call( palette.querySelectorAll( '.wek-builder-palette__swatch' ), function ( node ) {
-							node.classList.toggle( 'is-accent', node === btn );
-						} );
-					} );
-					palette.appendChild( btn );
-				} );
-				panel.appendChild( palette );
-			}
-
 			const grid = el( 'div', { className: 'wek-builder-library__grid' } );
 			fieldTypes.forEach( function ( item ) {
 				const typeId = item.type;

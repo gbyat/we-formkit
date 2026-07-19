@@ -43,6 +43,7 @@ add_action(
 |------|------|
 | `we_formkit_register_field_types` | After core field types are registered |
 | `we_formkit_repeater_item_types` | Filter allowed nested types inside a repeater group |
+| `we_formkit_form_style_colors` | Filter resolved form CSS colors `( $colors, $form_id, $stored )` |
 | `we_formkit_register_modules` | During module bootstrap |
 | `we_formkit_module_registered` | After each module is added |
 | `we_formkit_submission_created` | After a submission is stored `( $submission_id, $context )` |

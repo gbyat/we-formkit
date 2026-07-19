@@ -60,11 +60,7 @@ function copyIfExists(source, target) {
 /**
  * @return {void}
  */
-function runBlockBuild() {
-	if (!config.hasBlocks) {
-		return;
-	}
-
+function runAssetBuild() {
 	const pkgPath = path.join(rootDir, 'package.json');
 	let scripts = {};
 	try {
@@ -74,11 +70,17 @@ function runBlockBuild() {
 	}
 
 	if (!scripts['build:assets']) {
-		console.log('hasBlocks=true but no build:assets script — skipping asset build.');
+		if (config.hasBlocks) {
+			console.log('hasBlocks=true but no build:assets script — skipping asset build.');
+		}
 		return;
 	}
 
-	console.log('Building block assets (hasBlocks=true)…');
+	console.log(
+		config.hasBlocks
+			? 'Building block assets (hasBlocks=true)…'
+			: 'Building admin assets (build:assets)…'
+	);
 
 	const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
@@ -88,7 +90,7 @@ function runBlockBuild() {
 	});
 
 	if (buildResult.error || buildResult.status !== 0) {
-		console.error('Block build failed. Fix build errors before creating the ZIP.');
+		console.error('Asset build failed. Fix build errors before creating the ZIP.');
 		process.exit(buildResult.status || 1);
 	}
 }
@@ -125,7 +127,7 @@ async function main() {
 	}
 
 	if (shouldBuild) {
-		runBlockBuild();
+		runAssetBuild();
 	}
 
 	const version = readVersion();

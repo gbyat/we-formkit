@@ -25,6 +25,8 @@
 		"release:patch:local": "node scripts/release.js patch --local",
 		"release:minor:local": "node scripts/release.js minor --local",
 		"release:major:local": "node scripts/release.js major --local",
+		"build:assets": "wp-scripts build",
+		"start": "wp-scripts start",
 		"zip": "node scripts/build-release-zip.js",
 		"preflight": "node scripts/preflight-deploy.js",
 		"preflight:warn": "node scripts/preflight-deploy.js --warn-only",
@@ -49,7 +51,15 @@
 	"author": "webentwicklerin, Gabriele Laesser <hello@webentwicklerin.at>",
 	"license": "GPL-2.0-or-later",
 	"type": "commonjs",
+	"dependencies": {
+		"@wordpress/api-fetch": "^7.36.0",
+		"@wordpress/components": "^30.5.0",
+		"@wordpress/dataviews": "^10.0.0",
+		"@wordpress/element": "^6.36.0",
+		"@wordpress/i18n": "^6.9.0"
+	},
 	"devDependencies": {
+		"@wordpress/scripts": "^30.25.0",
 		"archiver": "^7.0.1",
 		"iconv-lite": "^0.7.2"
 	}

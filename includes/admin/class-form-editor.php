@@ -10,6 +10,7 @@ namespace Webentwicklerin\WeFormkit\Admin;
 use Webentwicklerin\WeFormkit\Capabilities;
 use Webentwicklerin\WeFormkit\Fields\Repeater_Field;
 use Webentwicklerin\WeFormkit\Form_Schema;
+use Webentwicklerin\WeFormkit\Form_Style;
 use Webentwicklerin\WeFormkit\Plugin;
 use Webentwicklerin\WeFormkit\Post_Types;
 
@@ -289,121 +290,25 @@ final class Form_Editor {
 	}
 
 	/**
-	 * Theme-aware UI tokens for the admin builder.
+	 * Theme-aware UI tokens for the admin builder chrome.
 	 *
-	 * @return array{accent:string,accentSoft:string,palette:list<array{slug:string,name:string,color:string}>}
+	 * @return array{accent:string,accentSoft:string}
 	 */
 	private static function theme_ui_tokens() {
-		$palette = self::theme_color_palette();
-		$accent  = self::pick_accent_color( $palette );
+		$colors = Form_Style::theme_defaults();
 
 		/**
 		 * Filter Formkit admin builder theme tokens.
 		 *
-		 * @param array{accent:string,accentSoft:string,palette:list<array{slug:string,name:string,color:string}>} $tokens Tokens.
+		 * @param array{accent:string,accentSoft:string} $tokens Tokens.
 		 */
 		return apply_filters(
 			'we_formkit_admin_theme_tokens',
 			array(
-				'accent'     => $accent,
-				'accentSoft' => self::soft_tint( $accent ),
-				'palette'    => $palette,
+				'accent'     => $colors['accent'],
+				'accentSoft' => $colors['accent_soft'],
 			)
 		);
-	}
-
-	/**
-	 * @return list<array{slug:string,name:string,color:string}>
-	 */
-	private static function theme_color_palette() {
-		$out = array();
-
-		if ( class_exists( '\WP_Theme_JSON_Resolver' ) ) {
-			$settings = \WP_Theme_JSON_Resolver::get_merged_data()->get_settings();
-			$sources  = array();
-			if ( ! empty( $settings['color']['palette']['theme'] ) && is_array( $settings['color']['palette']['theme'] ) ) {
-				$sources[] = $settings['color']['palette']['theme'];
-			}
-			if ( ! empty( $settings['color']['palette']['custom'] ) && is_array( $settings['color']['palette']['custom'] ) ) {
-				$sources[] = $settings['color']['palette']['custom'];
-			}
-			foreach ( $sources as $group ) {
-				foreach ( $group as $color ) {
-					if ( empty( $color['color'] ) ) {
-						continue;
-					}
-					$out[] = array(
-						'slug'  => isset( $color['slug'] ) ? sanitize_key( (string) $color['slug'] ) : '',
-						'name'  => isset( $color['name'] ) ? sanitize_text_field( (string) $color['name'] ) : '',
-						'color' => sanitize_hex_color( (string) $color['color'] ) ? (string) $color['color'] : sanitize_text_field( (string) $color['color'] ),
-					);
-				}
-			}
-		}
-
-		if ( empty( $out ) ) {
-			$support = get_theme_support( 'editor-color-palette' );
-			if ( is_array( $support ) && ! empty( $support[0] ) && is_array( $support[0] ) ) {
-				foreach ( $support[0] as $color ) {
-					if ( empty( $color['color'] ) ) {
-						continue;
-					}
-					$out[] = array(
-						'slug'  => isset( $color['slug'] ) ? sanitize_key( (string) $color['slug'] ) : '',
-						'name'  => isset( $color['name'] ) ? sanitize_text_field( (string) $color['name'] ) : '',
-						'color' => (string) $color['color'],
-					);
-				}
-			}
-		}
-
-		return $out;
-	}
-
-	/**
-	 * @param list<array{slug:string,name:string,color:string}> $palette Palette.
-	 * @return string
-	 */
-	private static function pick_accent_color( array $palette ) {
-		$prefer = array( 'primary', 'accent', 'brand', 'main', 'secondary' );
-		foreach ( $prefer as $slug ) {
-			foreach ( $palette as $color ) {
-				if ( ( $color['slug'] ?? '' ) === $slug && ! empty( $color['color'] ) ) {
-					return (string) $color['color'];
-				}
-			}
-		}
-		foreach ( $palette as $color ) {
-			$hex = strtolower( (string) ( $color['color'] ?? '' ) );
-			if ( '' === $hex || preg_match( '/^#?(fff|ffffff|000|000000|f[5-9a-f]{5}|[0-3]{6})$/', $hex ) ) {
-				continue;
-			}
-			return (string) $color['color'];
-		}
-		return '#0f5c4c';
-	}
-
-	/**
-	 * Soft background tint derived from accent (fallback when theme has no soft color).
-	 *
-	 * @param string $hex Hex color.
-	 * @return string
-	 */
-	private static function soft_tint( $hex ) {
-		$hex = ltrim( (string) $hex, '#' );
-		if ( 3 === strlen( $hex ) ) {
-			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-		}
-		if ( ! preg_match( '/^[0-9a-fA-F]{6}$/', $hex ) ) {
-			return '#e4f2ee';
-		}
-		$r = hexdec( substr( $hex, 0, 2 ) );
-		$g = hexdec( substr( $hex, 2, 2 ) );
-		$b = hexdec( substr( $hex, 4, 2 ) );
-		$r = (int) round( $r * 0.12 + 255 * 0.88 );
-		$g = (int) round( $g * 0.12 + 255 * 0.88 );
-		$b = (int) round( $b * 0.12 + 255 * 0.88 );
-		return sprintf( '#%02x%02x%02x', $r, $g, $b );
 	}
 
 	/**
@@ -495,6 +400,10 @@ final class Form_Editor {
 				),
 				$public_page
 			);
+		}
+
+		if ( 'settings' === $view ) {
+			self::enqueue_settings_assets( $form_id, $title, $slug, $secret, $privacy, $schema, $secret_url );
 		}
 
 		$heading = $is_new ? __( 'Add Form', 'we-formkit' ) : $title;
@@ -627,71 +536,115 @@ final class Form_Editor {
 	 * @param bool                 $is_new Whether new.
 	 * @return void
 	 */
-	private static function render_view_settings( $form_id, $title, $slug, array $secret, $privacy, array $schema, $secret_url, $is_new ) {
-		unset( $is_new );
-		?>
-	<form method="post" class="wek-admin__settings-panel">
-		<?php wp_nonce_field( 'we_formkit_save_form', 'we_formkit_save_nonce' ); ?>
-		<input type="hidden" name="form_id" value="<?php echo esc_attr( (string) $form_id ); ?>" />
-		<input type="hidden" name="wek_save_view" value="settings" />
+	/**
+	 * Enqueue DataForm settings screen assets.
+	 *
+	 * @param int                  $form_id Form ID.
+	 * @param string               $title Title.
+	 * @param string               $slug Slug.
+	 * @param array{enabled:bool,token:string} $secret Secret.
+	 * @param string               $privacy Privacy URL.
+	 * @param array<string,mixed>  $schema Schema.
+	 * @param string               $secret_url Share URL.
+	 * @return void
+	 */
+	private static function enqueue_settings_assets( $form_id, $title, $slug, array $secret, $privacy, array $schema, $secret_url ) {
+		$asset_file = WE_FORMKIT_PATH . 'build/admin-form-settings.asset.php';
+		$script     = WE_FORMKIT_URL . 'build/admin-form-settings.js';
+		$style      = WE_FORMKIT_URL . 'build/admin-form-settings.css';
 
-		<table class="form-table" role="presentation">
-			<tr>
-				<th><label for="wek_title"><?php esc_html_e( 'Title', 'we-formkit' ); ?></label></th>
-				<td><input class="regular-text" type="text" name="wek_title" id="wek_title" value="<?php echo esc_attr( $title ); ?>" required /></td>
-			</tr>
-			<tr>
-				<th><label for="wek_slug"><?php esc_html_e( 'Slug', 'we-formkit' ); ?></label></th>
-				<td>
-					<input class="regular-text" type="text" name="wek_slug" id="wek_slug" value="<?php echo esc_attr( $slug ); ?>" placeholder="contact" />
-					<p class="description"><?php esc_html_e( 'Used in secret links and as a stable form key.', 'we-formkit' ); ?></p>
-				</td>
-			</tr>
-			<tr>
-				<th><?php esc_html_e( 'Secret link access', 'we-formkit' ); ?></th>
-				<td>
-					<label>
-						<input type="checkbox" name="wek_secret_enabled" value="1" <?php checked( ! empty( $secret['enabled'] ) ); ?> />
-						<?php esc_html_e( 'Require secret token in URL', 'we-formkit' ); ?>
-					</label>
-					<?php if ( $form_id && $secret['token'] ) : ?>
-						<p><code><?php echo esc_html( $secret['token'] ); ?></code></p>
-						<?php if ( $secret_url ) : ?>
-							<p>
-								<label><?php esc_html_e( 'Shareable link (open the page that contains the Formkit Form block):', 'we-formkit' ); ?></label><br />
-								<input class="large-text" type="text" readonly value="<?php echo esc_attr( $secret_url ); ?>" onclick="this.select();" />
-							</p>
-						<?php endif; ?>
-						<p>
-							<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=we-formkit-form&form_id=' . $form_id . '&view=settings&wek_regen_token=1' ), 'wek_regen_' . $form_id ) ); ?>"><?php esc_html_e( 'Regenerate token', 'we-formkit' ); ?></a>
-						</p>
-					<?php endif; ?>
-				</td>
-			</tr>
-			<tr>
-				<th><label for="wek_privacy_url"><?php esc_html_e( 'Privacy policy URL', 'we-formkit' ); ?></label></th>
-				<td>
-					<input class="regular-text" type="url" name="wek_privacy_url" id="wek_privacy_url" value="<?php echo esc_attr( $privacy ); ?>" />
-					<p class="description"><?php esc_html_e( 'Optional. Falls back to the plugin default, then the site privacy policy.', 'we-formkit' ); ?></p>
-				</td>
-			</tr>
-			<tr>
-				<th><label for="wek_intro"><?php esc_html_e( 'Intro text', 'we-formkit' ); ?></label></th>
-				<td><textarea class="large-text" rows="4" name="wek_intro" id="wek_intro"><?php echo esc_textarea( (string) ( $schema['intro'] ?? '' ) ); ?></textarea></td>
-			</tr>
-		</table>
+		if ( ! file_exists( $asset_file ) || ! file_exists( WE_FORMKIT_PATH . 'build/admin-form-settings.js' ) ) {
+			return;
+		}
 
-		<?php submit_button( __( 'Save settings', 'we-formkit' ), 'primary', 'we_formkit_save_form' ); ?>
-	</form>
-		<?php
+		$asset = include $asset_file;
+		$deps  = isset( $asset['dependencies'] ) && is_array( $asset['dependencies'] ) ? $asset['dependencies'] : array();
+		$ver   = isset( $asset['version'] ) ? (string) $asset['version'] : WE_FORMKIT_VERSION;
+
+		wp_enqueue_script(
+			'we-formkit-admin-form-settings',
+			$script,
+			$deps,
+			$ver,
+			true
+		);
+		wp_set_script_translations( 'we-formkit-admin-form-settings', 'we-formkit', WE_FORMKIT_PATH . 'languages' );
+
+		if ( file_exists( WE_FORMKIT_PATH . 'build/admin-form-settings.css' ) ) {
+			wp_enqueue_style(
+				'we-formkit-admin-form-settings',
+				$style,
+				array( 'wp-components' ),
+				$ver
+			);
+		}
+
+		$style_stored = $form_id > 0 ? Form_Style::get( $form_id ) : Form_Style::normalize( array() );
+		$colors       = $form_id > 0 ? Form_Style::editable_colors( $form_id ) : Form_Style::theme_defaults();
+
+		wp_localize_script(
+			'we-formkit-admin-form-settings',
+			'weFormkitFormSettings',
+			array(
+				'formId'        => (int) $form_id,
+				'secretUrl'     => (string) $secret_url,
+				'secretToken'   => (string) ( $secret['token'] ?? '' ),
+				'regenUrl'      => $form_id > 0
+					? wp_nonce_url(
+						admin_url( 'admin.php?page=we-formkit-form&form_id=' . $form_id . '&view=settings&wek_regen_token=1' ),
+						'wek_regen_' . $form_id
+					)
+					: '',
+				'themeColors'   => Form_Style::theme_defaults(),
+				'formkitColors' => Form_Style::formkit_defaults(),
+				'settings'      => array(
+					'title'          => (string) $title,
+					'slug'           => (string) $slug,
+					'intro'          => (string) ( $schema['intro'] ?? '' ),
+					'privacy_url'    => (string) $privacy,
+					'secret_enabled' => ! empty( $secret['enabled'] ),
+					'style_preset'   => (string) $style_stored['preset'],
+					'colors'         => $colors,
+				),
+			)
+		);
 	}
 
 	/**
-	 * @param int    $form_id Form ID.
-	 * @param string $notify Notify email.
-	 * @param bool   $is_new Whether new.
+	 * @param int                  $form_id Form ID.
+	 * @param string               $title Title.
+	 * @param string               $slug Slug.
+	 * @param array{enabled:bool,token:string} $secret Secret.
+	 * @param string               $privacy Privacy URL.
+	 * @param array<string,mixed>  $schema Schema.
+	 * @param string               $secret_url Share URL.
+	 * @param bool                 $is_new Whether new.
 	 * @return void
 	 */
+	private static function render_view_settings( $form_id, $title, $slug, array $secret, $privacy, array $schema, $secret_url, $is_new ) {
+		unset( $title, $slug, $secret, $privacy, $schema, $secret_url, $is_new );
+
+		$asset_file = WE_FORMKIT_PATH . 'build/admin-form-settings.asset.php';
+		$built      = file_exists( $asset_file ) && file_exists( WE_FORMKIT_PATH . 'build/admin-form-settings.js' );
+		?>
+		<div class="wek-admin__settings-panel wek-admin__settings-panel--dataform">
+			<?php if ( ! $built ) : ?>
+				<div class="notice notice-warning inline">
+					<p>
+						<?php
+						echo esc_html__(
+							'Modern settings UI is not built yet. Run npm install && npm run build:assets in the plugin folder.',
+							'we-formkit'
+						);
+						?>
+					</p>
+				</div>
+			<?php endif; ?>
+			<div id="wek-form-settings-root"></div>
+		</div>
+		<?php
+	}
+
 	private static function render_view_notifications( $form_id, $notify, $is_new ) {
 		unset( $is_new );
 		?>
@@ -849,6 +802,7 @@ final class Form_Editor {
 		$intro          = isset( $_POST['wek_intro'] ) ? sanitize_textarea_field( wp_unslash( (string) $_POST['wek_intro'] ) ) : '';
 		$privacy        = isset( $_POST['wek_privacy_url'] ) ? esc_url_raw( wp_unslash( (string) $_POST['wek_privacy_url'] ) ) : '';
 		$secret_enabled = ! empty( $_POST['wek_secret_enabled'] );
+		$style_input    = isset( $_POST['wek_style'] ) && is_array( $_POST['wek_style'] ) ? wp_unslash( $_POST['wek_style'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		if ( '' === $title ) {
@@ -889,6 +843,7 @@ final class Form_Editor {
 		update_post_meta( $form_id, Form_Schema::META_SLUG, $slug );
 		update_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, $privacy );
 		Form_Schema::set_secret( $form_id, $secret_enabled );
+		Form_Style::save( $form_id, Form_Style::sanitize_from_request( is_array( $style_input ) ? $style_input : array() ) );
 
 		wp_safe_redirect( admin_url( 'admin.php?page=we-formkit-form&form_id=' . $form_id . '&view=settings&saved=1' ) );
 		exit;
@@ -1105,6 +1060,7 @@ final class Form_Editor {
 		update_post_meta( $new_id, Form_Schema::META_NOTIFY_EMAIL, (string) get_post_meta( $form_id, Form_Schema::META_NOTIFY_EMAIL, true ) );
 		update_post_meta( $new_id, Form_Schema::META_PRIVACY_URL, (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true ) );
 		update_post_meta( $new_id, Form_Schema::META_CONFIRMATION_MESSAGE, (string) get_post_meta( $form_id, Form_Schema::META_CONFIRMATION_MESSAGE, true ) );
+		Form_Style::save( $new_id, Form_Style::get( $form_id ) );
 
 		$secret = Form_Schema::get_secret( $form_id );
 		Form_Schema::set_secret( $new_id, ! empty( $secret['enabled'] ), wp_generate_password( 32, false, false ) );

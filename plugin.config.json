@@ -14,6 +14,6 @@
 	"jsonHandleAliases": {},
 	"zipInclude": {
 		"files": ["we-formkit.php", "uninstall.php", "CHANGELOG.md", "README.md", "readme.txt", "LICENSE"],
-		"directories": ["includes", "languages", "assets"]
+		"directories": ["includes", "languages", "assets", "build"]
 	}
 }

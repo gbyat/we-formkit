@@ -245,7 +245,7 @@ final class Frontend {
 	public static function render_form( $form_id, array $schema, $privacy_url ) {
 		$title = $schema['title'] ? $schema['title'] : get_the_title( $form_id );
 		?>
-		<div class="we-formkit" data-we-formkit data-form-id="<?php echo esc_attr( (string) $form_id ); ?>">
+		<div class="we-formkit" data-we-formkit data-form-id="<?php echo esc_attr( (string) $form_id ); ?>" style="<?php echo esc_attr( Form_Style::css_variables_attr( $form_id ) ); ?>">
 			<header class="we-formkit__header">
 				<h2 class="we-formkit__title"><?php echo esc_html( $title ); ?></h2>
 				<?php if ( ! empty( $schema['intro'] ) ) : ?>
