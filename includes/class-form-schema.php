@@ -138,7 +138,7 @@ final class Form_Schema {
 	 */
 	private static function normalize_width( $width ) {
 		$width   = sanitize_key( (string) $width );
-		$allowed = array( 'full', 'half', 'third' );
+		$allowed = array( 'full', 'two_thirds', 'half', 'third' );
 		return in_array( $width, $allowed, true ) ? $width : 'full';
 	}
 

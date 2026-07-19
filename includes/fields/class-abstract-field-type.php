@@ -50,6 +50,9 @@ abstract class Abstract_Field_Type {
 		$field['required']    = ! empty( $field['required'] );
 		$field['placeholder'] = isset( $field['placeholder'] ) ? sanitize_text_field( (string) $field['placeholder'] ) : '';
 		$field['width']       = isset( $field['width'] ) ? sanitize_key( (string) $field['width'] ) : 'full';
+		if ( ! in_array( $field['width'], array( 'full', 'two_thirds', 'half', 'third' ), true ) ) {
+			$field['width'] = 'full';
+		}
 
 		if ( isset( $field['options'] ) ) {
 			$field['options'] = $this->normalize_options_list( $field['options'] );

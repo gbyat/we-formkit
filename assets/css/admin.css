@@ -419,6 +419,67 @@
 	grid-column: span 2;
 }
 
+.wek-admin .wek-builder__field--width-two_thirds {
+	grid-column: span 4;
+}
+
+.wek-admin .wek-builder__columns {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.5rem;
+	margin: 0.35rem 0 0.5rem;
+}
+
+.wek-admin .wek-builder__column-btn {
+	display: grid;
+	gap: 0.35rem;
+	margin: 0;
+	padding: 0.55rem 0.5rem 0.45rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-sm);
+	background: var(--wek-surface);
+	cursor: pointer;
+	text-align: left;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.wek-admin .wek-builder__column-btn:hover,
+.wek-admin .wek-builder__column-btn:focus {
+	border-color: var(--wek-accent);
+}
+
+.wek-admin .wek-builder__column-btn.is-active {
+	border-color: var(--wek-accent);
+	box-shadow: 0 0 0 1px var(--wek-accent);
+	background: var(--wek-accent-soft);
+}
+
+.wek-admin .wek-builder__column-preview {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: 2px;
+	height: 18px;
+}
+
+.wek-admin .wek-builder__column-preview span {
+	display: block;
+	border-radius: 2px;
+	background: var(--wek-line-strong);
+	opacity: 0.35;
+}
+
+.wek-admin .wek-builder__column-preview span.is-on {
+	background: var(--wek-accent);
+	opacity: 1;
+}
+
+.wek-admin .wek-builder__column-btn strong {
+	display: block;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--wek-ink);
+}
+
 .wek-admin .wek-builder__field.is-selected {
 	border-color: var(--wek-accent);
 	background: #fff;
@@ -571,44 +632,49 @@
 	margin-top: 0.5rem;
 }
 
-.wek-admin .wek-builder__repeater-fields-title {
-	display: block;
-	margin-top: 0.35rem;
-	font-size: 12px;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	color: var(--wek-muted);
-}
-
-.wek-admin .wek-builder__repeater-fields {
-	display: grid;
+.wek-admin .wek-builder__field--repeater {
+	display: flex;
+	flex-direction: column;
 	gap: 0.65rem;
-}
-
-.wek-admin .wek-builder__nested-field {
-	border: 1px solid var(--wek-line);
-	border-radius: var(--wek-radius-sm);
-	background: var(--wek-canvas);
 	padding: 0.75rem;
+	background: var(--wek-accent-soft);
+	border: 1px dashed var(--wek-accent);
 }
 
-.wek-admin .wek-builder__nested-field-head {
+.wek-admin .wek-builder__repeater-head {
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	align-items: flex-start;
 	gap: 0.5rem;
-	margin-bottom: 0.5rem;
 }
 
-.wek-admin .wek-builder__repeater-add-row {
-	display: flex;
-	gap: 0.5rem;
-	align-items: center;
+.wek-admin .wek-builder__repeater-canvas {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: 0.55rem;
+	min-height: 2.5rem;
+	padding: 0.55rem;
+	border-radius: var(--wek-radius-sm);
+	background: var(--wek-surface);
+	border: 1px solid var(--wek-line);
 }
 
-.wek-admin .wek-builder__repeater-add-row select {
-	flex: 1;
-	min-width: 0;
+.wek-admin .wek-builder__repeater-empty {
+	grid-column: 1 / -1;
+	margin: 0;
+	padding: 0.75rem;
+	text-align: center;
+	color: var(--wek-muted);
+	font-size: 12px;
+}
+
+.wek-admin .wek-builder__field--nested {
+	background: var(--wek-canvas);
+}
+
+.wek-admin .wek-builder__field--repeater.is-drop-target,
+.wek-admin .wek-builder__field--repeater.is-drop-target .wek-builder__repeater-canvas {
+	outline: 2px solid var(--wek-accent);
+	outline-offset: 2px;
 }
 
 .wek-admin .button-link-delete {

@@ -173,9 +173,73 @@
 			hidden.value = JSON.stringify( schema );
 		}
 
-		function widthClass( width ) {
-			const w = width === 'half' || width === 'third' ? width : 'full';
-			return 'wek-builder__field wek-builder__field--width-' + w;
+		function normalizeWidth( width ) {
+			const allowed = [ 'full', 'two_thirds', 'half', 'third' ];
+			return allowed.indexOf( width ) !== -1 ? width : 'full';
+		}
+
+		function widthLabel( width ) {
+			const map = {
+				full: i18n.widthFull || 'Full',
+				two_thirds: i18n.widthTwoThirds || 'Two thirds',
+				half: i18n.widthHalf || 'Half',
+				third: i18n.widthThird || 'One third',
+			};
+			return map[ normalizeWidth( width ) ] || map.full;
+		}
+
+		function widthClass( width, selected ) {
+			return (
+				'wek-builder__field wek-builder__field--width-' +
+				normalizeWidth( width ) +
+				( selected ? ' is-selected' : '' )
+			);
+		}
+
+		function renderColumnPicker( field ) {
+			field.width = normalizeWidth( field.width );
+			const wrap = el( 'div', { className: 'wek-builder__columns', role: 'group' } );
+			const spans = {
+				full: 6,
+				two_thirds: 4,
+				half: 3,
+				third: 2,
+			};
+			[
+				{ value: 'full', label: i18n.widthFull || 'Full' },
+				{ value: 'two_thirds', label: i18n.widthTwoThirds || 'Two thirds' },
+				{ value: 'half', label: i18n.widthHalf || 'Half' },
+				{ value: 'third', label: i18n.widthThird || 'One third' },
+			].forEach( function ( item ) {
+				const preview = el( 'div', { className: 'wek-builder__column-preview' } );
+				const onCount = spans[ item.value ];
+				for ( let i = 0; i < 6; i++ ) {
+					preview.appendChild(
+						el( 'span', {
+							className: i < onCount ? 'is-on' : '',
+						} )
+					);
+				}
+				wrap.appendChild(
+					el( 'button', {
+						type: 'button',
+						className:
+							'wek-builder__column-btn' +
+							( field.width === item.value ? ' is-active' : '' ),
+						'aria-pressed': field.width === item.value ? 'true' : 'false',
+						title: item.label,
+						onClick: function () {
+							field.width = item.value;
+							syncHidden();
+							render();
+						},
+					}, [
+						preview,
+						el( 'strong', { text: item.label } ),
+					] )
+				);
+			} );
+			return wrap;
 		}
 
 		function getSelected() {
@@ -193,6 +257,22 @@
 			if ( ! field ) {
 				return null;
 			}
+			if ( selection.type === 'nested' ) {
+				const opts = field.type_options || {};
+				const nested = Array.isArray( opts.fields ) ? opts.fields[ selection.nIndex ] : null;
+				if ( ! nested ) {
+					return null;
+				}
+				return {
+					kind: 'nested',
+					section: section,
+					parent: field,
+					field: nested,
+					sIndex: selection.sIndex,
+					fIndex: selection.fIndex,
+					nIndex: selection.nIndex,
+				};
+			}
 			return {
 				kind: 'field',
 				section: section,
@@ -202,11 +282,68 @@
 			};
 		}
 
+		function getActiveRepeaterTarget() {
+			const selected = getSelected();
+			if ( ! selected ) {
+				return null;
+			}
+			if ( selected.kind === 'nested' ) {
+				return {
+					section: selected.section,
+					repeater: selected.parent,
+					sIndex: selected.sIndex,
+					fIndex: selected.fIndex,
+				};
+			}
+			if ( selected.kind === 'field' && selected.field.type === 'repeater' ) {
+				return {
+					section: selected.section,
+					repeater: selected.field,
+					sIndex: selected.sIndex,
+					fIndex: selected.fIndex,
+				};
+			}
+			return null;
+		}
+
+		function isAllowedInRepeater( typeId ) {
+			return getRepeaterItemTypes().some( function ( item ) {
+				return item.value === typeId;
+			} );
+		}
+
+		function createBlankField( typeId ) {
+			const typeMeta = fieldTypes.find( function ( item ) {
+				return item.type === typeId;
+			} );
+			const typeOptions = {};
+			if ( typeId === 'repeater' ) {
+				typeOptions.min_items = 1;
+				typeOptions.max_items = 5;
+				typeOptions.add_button_label = '';
+				typeOptions.fields = [];
+			}
+			return {
+				id: ( typeId || 'field' ) + '_' + Date.now().toString( 36 ),
+				type: typeId || 'text',
+				label: ( typeMeta && typeMeta.label ) || i18n.field || 'Field',
+				help: '',
+				required: false,
+				placeholder: '',
+				type_options: typeOptions,
+				width: 'full',
+				options: [],
+				show_when: null,
+			};
+		}
+
 		function selectItem( next, tab ) {
 			selection = next;
 			if ( tab ) {
 				activeTab = tab;
 			} else if ( next && next.type === 'section' && activeTab === 'appearance' ) {
+				activeTab = 'general';
+			} else if ( next && next.type === 'nested' && ( activeTab === 'appearance' || activeTab === 'conditional' ) ) {
 				activeTab = 'general';
 			}
 			render();
@@ -604,7 +741,7 @@
 			return opts;
 		}
 
-		function renderRepeaterFieldsEditor( field ) {
+		function renderRepeaterSettings( field ) {
 			const opts = ensureRepeaterDefaults( field );
 			const wrap = el( 'div', { className: 'wek-builder__repeater-options' } );
 
@@ -613,28 +750,36 @@
 					className: 'description',
 					text:
 						i18n.repeaterHint ||
-						'These fields are cloned together when someone adds another row.',
+						'Add fields into this repeater on the canvas. The whole group is cloned for each row on the front end.',
 				} )
 			);
 
 			wrap.appendChild(
 				fieldRow(
 					i18n.minRows || 'Minimum rows',
-					numberInput( opts.min_items, function ( v ) {
-						const n = parseInt( v, 10 );
-						opts.min_items = isNaN( n ) ? 0 : Math.max( 0, n );
-						syncHidden();
-					}, { min: '0' } )
+					numberInput(
+						opts.min_items,
+						function ( v ) {
+							const n = parseInt( v, 10 );
+							opts.min_items = isNaN( n ) ? 0 : Math.max( 0, n );
+							syncHidden();
+						},
+						{ min: '0' }
+					)
 				)
 			);
 			wrap.appendChild(
 				fieldRow(
 					i18n.maxRows || 'Maximum rows',
-					numberInput( opts.max_items, function ( v ) {
-						const n = parseInt( v, 10 );
-						opts.max_items = isNaN( n ) ? 5 : Math.max( 1, n );
-						syncHidden();
-					}, { min: '1' } )
+					numberInput(
+						opts.max_items,
+						function ( v ) {
+							const n = parseInt( v, 10 );
+							opts.max_items = isNaN( n ) ? 5 : Math.max( 1, n );
+							syncHidden();
+						},
+						{ min: '1' }
+					)
 				)
 			);
 			wrap.appendChild(
@@ -647,176 +792,7 @@
 				)
 			);
 
-			wrap.appendChild(
-				el( 'strong', {
-					className: 'wek-builder__repeater-fields-title',
-					text: i18n.repeaterFields || 'Fields in each row',
-				} )
-			);
-
-			const list = el( 'div', { className: 'wek-builder__repeater-fields' } );
-
-			function refreshList() {
-				list.innerHTML = '';
-				opts.fields.forEach( function ( child, index ) {
-					list.appendChild( renderNestedFieldCard( field, child, index ) );
-				} );
-			}
-
-			function renderNestedFieldCard( parentField, child, index ) {
-				const card = el( 'div', { className: 'wek-builder__nested-field' } );
-				card.appendChild(
-					el( 'div', { className: 'wek-builder__nested-field-head' }, [
-						el( 'strong', {
-							text: ( i18n.nestedField || 'Row field' ) + ' ' + ( index + 1 ),
-						} ),
-						el( 'button', {
-							type: 'button',
-							className: 'button-link-delete',
-							text: i18n.removeNested || 'Remove from row',
-							onClick: function () {
-								opts.fields.splice( index, 1 );
-								syncHidden();
-								refreshList();
-								render();
-							},
-						} ),
-					] )
-				);
-
-				const typeChoices = getRepeaterItemTypes();
-				card.appendChild(
-					fieldRow(
-						i18n.type || 'Type',
-						selectInput( child.type || 'text', typeChoices, function ( v ) {
-							child.type = v;
-							if ( [ 'select' ].indexOf( v ) !== -1 && ! Array.isArray( child.options ) ) {
-								child.options = [];
-							}
-							syncHidden();
-							refreshList();
-						} )
-					)
-				);
-				card.appendChild(
-					fieldRow(
-						i18n.id || 'Field ID',
-						textInput( child.id || '', function ( v ) {
-							child.id = String( v || '' )
-								.toLowerCase()
-								.replace( /[^a-z0-9_-]/g, '_' );
-							syncHidden();
-						} )
-					)
-				);
-				card.appendChild(
-					fieldRow(
-						i18n.label || 'Label',
-						textInput( child.label || '', function ( v ) {
-							child.label = v;
-							syncHidden();
-							const preview = root.querySelector(
-								'.wek-builder__field[data-s="' +
-									selection.sIndex +
-									'"][data-f="' +
-									selection.fIndex +
-									'"] .wek-builder__field-preview'
-							);
-							if ( preview ) {
-								preview.textContent = repeaterPreviewText( parentField );
-							}
-						} )
-					)
-				);
-				card.appendChild(
-					fieldRow(
-						i18n.placeholder || 'Placeholder',
-						textInput( child.placeholder || '', function ( v ) {
-							child.placeholder = v;
-							syncHidden();
-						} )
-					)
-				);
-
-				const req = el( 'input', { type: 'checkbox' } );
-				req.checked = !! child.required;
-				req.addEventListener( 'change', function () {
-					child.required = req.checked;
-					syncHidden();
-				} );
-				card.appendChild(
-					el( 'p', { className: 'wek-builder__row' }, [
-						el( 'label', { className: 'wek-builder__check' }, [
-							req,
-							' ' + ( i18n.required || 'Required' ),
-						] ),
-					] )
-				);
-
-				if ( child.type === 'select' ) {
-					if ( ! Array.isArray( child.options ) ) {
-						child.options = [];
-					}
-					card.appendChild( renderOptionsEditor( child ) );
-				}
-
-				return card;
-			}
-
-			refreshList();
-			wrap.appendChild( list );
-
-			const addType = el( 'select' );
-			getRepeaterItemTypes().forEach( function ( item ) {
-				addType.appendChild( el( 'option', { value: item.value, text: item.label } ) );
-			} );
-
-			wrap.appendChild(
-				el( 'div', { className: 'wek-builder__repeater-add-row' }, [
-					addType,
-					el( 'button', {
-						type: 'button',
-						className: 'button button-secondary',
-						text: i18n.addNestedField || 'Add field to row',
-						onClick: function () {
-							const typeId = addType.value || 'text';
-							const meta = fieldTypes.find( function ( item ) {
-								return item.type === typeId;
-							} );
-							opts.fields.push( {
-								id: typeId + '_' + Date.now().toString( 36 ),
-								type: typeId,
-								label: ( meta && meta.label ) || typeId,
-								help: '',
-								required: false,
-								placeholder: '',
-								type_options: {},
-								width: 'full',
-								options: [],
-								show_when: null,
-							} );
-							syncHidden();
-							refreshList();
-							render();
-						},
-					} ),
-				] )
-			);
-
 			return wrap;
-		}
-
-		function repeaterPreviewText( field ) {
-			const opts = field.type_options || {};
-			const nested = Array.isArray( opts.fields ) ? opts.fields : [];
-			if ( ! nested.length ) {
-				return i18n.repeaterFields || 'Fields in each row';
-			}
-			return nested
-				.map( function ( child ) {
-					return child.label || child.id || child.type;
-				} )
-				.join( ' · ' );
 		}
 
 		function shouldShowPlaceholder( type ) {
@@ -849,10 +825,13 @@
 				return;
 			}
 
-			const isField = selected.kind === 'field';
-			const title = isField
+			const isNested = selected.kind === 'nested';
+			const isField = selected.kind === 'field' || isNested;
+			const title = isNested
 				? ( i18n.field || 'Field' ) + ': ' + ( selected.field.id || '' )
-				: ( i18n.section || 'Section' ) + ': ' + ( selected.section.title || selected.section.id || '' );
+				: selected.kind === 'field'
+					? ( i18n.field || 'Field' ) + ': ' + ( selected.field.id || '' )
+					: ( i18n.section || 'Section' ) + ': ' + ( selected.section.title || selected.section.id || '' );
 
 			const head = el( 'div', { className: 'wek-builder-sidebar__head' }, [
 				el( 'h3', { className: 'wek-builder-sidebar__title', id: 'wek-builder-sidebar-title', text: title } ),
@@ -864,7 +843,10 @@
 						if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
 							return;
 						}
-						if ( isField ) {
+						if ( isNested ) {
+							ensureRepeaterDefaults( selected.parent );
+							selected.parent.type_options.fields.splice( selected.nIndex, 1 );
+						} else if ( selected.kind === 'field' ) {
 							selected.section.fields.splice( selected.fIndex, 1 );
 						} else {
 							schema.sections.splice( selected.sIndex, 1 );
@@ -877,16 +859,18 @@
 			] );
 			aside.appendChild( head );
 
-			const tabs = isField
-				? [
-						{ id: 'general', label: i18n.tabGeneral || 'General' },
-						{ id: 'appearance', label: i18n.tabAppearance || 'Appearance' },
-						{ id: 'conditional', label: i18n.tabConditional || 'Conditional' },
-				  ]
-				: [
-						{ id: 'general', label: i18n.tabGeneral || 'General' },
-						{ id: 'conditional', label: i18n.tabConditional || 'Conditional' },
-				  ];
+			const tabs = isNested
+				? [ { id: 'general', label: i18n.tabGeneral || 'General' } ]
+				: selected.kind === 'field'
+					? [
+							{ id: 'general', label: i18n.tabGeneral || 'General' },
+							{ id: 'appearance', label: i18n.tabAppearance || 'Appearance' },
+							{ id: 'conditional', label: i18n.tabConditional || 'Conditional' },
+					  ]
+					: [
+							{ id: 'general', label: i18n.tabGeneral || 'General' },
+							{ id: 'conditional', label: i18n.tabConditional || 'Conditional' },
+					  ];
 
 			if ( ! tabs.some( function ( t ) {
 				return t.id === activeTab;
@@ -923,22 +907,17 @@
 					fieldRow(
 						i18n.id || 'Field ID',
 						textInput( field.id || '', function ( v ) {
-							field.id = v;
+							field.id = isNested
+								? String( v || '' )
+										.toLowerCase()
+										.replace( /[^a-z0-9_-]/g, '_' )
+								: v;
 							syncHidden();
 							const titleEl = aside.querySelector( '.wek-builder-sidebar__title' );
 							if ( titleEl ) {
-								titleEl.textContent = ( i18n.field || 'Field' ) + ': ' + v;
+								titleEl.textContent = ( i18n.field || 'Field' ) + ': ' + field.id;
 							}
-							const card = root.querySelector(
-								'.wek-builder__field[data-s="' +
-									selected.sIndex +
-									'"][data-f="' +
-									selected.fIndex +
-									'"] .wek-builder__field-label'
-							);
-							if ( card && ! field.label ) {
-								card.textContent = v || i18n.field || 'Field';
-							}
+							render();
 						} )
 					)
 				);
@@ -948,29 +927,25 @@
 						textInput( field.label || '', function ( v ) {
 							field.label = v;
 							syncHidden();
-							const card = root.querySelector(
-								'.wek-builder__field[data-s="' +
-									selected.sIndex +
-									'"][data-f="' +
-									selected.fIndex +
-									'"] .wek-builder__field-label'
-							);
-							if ( card ) {
-								card.textContent = v || field.id || i18n.field || 'Field';
-							}
+							render();
 						} )
 					)
 				);
 
+				const typeChoices = isNested
+					? getRepeaterItemTypes().map( function ( item ) {
+							return { type: item.value, label: item.label };
+					  } )
+					: fieldTypes;
 				const typeSelect = el( 'select' );
-				fieldTypes.forEach( function ( item ) {
+				typeChoices.forEach( function ( item ) {
 					const opt = el( 'option', { value: item.type, text: item.label || item.type } );
 					if ( field.type === item.type ) {
 						opt.selected = true;
 					}
 					typeSelect.appendChild( opt );
 				} );
-				if ( field.type && ! fieldTypes.some( function ( item ) {
+				if ( field.type && ! typeChoices.some( function ( item ) {
 					return item.type === field.type;
 				} ) ) {
 					const orphan = el( 'option', { value: field.type, text: field.type } );
@@ -980,6 +955,9 @@
 				typeSelect.addEventListener( 'change', function () {
 					field.type = typeSelect.value;
 					ensureTypeOptions( field );
+					if ( field.type === 'repeater' ) {
+						ensureRepeaterDefaults( field );
+					}
 					syncHidden();
 					render();
 				} );
@@ -1045,32 +1023,20 @@
 					panel.appendChild( renderHiddenDefaultEditor( field ) );
 				}
 
-				if ( field.type === 'repeater' ) {
-					panel.appendChild( renderRepeaterFieldsEditor( field ) );
+				if ( field.type === 'repeater' && ! isNested ) {
+					panel.appendChild( renderRepeaterSettings( field ) );
 				}
-			} else if ( isField && activeTab === 'appearance' ) {
+			} else if ( selected.kind === 'field' && activeTab === 'appearance' ) {
 				const field = selected.field;
-				if ( ! field.width ) {
-					field.width = 'full';
-				}
-				const widthSelect = el( 'select' );
-				[
-					{ value: 'full', label: i18n.widthFull || 'Full width' },
-					{ value: 'half', label: i18n.widthHalf || 'Half width' },
-					{ value: 'third', label: i18n.widthThird || 'One third' },
-				].forEach( function ( item ) {
-					const opt = el( 'option', { value: item.value, text: item.label } );
-					if ( field.width === item.value ) {
-						opt.selected = true;
-					}
-					widthSelect.appendChild( opt );
-				} );
-				widthSelect.addEventListener( 'change', function () {
-					field.width = widthSelect.value;
-					syncHidden();
-					render();
-				} );
-				panel.appendChild( fieldRow( i18n.width || 'Width', widthSelect ) );
+				field.width = normalizeWidth( field.width );
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text: i18n.widthHint || 'Choose how many columns this field spans in the row.',
+					} )
+				);
+				panel.appendChild( el( 'label', { text: i18n.width || 'Columns' } ) );
+				panel.appendChild( renderColumnPicker( field ) );
 				panel.appendChild(
 					el( 'p', {
 						className: 'description',
@@ -1079,9 +1045,9 @@
 							'You can also drag the right edge of a field on the canvas to change its width.',
 					} )
 				);
-			} else if ( isField && activeTab === 'conditional' ) {
+			} else if ( selected.kind === 'field' && activeTab === 'conditional' ) {
 				panel.appendChild( renderConditional( selected.field ) );
-			} else if ( ! isField && activeTab === 'general' ) {
+			} else if ( selected.kind === 'section' && activeTab === 'general' ) {
 				const section = selected.section;
 				panel.appendChild(
 					fieldRow(
@@ -1107,7 +1073,7 @@
 						} )
 					)
 				);
-			} else if ( ! isField && activeTab === 'conditional' ) {
+			} else if ( selected.kind === 'section' && activeTab === 'conditional' ) {
 				panel.appendChild( renderConditional( selected.section ) );
 			}
 
@@ -1122,22 +1088,27 @@
 			const rect = grid.getBoundingClientRect();
 			const ratio = ( clientX - rect.left ) / Math.max( rect.width, 1 );
 			let next = 'full';
-			if ( ratio < 0.28 ) {
+			if ( ratio < 0.22 ) {
 				next = 'third';
-			} else if ( ratio < 0.58 ) {
+			} else if ( ratio < 0.42 ) {
 				next = 'half';
+			} else if ( ratio < 0.72 ) {
+				next = 'two_thirds';
 			}
 			if ( field.width !== next ) {
 				field.width = next;
-				card.className =
-					widthClass( next ) +
-					( selection &&
+				const selected =
+					selection &&
 					selection.type === 'field' &&
 					String( selection.sIndex ) === card.getAttribute( 'data-s' ) &&
-					String( selection.fIndex ) === card.getAttribute( 'data-f' )
-						? ' is-selected'
+					String( selection.fIndex ) === card.getAttribute( 'data-f' ) &&
+					! card.getAttribute( 'data-n' );
+				card.className =
+					widthClass( next, selected ) +
+					( card.className.indexOf( 'wek-builder__field--repeater' ) !== -1
+						? ' wek-builder__field--repeater'
 						: '' );
-				announce( ( i18n.width || 'Width' ) + ': ' + next );
+				announce( ( i18n.width || 'Columns' ) + ': ' + widthLabel( next ) );
 			}
 		}
 
@@ -1163,29 +1134,98 @@
 			} );
 		}
 
-		function moveField( fromS, fromF, toS, toF ) {
-			const source = schema.sections[ fromS ];
-			const target = schema.sections[ toS ];
-			if ( ! source || ! target || ! source.fields ) {
+		function getListAt( loc ) {
+			const section = schema.sections[ loc.s ];
+			if ( ! section ) {
+				return null;
+			}
+			if ( loc.scope === 'repeater' ) {
+				const parent = section.fields && section.fields[ loc.f ];
+				if ( ! parent || parent.type !== 'repeater' ) {
+					return null;
+				}
+				ensureRepeaterDefaults( parent );
+				return parent.type_options.fields;
+			}
+			section.fields = section.fields || [];
+			return section.fields;
+		}
+
+		function relocateField( from, to ) {
+			if ( ! from || ! to ) {
 				return;
 			}
-			if ( fromF < 0 || fromF >= source.fields.length ) {
+			const fromList = getListAt( from );
+			const toList = getListAt( to );
+			if ( ! fromList || ! toList || from.index < 0 || from.index >= fromList.length ) {
 				return;
 			}
-			const item = source.fields.splice( fromF, 1 )[ 0 ];
-			if ( ! target.fields ) {
-				target.fields = [];
+
+			// Cannot nest a repeater inside a repeater.
+			const moving = fromList[ from.index ];
+			if ( to.scope === 'repeater' && moving && moving.type === 'repeater' ) {
+				announce( i18n.repeaterNoNest || 'A repeater cannot be placed inside another repeater.' );
+				return;
 			}
-			let insertAt = typeof toF === 'number' ? toF : target.fields.length;
-			if ( fromS === toS && fromF < insertAt ) {
+			if ( to.scope === 'repeater' && moving && ! isAllowedInRepeater( moving.type ) ) {
+				announce( i18n.repeaterTypeBlocked || 'This field type cannot be used inside a repeater.' );
+				return;
+			}
+
+			// Same list no-op.
+			if (
+				from.scope === to.scope &&
+				from.s === to.s &&
+				( from.scope !== 'repeater' || from.f === to.f ) &&
+				( to.index === from.index || to.index === from.index + 1 )
+			) {
+				if ( from.scope === 'repeater' ) {
+					selection = {
+						type: 'nested',
+						sIndex: from.s,
+						fIndex: from.f,
+						nIndex: from.index,
+					};
+				} else {
+					selection = { type: 'field', sIndex: from.s, fIndex: from.index };
+				}
+				render();
+				return;
+			}
+
+			const item = fromList.splice( from.index, 1 )[ 0 ];
+			let insertAt = typeof to.index === 'number' ? to.index : toList.length;
+
+			const sameList =
+				from.scope === to.scope &&
+				from.s === to.s &&
+				( from.scope !== 'repeater' || from.f === to.f );
+			if ( sameList && from.index < insertAt ) {
 				insertAt -= 1;
 			}
-			insertAt = Math.max( 0, Math.min( insertAt, target.fields.length ) );
-			target.fields.splice( insertAt, 0, item );
-			selection = { type: 'field', sIndex: toS, fIndex: insertAt };
+			insertAt = Math.max( 0, Math.min( insertAt, toList.length ) );
+			toList.splice( insertAt, 0, item );
+
+			if ( to.scope === 'repeater' ) {
+				selection = {
+					type: 'nested',
+					sIndex: to.s,
+					fIndex: to.f,
+					nIndex: insertAt,
+				};
+			} else {
+				selection = { type: 'field', sIndex: to.s, fIndex: insertAt };
+			}
 			announce( i18n.moved || 'Item moved.' );
 			syncHidden();
 			render();
+		}
+
+		function moveField( fromS, fromF, toS, toF ) {
+			relocateField(
+				{ scope: 'section', s: fromS, f: null, index: fromF },
+				{ scope: 'section', s: toS, f: null, index: toF }
+			);
 		}
 
 		function moveSection( fromS, toS ) {
@@ -1208,7 +1248,81 @@
 			render();
 		}
 
-		function bindFieldDrag( handle, card, sIndex, fIndex ) {
+		function resolveDropLocation( clientX, clientY, dragCard ) {
+			const elUnder = document.elementFromPoint( clientX, clientY );
+			if ( ! elUnder ) {
+				return null;
+			}
+
+			const nestedCard = elUnder.closest( '.wek-builder__field[data-n]' );
+			if ( nestedCard && nestedCard !== dragCard ) {
+				const s = parseInt( nestedCard.getAttribute( 'data-s' ), 10 );
+				const f = parseInt( nestedCard.getAttribute( 'data-f' ), 10 );
+				const n = parseInt( nestedCard.getAttribute( 'data-n' ), 10 );
+				const rect = nestedCard.getBoundingClientRect();
+				const before = clientY < rect.top + rect.height / 2;
+				const line = el( 'div', { className: 'wek-builder__drop-line' } );
+				if ( before ) {
+					nestedCard.parentNode.insertBefore( line, nestedCard );
+				} else {
+					nestedCard.parentNode.insertBefore( line, nestedCard.nextSibling );
+				}
+				return { scope: 'repeater', s: s, f: f, index: before ? n : n + 1 };
+			}
+
+			const repeaterCard = elUnder.closest( '.wek-builder__field[data-repeater="1"]' );
+			if ( repeaterCard && repeaterCard !== dragCard ) {
+				const s = parseInt( repeaterCard.getAttribute( 'data-s' ), 10 );
+				const f = parseInt( repeaterCard.getAttribute( 'data-f' ), 10 );
+				const grid = repeaterCard.querySelector( '.wek-builder__repeater-canvas' );
+				repeaterCard.classList.add( 'is-drop-target' );
+				if ( grid ) {
+					grid.appendChild( el( 'div', { className: 'wek-builder__drop-line' } ) );
+				}
+				const parent = schema.sections[ s ] && schema.sections[ s ].fields
+					? schema.sections[ s ].fields[ f ]
+					: null;
+				const len =
+					parent && parent.type_options && Array.isArray( parent.type_options.fields )
+						? parent.type_options.fields.length
+						: 0;
+				return { scope: 'repeater', s: s, f: f, index: len };
+			}
+
+			const fieldCard = elUnder.closest( '.wek-builder__field:not([data-n])' );
+			if ( fieldCard && fieldCard !== dragCard && fieldCard.getAttribute( 'data-repeater' ) !== '1' ) {
+				const s = parseInt( fieldCard.getAttribute( 'data-s' ), 10 );
+				const f = parseInt( fieldCard.getAttribute( 'data-f' ), 10 );
+				const rect = fieldCard.getBoundingClientRect();
+				const before = clientY < rect.top + rect.height / 2;
+				const line = el( 'div', { className: 'wek-builder__drop-line' } );
+				if ( before ) {
+					fieldCard.parentNode.insertBefore( line, fieldCard );
+				} else {
+					fieldCard.parentNode.insertBefore( line, fieldCard.nextSibling );
+				}
+				return { scope: 'section', s: s, f: null, index: before ? f : f + 1 };
+			}
+
+			const sectionCard = elUnder.closest( '.wek-builder__section' );
+			if ( sectionCard ) {
+				const s = parseInt( sectionCard.getAttribute( 'data-s' ), 10 );
+				const grid = sectionCard.querySelector( ':scope > .wek-builder__fields' );
+				sectionCard.classList.add( 'is-drop-target' );
+				if ( grid ) {
+					grid.appendChild( el( 'div', { className: 'wek-builder__drop-line' } ) );
+				}
+				const len =
+					schema.sections[ s ] && schema.sections[ s ].fields
+						? schema.sections[ s ].fields.length
+						: 0;
+				return { scope: 'section', s: s, f: null, index: len };
+			}
+
+			return null;
+		}
+
+		function bindFieldDrag( handle, card, fromLoc ) {
 			handle.addEventListener( 'pointerdown', function ( event ) {
 				if ( event.button !== 0 ) {
 					return;
@@ -1221,8 +1335,7 @@
 				const startX = event.clientX;
 				const startY = event.clientY;
 				let started = false;
-				let dropS = sIndex;
-				let dropF = fIndex;
+				let dropLoc = null;
 
 				function clearIndicators() {
 					root.querySelectorAll( '.wek-builder__drop-line' ).forEach( function ( n ) {
@@ -1233,43 +1346,6 @@
 					} );
 				}
 
-				function updateDropTarget( clientX, clientY ) {
-					clearIndicators();
-					const elUnder = document.elementFromPoint( clientX, clientY );
-					if ( ! elUnder ) {
-						return;
-					}
-					const fieldCard = elUnder.closest( '.wek-builder__field' );
-					const sectionCard = elUnder.closest( '.wek-builder__section' );
-					if ( fieldCard && fieldCard !== card ) {
-						const ts = parseInt( fieldCard.getAttribute( 'data-s' ), 10 );
-						const tf = parseInt( fieldCard.getAttribute( 'data-f' ), 10 );
-						const rect = fieldCard.getBoundingClientRect();
-						const before = clientY < rect.top + rect.height / 2;
-						dropS = ts;
-						dropF = before ? tf : tf + 1;
-						const line = el( 'div', { className: 'wek-builder__drop-line' } );
-						if ( before ) {
-							fieldCard.parentNode.insertBefore( line, fieldCard );
-						} else {
-							fieldCard.parentNode.insertBefore( line, fieldCard.nextSibling );
-						}
-						return;
-					}
-					if ( sectionCard ) {
-						const ts = parseInt( sectionCard.getAttribute( 'data-s' ), 10 );
-						const grid = sectionCard.querySelector( '.wek-builder__fields' );
-						dropS = ts;
-						dropF = schema.sections[ ts ] && schema.sections[ ts ].fields
-							? schema.sections[ ts ].fields.length
-							: 0;
-						sectionCard.classList.add( 'is-drop-target' );
-						if ( grid ) {
-							grid.appendChild( el( 'div', { className: 'wek-builder__drop-line' } ) );
-						}
-					}
-				}
-
 				const onMove = function ( e ) {
 					const dx = e.clientX - startX;
 					const dy = e.clientY - startY;
@@ -1277,7 +1353,8 @@
 						return;
 					}
 					started = true;
-					updateDropTarget( e.clientX, e.clientY );
+					clearIndicators();
+					dropLoc = resolveDropLocation( e.clientX, e.clientY, card );
 				};
 
 				const onUp = function () {
@@ -1288,15 +1365,22 @@
 					card.classList.remove( 'is-dragging' );
 					clearIndicators();
 					if ( ! started ) {
-						selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex } );
+						if ( fromLoc.scope === 'repeater' ) {
+							selectItem( {
+								type: 'nested',
+								sIndex: fromLoc.s,
+								fIndex: fromLoc.f,
+								nIndex: fromLoc.index,
+							} );
+						} else {
+							selectItem( { type: 'field', sIndex: fromLoc.s, fIndex: fromLoc.index } );
+						}
 						return;
 					}
-					// Same slot: dropping after self is a no-op.
-					if ( dropS === sIndex && ( dropF === fIndex || dropF === fIndex + 1 ) ) {
-						selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex } );
+					if ( ! dropLoc ) {
 						return;
 					}
-					moveField( sIndex, fIndex, dropS, dropF );
+					relocateField( fromLoc, dropLoc );
 				};
 
 				document.addEventListener( 'pointermove', onMove );
@@ -1361,14 +1445,195 @@
 			} );
 		}
 
-		function renderFieldCard( section, field, sIndex, fIndex ) {
+		function renderNestedFieldCard( parent, child, sIndex, fIndex, nIndex ) {
+			const selected =
+				selection &&
+				selection.type === 'nested' &&
+				selection.sIndex === sIndex &&
+				selection.fIndex === fIndex &&
+				selection.nIndex === nIndex;
+			const card = el( 'div', {
+				className: widthClass( child.width, selected ) + ' wek-builder__field--nested',
+				'data-s': String( sIndex ),
+				'data-f': String( fIndex ),
+				'data-n': String( nIndex ),
+				tabindex: '0',
+				role: 'button',
+				'aria-pressed': selected ? 'true' : 'false',
+			} );
+
+			const handle = el( 'button', {
+				type: 'button',
+				className: 'wek-builder__handle',
+				title: i18n.dragHandle || 'Drag to reorder',
+				'aria-label': i18n.dragHandle || 'Drag to reorder',
+				'aria-grabbed': 'false',
+				text: '⋮⋮',
+			} );
+
+			card.appendChild(
+				el( 'div', { className: 'wek-builder__field-main' }, [
+					handle,
+					el( 'div', { className: 'wek-builder__field-body' }, [
+						el( 'span', {
+							className: 'wek-builder__field-label',
+							text: child.label || child.id || i18n.field || 'Field',
+						} ),
+						el( 'span', {
+							className: 'wek-builder__field-preview',
+							text: child.placeholder || child.help || child.type || '',
+						} ),
+					] ),
+					el( 'span', { className: 'wek-builder__badge', text: child.type || 'text' } ),
+				] )
+			);
+
+			card.addEventListener( 'click', function ( e ) {
+				if ( e.target.closest( '.wek-builder__handle' ) ) {
+					return;
+				}
+				e.stopPropagation();
+				selectItem( {
+					type: 'nested',
+					sIndex: sIndex,
+					fIndex: fIndex,
+					nIndex: nIndex,
+				} );
+			} );
+
+			bindFieldDrag( handle, card, {
+				scope: 'repeater',
+				s: sIndex,
+				f: fIndex,
+				index: nIndex,
+			} );
+			return card;
+		}
+
+		function renderRepeaterCard( section, field, sIndex, fIndex ) {
+			ensureRepeaterDefaults( field );
 			const selected =
 				selection &&
 				selection.type === 'field' &&
 				selection.sIndex === sIndex &&
 				selection.fIndex === fIndex;
 			const card = el( 'div', {
-				className: widthClass( field.width || 'full' ) + ( selected ? ' is-selected' : '' ),
+				className: widthClass( field.width, selected ) + ' wek-builder__field--repeater',
+				'data-s': String( sIndex ),
+				'data-f': String( fIndex ),
+				'data-repeater': '1',
+				tabindex: '0',
+				role: 'group',
+				'aria-pressed': selected ? 'true' : 'false',
+			} );
+
+			const handle = el( 'button', {
+				type: 'button',
+				className: 'wek-builder__handle',
+				title: i18n.dragHandle || 'Drag to reorder',
+				'aria-label': i18n.dragHandle || 'Drag to reorder',
+				'aria-grabbed': 'false',
+				text: '⋮⋮',
+			} );
+
+			const head = el( 'div', { className: 'wek-builder__repeater-head' }, [
+				handle,
+				el( 'div', { className: 'wek-builder__field-body' }, [
+					el( 'span', {
+						className: 'wek-builder__field-label',
+						text: field.label || field.id || i18n.field || 'Field',
+					} ),
+					el( 'span', {
+						className: 'wek-builder__field-preview',
+						text:
+							i18n.repeaterDropHint ||
+							'Drop fields here — they repeat together on the front end.',
+					} ),
+				] ),
+				el( 'span', { className: 'wek-builder__badge', text: 'repeater' } ),
+			] );
+			head.addEventListener( 'click', function ( e ) {
+				if ( e.target.closest( '.wek-builder__handle' ) ) {
+					return;
+				}
+				selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex } );
+			} );
+			card.appendChild( head );
+
+			const canvas = el( 'div', { className: 'wek-builder__repeater-canvas' } );
+			const nested = field.type_options.fields;
+			if ( ! nested.length ) {
+				canvas.appendChild(
+					el( 'p', {
+						className: 'wek-builder__repeater-empty',
+						text:
+							i18n.repeaterEmpty ||
+							'No fields yet. Drag fields here or use Add field.',
+					} )
+				);
+			} else {
+				nested.forEach( function ( child, nIndex ) {
+					canvas.appendChild( renderNestedFieldCard( field, child, sIndex, fIndex, nIndex ) );
+				} );
+			}
+			card.appendChild( canvas );
+
+			card.appendChild(
+				el( 'div', { className: 'wek-builder__toolbar' }, [
+					el( 'button', {
+						type: 'button',
+						className: 'button',
+						text: i18n.addField || 'Add field',
+						onClick: function ( e ) {
+							e.stopPropagation();
+							ensureRepeaterDefaults( field );
+							const blank = createBlankField( 'text' );
+							field.type_options.fields.push( blank );
+							selection = {
+								type: 'nested',
+								sIndex: sIndex,
+								fIndex: fIndex,
+								nIndex: field.type_options.fields.length - 1,
+							};
+							activeTab = 'general';
+							syncHidden();
+							render();
+						},
+					} ),
+				] )
+			);
+
+			const resize = el( 'button', {
+				type: 'button',
+				className: 'wek-builder__resize',
+				title: i18n.resizeHandle || 'Drag to resize',
+				'aria-label': i18n.resizeHandle || 'Drag to resize',
+			} );
+			resize.appendChild( el( 'span', { className: 'wek-builder__resize-grip' } ) );
+			card.appendChild( resize );
+
+			bindFieldDrag( handle, card, {
+				scope: 'section',
+				s: sIndex,
+				f: null,
+				index: fIndex,
+			} );
+			bindResize( resize, field, card );
+			return card;
+		}
+
+		function renderFieldCard( section, field, sIndex, fIndex ) {
+			if ( field.type === 'repeater' ) {
+				return renderRepeaterCard( section, field, sIndex, fIndex );
+			}
+
+			const selected =
+				selection &&
+				selection.type === 'field' &&
+				selection.sIndex === sIndex &&
+				selection.fIndex === fIndex;
+			const card = el( 'div', {
+				className: widthClass( field.width, selected ),
 				'data-s': String( sIndex ),
 				'data-f': String( fIndex ),
 				tabindex: '0',
@@ -1394,10 +1659,7 @@
 					} ),
 					el( 'span', {
 						className: 'wek-builder__field-preview',
-						text:
-							field.type === 'repeater'
-								? repeaterPreviewText( field )
-								: field.placeholder || field.help || field.type || '',
+						text: field.placeholder || field.help || field.type || '',
 					} ),
 				] ),
 				el( 'span', { className: 'wek-builder__badge', text: field.type || 'text' } ),
@@ -1426,7 +1688,12 @@
 				}
 			} );
 
-			bindFieldDrag( handle, card, sIndex, fIndex );
+			bindFieldDrag( handle, card, {
+				scope: 'section',
+				s: sIndex,
+				f: null,
+				index: fIndex,
+			} );
 			bindResize( resize, field, card );
 			return card;
 		}
@@ -1476,18 +1743,7 @@
 						text: i18n.addField || 'Add field',
 						onClick: function () {
 							section.fields = section.fields || [];
-							section.fields.push( {
-								id: 'field_' + Date.now(),
-								type: 'text',
-								label: i18n.field || 'Field',
-								help: '',
-								required: false,
-								placeholder: '',
-								type_options: {},
-								width: 'full',
-								options: [],
-								show_when: null,
-							} );
+							section.fields.push( createBlankField( 'text' ) );
 							selection = {
 								type: 'field',
 								sIndex: sIndex,
@@ -1506,9 +1762,6 @@
 		}
 
 		function addFieldOfType( typeId ) {
-			const typeMeta = fieldTypes.find( function ( item ) {
-				return item.type === typeId;
-			} );
 			let sIndex = 0;
 			if ( selection && typeof selection.sIndex === 'number' ) {
 				sIndex = selection.sIndex;
@@ -1524,52 +1777,33 @@
 				} );
 				sIndex = 0;
 			}
+
+			const repeaterTarget = typeId !== 'repeater' ? getActiveRepeaterTarget() : null;
+			if ( repeaterTarget ) {
+				if ( ! isAllowedInRepeater( typeId ) ) {
+					announce(
+						i18n.repeaterTypeBlocked ||
+							'This field type cannot be used inside a repeater.'
+					);
+					return;
+				}
+				ensureRepeaterDefaults( repeaterTarget.repeater );
+				repeaterTarget.repeater.type_options.fields.push( createBlankField( typeId ) );
+				selection = {
+					type: 'nested',
+					sIndex: repeaterTarget.sIndex,
+					fIndex: repeaterTarget.fIndex,
+					nIndex: repeaterTarget.repeater.type_options.fields.length - 1,
+				};
+				activeTab = 'general';
+				syncHidden();
+				render();
+				return;
+			}
+
 			const section = schema.sections[ sIndex ];
 			section.fields = section.fields || [];
-			const typeOptions = {};
-			if ( typeId === 'repeater' ) {
-				typeOptions.min_items = 1;
-				typeOptions.max_items = 5;
-				typeOptions.add_button_label = '';
-				typeOptions.fields = [
-					{
-						id: 'name',
-						type: 'text',
-						label: 'Name',
-						help: '',
-						required: false,
-						placeholder: '',
-						type_options: {},
-						width: 'full',
-						options: [],
-						show_when: null,
-					},
-					{
-						id: 'website',
-						type: 'url',
-						label: 'Website',
-						help: '',
-						required: false,
-						placeholder: 'https://',
-						type_options: {},
-						width: 'full',
-						options: [],
-						show_when: null,
-					},
-				];
-			}
-			section.fields.push( {
-				id: 'field_' + Date.now(),
-				type: typeId || 'text',
-				label: ( typeMeta && typeMeta.label ) || i18n.field || 'Field',
-				help: '',
-				required: false,
-				placeholder: '',
-				type_options: typeOptions,
-				width: 'full',
-				options: [],
-				show_when: null,
-			} );
+			section.fields.push( createBlankField( typeId ) );
 			selection = {
 				type: 'field',
 				sIndex: sIndex,
