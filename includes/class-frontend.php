@@ -215,7 +215,7 @@ final class Frontend {
 			'weFormkit',
 			array(
 				'restUrl'  => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/submit' ) ),
-				'nonce'    => wp_create_nonce( 'we_formkit_submit' ),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'formId'   => $form_id,
 				'token'    => $token,
 				'started'  => time(),

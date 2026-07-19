@@ -546,7 +546,10 @@
 			const fetchOpts = {
 				method: 'POST',
 				credentials: 'same-origin',
-				headers: {},
+				headers: {
+					// Must be a wp_rest nonce so cookie auth keeps the same user as page render.
+					'X-WP-Nonce': liveCfg.nonce || '',
+				},
 			};
 
 			if ( useMultipart ) {

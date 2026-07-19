@@ -52,7 +52,7 @@ final class Rest_Api {
 		$params = self::parse_submit_params( $request );
 
 		$nonce = isset( $params['nonce'] ) ? (string) $params['nonce'] : '';
-		if ( ! wp_verify_nonce( $nonce, 'we_formkit_submit' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
 			return new \WP_Error( 'we_formkit_forbidden', __( 'Invalid security token. Please reload the page.', 'we-formkit' ), array( 'status' => 403 ) );
 		}
 
