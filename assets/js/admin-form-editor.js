@@ -330,6 +330,7 @@
 				help: '',
 				required: false,
 				placeholder: '',
+				messages: { required: '', invalid: '' },
 				type_options: typeOptions,
 				width: 'full',
 				options: [],
@@ -772,6 +773,61 @@
 				field.type_options = {};
 			}
 			return field.type_options;
+		}
+
+		function ensureMessages( field ) {
+			if ( ! field.messages || typeof field.messages !== 'object' ) {
+				field.messages = { required: '', invalid: '' };
+			}
+			if ( field.messages.required == null ) {
+				field.messages.required = '';
+			}
+			if ( field.messages.invalid == null ) {
+				field.messages.invalid = '';
+			}
+			return field.messages;
+		}
+
+		function renderValidationMessagesEditor( field ) {
+			const msgs = ensureMessages( field );
+			const body = el( 'div', { className: 'wek-builder__validation-body' } );
+			body.appendChild(
+				fieldRow(
+					i18n.msgRequired || 'Required message',
+					textInput( msgs.required || '', function ( v ) {
+						ensureMessages( field ).required = v;
+						syncHidden();
+					} )
+				)
+			);
+			body.appendChild(
+				fieldRow(
+					i18n.msgInvalid || 'Invalid message',
+					textInput( msgs.invalid || '', function ( v ) {
+						ensureMessages( field ).invalid = v;
+						syncHidden();
+					} )
+				)
+			);
+			body.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.msgHint ||
+						'Leave empty to use Formkit Settings defaults. Use {label} for the field label.',
+				} )
+			);
+
+			const details = el( 'details', { className: 'wek-builder__validation' } );
+			const hasCustom = !!( String( msgs.required || '' ).trim() || String( msgs.invalid || '' ).trim() );
+			if ( hasCustom ) {
+				details.open = true;
+			}
+			details.appendChild(
+				el( 'summary', { text: i18n.validationMessages || 'Validation messages' } )
+			);
+			details.appendChild( body );
+			return details;
 		}
 
 		function numberInput( value, onChange, attrs ) {
@@ -1244,6 +1300,8 @@
 						)
 					);
 				}
+
+				panel.appendChild( renderValidationMessagesEditor( field ) );
 
 				if ( [ 'radio', 'checkboxes', 'select', 'radio_image' ].indexOf( field.type ) !== -1 ) {
 					panel.appendChild( renderOptionsEditor( field ) );

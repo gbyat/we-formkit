@@ -244,11 +244,43 @@
 	function clearErrors( form ) {
 		qsa( form, '[data-wek-error]' ).forEach( function ( el ) {
 			el.hidden = true;
-			el.textContent = '';
+			const text = qs( el, '[data-wek-error-text]' );
+			if ( text ) {
+				text.textContent = '';
+			} else {
+				el.textContent = '';
+			}
 		} );
 		qsa( form, '.is-invalid' ).forEach( function ( el ) {
 			el.classList.remove( 'is-invalid' );
 		} );
+		qsa( form, '[aria-invalid="true"]' ).forEach( function ( el ) {
+			el.removeAttribute( 'aria-invalid' );
+		} );
+	}
+
+	function applyLabelTemplate( template, label ) {
+		const tpl = String( template || '' );
+		const lab = String( label || '' );
+		let out = tpl.split( '{label}' ).join( lab );
+		if ( out.indexOf( '%s' ) !== -1 ) {
+			out = out.replace( '%s', lab );
+		}
+		return out;
+	}
+
+	function fieldRequiredMessage( fieldEl ) {
+		const label = fieldEl.getAttribute( 'data-field-label' ) || '';
+		const override = ( fieldEl.getAttribute( 'data-msg-required' ) || '' ).trim();
+		if ( override ) {
+			return applyLabelTemplate( override, label );
+		}
+		const cfg = window.weFormkit || {};
+		const tpl =
+			( cfg.validation && cfg.validation.required ) ||
+			( cfg.i18n && cfg.i18n.required ) ||
+			'{label} is required.';
+		return applyLabelTemplate( tpl, label || 'This field' );
 	}
 
 	function showFieldError( form, fieldId, message ) {
@@ -260,8 +292,19 @@
 		const err = qs( field, '[data-wek-error]' );
 		if ( err ) {
 			err.hidden = false;
-			err.textContent = message;
+			const text = qs( err, '[data-wek-error-text]' );
+			if ( text ) {
+				text.textContent = message;
+			} else {
+				err.textContent = message;
+			}
 		}
+		qsa( field, 'input, textarea, select' ).forEach( function ( control ) {
+			if ( control.classList.contains( 'we-formkit__honeypot' ) ) {
+				return;
+			}
+			control.setAttribute( 'aria-invalid', 'true' );
+		} );
 	}
 
 	function setStatus( root, message, isError ) {
@@ -712,7 +755,7 @@
 				}
 				if ( empty ) {
 					ok = false;
-					showFieldError( form, id, i18n.required || 'This field is required.' );
+					showFieldError( form, id, fieldRequiredMessage( fieldEl ) );
 				}
 			} );
 			return ok;
@@ -1080,17 +1123,21 @@
 					}
 
 					const errData = result.data || {};
-					const message =
-						( errData.message ) ||
-						( liveCfg.i18n && liveCfg.i18n.error ) ||
-						'Something went wrong.';
-					setStatus( root, message, true );
-					setInfoDocuments( root, [] );
-
 					const fieldErrors =
 						( errData.data && errData.data.errors ) ||
 						( errData.errors ) ||
 						{};
+					const hasFieldErrors = Object.keys( fieldErrors ).length > 0;
+					const message = hasFieldErrors
+						? ( liveCfg.i18n && liveCfg.i18n.correctFields ) ||
+						  errData.message ||
+						  'Please correct the highlighted fields.'
+						: ( errData.message ) ||
+						  ( liveCfg.i18n && liveCfg.i18n.error ) ||
+						  'Something went wrong.';
+					setStatus( root, message, true );
+					setInfoDocuments( root, [] );
+
 					Object.keys( fieldErrors ).forEach( function ( key ) {
 						showFieldError( form, key, fieldErrors[ key ] );
 					} );

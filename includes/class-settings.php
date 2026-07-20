@@ -31,6 +31,8 @@ final class Settings {
 			'from_name'                => '',
 			'privacy_policy_mode'      => 'wp',
 			'privacy_policy_url'       => '',
+			'validation_required'      => '',
+			'validation_invalid'       => '',
 			'retention_days'           => 365,
 			'delete_data_on_uninstall' => false,
 			'admin_scheme'             => 'brick',
@@ -178,6 +180,12 @@ final class Settings {
 		if ( 'custom' === $out['privacy_policy_mode'] ) {
 			$out['privacy_policy_url'] = isset( $input['privacy_policy_url'] ) ? esc_url_raw( (string) $input['privacy_policy_url'] ) : '';
 		}
+
+		$req_tpl = isset( $input['validation_required'] ) ? sanitize_text_field( (string) $input['validation_required'] ) : '';
+		$inv_tpl = isset( $input['validation_invalid'] ) ? sanitize_text_field( (string) $input['validation_invalid'] ) : '';
+		// Store empty when matching built-in so locale updates still apply.
+		$out['validation_required'] = ( Validation_Messages::builtin_required_template() === $req_tpl ) ? '' : $req_tpl;
+		$out['validation_invalid']  = ( Validation_Messages::builtin_invalid_template() === $inv_tpl ) ? '' : $inv_tpl;
 
 		$days                            = isset( $input['retention_days'] ) ? (int) $input['retention_days'] : 365;
 		$out['retention_days']           = max( 0, min( 3650, $days ) );

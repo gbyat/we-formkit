@@ -40,11 +40,7 @@ class Url_Field extends Abstract_Field_Type {
 		if ( ! is_string( $value ) || ! filter_var( $value, FILTER_VALIDATE_URL ) ) {
 			return new \WP_Error(
 				'we_formkit_url_invalid',
-				sprintf(
-					/* translators: %s: field label. */
-					__( 'Please enter a valid URL for %s.', 'we-formkit' ),
-					(string) ( $field['label'] ?? '' )
-				)
+				$this->invalid_value_message( $field )
 			);
 		}
 
@@ -52,7 +48,7 @@ class Url_Field extends Abstract_Field_Type {
 	}
 
 	public function render_attributes( array $field ): array {
-		$attrs = parent::render_attributes( $field );
+		$attrs         = parent::render_attributes( $field );
 		$attrs['type'] = 'url';
 
 		return $attrs;

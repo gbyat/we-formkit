@@ -40,11 +40,7 @@ class Email_Field extends Abstract_Field_Type {
 		if ( ! is_string( $value ) || ! is_email( $value ) ) {
 			return new \WP_Error(
 				'we_formkit_email_invalid',
-				sprintf(
-					/* translators: %s: field label. */
-					__( 'Please enter a valid email address for %s.', 'we-formkit' ),
-					(string) ( $field['label'] ?? '' )
-				)
+				$this->invalid_value_message( $field )
 			);
 		}
 
@@ -52,7 +48,7 @@ class Email_Field extends Abstract_Field_Type {
 	}
 
 	public function render_attributes( array $field ): array {
-		$attrs = parent::render_attributes( $field );
+		$attrs         = parent::render_attributes( $field );
 		$attrs['type'] = 'email';
 
 		return $attrs;

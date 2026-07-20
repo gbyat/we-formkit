@@ -7,6 +7,8 @@
 
 namespace Webentwicklerin\WeFormkit\Fields;
 
+use Webentwicklerin\WeFormkit\Validation_Messages;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -67,6 +69,8 @@ abstract class Abstract_Field_Type {
 		if ( ! isset( $field['type_options'] ) || ! is_array( $field['type_options'] ) ) {
 			$field['type_options'] = array();
 		}
+
+		$field['messages'] = Validation_Messages::normalize_field_messages( $field['messages'] ?? null );
 
 		return $field;
 	}
@@ -267,10 +271,6 @@ abstract class Abstract_Field_Type {
 	 * @param array<string, mixed> $field Field configuration.
 	 */
 	protected function invalid_value_message( array $field ): string {
-		return sprintf(
-			/* translators: %s: field label. */
-			__( 'Please enter a valid value for %s.', 'we-formkit' ),
-			(string) ( $field['label'] ?? '' )
-		);
+		return Validation_Messages::invalid_for_field( $field );
 	}
 }

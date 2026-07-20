@@ -450,8 +450,7 @@ final class Form_Schema {
 				$sanitized = $type->sanitize( $raw, $field );
 
 				if ( ! empty( $field['required'] ) && $type->is_empty_value( $sanitized ) ) {
-					/* translators: %s: field label */
-					$errors[ $id ] = sprintf( __( '%s is required.', 'we-formkit' ), (string) ( $field['label'] ?? $id ) );
+					$errors[ $id ] = Validation_Messages::required_for_field( $field );
 					continue;
 				}
 

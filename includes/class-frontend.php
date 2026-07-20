@@ -291,6 +291,7 @@ final class Frontend {
 					'submitting'     => __( 'Submitting…', 'we-formkit' ),
 					'error'          => __( 'Something went wrong. Please try again.', 'we-formkit' ),
 					'required'       => __( 'This field is required.', 'we-formkit' ),
+					'correctFields'  => __( 'Please correct the highlighted fields.', 'we-formkit' ),
 					'addRow'         => __( 'Add another', 'we-formkit' ),
 					'removeRow'      => __( 'Remove', 'we-formkit' ),
 					/* translators: %d: row number (1-based). */
@@ -307,6 +308,7 @@ final class Frontend {
 					'savedProgress'  => __( 'Progress saved. Copy your resume link:', 'we-formkit' ),
 					'resumeLoaded'   => __( 'Your saved progress was restored.', 'we-formkit' ),
 				),
+				'validation' => Validation_Messages::global_templates_for_js(),
 			)
 		);
 
@@ -410,13 +412,19 @@ final class Frontend {
 		$error_id = $input_id . '-error';
 		$registry = Plugin::instance()->field_registry();
 		$type_obj = $registry ? $registry->get( $type ) : null;
+		$messages = isset( $field['messages'] ) && is_array( $field['messages'] ) ? $field['messages'] : array();
+		$msg_req  = isset( $messages['required'] ) ? (string) $messages['required'] : '';
+		$msg_inv  = isset( $messages['invalid'] ) ? (string) $messages['invalid'] : '';
 		?>
 		<div
 			class="we-formkit__field we-formkit__field--<?php echo esc_attr( $type ); ?> we-formkit__field--width-<?php echo esc_attr( $width ); ?><?php echo $hidden ? ' is-hidden' : ''; ?>"
 			data-wek-field
 			data-field-id="<?php echo esc_attr( $id ); ?>"
 			data-field-type="<?php echo esc_attr( $type ); ?>"
+			data-field-label="<?php echo esc_attr( (string) ( $field['label'] ?? '' ) ); ?>"
 			data-required="<?php echo $req ? '1' : '0'; ?>"
+			data-msg-required="<?php echo esc_attr( $msg_req ); ?>"
+			data-msg-invalid="<?php echo esc_attr( $msg_inv ); ?>"
 			<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			aria-hidden="<?php echo $hidden ? 'true' : 'false'; ?>"
 		>
@@ -662,7 +670,10 @@ final class Frontend {
 				<?php endif; ?>
 			<?php endif; ?>
 			<?php if ( 'html' !== $type && 'hidden' !== $type ) : ?>
-				<p class="we-formkit__error" id="<?php echo esc_attr( $error_id ); ?>" data-wek-error hidden></p>
+				<p class="we-formkit__error" id="<?php echo esc_attr( $error_id ); ?>" data-wek-error role="alert" hidden>
+					<span class="we-formkit__error-icon" aria-hidden="true"></span>
+					<span class="we-formkit__error-text" data-wek-error-text></span>
+				</p>
 			<?php endif; ?>
 		</div>
 		<?php

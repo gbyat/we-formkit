@@ -348,15 +348,52 @@
 }
 
 .we-formkit__error {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.4rem;
 	color: var(--wek-danger);
 	font-size: 0.9rem;
 	margin: 0.35rem 0 0;
+	font-weight: 600;
+}
+
+.we-formkit__error[hidden] {
+	display: none !important;
+}
+
+.we-formkit__error-icon {
+	flex: 0 0 auto;
+	width: 1.05rem;
+	height: 1.05rem;
+	margin-top: 0.1rem;
+	border-radius: 50%;
+	background: var(--wek-danger);
+	color: #fff;
+	position: relative;
+}
+
+.we-formkit__error-icon::before {
+	content: "!";
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.we-formkit__error-text {
+	flex: 1 1 auto;
+	min-width: 0;
 }
 
 .we-formkit__field.is-invalid input,
 .we-formkit__field.is-invalid textarea,
 .we-formkit__field.is-invalid select {
 	border-color: var(--wek-danger);
+	box-shadow: 0 0 0 1px var(--wek-danger);
 }
 
 .we-formkit__actions {

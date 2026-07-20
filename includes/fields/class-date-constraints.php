@@ -202,10 +202,6 @@ final class Date_Constraints {
 	 * @param array<string, mixed> $field Field configuration.
 	 */
 	private static function invalid_date_message( array $field ): string {
-		return sprintf(
-			/* translators: %s: field label. */
-			__( 'Please choose a valid date for %s.', 'we-formkit' ),
-			(string) ( $field['label'] ?? '' )
-		);
+		return \Webentwicklerin\WeFormkit\Validation_Messages::invalid_for_field( $field );
 	}
 }

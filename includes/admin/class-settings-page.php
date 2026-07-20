@@ -9,6 +9,7 @@ namespace Webentwicklerin\WeFormkit\Admin;
 
 use Webentwicklerin\WeFormkit\Capabilities;
 use Webentwicklerin\WeFormkit\Settings;
+use Webentwicklerin\WeFormkit\Validation_Messages;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -199,6 +200,36 @@ final class Settings_Page {
 								<label for="wek_privacy_url" class="screen-reader-text"><?php esc_html_e( 'Custom privacy policy URL', 'we-formkit' ); ?></label>
 								<input class="regular-text" type="url" name="wek_settings[privacy_policy_url]" id="wek_privacy_url" value="<?php echo esc_attr( (string) $settings['privacy_policy_url'] ); ?>" placeholder="https://" />
 							</p>
+						</td>
+					</tr>
+					<tr>
+						<th colspan="2"><h2 class="title" style="margin:1.5rem 0 0;"><?php esc_html_e( 'Validation', 'we-formkit' ); ?></h2></th>
+					</tr>
+					<tr>
+						<th><label for="wek_validation_required"><?php esc_html_e( 'Default required message', 'we-formkit' ); ?></label></th>
+						<td>
+							<input
+								class="regular-text"
+								type="text"
+								name="wek_settings[validation_required]"
+								id="wek_validation_required"
+								value="<?php echo esc_attr( '' !== (string) $settings['validation_required'] ? (string) $settings['validation_required'] : Validation_Messages::builtin_required_template() ); ?>"
+							/>
+							<p class="description"><?php esc_html_e( 'Used when a field has no own required message. Include {label} for the field label.', 'we-formkit' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="wek_validation_invalid"><?php esc_html_e( 'Default invalid message', 'we-formkit' ); ?></label></th>
+						<td>
+							<input
+								class="regular-text"
+								type="text"
+								name="wek_settings[validation_invalid]"
+								id="wek_validation_invalid"
+								value="<?php echo esc_attr( '' !== (string) $settings['validation_invalid'] ? (string) $settings['validation_invalid'] : Validation_Messages::builtin_invalid_template() ); ?>"
+							/>
+							<p class="description"><?php esc_html_e( 'Used when a field has no own invalid message. Include {label} for the field label.', 'we-formkit' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Errors appear under each field with an icon; color is never the only cue.', 'we-formkit' ); ?></p>
 						</td>
 					</tr>
 					<tr>

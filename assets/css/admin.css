@@ -856,6 +856,23 @@ body.wek-scheme-violet .wek-admin {
 	margin: 0 0 1rem;
 }
 
+.wek-admin .wek-builder-sidebar .wek-builder__validation {
+	margin: 0.5rem 0 1rem;
+	padding: 0.5rem 0.65rem;
+	border: 1px solid var(--wek-line, #dcdcde);
+	border-radius: 6px;
+	background: var(--wek-soft, #f6f7f7);
+}
+
+.wek-admin .wek-builder-sidebar .wek-builder__validation > summary {
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.wek-admin .wek-builder-sidebar .wek-builder__validation-body {
+	margin-top: 0.65rem;
+}
+
 .wek-admin .wek-builder-sidebar .wek-builder__row label {
 	display: grid;
 	gap: 0.35rem;
