@@ -64,13 +64,9 @@ final class Notifications {
 
 		$vars    = self::merge_vars( $submission_id, $form_id, $schema, $data, $notification, $matched_docs );
 		$subject = self::replace_tags( (string) $notification['subject'], $vars );
-		$body    = self::replace_tags( (string) $notification['message'], $vars );
+		$body    = self::compose_html_body( $notification, $vars );
 
-		if ( '' !== trim( (string) $notification['footer'] ) ) {
-			$body .= "\n\n---\n" . self::replace_tags( (string) $notification['footer'], $vars );
-		}
-
-		$headers = array( 'Content-Type: text/plain; charset=UTF-8' );
+		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 
 		$from_email = (string) $notification['from_email'];
 		if ( ! is_email( $from_email ) ) {
@@ -242,23 +238,78 @@ final class Notifications {
 		$edit_link  = admin_url( 'admin.php?page=we-formkit-submissions&action=edit&submission_id=' . (int) $submission_id );
 
 		$vars = array(
-			'form_title'     => is_string( $form_title ) ? $form_title : '',
-			'submission_url' => $edit_link,
+			'form_title'     => esc_html( is_string( $form_title ) ? $form_title : '' ),
+			'submission_url' => esc_url( $edit_link ),
 			'submission_id'  => (string) (int) $submission_id,
 			'form_id'        => (string) (int) $form_id,
-			'site_name'      => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
-			'admin_email'    => (string) get_option( 'admin_email' ),
-			'date'           => wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ),
-			'all_fields'     => self::format_fields_block( $schema, $data, $notification ),
-			'footer'         => (string) $notification['footer'],
-			'info_links'     => Form_Info_Documents::links_as_text( $matched_docs ),
+			'site_name'      => esc_html( wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) ),
+			'admin_email'    => esc_html( (string) get_option( 'admin_email' ) ),
+			'date'           => esc_html( (string) wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ) ),
+			'all_fields'     => self::format_fields_block_html( $schema, $data, $notification ),
+			'footer'         => (string) ( $notification['footer'] ?? '' ),
+			'info_links'     => Form_Info_Documents::links_as_html( $matched_docs ),
 		);
 
 		foreach ( Form_Schema::fields_by_id( $schema ) as $field_id => $field ) {
-			$vars[ 'field:' . $field_id ] = self::format_field_value( $field, $data[ $field_id ] ?? null );
+			$vars[ 'field:' . $field_id ] = esc_html( self::format_field_value( $field, $data[ $field_id ] ?? null ) );
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Build a full HTML email from header / message / footer.
+	 *
+	 * @param array<string, mixed>  $notification Notification.
+	 * @param array<string, string> $vars         Merge vars.
+	 * @return string
+	 */
+	private static function compose_html_body( array $notification, array $vars ) {
+		$header  = self::prepare_rich_part( (string) ( $notification['header'] ?? '' ), $vars );
+		$message = self::prepare_rich_part( (string) ( $notification['message'] ?? '' ), $vars );
+		$footer  = self::prepare_rich_part( (string) ( $notification['footer'] ?? '' ), $vars );
+
+		$parts = array();
+		if ( '' !== trim( wp_strip_all_tags( $header ) ) ) {
+			$parts[] = '<div style="margin:0 0 1.25rem;padding-bottom:1rem;border-bottom:1px solid #e5e5e5;">' . $header . '</div>';
+		}
+		$parts[] = '<div>' . $message . '</div>';
+		if ( '' !== trim( wp_strip_all_tags( $footer ) ) ) {
+			$parts[] = '<div style="margin:1.5rem 0 0;padding-top:1rem;border-top:1px solid #e5e5e5;color:#666;font-size:13px;">' . $footer . '</div>';
+		}
+
+		$inner = implode( "\n", $parts );
+		$site  = esc_html( wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) );
+
+		return '<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /></head>'
+			. '<body style="margin:0;padding:0;background:#f4f4f5;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:#1f1d1c;">'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:24px 12px;">'
+			. '<tr><td align="center">'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;border:1px solid #e4e4e7;border-radius:8px;">'
+			. '<tr><td style="padding:24px 28px;">' . $inner . '</td></tr>'
+			. '<tr><td style="padding:12px 28px 20px;font-size:12px;color:#8a8580;">' . $site . '</td></tr>'
+			. '</table></td></tr></table></body></html>';
+	}
+
+	/**
+	 * Convert legacy plain text to HTML, then apply merge tags.
+	 *
+	 * @param string                $raw  Stored fragment.
+	 * @param array<string, string> $vars Merge vars.
+	 * @return string
+	 */
+	private static function prepare_rich_part( $raw, array $vars ) {
+		$raw = (string) $raw;
+		if ( '' === trim( $raw ) ) {
+			return '';
+		}
+		if ( false === strpos( $raw, '<' ) ) {
+			if ( false !== strpos( $raw, 'rnrn' ) ) {
+				$raw = str_replace( 'rnrn', "\n\n", $raw );
+			}
+			$raw = wpautop( $raw );
+		}
+		return self::replace_tags( $raw, $vars );
 	}
 
 	/**
@@ -267,7 +318,7 @@ final class Notifications {
 	 * @param array<string, mixed> $notification Notification.
 	 * @return string
 	 */
-	private static function format_fields_block( array $schema, array $data, array $notification ) {
+	private static function format_fields_block_html( array $schema, array $data, array $notification ) {
 		$mode = (string) $notification['include_fields'];
 		if ( 'none' === $mode ) {
 			return '';
@@ -280,7 +331,7 @@ final class Notifications {
 			}
 		}
 
-		$lines = array();
+		$rows = array();
 		foreach ( Form_Schema::fields_by_id( $schema ) as $field_id => $field ) {
 			$type = isset( $field['type'] ) ? (string) $field['type'] : '';
 			if ( in_array( $type, array( 'html', 'hidden' ), true ) ) {
@@ -289,12 +340,32 @@ final class Notifications {
 			if ( 'selected' === $mode && empty( $selected[ $field_id ] ) ) {
 				continue;
 			}
-			$label   = isset( $field['label'] ) ? (string) $field['label'] : $field_id;
-			$value   = self::format_field_value( $field, $data[ $field_id ] ?? null );
-			$lines[] = $label . ': ' . $value;
+			$label  = isset( $field['label'] ) ? (string) $field['label'] : $field_id;
+			$value  = self::format_field_value( $field, $data[ $field_id ] ?? null );
+			$rows[] = '<tr>'
+				. '<td style="padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top;font-weight:600;width:35%;">' . esc_html( $label ) . '</td>'
+				. '<td style="padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top;">' . nl2br( esc_html( $value ) ) . '</td>'
+				. '</tr>';
 		}
 
-		return implode( "\n", $lines );
+		if ( empty( $rows ) ) {
+			return '';
+		}
+
+		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0.75rem 0;border:1px solid #e5e5e5;">'
+			. implode( '', $rows )
+			. '</table>';
+	}
+
+	/**
+	 * @param array<string, mixed> $schema       Schema.
+	 * @param array<string, mixed> $data         Values.
+	 * @param array<string, mixed> $notification Notification.
+	 * @return string
+	 */
+	private static function format_fields_block( array $schema, array $data, array $notification ) {
+		$html = self::format_fields_block_html( $schema, $data, $notification );
+		return wp_strip_all_tags( str_replace( array( '</tr>', '<br />', '<br/>', '<br>' ), array( "\n", "\n", "\n", "\n" ), $html ) );
 	}
 
 	/**

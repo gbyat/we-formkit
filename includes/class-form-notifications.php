@@ -230,7 +230,8 @@ final class Form_Notifications {
 				'cc'             => '',
 				'bcc'            => '',
 				'subject'        => __( '[Formkit] New submission: {form_title}', 'we-formkit' ),
-				'message'        => __( "A new form was submitted.\n\n{all_fields}\n\nOpen submission: {submission_url}", 'we-formkit' ),
+				'header'         => '',
+				'message'        => __( "<p>A new form was submitted.</p>\n<p>{all_fields}</p>\n<p>Open submission: <a href=\"{submission_url}\">{submission_url}</a></p>", 'we-formkit' ),
 				'include_fields' => 'all',
 				'field_ids'      => array(),
 				'footer'         => '',
@@ -251,7 +252,8 @@ final class Form_Notifications {
 				'cc'             => '',
 				'bcc'            => '',
 				'subject'        => __( 'We received your submission: {form_title}', 'we-formkit' ),
-				'message'        => __( "Thank you. We have received your submission.\n\n{all_fields}", 'we-formkit' ),
+				'header'         => '',
+				'message'        => __( "<p>Thank you. We have received your submission.</p>\n<p>{all_fields}</p>", 'we-formkit' ),
 				'include_fields' => 'all',
 				'field_ids'      => array(),
 				'footer'         => '',
@@ -334,12 +336,45 @@ final class Form_Notifications {
 			'cc'             => self::sanitize_email_list( (string) ( $input['cc'] ?? '' ) ),
 			'bcc'            => self::sanitize_email_list( (string) ( $input['bcc'] ?? '' ) ),
 			'subject'        => sanitize_text_field( (string) ( $input['subject'] ?? '' ) ),
-			'message'        => sanitize_textarea_field( (string) ( $input['message'] ?? '' ) ),
+			'header'         => self::sanitize_html_body( (string) ( $input['header'] ?? '' ) ),
+			'message'        => self::sanitize_html_body( (string) ( $input['message'] ?? '' ) ),
 			'include_fields' => $include,
 			'field_ids'      => $field_ids,
-			'footer'         => sanitize_textarea_field( (string) ( $input['footer'] ?? '' ) ),
+			'footer'         => self::sanitize_html_body( (string) ( $input['footer'] ?? '' ) ),
 			'attach_uploads' => ! empty( $input['attach_uploads'] ),
 		);
+	}
+
+	/**
+	 * Allow safe HTML for WYSIWYG notification bodies.
+	 *
+	 * @param string $html Raw HTML.
+	 * @return string
+	 */
+	public static function sanitize_html_body( $html ) {
+		$html = (string) $html;
+		// Legacy bug: "\r\n" sometimes stored as literal "rnrn" after escaping.
+		if ( false === strpos( $html, '<' ) && false !== strpos( $html, 'rnrn' ) ) {
+			$html = str_replace( 'rnrn', "\n\n", $html );
+		}
+		return wp_kses_post( $html );
+	}
+
+	/**
+	 * Content for the WYSIWYG editor (upgrade legacy plain text).
+	 *
+	 * @param string $html Stored body.
+	 * @return string
+	 */
+	public static function editor_content( $html ) {
+		$html = self::sanitize_html_body( $html );
+		if ( '' === trim( $html ) ) {
+			return '';
+		}
+		if ( false === strpos( $html, '<' ) ) {
+			return wpautop( $html );
+		}
+		return $html;
 	}
 
 	/**

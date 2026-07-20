@@ -477,7 +477,7 @@ final class Form_Editor {
 		$form_id = isset( $_GET['form_id'] ) ? absint( $_GET['form_id'] ) : 0;
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$view          = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( (string) $_GET['view'] ) ) : 'fields';
-		$allowed_views = array( 'fields', 'settings', 'notifications', 'documents', 'confirmations', 'entries' );
+		$allowed_views = array( 'fields', 'settings', 'documents', 'notifications', 'confirmations', 'entries' );
 		if ( ! in_array( $view, $allowed_views, true ) ) {
 			$view = 'fields';
 		}
@@ -587,11 +587,11 @@ final class Form_Editor {
 			case 'settings':
 				self::render_view_settings( $form_id, $title, $slug, $secret, $privacy, $schema, $secret_url, $is_new );
 				break;
-			case 'notifications':
-				self::render_view_notifications( $form_id, $notifications, is_array( $schema ) ? $schema : array(), $is_new );
-				break;
 			case 'documents':
 				self::render_view_documents( $form_id, $documents, $notifications, is_array( $schema ) ? $schema : array(), $is_new );
+				break;
+			case 'notifications':
+				self::render_view_notifications( $form_id, $notifications, is_array( $schema ) ? $schema : array(), $is_new );
 				break;
 			case 'confirmations':
 				self::render_view_confirmations( $form_id, $confirm, $is_new );
@@ -626,8 +626,8 @@ final class Form_Editor {
 		$tabs = array(
 			'fields'        => __( 'Fields', 'we-formkit' ),
 			'settings'      => __( 'Form Settings', 'we-formkit' ),
-			'notifications' => __( 'Notifications', 'we-formkit' ),
 			'documents'     => __( 'Documents', 'we-formkit' ),
+			'notifications' => __( 'Notifications', 'we-formkit' ),
 			'confirmations' => __( 'Confirmations', 'we-formkit' ),
 			'entries'       => __( 'Entries', 'we-formkit' ),
 		);
@@ -1082,6 +1082,34 @@ final class Form_Editor {
 	}
 
 	/**
+	 * TinyMCE editor for notification HTML bodies.
+	 *
+	 * @param string $editor_id Editor DOM id.
+	 * @param string $name      Textarea name.
+	 * @param string $content   HTML content.
+	 * @param int    $rows      Rows.
+	 * @return void
+	 */
+	private static function render_notification_editor( $editor_id, $name, $content, $rows = 10 ) {
+		$settings = array(
+			'textarea_name' => $name,
+			'textarea_rows' => max( 4, (int) $rows ),
+			'media_buttons' => false,
+			'teeny'         => false,
+			'quicktags'     => true,
+			'editor_class'  => 'wek-notify-editor',
+			'tinymce'       => array(
+				'toolbar1'      => 'formatselect,bold,italic,underline,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,undo,redo,removeformat',
+				'toolbar2'      => '',
+				'content_css'   => false,
+				'body_class'    => 'wek-notify-mail-body',
+				'block_formats' => 'Paragraph=p;Heading 2=h2;Heading 3=h3',
+			),
+		);
+		wp_editor( (string) $content, $editor_id, $settings );
+	}
+
+	/**
 	 * @param array<string, mixed> $n       Notification.
 	 * @param array<string, mixed> $schema  Schema.
 	 * @param string               $prefix  Input name prefix.
@@ -1184,8 +1212,32 @@ final class Form_Editor {
 				<td><input class="large-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[subject]" id="wek_n_<?php echo esc_attr( $nid ); ?>_subject" value="<?php echo esc_attr( (string) $n['subject'] ); ?>" /></td>
 			</tr>
 			<tr>
+				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_header"><?php esc_html_e( 'Header', 'we-formkit' ); ?></label></th>
+				<td>
+					<?php
+					self::render_notification_editor(
+						'wek_n_' . $nid . '_header',
+						$prefix . '[header]',
+						Form_Notifications::editor_content( (string) ( $n['header'] ?? '' ) ),
+						6
+					);
+					?>
+					<p class="description"><?php esc_html_e( 'Shown above the message (logo text, greeting). Supports merge tags. Formatting is kept in the email.', 'we-formkit' ); ?></p>
+				</td>
+			</tr>
+			<tr>
 				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_message"><?php esc_html_e( 'Message', 'we-formkit' ); ?></label></th>
-				<td><textarea class="large-text" rows="8" name="<?php echo esc_attr( $prefix ); ?>[message]" id="wek_n_<?php echo esc_attr( $nid ); ?>_message"><?php echo esc_textarea( (string) $n['message'] ); ?></textarea></td>
+				<td>
+					<?php
+					self::render_notification_editor(
+						'wek_n_' . $nid . '_message',
+						$prefix . '[message]',
+						Form_Notifications::editor_content( (string) $n['message'] ),
+						14
+					);
+					?>
+					<p class="description"><?php esc_html_e( 'HTML email body. Use {all_fields}, {info_links}, {form_title}, {submission_url}, {field:field_id}, and other merge tags.', 'we-formkit' ); ?></p>
+				</td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Fields in {all_fields}', 'we-formkit' ); ?></th>
@@ -1212,8 +1264,15 @@ final class Form_Editor {
 			<tr>
 				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_footer"><?php esc_html_e( 'Footer', 'we-formkit' ); ?></label></th>
 				<td>
-					<textarea class="large-text" rows="3" name="<?php echo esc_attr( $prefix ); ?>[footer]" id="wek_n_<?php echo esc_attr( $nid ); ?>_footer"><?php echo esc_textarea( (string) $n['footer'] ); ?></textarea>
-					<p class="description"><?php esc_html_e( 'Appended below the message (signature, legal line, contact). Supports the same tags.', 'we-formkit' ); ?></p>
+					<?php
+					self::render_notification_editor(
+						'wek_n_' . $nid . '_footer',
+						$prefix . '[footer]',
+						Form_Notifications::editor_content( (string) $n['footer'] ),
+						8
+					);
+					?>
+					<p class="description"><?php esc_html_e( 'Shown below the message (signature, legal line, contact). Supports merge tags and formatting.', 'we-formkit' ); ?></p>
 				</td>
 			</tr>
 			<tr>

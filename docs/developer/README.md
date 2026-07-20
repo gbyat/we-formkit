@@ -51,7 +51,7 @@ add_action(
 
 ### Notification merge tags
 
-Usable in subject, message, and footer: `{all_fields}`, `{form_title}`, `{submission_url}`, `{submission_id}`, `{form_id}`, `{date}`, `{site_name}`, `{admin_email}`, `{field:FIELD_ID}`, `{footer}`, `{info_links}` (matched info documents with download enabled).
+Usable in subject, header, message, and footer: `{all_fields}`, `{form_title}`, `{submission_url}`, `{submission_id}`, `{form_id}`, `{date}`, `{site_name}`, `{admin_email}`, `{field:FIELD_ID}`, `{footer}`, `{info_links}` (matched info documents with download enabled). Notification bodies are HTML (WYSIWYG); outbound mail is `text/html` with inline styles.
 
 ### Info documents
 

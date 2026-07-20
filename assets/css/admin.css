@@ -1672,3 +1672,18 @@ body.wek-scheme-violet .wek-admin {
 	max-width: 100%;
 	min-width: 0;
 }
+
+.wek-admin .wek-notify-editor,
+.wek-admin .wp-editor-wrap {
+	max-width: 100%;
+}
+
+.wek-admin .wp-editor-container {
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-sm);
+	box-sizing: border-box;
+}
+
+.wek-admin .form-table .wp-editor-wrap {
+	width: 100%;
+}

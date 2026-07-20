@@ -268,6 +268,24 @@ final class Form_Info_Documents {
 	}
 
 	/**
+	 * HTML list of download links for mail bodies ({info_links}).
+	 *
+	 * @param list<array<string, mixed>> $matched Resolved docs.
+	 * @return string
+	 */
+	public static function links_as_html( array $matched ) {
+		$items = self::download_links( $matched );
+		if ( empty( $items ) ) {
+			return '';
+		}
+		$lis = array();
+		foreach ( $items as $link ) {
+			$lis[] = '<li><a href="' . esc_url( $link['url'] ) . '">' . esc_html( $link['title'] ) . '</a></li>';
+		}
+		return '<ul style="margin:0.5rem 0;padding-left:1.25rem;">' . implode( '', $lis ) . '</ul>';
+	}
+
+	/**
 	 * @param list<array<string, mixed>> $items Raw list.
 	 * @return list<array<string, mixed>>
 	 */
