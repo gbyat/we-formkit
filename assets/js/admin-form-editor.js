@@ -168,11 +168,11 @@
 			layout.classList.toggle( 'is-side-collapsed', !! chrome.sideCollapsed );
 			layout.style.setProperty(
 				'--wek-lib-w',
-				( chrome.libCollapsed ? 28 : clampWidth( chrome.libW, 200, 420 ) ) + 'px'
+				( chrome.libCollapsed ? 36 : clampWidth( chrome.libW, 200, 420 ) ) + 'px'
 			);
 			layout.style.setProperty(
 				'--wek-side-w',
-				( chrome.sideCollapsed ? 28 : clampWidth( chrome.sideW, 280, 560 ) ) + 'px'
+				( chrome.sideCollapsed ? 36 : clampWidth( chrome.sideW, 280, 560 ) ) + 'px'
 			);
 		}
 
