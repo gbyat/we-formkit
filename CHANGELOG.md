@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.19] - 2026-07-20
+
+- Implement conditional visibility rules in the admin form editor. Introduce a new CPO-style conditions container for managing visibility based on field values, enhancing user experience. Update CSS for condition-related UI elements and refine JavaScript logic for evaluating and rendering conditions. Ensure backward compatibility with legacy single rule format.
 ## [0.1.18] - 2026-07-20
 
 - Enhance admin form editor UI and CSS for improved usability and layout. Update grid layout for builder components, refine responsive behavior, and adjust styles for empty states and drag-and-drop functionality. Modify text hints for clarity in field interactions, ensuring a more intuitive user experience.
