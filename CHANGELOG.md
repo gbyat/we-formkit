@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-20
+
+- Expand product surface in AGENTS.md, adding features like private uploads, signature fields, multipage forms, and Save & Resume functionality. Update CSS for admin and frontend to enhance UI elements, including navigation buttons and field previews. Implement JavaScript for multipage navigation and signature handling, ensuring improved user experience. Introduce REST API enhancements for file handling and confirmation settings. Refactor form schema to support new features and improve data handling.
 ## [0.1.19] - 2026-07-20
 
 - Implement conditional visibility rules in the admin form editor. Introduce a new CPO-style conditions container for managing visibility based on field values, enhancing user experience. Update CSS for condition-related UI elements and refine JavaScript logic for evaluating and rendering conditions. Ensure backward compatibility with legacy single rule format.
