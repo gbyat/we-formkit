@@ -81,7 +81,7 @@ function runMakePotWithWpCli() {
 		'.',
 		potFile,
 		`--domain=${textDomain}`,
-		`--exclude=${config.potExclude || 'node_modules,vendor,scripts,assets/vendor'}`,
+		`--exclude=${config.potExclude || 'node_modules,vendor,scripts,assets/vendor,build,dist'}`,
 		'--skip-block-json',
 	]);
 }

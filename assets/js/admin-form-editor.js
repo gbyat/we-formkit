@@ -1803,6 +1803,97 @@
 			} );
 		}
 
+		function cloneFieldDeep( field ) {
+			const copy = JSON.parse( JSON.stringify( field ) );
+			copy.id = ( copy.type || 'field' ) + '_' + Date.now().toString( 36 );
+			if ( copy.type === 'repeater' && copy.type_options && Array.isArray( copy.type_options.fields ) ) {
+				copy.type_options.fields = copy.type_options.fields.map( function ( child ) {
+					return cloneFieldDeep( child );
+				} );
+			}
+			return copy;
+		}
+
+		function toolbarIconButton( iconClass, title, onClick, tone ) {
+			return el(
+				'button',
+				{
+					type: 'button',
+					className:
+						'wek-builder__chip-btn' +
+						( tone ? ' wek-builder__chip-btn--' + tone : '' ),
+					title: title,
+					'aria-label': title,
+					onClick: function ( e ) {
+						e.preventDefault();
+						e.stopPropagation();
+						onClick( e );
+					},
+				},
+				[
+					el( 'span', {
+						className: 'dashicons ' + iconClass,
+						'aria-hidden': 'true',
+					} ),
+				]
+			);
+		}
+
+		function moveInArray( list, from, to ) {
+			if ( to < 0 || to >= list.length || from === to ) {
+				return from;
+			}
+			const item = list.splice( from, 1 )[ 0 ];
+			list.splice( to, 0, item );
+			return to;
+		}
+
+		function renderFieldToolbar( actions ) {
+			const bar = el( 'div', {
+				className: 'wek-builder__field-toolbar',
+				role: 'toolbar',
+				'aria-label': i18n.fieldActions || 'Field actions',
+			} );
+			bar.appendChild(
+				toolbarIconButton(
+					'dashicons-edit',
+					i18n.edit || 'Edit',
+					actions.onEdit,
+					'edit'
+				)
+			);
+			bar.appendChild(
+				toolbarIconButton(
+					'dashicons-admin-page',
+					i18n.duplicate || 'Duplicate',
+					actions.onDuplicate
+				)
+			);
+			const upBtn = toolbarIconButton(
+				'dashicons-arrow-up-alt2',
+				i18n.moveUp || 'Move up',
+				actions.onMoveUp
+			);
+			upBtn.disabled = ! actions.canUp;
+			bar.appendChild( upBtn );
+			const downBtn = toolbarIconButton(
+				'dashicons-arrow-down-alt2',
+				i18n.moveDown || 'Move down',
+				actions.onMoveDown
+			);
+			downBtn.disabled = ! actions.canDown;
+			bar.appendChild( downBtn );
+			bar.appendChild(
+				toolbarIconButton(
+					'dashicons-trash',
+					i18n.remove || 'Remove',
+					actions.onDelete,
+					'danger'
+				)
+			);
+			return bar;
+		}
+
 		function renderNestedFieldCard( parent, child, sIndex, fIndex, nIndex ) {
 			const selected =
 				selection &&
@@ -1829,6 +1920,11 @@
 				text: '⋮⋮',
 			} );
 
+			const nestedList =
+				parent.type_options && Array.isArray( parent.type_options.fields )
+					? parent.type_options.fields
+					: [];
+
 			card.appendChild(
 				el( 'div', { className: 'wek-builder__field-main' }, [
 					handle,
@@ -1839,12 +1935,72 @@
 						} ),
 						renderFieldPreview( child ),
 					] ),
-					el( 'span', { className: 'wek-builder__badge', text: child.type || 'text' } ),
 				] )
 			);
 
+			card.appendChild(
+				renderFieldToolbar( {
+					canUp: nIndex > 0,
+					canDown: nIndex < nestedList.length - 1,
+					onEdit: function () {
+						selectItem(
+							{
+								type: 'nested',
+								sIndex: sIndex,
+								fIndex: fIndex,
+								nIndex: nIndex,
+							},
+							'general'
+						);
+					},
+					onDuplicate: function () {
+						const copy = cloneFieldDeep( child );
+						nestedList.splice( nIndex + 1, 0, copy );
+						syncHidden();
+						selectItem( {
+							type: 'nested',
+							sIndex: sIndex,
+							fIndex: fIndex,
+							nIndex: nIndex + 1,
+						} );
+					},
+					onMoveUp: function () {
+						const next = moveInArray( nestedList, nIndex, nIndex - 1 );
+						syncHidden();
+						selectItem( {
+							type: 'nested',
+							sIndex: sIndex,
+							fIndex: fIndex,
+							nIndex: next,
+						} );
+					},
+					onMoveDown: function () {
+						const next = moveInArray( nestedList, nIndex, nIndex + 1 );
+						syncHidden();
+						selectItem( {
+							type: 'nested',
+							sIndex: sIndex,
+							fIndex: fIndex,
+							nIndex: next,
+						} );
+					},
+					onDelete: function () {
+						if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
+							return;
+						}
+						nestedList.splice( nIndex, 1 );
+						selection = null;
+						syncHidden();
+						render();
+					},
+				} )
+			);
+
 			card.addEventListener( 'click', function ( e ) {
-				if ( e.target.closest( '.wek-builder__handle' ) ) {
+				if (
+					e.target.closest( '.wek-builder__handle' ) ||
+					e.target.closest( '.wek-builder__field-toolbar' )
+				) {
 					return;
 				}
 				e.stopPropagation();
@@ -1905,15 +2061,51 @@
 							'Drop fields here — they repeat together on the front end.',
 					} ),
 				] ),
-				el( 'span', { className: 'wek-builder__badge', text: 'repeater' } ),
 			] );
 			head.addEventListener( 'click', function ( e ) {
-				if ( e.target.closest( '.wek-builder__handle' ) ) {
+				if (
+					e.target.closest( '.wek-builder__handle' ) ||
+					e.target.closest( '.wek-builder__field-toolbar' )
+				) {
 					return;
 				}
 				selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex } );
 			} );
 			card.appendChild( head );
+			card.appendChild(
+				renderFieldToolbar( {
+					canUp: fIndex > 0,
+					canDown: fIndex < ( section.fields || [] ).length - 1,
+					onEdit: function () {
+						selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex }, 'general' );
+					},
+					onDuplicate: function () {
+						const copy = cloneFieldDeep( field );
+						section.fields.splice( fIndex + 1, 0, copy );
+						syncHidden();
+						selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex + 1 } );
+					},
+					onMoveUp: function () {
+						const next = moveInArray( section.fields, fIndex, fIndex - 1 );
+						syncHidden();
+						selectItem( { type: 'field', sIndex: sIndex, fIndex: next } );
+					},
+					onMoveDown: function () {
+						const next = moveInArray( section.fields, fIndex, fIndex + 1 );
+						syncHidden();
+						selectItem( { type: 'field', sIndex: sIndex, fIndex: next } );
+					},
+					onDelete: function () {
+						if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
+							return;
+						}
+						section.fields.splice( fIndex, 1 );
+						selection = null;
+						syncHidden();
+						render();
+					},
+				} )
+			);
 
 			const canvas = el( 'div', { className: 'wek-builder__repeater-canvas' } );
 			const nested = field.type_options.fields;
@@ -1950,17 +2142,6 @@
 			} );
 			bindResize( resize, field, card );
 			return card;
-		}
-
-		function cloneFieldDeep( field ) {
-			const copy = JSON.parse( JSON.stringify( field ) );
-			copy.id = ( copy.type || 'field' ) + '_' + Date.now().toString( 36 );
-			if ( copy.type === 'repeater' && copy.type_options && Array.isArray( copy.type_options.fields ) ) {
-				copy.type_options.fields = copy.type_options.fields.map( function ( child ) {
-					return cloneFieldDeep( child );
-				} );
-			}
-			return copy;
 		}
 
 		function renderFieldCard( section, field, sIndex, fIndex ) {
@@ -2000,49 +2181,43 @@
 					} ),
 					renderFieldPreview( field ),
 				] ),
-				el( 'span', { className: 'wek-builder__badge', text: field.type || 'text' } ),
 			] );
 			card.appendChild( main );
 
-			if ( selected ) {
-				card.appendChild(
-					el( 'button', {
-						type: 'button',
-						className: 'wek-builder__field-duplicate',
-						title: i18n.duplicate || 'Duplicate',
-						'aria-label': i18n.duplicate || 'Duplicate',
-						text: '⧉',
-						onClick: function ( e ) {
-							e.preventDefault();
-							e.stopPropagation();
-							const copy = cloneFieldDeep( field );
-							section.fields.splice( fIndex + 1, 0, copy );
-							syncHidden();
-							selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex + 1 } );
-						},
-					} )
-				);
-				card.appendChild(
-					el( 'button', {
-						type: 'button',
-						className: 'wek-builder__field-delete',
-						title: i18n.remove || 'Remove',
-						'aria-label': i18n.remove || 'Remove',
-						text: '×',
-						onClick: function ( e ) {
-							e.preventDefault();
-							e.stopPropagation();
-							if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
-								return;
-							}
-							section.fields.splice( fIndex, 1 );
-							selection = null;
-							syncHidden();
-							render();
-						},
-					} )
-				);
-			}
+			card.appendChild(
+				renderFieldToolbar( {
+					canUp: fIndex > 0,
+					canDown: fIndex < ( section.fields || [] ).length - 1,
+					onEdit: function () {
+						selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex }, 'general' );
+					},
+					onDuplicate: function () {
+						const copy = cloneFieldDeep( field );
+						section.fields.splice( fIndex + 1, 0, copy );
+						syncHidden();
+						selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex + 1 } );
+					},
+					onMoveUp: function () {
+						const next = moveInArray( section.fields, fIndex, fIndex - 1 );
+						syncHidden();
+						selectItem( { type: 'field', sIndex: sIndex, fIndex: next } );
+					},
+					onMoveDown: function () {
+						const next = moveInArray( section.fields, fIndex, fIndex + 1 );
+						syncHidden();
+						selectItem( { type: 'field', sIndex: sIndex, fIndex: next } );
+					},
+					onDelete: function () {
+						if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
+							return;
+						}
+						section.fields.splice( fIndex, 1 );
+						selection = null;
+						syncHidden();
+						render();
+					},
+				} )
+			);
 
 			const resize = el( 'button', {
 				type: 'button',
@@ -2057,8 +2232,7 @@
 				if (
 					e.target.closest( '.wek-builder__handle' ) ||
 					e.target.closest( '.wek-builder__resize' ) ||
-					e.target.closest( '.wek-builder__field-delete' ) ||
-					e.target.closest( '.wek-builder__field-duplicate' )
+					e.target.closest( '.wek-builder__field-toolbar' )
 				) {
 					return;
 				}

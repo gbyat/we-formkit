@@ -10,7 +10,7 @@
 	"prefixUpper": "WE_FORMKIT",
 	"locales": ["de_DE"],
 	"hasBlocks": false,
-	"potExclude": "node_modules,vendor,scripts,assets/vendor",
+	"potExclude": "node_modules,vendor,scripts,assets/vendor,build,dist",
 	"jsonHandleAliases": {},
 	"zipInclude": {
 		"files": ["we-formkit.php", "uninstall.php", "CHANGELOG.md", "README.md", "readme.txt", "LICENSE"],

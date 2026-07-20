@@ -1028,52 +1028,80 @@ body.wek-scheme-violet .wek-admin {
 	box-shadow: 0 0 0 1px var(--wek-accent);
 }
 
-.wek-admin .wek-builder__field-delete {
-	appearance: none;
-	position: absolute;
-	top: -10px;
-	left: -10px;
-	z-index: 2;
-	width: 1.4rem;
-	height: 1.4rem;
-	padding: 0;
-	border: 0;
-	border-radius: 4px;
-	background: var(--wek-danger);
-	color: #fff;
-	font-size: 14px;
-	line-height: 1;
-	cursor: pointer;
+.wek-admin .wek-builder__field-toolbar {
 	display: none;
-	align-items: center;
-	justify-content: center;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.wek-admin .wek-builder__field-duplicate {
-	appearance: none;
 	position: absolute;
-	top: -10px;
-	left: 1.1rem;
-	z-index: 2;
-	width: 1.4rem;
-	height: 1.4rem;
-	padding: 0;
+	top: -0.7rem;
+	right: 0.35rem;
+	z-index: 3;
+	align-items: center;
+	gap: 0;
+	padding: 0.1rem;
 	border: 1px solid var(--wek-line);
 	border-radius: 4px;
-	background: var(--wek-surface);
-	color: var(--wek-ink);
-	font-size: 11px;
-	line-height: 1;
-	cursor: pointer;
-	display: none;
-	align-items: center;
-	justify-content: center;
+	background: #fff;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.wek-admin .wek-builder__field.is-selected .wek-builder__field-delete,
-.wek-admin .wek-builder__field.is-selected .wek-builder__field-duplicate {
+.wek-admin .wek-builder__field:hover .wek-builder__field-toolbar,
+.wek-admin .wek-builder__field.is-selected .wek-builder__field-toolbar,
+.wek-admin .wek-builder__field:focus-within .wek-builder__field-toolbar {
 	display: inline-flex;
+}
+
+.wek-admin .wek-builder__chip-btn {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.65rem;
+	height: 1.65rem;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 3px;
+	background: transparent;
+	color: var(--wek-muted);
+	cursor: pointer;
+	line-height: 1;
+}
+
+.wek-admin .wek-builder__chip-btn .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+.wek-admin .wek-builder__chip-btn:hover,
+.wek-admin .wek-builder__chip-btn:focus {
+	background: var(--wek-panel);
+	color: var(--wek-ink);
+}
+
+.wek-admin .wek-builder__chip-btn--edit {
+	color: var(--wek-accent);
+}
+
+.wek-admin .wek-builder__chip-btn--edit:hover,
+.wek-admin .wek-builder__chip-btn--edit:focus {
+	background: var(--wek-accent-soft);
+	color: var(--wek-accent);
+}
+
+.wek-admin .wek-builder__chip-btn--danger {
+	color: var(--wek-danger);
+}
+
+.wek-admin .wek-builder__chip-btn--danger:hover,
+.wek-admin .wek-builder__chip-btn--danger:focus {
+	background: rgba(185, 28, 28, 0.08);
+	color: var(--wek-danger);
+}
+
+.wek-admin .wek-builder__chip-btn:disabled {
+	opacity: 0.35;
+	cursor: default;
+	pointer-events: none;
 }
 
 .wek-admin .wek-builder__columns {
@@ -1289,22 +1317,6 @@ body.wek-scheme-violet .wek-admin {
 	line-height: 4rem;
 	text-align: center;
 	font-style: italic;
-}
-
-.wek-admin .wek-builder__badge {
-	display: inline-flex;
-	align-self: flex-start;
-	margin-top: 0.15rem;
-	padding: 0.12rem 0.4rem;
-	border-radius: 999px;
-	background: var(--wek-panel);
-	border: 1px solid var(--wek-line);
-	color: var(--wek-muted);
-	font-size: 10px;
-	font-weight: 600;
-	letter-spacing: 0.02em;
-	text-transform: lowercase;
-	flex-shrink: 0;
 }
 
 .wek-admin .wek-builder__handle,
