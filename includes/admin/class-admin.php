@@ -101,7 +101,7 @@ final class Admin {
 		wp_enqueue_style(
 			'we-formkit-admin',
 			WE_FORMKIT_URL . 'assets/css/admin.css',
-			array(),
+			array( 'dashicons' ),
 			WE_FORMKIT_VERSION
 		);
 	}

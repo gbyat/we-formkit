@@ -41,8 +41,14 @@ final class Submission_Export {
 		$form_t = $form_id ? get_the_title( $form_id ) : '';
 		$date   = get_the_date( '', $post ) . ' ' . get_the_time( '', $post );
 
+		// Drop WP/plugin buffers so the browser can finish the document (avoids stuck tab spinner).
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
+
 		nocache_headers();
 		header( 'Content-Type: text/html; charset=utf-8' );
+		header( 'Connection: close' );
 
 		$css = self::print_css();
 		?>
@@ -50,6 +56,7 @@ final class Submission_Export {
 <html lang="<?php echo esc_attr( get_bloginfo( 'language' ) ); ?>">
 <head>
 	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title><?php echo esc_html( $title ); ?></title>
 	<style><?php echo $css; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static CSS. ?></style>
 </head>
@@ -154,10 +161,34 @@ final class Submission_Export {
 	</article>
 	<script>
 		(function () {
-			var params = new URLSearchParams(window.location.search);
-			if (params.get('autoprint') === '1') {
-				window.addEventListener('load', function () { window.print(); });
+			function stripAutoprint() {
+				try {
+					var url = new URL(window.location.href);
+					if (!url.searchParams.has('autoprint')) {
+						return;
+					}
+					url.searchParams.delete('autoprint');
+					var next = url.pathname + url.search + url.hash;
+					window.history.replaceState(null, '', next);
+				} catch (e) {
+					/* ignore */
+				}
 			}
+
+			// afterprint clears Chrome/Edge “loading” state after Save as PDF / cancel.
+			window.addEventListener('afterprint', stripAutoprint);
+
+			var params = new URLSearchParams(window.location.search);
+			if (params.get('autoprint') !== '1') {
+				return;
+			}
+
+			// Defer print until after load finishes — calling print() inside load keeps the tab spinner forever in Chromium.
+			window.addEventListener('load', function () {
+				window.setTimeout(function () {
+					window.print();
+				}, 100);
+			});
 		})();
 	</script>
 </body>

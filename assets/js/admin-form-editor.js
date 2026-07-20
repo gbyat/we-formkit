@@ -354,6 +354,17 @@
 			] );
 		}
 
+		function toggleRow( labelText, input ) {
+			input.className = ( input.className ? input.className + ' ' : '' ) + 'wek-builder__toggle-input';
+			return el( 'p', { className: 'wek-builder__row' }, [
+				el( 'label', { className: 'wek-builder__toggle' }, [
+					input,
+					el( 'span', { className: 'wek-builder__toggle-ui', 'aria-hidden': 'true' } ),
+					el( 'span', { className: 'wek-builder__toggle-label', text: labelText } ),
+				] ),
+			] );
+		}
+
 		function textInput( value, onChange ) {
 			const input = el( 'input', { type: 'text', className: 'regular-text', value: value || '' } );
 			input.addEventListener( 'input', function () {
@@ -569,12 +580,7 @@
 
 			return el( 'div', { className: 'wek-builder__constraint' }, [
 				el( 'strong', { text: title } ),
-				el( 'p', { className: 'wek-builder__row' }, [
-					el( 'label', { className: 'wek-builder__check' }, [
-						enabled,
-						' ' + ( i18n.enabled || 'Enabled' ),
-					] ),
-				] ),
+				toggleRow( i18n.enabled || 'Enabled', enabled ),
 				fieldRow(
 					i18n.amount || 'Amount',
 					numberInput( bound.amount, function ( v ) {
@@ -826,11 +832,9 @@
 
 			const isNested = selected.kind === 'nested';
 			const isField = selected.kind === 'field' || isNested;
-			const title = isNested
-				? ( i18n.field || 'Field' ) + ': ' + ( selected.field.id || '' )
-				: selected.kind === 'field'
-					? ( i18n.field || 'Field' ) + ': ' + ( selected.field.id || '' )
-					: ( i18n.section || 'Section' ) + ': ' + ( selected.section.title || selected.section.id || '' );
+			const title = isField
+				? ( i18n.fieldSettings || 'Field settings' )
+				: ( i18n.sectionSettings || 'Section settings' );
 
 			const head = el( 'div', { className: 'wek-builder-sidebar__head' }, [
 				el( 'h3', { className: 'wek-builder-sidebar__title', id: 'wek-builder-sidebar-title', text: title } ),
@@ -968,14 +972,7 @@
 					field.required = !! req.checked;
 					syncHidden();
 				} );
-				panel.appendChild(
-					el( 'p', { className: 'wek-builder__row' }, [
-						el( 'label', { className: 'wek-builder__check' }, [
-							req,
-							' ' + ( i18n.required || 'Required' ),
-						] ),
-					] )
-				);
+				panel.appendChild( toggleRow( i18n.required || 'Required', req ) );
 
 				panel.appendChild(
 					fieldRow(
@@ -1658,12 +1655,34 @@
 					} ),
 					el( 'span', {
 						className: 'wek-builder__field-preview',
-						text: field.placeholder || field.help || field.type || '',
+						text: field.placeholder || field.help || '',
 					} ),
 				] ),
-				el( 'span', { className: 'wek-builder__badge', text: field.type || 'text' } ),
 			] );
 			card.appendChild( main );
+
+			if ( selected ) {
+				card.appendChild(
+					el( 'button', {
+						type: 'button',
+						className: 'wek-builder__field-delete',
+						title: i18n.remove || 'Remove',
+						'aria-label': i18n.remove || 'Remove',
+						text: '×',
+						onClick: function ( e ) {
+							e.preventDefault();
+							e.stopPropagation();
+							if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
+								return;
+							}
+							section.fields.splice( fIndex, 1 );
+							selection = null;
+							syncHidden();
+							render();
+						},
+					} )
+				);
+			}
 
 			const resize = el( 'button', {
 				type: 'button',
@@ -1675,7 +1694,11 @@
 			card.appendChild( resize );
 
 			card.addEventListener( 'click', function ( e ) {
-				if ( e.target.closest( '.wek-builder__handle' ) || e.target.closest( '.wek-builder__resize' ) ) {
+				if (
+					e.target.closest( '.wek-builder__handle' ) ||
+					e.target.closest( '.wek-builder__resize' ) ||
+					e.target.closest( '.wek-builder__field-delete' )
+				) {
 					return;
 				}
 				selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex } );
@@ -1891,6 +1914,7 @@
 			const layout = el( 'div', { className: 'wek-builder-layout' } );
 			const library = renderLibrary();
 			const canvas = el( 'div', { className: 'wek-builder-canvas' } );
+			const sheet = el( 'div', { className: 'wek-builder-canvas__sheet' } );
 			const aside = el( 'aside', {
 				className: 'wek-builder-sidebar',
 				'aria-labelledby': 'wek-builder-sidebar-title',
@@ -1902,9 +1926,10 @@
 				'aria-live': 'polite',
 			} );
 			canvas.appendChild( live.node );
+			canvas.appendChild( sheet );
 
 			if ( ! schema.sections.length ) {
-				canvas.appendChild(
+				sheet.appendChild(
 					el( 'p', {
 						className: 'description',
 						text: i18n.empty || 'No sections yet. Add a section or pick a field from the library.',
@@ -1913,10 +1938,10 @@
 			}
 
 			schema.sections.forEach( function ( section, sIndex ) {
-				canvas.appendChild( renderSectionCard( section, sIndex ) );
+				sheet.appendChild( renderSectionCard( section, sIndex ) );
 			} );
 
-			canvas.appendChild(
+			sheet.appendChild(
 				el( 'div', { className: 'wek-builder__toolbar' }, [
 					el( 'button', {
 						type: 'button',
@@ -1938,6 +1963,15 @@
 					} ),
 				] )
 			);
+
+			if ( schema.sections.length ) {
+				sheet.appendChild(
+					el( 'div', {
+						className: 'wek-builder__submit-preview',
+						text: i18n.submitPreview || 'Submit',
+					} )
+				);
+			}
 
 			renderSidebar( aside );
 			layout.appendChild( library );

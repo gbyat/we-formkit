@@ -230,8 +230,11 @@ final class Form_Editor {
 					'addField'            => __( 'Add field', 'we-formkit' ),
 					'addSection'          => __( 'Add section', 'we-formkit' ),
 					'fieldsLibrary'       => __( 'Fields', 'we-formkit' ),
-					'searchFields'        => __( 'Search fields', 'we-formkit' ),
+					'searchFields'        => __( 'Search fields…', 'we-formkit' ),
 					'noFieldsMatch'       => __( 'No matching fields.', 'we-formkit' ),
+					'fieldSettings'       => __( 'Field settings', 'we-formkit' ),
+					'sectionSettings'     => __( 'Section settings', 'we-formkit' ),
+					'submitPreview'       => __( 'Submit', 'we-formkit' ),
 					'label'               => __( 'Label', 'we-formkit' ),
 					'id'                  => __( 'Field ID', 'we-formkit' ),
 					'type'                => __( 'Type', 'we-formkit' ),
@@ -386,8 +389,12 @@ final class Form_Editor {
 		}
 
 		$heading = $is_new ? __( 'Add Form', 'we-formkit' ) : $title;
+		$wrap    = 'wrap wek-admin wek-admin--form-edit';
+		if ( 'fields' === $view ) {
+			$wrap .= ' wek-admin--fields';
+		}
 		?>
-	<div class="wrap wek-admin wek-admin--form-edit">
+	<div class="<?php echo esc_attr( $wrap ); ?>">
 		<h1 class="wp-heading-inline"><?php echo esc_html( $heading ); ?></h1>
 		<?php if ( ! $is_new ) : ?>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=we-formkit' ) ); ?>" class="page-title-action"><?php esc_html_e( 'All Forms', 'we-formkit' ); ?></a>
@@ -404,7 +411,9 @@ final class Form_Editor {
 			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Secret token regenerated. Old links no longer work.', 'we-formkit' ); ?></p></div>
 		<?php endif; ?>
 
-		<?php self::render_form_nav( $form_id, $view, $is_new ); ?>
+		<?php if ( 'fields' !== $view ) : ?>
+			<?php self::render_form_nav( $form_id, $view, $is_new ); ?>
+		<?php endif; ?>
 
 		<?php
 		switch ( $view ) {
@@ -487,6 +496,7 @@ final class Form_Editor {
 	 * @return void
 	 */
 	private static function render_view_fields( $form_id, $schema_json, $title, $is_new ) {
+		$forms_url   = admin_url( 'admin.php?page=we-formkit' );
 		$entries_url = '';
 		if ( ! $is_new && $form_id > 0 ) {
 			$entries_url = add_query_arg(
@@ -506,6 +516,10 @@ final class Form_Editor {
 		<textarea name="wek_schema_json" id="wek_schema_json" class="wek-admin__schema-input" hidden><?php echo esc_textarea( $schema_json ); ?></textarea>
 
 		<div class="wek-fields-bar">
+			<a class="wek-fields-bar__back" href="<?php echo esc_url( $forms_url ); ?>" title="<?php esc_attr_e( 'All Forms', 'we-formkit' ); ?>">
+				<span class="dashicons dashicons-arrow-left-alt2" aria-hidden="true"></span>
+				<span class="screen-reader-text"><?php esc_html_e( 'All Forms', 'we-formkit' ); ?></span>
+			</a>
 			<label class="wek-fields-bar__title-wrap">
 				<span class="screen-reader-text"><?php esc_html_e( 'Form title', 'we-formkit' ); ?></span>
 				<input
@@ -517,15 +531,20 @@ final class Form_Editor {
 					placeholder="<?php esc_attr_e( 'Untitled form', 'we-formkit' ); ?>"
 				/>
 			</label>
+			<?php if ( $form_id > 0 ) : ?>
+				<code class="wek-fields-bar__badge" title="<?php esc_attr_e( 'Form ID for the Formkit block', 'we-formkit' ); ?>">ID <?php echo esc_html( (string) $form_id ); ?></code>
+			<?php endif; ?>
 			<div class="wek-fields-bar__actions">
 				<?php if ( $entries_url ) : ?>
-					<a class="button button-secondary" href="<?php echo esc_url( $entries_url ); ?>"><?php esc_html_e( 'Entries', 'we-formkit' ); ?></a>
+					<a class="button wek-fields-bar__entries" href="<?php echo esc_url( $entries_url ); ?>"><?php esc_html_e( 'Entries', 'we-formkit' ); ?></a>
 				<?php endif; ?>
-				<?php submit_button( __( 'Save fields', 'we-formkit' ), 'primary', 'we_formkit_save_form', false ); ?>
+				<?php submit_button( __( 'Save Form', 'we-formkit' ), 'primary', 'we_formkit_save_form', false ); ?>
 			</div>
 		</div>
 
-		<p class="description wek-admin__fields-hint"><?php esc_html_e( 'Build sections and fields here. Form settings, notifications, and confirmations are on the other tabs.', 'we-formkit' ); ?></p>
+		<?php self::render_form_nav( $form_id, 'fields', $is_new ); ?>
+
+		<p class="screen-reader-text"><?php esc_html_e( 'Build sections and fields here. Form settings, notifications, and confirmations are on the other tabs.', 'we-formkit' ); ?></p>
 		<div id="wek-builder" class="wek-builder"></div>
 	</form>
 		<?php
