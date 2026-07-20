@@ -29,6 +29,7 @@ final class Settings {
 		return array(
 			'notify_email'             => '',
 			'from_name'                => '',
+			'from_email'               => '',
 			'mail_transport'           => 'wp_default',
 			'smtp_host'                => '',
 			'smtp_port'                => 587,
@@ -125,6 +126,21 @@ final class Settings {
 	}
 
 	/**
+	 * Default From email for notification emails.
+	 *
+	 * @return string
+	 */
+	public static function default_from_email() {
+		$settings = self::get();
+		$email    = isset( $settings['from_email'] ) ? (string) $settings['from_email'] : '';
+		if ( is_email( $email ) ) {
+			return $email;
+		}
+		$admin = (string) get_option( 'admin_email' );
+		return is_email( $admin ) ? $admin : '';
+	}
+
+	/**
 	 * Resolved privacy policy URL for forms that do not override it.
 	 *
 	 * @return string
@@ -217,6 +233,13 @@ final class Settings {
 			$out['from_name'] = '';
 		} else {
 			$out['from_name'] = $from_name;
+		}
+
+		$from_email = isset( $input['from_email'] ) ? sanitize_email( (string) $input['from_email'] ) : '';
+		if ( '' === $from_email || ( is_email( $admin_email ) && strtolower( $from_email ) === strtolower( $admin_email ) ) ) {
+			$out['from_email'] = '';
+		} else {
+			$out['from_email'] = $from_email;
 		}
 
 		$current               = self::get();

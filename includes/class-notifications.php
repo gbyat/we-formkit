@@ -160,7 +160,7 @@ final class Notifications {
 
 		$from_email = (string) $notification['from_email'];
 		if ( ! is_email( $from_email ) ) {
-			$from_email = (string) get_option( 'admin_email' );
+			$from_email = Settings::default_from_email();
 		}
 		$from_name = (string) $notification['from_name'];
 		if ( '' === $from_name ) {

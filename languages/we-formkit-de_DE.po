@@ -390,7 +390,7 @@ msgstr "Optional. Fallback: Plugin-Standard, dann Datenschutzerklärung der Webs
 msgid "Intro text"
 msgstr "Einleitungstext"
 
-#: includes/admin/class-settings-page.php:411
+#: includes/admin/class-settings-page.php:428
 #: src/admin-form-settings/index.jsx:412
 msgid "Save settings"
 msgstr "Einstellungen speichern"
@@ -490,39 +490,39 @@ msgstr "Einstellungen gespeichert."
 msgid "Default notification email"
 msgstr "Standard-Benachrichtigungs-E-Mail"
 
-#: includes/admin/class-settings-page.php:395
+#: includes/admin/class-settings-page.php:412
 msgid "Retention (days)"
 msgstr "Aufbewahrung (Tage)"
 
-#: includes/admin/class-settings-page.php:398
+#: includes/admin/class-settings-page.php:415
 msgid "Submissions older than this are deleted automatically. Set 0 to disable automatic deletion."
 msgstr "Ältere Einträge werden automatisch gelöscht. 0 deaktiviert die automatische Löschung."
 
-#: includes/admin/class-settings-page.php:402
+#: includes/admin/class-settings-page.php:419
 msgid "Uninstall"
 msgstr "Deinstallation"
 
-#: includes/admin/class-settings-page.php:406
+#: includes/admin/class-settings-page.php:423
 msgid "Delete all forms and submissions when the plugin is uninstalled"
 msgstr "Alle Formulare und Einträge beim Deinstallieren des Plugins löschen"
 
-#: includes/admin/class-settings-page.php:426
+#: includes/admin/class-settings-page.php:447
 msgid "Privacy notes"
 msgstr "Hinweise zum Datenschutz"
 
-#: includes/admin/class-settings-page.php:428
+#: includes/admin/class-settings-page.php:449
 msgid "Form submissions are stored in this WordPress site only (no third-party form SaaS)."
 msgstr "Formulareinträge werden nur auf dieser WordPress-Website gespeichert (kein externes Formular-SaaS)."
 
-#: includes/admin/class-settings-page.php:429
+#: includes/admin/class-settings-page.php:450
 msgid "Spam protection uses a honeypot, timing check, and rate limiting — not reCAPTCHA."
 msgstr "Spamschutz nutzt Honeypot, Zeitprüfung und Ratenbegrenzung — kein reCAPTCHA."
 
-#: includes/admin/class-settings-page.php:430
+#: includes/admin/class-settings-page.php:451
 msgid "IP addresses are not stored in plain text; only a salted hash may be kept for abuse handling."
 msgstr "IP-Adressen werden nicht im Klartext gespeichert; ggf. nur ein gesalzener Hash zur Missbrauchsbekämpfung."
 
-#: includes/admin/class-settings-page.php:431
+#: includes/admin/class-settings-page.php:452
 msgid "Embed forms with the Formkit Form block. Optional secret-link tokens limit casual discovery."
 msgstr "Formulare mit dem Formkit-Formular-Block einbinden. Optionale Geheim-Link-Token erschweren zufälliges Auffinden."
 
@@ -2229,26 +2229,26 @@ msgstr "Standard-Absendername"
 msgid "Used as the From name when a notification leaves it empty. Prefilled with the site title (%s)."
 msgstr "Wird als Absendername genutzt, wenn eine Benachrichtigung ihn leer lässt. Vorausgefüllt mit dem Seitentitel (%s)."
 
-#: includes/admin/class-settings-page.php:294
+#: includes/admin/class-settings-page.php:311
 msgid "Default privacy policy"
 msgstr "Standard-Datenschutzerklärung"
 
 #. translators: %s: privacy page title
-#: includes/admin/class-settings-page.php:303
+#: includes/admin/class-settings-page.php:320
 #, php-format
 msgid "WordPress privacy page: %s"
 msgstr "WordPress-Datenschutzseite: %s"
 
-#: includes/admin/class-settings-page.php:311
+#: includes/admin/class-settings-page.php:328
 msgid "WordPress privacy page (not set yet)"
 msgstr "WordPress-Datenschutzseite (noch nicht gesetzt)"
 
-#: includes/admin/class-settings-page.php:314
+#: includes/admin/class-settings-page.php:331
 msgid "Custom URL"
 msgstr "Benutzerdefinierte URL"
 
 #. translators: %s: link to WP privacy settings
-#: includes/admin/class-settings-page.php:322
+#: includes/admin/class-settings-page.php:339
 #, php-format
 msgid "No privacy policy page is set in WordPress. Configure one under %s, or choose a custom URL."
 msgstr "In WordPress ist keine Datenschutzseite gesetzt. Unter %s festlegen oder eine benutzerdefinierte URL wählen."
@@ -2258,12 +2258,12 @@ msgid "Settings → Privacy"
 msgstr "Einstellungen → Datenschutz"
 
 #. translators: 1: privacy page title (linked when URL exists), 2: link to WP privacy settings
-#: includes/admin/class-settings-page.php:343
+#: includes/admin/class-settings-page.php:360
 #, php-format
 msgid "Uses the page from WordPress Privacy settings (%1$s). Change it under %2$s."
 msgstr "Nutzt die Seite aus den WordPress-Datenschutz-Einstellungen (%1$s). Ändern unter %2$s."
 
-#: includes/admin/class-settings-page.php:359
+#: includes/admin/class-settings-page.php:376
 msgid "Custom privacy policy URL"
 msgstr "Benutzerdefinierte Datenschutz-URL"
 
@@ -2283,27 +2283,27 @@ msgstr "Ungültig-Meldung"
 msgid "Leave empty to use Formkit Settings defaults. Use {label} for the field label."
 msgstr "Leer lassen für die Formkit-Einstellungen. {label} für die Feldbeschriftung verwenden."
 
-#: includes/admin/class-settings-page.php:365
+#: includes/admin/class-settings-page.php:382
 msgid "Validation"
 msgstr "Validierung"
 
-#: includes/admin/class-settings-page.php:368
+#: includes/admin/class-settings-page.php:385
 msgid "Default required message"
 msgstr "Standard-Pflichtfeld-Meldung"
 
-#: includes/admin/class-settings-page.php:377
+#: includes/admin/class-settings-page.php:394
 msgid "Used when a field has no own required message. Include {label} for the field label."
 msgstr "Wird verwendet, wenn ein Feld keine eigene Pflichtfeld-Meldung hat. {label} für die Feldbeschriftung einsetzen."
 
-#: includes/admin/class-settings-page.php:381
+#: includes/admin/class-settings-page.php:398
 msgid "Default invalid message"
 msgstr "Standard-Ungültig-Meldung"
 
-#: includes/admin/class-settings-page.php:390
+#: includes/admin/class-settings-page.php:407
 msgid "Used when a field has no own invalid message. Include {label} for the field label."
 msgstr "Wird verwendet, wenn ein Feld keine eigene Ungültig-Meldung hat. {label} für die Feldbeschriftung einsetzen."
 
-#: includes/admin/class-settings-page.php:391
+#: includes/admin/class-settings-page.php:408
 msgid "Errors appear under each field with an icon; color is never the only cue."
 msgstr "Fehler erscheinen unter jedem Feld mit einem Icon; Farbe ist nie das einzige Signal."
 
@@ -2609,27 +2609,19 @@ msgstr "SMTP-Benutzername"
 msgid "SMTP password / app password"
 msgstr "SMTP-Passwort / App-Passwort"
 
-#: includes/admin/class-settings-page.php:287
-msgid "A password is saved. Leave blank to keep it, or enter a new one to replace it."
-msgstr "Ein Passwort ist gespeichert. Leer lassen zum Behalten, oder ein neues eingeben zum Ersetzen."
-
-#: includes/admin/class-settings-page.php:288
+#: includes/admin/class-settings-page.php:305
 msgid "Leave blank if authentication is off."
 msgstr "Leer lassen, wenn Authentifizierung aus ist."
 
-#: includes/admin/class-settings-page.php:416
+#: includes/admin/class-settings-page.php:433
 msgid "Test mail transport"
 msgstr "Mail-Transport testen"
 
-#: includes/admin/class-settings-page.php:417
-msgid "Saves nothing — uses the currently stored transport settings. Save SMTP changes first."
-msgstr "Speichert nichts — verwendet die aktuell gespeicherten Transport-Einstellungen. SMTP-Änderungen zuerst speichern."
-
-#: includes/admin/class-settings-page.php:419
+#: includes/admin/class-settings-page.php:437
 msgid "Recipient"
 msgstr "Empfänger"
 
-#: includes/admin/class-settings-page.php:421
+#: includes/admin/class-settings-page.php:440
 msgid "Send test email"
 msgstr "Test-E-Mail senden"
 
@@ -2669,3 +2661,15 @@ msgstr "Subscribe to Posts ist aktiv, aber SMTP ist noch nicht konfiguriert. Unt
 #: includes/admin/class-settings-page.php:237
 msgid "Note: Subscribe to Posts already applies its transport to all WordPress emails — Formkit can stay on WordPress default in that case."
 msgstr "Hinweis: Subscribe to Posts wendet den Transport bereits auf alle WordPress-E-Mails an — Formkit kann dann beim WordPress-Standard bleiben."
+
+#: includes/admin/class-settings-page.php:286
+msgid "Password saved"
+msgstr "Passwort gespeichert"
+
+#: includes/admin/class-settings-page.php:304
+msgid "Leave blank to keep the saved password, or type a new one to replace it."
+msgstr "Leer lassen, um das gespeicherte Passwort zu behalten, oder ein neues eingeben zum Ersetzen."
+
+#: includes/admin/class-settings-page.php:434
+msgid "Saves nothing — uses the currently stored transport settings. Save transport changes first."
+msgstr "Speichert nichts — verwendet die aktuell gespeicherten Transport-Einstellungen. Transport-Änderungen zuerst speichern."

@@ -126,11 +126,18 @@ final class Mailer {
 			. esc_html__( 'This is a test email from WE Formkit mail transport settings.', 'we-formkit' )
 			. '</p></body></html>';
 
+		$headers   = array( 'Content-Type: text/html; charset=UTF-8' );
+		$from_email = Settings::default_from_email();
+		$from_name  = Settings::default_from_name();
+		if ( is_email( $from_email ) ) {
+			$headers[] = 'From: ' . ( '' !== $from_name ? sprintf( '%s <%s>', $from_name, $from_email ) : $from_email );
+		}
+
 		return self::wp_mail(
 			$email,
 			$subject,
 			$body,
-			array( 'Content-Type: text/html; charset=UTF-8' )
+			$headers
 		);
 	}
 

@@ -99,6 +99,10 @@ final class Settings_Page {
 		if ( '' === $from_display ) {
 			$from_display = $site_name;
 		}
+		$from_email_display = (string) ( $settings['from_email'] ?? '' );
+		if ( '' === $from_email_display ) {
+			$from_email_display = $admin_email;
+		}
 		$privacy_mode = (string) $settings['privacy_policy_mode'];
 		$wp_privacy   = Settings::wp_privacy_page();
 		$privacy_link = '<a href="' . esc_url( admin_url( 'options-privacy.php' ) ) . '">' . esc_html__( 'Settings → Privacy', 'we-formkit' ) . '</a>';
@@ -162,7 +166,10 @@ final class Settings_Page {
 						</td>
 					</tr>
 					<tr>
-						<th><label for="wek_from_name"><?php esc_html_e( 'Default from name', 'we-formkit' ); ?></label></th>
+						<th colspan="2"><h2 class="title" style="margin:1.5rem 0 0;"><?php esc_html_e( 'Mail transport', 'we-formkit' ); ?></h2></th>
+					</tr>
+					<tr>
+						<th><label for="wek_from_name"><?php esc_html_e( 'From name', 'we-formkit' ); ?></label></th>
 						<td>
 							<input class="regular-text" type="text" name="wek_settings[from_name]" id="wek_from_name" value="<?php echo esc_attr( $from_display ); ?>" />
 							<p class="description">
@@ -170,7 +177,7 @@ final class Settings_Page {
 								echo esc_html(
 									sprintf(
 										/* translators: %s: site title */
-										__( 'Used as the From name when a notification leaves it empty. Prefilled with the site title (%s).', 'we-formkit' ),
+										__( 'Used when a notification leaves From name empty. Prefilled with the site title (%s).', 'we-formkit' ),
 										$site_name
 									)
 								);
@@ -179,7 +186,21 @@ final class Settings_Page {
 						</td>
 					</tr>
 					<tr>
-						<th colspan="2"><h2 class="title" style="margin:1.5rem 0 0;"><?php esc_html_e( 'Mail transport', 'we-formkit' ); ?></h2></th>
+						<th><label for="wek_from_email"><?php esc_html_e( 'From email', 'we-formkit' ); ?></label></th>
+						<td>
+							<input class="regular-text" type="email" name="wek_settings[from_email]" id="wek_from_email" value="<?php echo esc_attr( $from_email_display ); ?>" />
+							<p class="description">
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: %s: site admin email */
+										__( 'Used when a notification leaves From email empty. Prefilled with the WordPress admin email (%s). For SMTP, use an address your provider allows.', 'we-formkit' ),
+										$admin_email
+									)
+								);
+								?>
+							</p>
+						</td>
 					</tr>
 					<tr>
 						<th><label for="wek_mail_transport"><?php esc_html_e( 'Transport', 'we-formkit' ); ?></label></th>
@@ -280,11 +301,28 @@ final class Settings_Page {
 					<tr class="wek-mail-smtp-only">
 						<th><label for="wek_smtp_password"><?php esc_html_e( 'SMTP password / app password', 'we-formkit' ); ?></label></th>
 						<td>
-							<input class="regular-text" type="password" name="wek_settings[smtp_password]" id="wek_smtp_password" value="" autocomplete="new-password" data-lpignore="true" data-1p-ignore="true" />
-							<p class="description">
+							<?php if ( $has_smtp_pw ) : ?>
+								<p class="wek-smtp-password-status" role="status">
+									<span class="wek-smtp-password-status__badge" aria-hidden="true">●●●●●●●●</span>
+									<strong><?php esc_html_e( 'Password saved', 'we-formkit' ); ?></strong>
+								</p>
+							<?php endif; ?>
+							<input
+								class="regular-text"
+								type="password"
+								name="wek_settings[smtp_password]"
+								id="wek_smtp_password"
+								value=""
+								placeholder="<?php echo $has_smtp_pw ? esc_attr( '••••••••••••' ) : ''; ?>"
+								autocomplete="new-password"
+								data-lpignore="true"
+								data-1p-ignore="true"
+								<?php echo $has_smtp_pw ? ' aria-describedby="wek-smtp-password-hint"' : ''; ?>
+							/>
+							<p class="description" id="wek-smtp-password-hint">
 								<?php
 								echo $has_smtp_pw
-									? esc_html__( 'A password is saved. Leave blank to keep it, or enter a new one to replace it.', 'we-formkit' )
+									? esc_html__( 'Leave blank to keep the saved password, or type a new one to replace it.', 'we-formkit' )
 									: esc_html__( 'Leave blank if authentication is off.', 'we-formkit' );
 								?>
 							</p>
@@ -411,15 +449,19 @@ final class Settings_Page {
 				<?php submit_button( __( 'Save settings', 'we-formkit' ), 'primary', 'we_formkit_save_settings' ); ?>
 			</form>
 
-			<form method="post" style="margin-top:1.5rem;">
+			<form method="post" class="wek-mail-test" style="margin-top:1.5rem;">
 				<?php wp_nonce_field( 'we_formkit_send_test_mail', 'we_formkit_test_mail_nonce' ); ?>
 				<h2><?php esc_html_e( 'Test mail transport', 'we-formkit' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Saves nothing — uses the currently stored transport settings. Save SMTP changes first.', 'we-formkit' ); ?></p>
-				<p>
-					<label for="wek_test_mail_recipient"><?php esc_html_e( 'Recipient', 'we-formkit' ); ?></label>
-					<input class="regular-text" type="email" name="wek_test_mail_recipient" id="wek_test_mail_recipient" value="<?php echo esc_attr( $admin_email ); ?>" required />
-					<?php submit_button( __( 'Send test email', 'we-formkit' ), 'secondary', 'we_formkit_send_test_mail', false ); ?>
-				</p>
+				<p class="description"><?php esc_html_e( 'Saves nothing — uses the currently stored transport settings. Save transport changes first.', 'we-formkit' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="wek_test_mail_recipient"><?php esc_html_e( 'Recipient', 'we-formkit' ); ?></label></th>
+						<td>
+							<input class="regular-text" type="email" name="wek_test_mail_recipient" id="wek_test_mail_recipient" value="<?php echo esc_attr( $admin_email ); ?>" required />
+							<?php submit_button( __( 'Send test email', 'we-formkit' ), 'secondary', 'we_formkit_send_test_mail', false ); ?>
+						</td>
+					</tr>
+				</table>
 			</form>
 
 			<hr />
