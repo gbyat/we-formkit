@@ -121,5 +121,11 @@ final class Admin {
 			array( 'dashicons' ),
 			WE_FORMKIT_VERSION
 		);
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- page routing only.
+		$view = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( (string) $_GET['view'] ) ) : '';
+		if ( 'we-formkit-form' === $page && 'documents' === $view ) {
+			wp_enqueue_media();
+		}
 	}
 }

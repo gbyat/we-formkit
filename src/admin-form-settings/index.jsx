@@ -61,6 +61,9 @@ function flattenSettings( payload ) {
 		privacy_url: payload.privacy_url || '',
 		secret_enabled: !! payload.secret_enabled,
 		style_preset: payload.style_preset || 'theme',
+		submit_label: payload.submit_label || __( 'Submit form', 'we-formkit' ),
+		submit_icon_svg: payload.submit_icon_svg || '',
+		submit_icon_position: payload.submit_icon_position || 'before',
 		...colorsFromMap( colors ),
 	};
 }
@@ -76,6 +79,9 @@ function toApiPayload( data ) {
 		intro: data.intro || '',
 		privacy_url: data.privacy_url || '',
 		secret_enabled: !! data.secret_enabled,
+		submit_label: data.submit_label || '',
+		submit_icon_svg: data.submit_icon_svg || '',
+		submit_icon_position: data.submit_icon_position || 'before',
 		style: {
 			preset: data.style_preset || 'theme',
 			colors,
@@ -132,6 +138,40 @@ function FormSettingsApp() {
 				Edit: 'toggle',
 			},
 			{
+				id: 'submit_label',
+				label: __( 'Submit button text', 'we-formkit' ),
+				type: 'text',
+				description: __(
+					'Label shown on the form submit button.',
+					'we-formkit'
+				),
+			},
+			{
+				id: 'submit_icon_svg',
+				label: __( 'Submit button SVG icon', 'we-formkit' ),
+				type: 'text',
+				Edit: 'textarea',
+				description: __(
+					'Optional. Paste inline SVG markup (no scripts). Leave empty for text only.',
+					'we-formkit'
+				),
+			},
+			{
+				id: 'submit_icon_position',
+				label: __( 'Icon position', 'we-formkit' ),
+				type: 'text',
+				elements: [
+					{
+						value: 'before',
+						label: __( 'Before text', 'we-formkit' ),
+					},
+					{
+						value: 'after',
+						label: __( 'After text', 'we-formkit' ),
+					},
+				],
+			},
+			{
 				id: 'style_preset',
 				label: __( 'Color preset', 'we-formkit' ),
 				type: 'text',
@@ -178,6 +218,9 @@ function FormSettingsApp() {
 						'intro',
 						'privacy_url',
 						'secret_enabled',
+						'submit_label',
+						'submit_icon_svg',
+						'submit_icon_position',
 					],
 				},
 				{

@@ -410,6 +410,28 @@
 	font-weight: 600;
 	padding: 0.8rem 1.4rem;
 	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.we-formkit__submit-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 0;
+}
+
+.we-formkit__submit-icon svg {
+	width: 1.15em;
+	height: 1.15em;
+	display: block;
+	fill: currentColor;
+}
+
+.we-formkit__submit-text {
+	line-height: 1.2;
 }
 
 .we-formkit__submit:hover,

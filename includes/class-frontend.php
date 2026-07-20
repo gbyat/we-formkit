@@ -289,6 +289,7 @@ final class Frontend {
 				'draftUrl'   => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/drafts' ) ),
 				'i18n'       => array(
 					'submitting'     => __( 'Submitting…', 'we-formkit' ),
+					'submit'         => __( 'Submit form', 'we-formkit' ),
 					'error'          => __( 'Something went wrong. Please try again.', 'we-formkit' ),
 					'required'       => __( 'This field is required.', 'we-formkit' ),
 					'correctFields'  => __( 'Please correct the highlighted fields.', 'we-formkit' ),
@@ -307,6 +308,10 @@ final class Frontend {
 					'saveProgress'   => __( 'Save progress', 'we-formkit' ),
 					'savedProgress'  => __( 'Progress saved. Copy your resume link:', 'we-formkit' ),
 					'resumeLoaded'   => __( 'Your saved progress was restored.', 'we-formkit' ),
+					/* translators: 1: field label, 2: minimum number of selections. */
+					'checkboxesMin'  => __( 'Please select at least %2$d option(s) for %1$s.', 'we-formkit' ),
+					/* translators: 1: field label, 2: maximum number of selections. */
+					'checkboxesMax'  => __( 'Please select at most %2$d option(s) for %1$s.', 'we-formkit' ),
 				),
 				'validation' => Validation_Messages::global_templates_for_js(),
 			)
@@ -385,13 +390,40 @@ final class Frontend {
 				<?php endif; ?>
 
 				<p class="we-formkit__actions" data-wek-submit-wrap>
-					<button type="submit" class="we-formkit__submit"><?php esc_html_e( 'Submit form', 'we-formkit' ); ?></button>
+					<?php self::render_submit_button( $form_id ); ?>
 					<?php if ( Drafts::is_enabled( $form_id ) ) : ?>
 						<button type="button" class="we-formkit__save-progress" data-wek-save-progress><?php esc_html_e( 'Save progress', 'we-formkit' ); ?></button>
 					<?php endif; ?>
 				</p>
 			</form>
 		</div>
+		<?php
+	}
+
+	/**
+	 * @param int $form_id Form ID.
+	 * @return void
+	 */
+	private static function render_submit_button( $form_id ) {
+		$submit   = Form_Schema::get_submit_button( $form_id );
+		$label    = (string) $submit['label'];
+		$icon     = (string) $submit['icon_svg'];
+		$position = (string) $submit['icon_position'];
+		?>
+		<button
+			type="submit"
+			class="we-formkit__submit<?php echo '' !== $icon ? ' we-formkit__submit--has-icon' : ''; ?>"
+			data-wek-submit
+			data-wek-submit-label="<?php echo esc_attr( $label ); ?>"
+		>
+			<?php if ( '' !== $icon && 'before' === $position ) : ?>
+				<span class="we-formkit__submit-icon" aria-hidden="true"><?php echo $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized SVG subset. ?></span>
+			<?php endif; ?>
+			<span class="we-formkit__submit-text" data-wek-submit-text><?php echo esc_html( $label ); ?></span>
+			<?php if ( '' !== $icon && 'after' === $position ) : ?>
+				<span class="we-formkit__submit-icon" aria-hidden="true"><?php echo $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized SVG subset. ?></span>
+			<?php endif; ?>
+		</button>
 		<?php
 	}
 
@@ -415,6 +447,13 @@ final class Frontend {
 		$messages = isset( $field['messages'] ) && is_array( $field['messages'] ) ? $field['messages'] : array();
 		$msg_req  = isset( $messages['required'] ) ? (string) $messages['required'] : '';
 		$msg_inv  = isset( $messages['invalid'] ) ? (string) $messages['invalid'] : '';
+		$min_sel  = 0;
+		$max_sel  = 0;
+		if ( 'checkboxes' === $type ) {
+			$limits  = Fields\Checkboxes_Field::selection_limits( $field );
+			$min_sel = $limits['min'];
+			$max_sel = $limits['max'];
+		}
 		?>
 		<div
 			class="we-formkit__field we-formkit__field--<?php echo esc_attr( $type ); ?> we-formkit__field--width-<?php echo esc_attr( $width ); ?><?php echo $hidden ? ' is-hidden' : ''; ?>"
@@ -425,6 +464,10 @@ final class Frontend {
 			data-required="<?php echo $req ? '1' : '0'; ?>"
 			data-msg-required="<?php echo esc_attr( $msg_req ); ?>"
 			data-msg-invalid="<?php echo esc_attr( $msg_inv ); ?>"
+			<?php if ( 'checkboxes' === $type ) : ?>
+				data-min-selected="<?php echo esc_attr( (string) $min_sel ); ?>"
+				data-max-selected="<?php echo esc_attr( (string) $max_sel ); ?>"
+			<?php endif; ?>
 			<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			aria-hidden="<?php echo $hidden ? 'true' : 'false'; ?>"
 		>
@@ -454,23 +497,53 @@ final class Frontend {
 					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 				<?php endif; ?>
 			<?php elseif ( in_array( $type, array( 'radio', 'checkboxes' ), true ) ) : ?>
+				<?php
+				$choice_help = ! empty( $field['help'] ) ? (string) $field['help'] : '';
+				$limit_hint  = '';
+				if ( 'checkboxes' === $type && ( $min_sel > 0 || $max_sel > 0 ) ) {
+					if ( $min_sel > 0 && $max_sel > 0 ) {
+						$limit_hint = sprintf(
+							/* translators: 1: minimum selections, 2: maximum selections. */
+							__( 'Select between %1$d and %2$d options.', 'we-formkit' ),
+							$min_sel,
+							$max_sel
+						);
+					} elseif ( $min_sel > 0 ) {
+						$limit_hint = sprintf(
+							/* translators: %d: minimum selections. */
+							__( 'Select at least %d option(s).', 'we-formkit' ),
+							$min_sel
+						);
+					} else {
+						$limit_hint = sprintf(
+							/* translators: %d: maximum selections. */
+							__( 'Select at most %d option(s).', 'we-formkit' ),
+							$max_sel
+						);
+					}
+				}
+				$help_parts = array_filter( array( $choice_help, $limit_hint ) );
+				$help_text  = implode( ' ', $help_parts );
+				?>
 				<fieldset class="we-formkit__fieldset">
 					<legend class="we-formkit__label">
 						<?php echo esc_html( $field['label'] ); ?>
 						<?php
-						if ( $req ) :
+						if ( $req || $min_sel > 0 ) :
 							?>
 							<span class="we-formkit__req" aria-hidden="true">*</span><?php endif; ?>
 					</legend>
-					<?php if ( ! empty( $field['help'] ) ) : ?>
-						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
+					<?php if ( '' !== $help_text ) : ?>
+						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $help_text ); ?></p>
 					<?php endif; ?>
-					<div class="we-formkit__choices" role="group" aria-describedby="<?php echo esc_attr( $desc_id . ' ' . $error_id ); ?>">
-						<?php foreach ( $field['options'] as $option ) : ?>
-							<?php
-							$oid   = $input_id . '-' . $option['value'];
-							$iname = 'checkboxes' === $type ? $id . '[]' : $id;
-							$itype = 'checkboxes' === $type ? 'checkbox' : 'radio';
+					<div class="we-formkit__choices" role="group" aria-describedby="<?php echo esc_attr( trim( ( '' !== $help_text ? $desc_id . ' ' : '' ) . $error_id ) ); ?>">
+						<?php
+						$default = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
+						foreach ( $field['options'] as $option ) :
+							$oid    = $input_id . '-' . $option['value'];
+							$iname  = 'checkboxes' === $type ? $id . '[]' : $id;
+							$itype  = 'checkboxes' === $type ? 'checkbox' : 'radio';
+							$is_def = '' !== $default && (string) $option['value'] === $default;
 							?>
 							<label class="we-formkit__choice" for="<?php echo esc_attr( $oid ); ?>">
 								<input
@@ -478,6 +551,7 @@ final class Frontend {
 									id="<?php echo esc_attr( $oid ); ?>"
 									name="<?php echo esc_attr( $iname ); ?>"
 									value="<?php echo esc_attr( $option['value'] ); ?>"
+									<?php checked( $is_def ); ?>
 								/>
 								<span><?php echo esc_html( $option['label'] ); ?></span>
 							</label>
@@ -497,8 +571,9 @@ final class Frontend {
 						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 					<?php endif; ?>
 					<div class="we-formkit__choices" role="group" aria-describedby="<?php echo esc_attr( $desc_id . ' ' . $error_id ); ?>">
-						<?php foreach ( ( $field['options'] ?? array() ) as $option ) : ?>
-							<?php
+						<?php
+						$default = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
+						foreach ( ( $field['options'] ?? array() ) as $option ) :
 							$oid       = $input_id . '-' . $option['value'];
 							$image_url = isset( $option['image_url'] ) ? (string) $option['image_url'] : '';
 							if ( '' === $image_url && ! empty( $option['image_id'] ) ) {
@@ -507,6 +582,7 @@ final class Frontend {
 									$image_url = $from_id;
 								}
 							}
+							$is_def = '' !== $default && (string) $option['value'] === $default;
 							?>
 							<label class="we-formkit__choice we-formkit__choice--image" for="<?php echo esc_attr( $oid ); ?>">
 								<input
@@ -515,6 +591,7 @@ final class Frontend {
 									name="<?php echo esc_attr( $id ); ?>"
 									value="<?php echo esc_attr( $option['value'] ); ?>"
 									<?php echo $req ? 'required' : ''; ?>
+									<?php checked( $is_def ); ?>
 								/>
 								<?php if ( '' !== $image_url ) : ?>
 									<img src="<?php echo esc_url( $image_url ); ?>" alt="" class="we-formkit__choice-image" />
@@ -525,6 +602,14 @@ final class Frontend {
 					</div>
 				</fieldset>
 			<?php elseif ( 'select' === $type ) : ?>
+				<?php
+				$default     = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
+				$placeholder = isset( $field['placeholder'] ) ? trim( (string) $field['placeholder'] ) : '';
+				if ( '' === $placeholder ) {
+					$placeholder = __( 'Please select…', 'we-formkit' );
+				}
+				$show_empty = '' === $default;
+				?>
 				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
 					<?php
@@ -538,9 +623,14 @@ final class Frontend {
 					<?php echo $req ? 'required' : ''; ?>
 					aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
 				>
-					<option value=""><?php esc_html_e( 'Please select…', 'we-formkit' ); ?></option>
+					<?php if ( $show_empty ) : ?>
+						<option value="" selected><?php echo esc_html( $placeholder ); ?></option>
+					<?php endif; ?>
 					<?php foreach ( $field['options'] as $option ) : ?>
-						<option value="<?php echo esc_attr( $option['value'] ); ?>"><?php echo esc_html( $option['label'] ); ?></option>
+						<option
+							value="<?php echo esc_attr( $option['value'] ); ?>"
+							<?php selected( $default, (string) $option['value'] ); ?>
+						><?php echo esc_html( $option['label'] ); ?></option>
 					<?php endforeach; ?>
 				</select>
 				<?php if ( ! empty( $field['help'] ) ) : ?>
@@ -824,6 +914,14 @@ final class Frontend {
 					<?php echo $req ? 'required' : ''; ?>
 				></textarea>
 			<?php elseif ( 'select' === $ctype ) : ?>
+				<?php
+				$child_default = isset( $child['default_value'] ) ? (string) $child['default_value'] : '';
+				$child_ph      = isset( $child['placeholder'] ) ? trim( (string) $child['placeholder'] ) : '';
+				if ( '' === $child_ph ) {
+					$child_ph = __( 'Please select…', 'we-formkit' );
+				}
+				$child_show_empty = '' === $child_default;
+				?>
 				<select
 					id="<?php echo esc_attr( $input_id ); ?>"
 					name="<?php echo esc_attr( $name ); ?>"
@@ -831,9 +929,14 @@ final class Frontend {
 					data-sub-id="<?php echo esc_attr( $cid ); ?>"
 					<?php echo $req ? 'required' : ''; ?>
 				>
-					<option value=""><?php esc_html_e( 'Please select…', 'we-formkit' ); ?></option>
+					<?php if ( $child_show_empty ) : ?>
+						<option value="" selected><?php echo esc_html( $child_ph ); ?></option>
+					<?php endif; ?>
 					<?php foreach ( ( $child['options'] ?? array() ) as $option ) : ?>
-						<option value="<?php echo esc_attr( (string) ( $option['value'] ?? '' ) ); ?>">
+						<option
+							value="<?php echo esc_attr( (string) ( $option['value'] ?? '' ) ); ?>"
+							<?php selected( $child_default, (string) ( $option['value'] ?? '' ) ); ?>
+						>
 							<?php echo esc_html( (string) ( $option['label'] ?? $option['value'] ?? '' ) ); ?>
 						</option>
 					<?php endforeach; ?>

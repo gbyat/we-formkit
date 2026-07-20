@@ -118,6 +118,82 @@
 		let selection = null;
 		let activeTab = 'general';
 		const live = { node: null };
+		const CHROME_KEY = 'wek_formkit_builder_chrome';
+		const chrome = ( function () {
+			const defaults = {
+				libW: 280,
+				sideW: 400,
+				libCollapsed: false,
+				sideCollapsed: false,
+			};
+			try {
+				const raw = window.localStorage.getItem( CHROME_KEY );
+				if ( raw ) {
+					return Object.assign( {}, defaults, JSON.parse( raw ) );
+				}
+			} catch ( e ) {
+				// ignore
+			}
+			return Object.assign( {}, defaults );
+		} )();
+
+		function saveChrome() {
+			try {
+				window.localStorage.setItem( CHROME_KEY, JSON.stringify( chrome ) );
+			} catch ( e ) {
+				// ignore
+			}
+		}
+
+		function clampWidth( n, min, max ) {
+			const v = parseInt( n, 10 );
+			if ( isNaN( v ) ) {
+				return min;
+			}
+			return Math.max( min, Math.min( max, v ) );
+		}
+
+		function applyChrome( layout ) {
+			if ( ! layout ) {
+				return;
+			}
+			layout.classList.toggle( 'is-lib-collapsed', !! chrome.libCollapsed );
+			layout.classList.toggle( 'is-side-collapsed', !! chrome.sideCollapsed );
+			layout.style.setProperty(
+				'--wek-lib-w',
+				( chrome.libCollapsed ? 44 : clampWidth( chrome.libW, 200, 420 ) ) + 'px'
+			);
+			layout.style.setProperty(
+				'--wek-side-w',
+				( chrome.sideCollapsed ? 44 : clampWidth( chrome.sideW, 280, 560 ) ) + 'px'
+			);
+		}
+
+		function bindResize( handle, which, layout ) {
+			handle.addEventListener( 'mousedown', function ( event ) {
+				event.preventDefault();
+				const startX = event.clientX;
+				const startW = which === 'lib' ? chrome.libW : chrome.sideW;
+				function onMove( ev ) {
+					const dx = ev.clientX - startX;
+					if ( which === 'lib' ) {
+						chrome.libW = clampWidth( startW + dx, 200, 420 );
+						chrome.libCollapsed = false;
+					} else {
+						chrome.sideW = clampWidth( startW - dx, 280, 560 );
+						chrome.sideCollapsed = false;
+					}
+					applyChrome( layout );
+				}
+				function onUp() {
+					document.removeEventListener( 'mousemove', onMove );
+					document.removeEventListener( 'mouseup', onUp );
+					saveChrome();
+				}
+				document.addEventListener( 'mousemove', onMove );
+				document.addEventListener( 'mouseup', onUp );
+			} );
+		}
 
 		const ops = [
 			{ value: 'equals', label: i18n.opEquals || 'equals' },
@@ -331,6 +407,7 @@
 				required: false,
 				placeholder: '',
 				messages: { required: '', invalid: '' },
+				default_value: '',
 				type_options: typeOptions,
 				width: 'full',
 				options: [],
@@ -665,32 +742,124 @@
 			if ( ! Array.isArray( field.options ) ) {
 				field.options = [];
 			}
+			if ( field.default_value == null ) {
+				field.default_value = '';
+			}
 			const isRadioImage = field.type === 'radio_image';
 			const wrap = el( 'div', { className: 'wek-builder__options' } );
 			wrap.appendChild( el( 'strong', { text: i18n.options || 'Options' } ) );
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.optionsDefaultHint ||
+						'Drag to reorder. Mark one option as default, or leave unset to use the placeholder (empty value).',
+				} )
+			);
+
+			const list = el( 'div', { className: 'wek-builder__options-list' } );
+			const defaultName = 'wek-opt-default-' + ( field.id || 'field' );
 
 			field.options.forEach( function ( option, oIndex ) {
-				const row = el( 'div', { className: 'wek-builder__option-row' } );
+				const row = el( 'div', {
+					className: 'wek-builder__option-row' + ( isRadioImage ? ' is-radio-image' : '' ),
+					draggable: 'false',
+					'data-opt-index': String( oIndex ),
+				} );
+
+				const handle = el( 'span', {
+					className: 'wek-builder__option-handle dashicons dashicons-menu',
+					title: i18n.dragToReorder || 'Drag to reorder',
+					'aria-label': i18n.dragToReorder || 'Drag to reorder',
+					draggable: 'true',
+				} );
+				handle.addEventListener( 'dragstart', function ( event ) {
+					event.dataTransfer.setData( 'text/plain', String( oIndex ) );
+					event.dataTransfer.effectAllowed = 'move';
+					row.classList.add( 'is-dragging' );
+				} );
+				handle.addEventListener( 'dragend', function () {
+					row.classList.remove( 'is-dragging' );
+					Array.prototype.forEach.call(
+						list.querySelectorAll( '.wek-builder__option-row' ),
+						function ( r ) {
+							r.classList.remove( 'is-drag-over' );
+						}
+					);
+				} );
+				row.addEventListener( 'dragover', function ( event ) {
+					event.preventDefault();
+					event.dataTransfer.dropEffect = 'move';
+					row.classList.add( 'is-drag-over' );
+				} );
+				row.addEventListener( 'dragleave', function () {
+					row.classList.remove( 'is-drag-over' );
+				} );
+				row.addEventListener( 'drop', function ( event ) {
+					event.preventDefault();
+					row.classList.remove( 'is-drag-over' );
+					const from = parseInt( event.dataTransfer.getData( 'text/plain' ), 10 );
+					const to = oIndex;
+					if ( isNaN( from ) || from === to ) {
+						return;
+					}
+					const moved = field.options.splice( from, 1 )[ 0 ];
+					field.options.splice( to, 0, moved );
+					syncHidden();
+					render();
+				} );
+
 				const valueInput = el( 'input', {
 					type: 'text',
 					className: 'regular-text',
-					placeholder: 'value',
+					placeholder: i18n.optionValue || 'value',
 					value: option.value || '',
+					'aria-label': i18n.optionValue || 'value',
 				} );
 				const labelInput = el( 'input', {
 					type: 'text',
 					className: 'regular-text',
-					placeholder: 'Label',
+					placeholder: i18n.optionLabel || 'Label',
 					value: option.label || '',
+					'aria-label': i18n.optionLabel || 'Label',
 				} );
 				valueInput.addEventListener( 'input', function () {
+					const prev = field.options[ oIndex ].value;
 					field.options[ oIndex ].value = valueInput.value;
+					if ( field.default_value === prev ) {
+						field.default_value = valueInput.value;
+					}
 					syncHidden();
 				} );
 				labelInput.addEventListener( 'input', function () {
 					field.options[ oIndex ].label = labelInput.value;
 					syncHidden();
 				} );
+
+				const defLabel = el( 'label', {
+					className: 'wek-builder__option-default',
+					title: i18n.defaultOption || 'Default',
+				} );
+				const defRadio = el( 'input', {
+					type: 'radio',
+					name: defaultName,
+					value: option.value || '',
+					'aria-label': i18n.defaultOption || 'Default',
+				} );
+				defRadio.checked = String( field.default_value || '' ) === String( option.value || '' ) && String( option.value || '' ) !== '';
+				defRadio.addEventListener( 'change', function () {
+					if ( defRadio.checked ) {
+						field.default_value = String( field.options[ oIndex ].value || '' );
+						syncHidden();
+						render();
+					}
+				} );
+				defLabel.appendChild( defRadio );
+				defLabel.appendChild(
+					el( 'span', { className: 'screen-reader-text', text: i18n.defaultOption || 'Default' } )
+				);
+
+				row.appendChild( handle );
 				row.appendChild( valueInput );
 				row.appendChild( labelInput );
 
@@ -724,6 +893,7 @@
 					row.appendChild( imageUrlInput );
 				}
 
+				row.appendChild( defLabel );
 				row.appendChild(
 					el( 'button', {
 						type: 'button',
@@ -731,7 +901,11 @@
 						title: i18n.remove || 'Remove',
 						'aria-label': i18n.remove || 'Remove',
 						onClick: function () {
+							const removed = field.options[ oIndex ];
 							field.options.splice( oIndex, 1 );
+							if ( removed && field.default_value === removed.value ) {
+								field.default_value = '';
+							}
 							syncHidden();
 							render();
 						},
@@ -742,8 +916,25 @@
 						} ),
 					] )
 				);
-				wrap.appendChild( row );
+				list.appendChild( row );
 			} );
+
+			wrap.appendChild( list );
+
+			const clearDefault = el( 'button', {
+				type: 'button',
+				className: 'button-link wek-builder__clear-default',
+				text: i18n.clearDefault || 'Clear default (use placeholder)',
+				onClick: function () {
+					field.default_value = '';
+					syncHidden();
+					render();
+				},
+			} );
+			if ( ! field.default_value ) {
+				clearDefault.disabled = true;
+			}
+			wrap.appendChild( clearDefault );
 
 			wrap.appendChild(
 				el( 'button', {
@@ -1102,6 +1293,65 @@
 			return wrap;
 		}
 
+		function ensureCheckboxesLimits( field ) {
+			const opts = ensureTypeOptions( field );
+			if ( opts.min_selected == null ) {
+				opts.min_selected = 0;
+			}
+			if ( opts.max_selected == null ) {
+				opts.max_selected = 0;
+			}
+			return opts;
+		}
+
+		function renderCheckboxesLimitsEditor( field ) {
+			const opts = ensureCheckboxesLimits( field );
+			const wrap = el( 'div', { className: 'wek-builder__checkbox-limits' } );
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.checkboxesLimitsHint ||
+						'0 minimum = no minimum (unless Required). 0 maximum = unlimited.',
+				} )
+			);
+			wrap.appendChild(
+				fieldRow(
+					i18n.minSelected || 'Minimum selections',
+					numberInput(
+						opts.min_selected,
+						function ( v ) {
+							const n = parseInt( v, 10 );
+							opts.min_selected = isNaN( n ) ? 0 : Math.max( 0, n );
+							if ( opts.max_selected > 0 && opts.min_selected > opts.max_selected ) {
+								opts.max_selected = opts.min_selected;
+							}
+							syncHidden();
+						},
+						{ min: '0' }
+					)
+				)
+			);
+			wrap.appendChild(
+				fieldRow(
+					i18n.maxSelected || 'Maximum selections',
+					numberInput(
+						opts.max_selected,
+						function ( v ) {
+							const n = parseInt( v, 10 );
+							opts.max_selected = isNaN( n ) ? 0 : Math.max( 0, n );
+							if ( opts.max_selected > 0 && opts.min_selected > opts.max_selected ) {
+								opts.min_selected = opts.max_selected;
+							}
+							syncHidden();
+						},
+						{ min: '0' }
+					)
+				)
+			);
+			return wrap;
+		}
+
 		function shouldShowPlaceholder( type ) {
 			return (
 				[
@@ -1305,6 +1555,10 @@
 
 				if ( [ 'radio', 'checkboxes', 'select', 'radio_image' ].indexOf( field.type ) !== -1 ) {
 					panel.appendChild( renderOptionsEditor( field ) );
+				}
+
+				if ( field.type === 'checkboxes' ) {
+					panel.appendChild( renderCheckboxesLimitsEditor( field ) );
 				}
 
 				if ( field.type === 'date' || field.type === 'datetime' ) {
@@ -2655,15 +2909,112 @@
 				sheet.appendChild(
 					el( 'div', {
 						className: 'wek-builder__submit-preview',
-						text: i18n.submitPreview || 'Submit',
+						text:
+							( window.weFormkitAdmin && window.weFormkitAdmin.submitLabel ) ||
+							i18n.submitPreview ||
+							'Submit',
 					} )
 				);
 			}
 
 			renderSidebar( aside );
-			layout.appendChild( library );
+
+			const libWrap = el( 'div', { className: 'wek-builder-col wek-builder-col--lib' } );
+			const libToggle = el( 'button', {
+				type: 'button',
+				className: 'wek-builder-col__toggle',
+				title: chrome.libCollapsed
+					? i18n.expandLibrary || 'Expand fields library'
+					: i18n.collapseLibrary || 'Collapse fields library',
+				'aria-expanded': chrome.libCollapsed ? 'false' : 'true',
+				'aria-label': chrome.libCollapsed
+					? i18n.expandLibrary || 'Expand fields library'
+					: i18n.collapseLibrary || 'Collapse fields library',
+				onClick: function () {
+					chrome.libCollapsed = ! chrome.libCollapsed;
+					saveChrome();
+					applyChrome( layout );
+					libToggle.setAttribute( 'aria-expanded', chrome.libCollapsed ? 'false' : 'true' );
+					libToggle.title = chrome.libCollapsed
+						? i18n.expandLibrary || 'Expand fields library'
+						: i18n.collapseLibrary || 'Collapse fields library';
+					libToggle.setAttribute( 'aria-label', libToggle.title );
+					const icon = libToggle.querySelector( '.dashicons' );
+					if ( icon ) {
+						icon.className =
+							'dashicons ' +
+							( chrome.libCollapsed ? 'dashicons-arrow-right-alt2' : 'dashicons-arrow-left-alt2' );
+					}
+				},
+			}, [
+				el( 'span', {
+					className:
+						'dashicons ' +
+						( chrome.libCollapsed ? 'dashicons-arrow-right-alt2' : 'dashicons-arrow-left-alt2' ),
+					'aria-hidden': 'true',
+				} ),
+			] );
+			const libResize = el( 'div', {
+				className: 'wek-builder-resize wek-builder-resize--lib',
+				role: 'separator',
+				'aria-orientation': 'vertical',
+				title: i18n.resizeLibrary || 'Drag to resize',
+			} );
+			bindResize( libResize, 'lib', layout );
+			libWrap.appendChild( libToggle );
+			libWrap.appendChild( library );
+			libWrap.appendChild( libResize );
+
+			const sideWrap = el( 'div', { className: 'wek-builder-col wek-builder-col--side' } );
+			const sideToggle = el( 'button', {
+				type: 'button',
+				className: 'wek-builder-col__toggle',
+				title: chrome.sideCollapsed
+					? i18n.expandSettings || 'Expand field settings'
+					: i18n.collapseSettings || 'Collapse field settings',
+				'aria-expanded': chrome.sideCollapsed ? 'false' : 'true',
+				'aria-label': chrome.sideCollapsed
+					? i18n.expandSettings || 'Expand field settings'
+					: i18n.collapseSettings || 'Collapse field settings',
+				onClick: function () {
+					chrome.sideCollapsed = ! chrome.sideCollapsed;
+					saveChrome();
+					applyChrome( layout );
+					sideToggle.setAttribute( 'aria-expanded', chrome.sideCollapsed ? 'false' : 'true' );
+					sideToggle.title = chrome.sideCollapsed
+						? i18n.expandSettings || 'Expand field settings'
+						: i18n.collapseSettings || 'Collapse field settings';
+					sideToggle.setAttribute( 'aria-label', sideToggle.title );
+					const icon = sideToggle.querySelector( '.dashicons' );
+					if ( icon ) {
+						icon.className =
+							'dashicons ' +
+							( chrome.sideCollapsed ? 'dashicons-arrow-left-alt2' : 'dashicons-arrow-right-alt2' );
+					}
+				},
+			}, [
+				el( 'span', {
+					className:
+						'dashicons ' +
+						( chrome.sideCollapsed ? 'dashicons-arrow-left-alt2' : 'dashicons-arrow-right-alt2' ),
+					'aria-hidden': 'true',
+				} ),
+			] );
+			const sideResize = el( 'div', {
+				className: 'wek-builder-resize wek-builder-resize--side',
+				role: 'separator',
+				'aria-orientation': 'vertical',
+				title: i18n.resizeSettings || 'Drag to resize',
+			} );
+			bindResize( sideResize, 'side', layout );
+			sideWrap.appendChild( sideResize );
+			sideWrap.appendChild( sideToggle );
+			sideWrap.appendChild( aside );
+
+			layout.appendChild( libWrap );
 			layout.appendChild( canvas );
-			layout.appendChild( aside );
+			layout.appendChild( sideWrap );
+			applyChrome( layout );
 			root.appendChild( layout );
 			syncHidden();
 			root.setAttribute( 'data-wek-builder-ready', '1' );

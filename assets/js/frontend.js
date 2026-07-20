@@ -283,6 +283,82 @@
 		return applyLabelTemplate( tpl, label || 'This field' );
 	}
 
+	function setSubmitBusy( submitBtn, busy, submittingLabel ) {
+		if ( ! submitBtn ) {
+			return;
+		}
+		submitBtn.disabled = !! busy;
+		const textEl = qs( submitBtn, '[data-wek-submit-text]' );
+		if ( busy ) {
+			const msg = submittingLabel || 'Submitting…';
+			if ( textEl ) {
+				textEl.textContent = msg;
+			} else {
+				submitBtn.textContent = msg;
+			}
+			return;
+		}
+		const label =
+			submitBtn.getAttribute( 'data-wek-submit-label' ) ||
+			( ( window.weFormkit || {} ).i18n && ( window.weFormkit || {} ).i18n.submit ) ||
+			'Submit form';
+		if ( textEl ) {
+			textEl.textContent = label;
+		} else {
+			submitBtn.textContent = label;
+		}
+	}
+
+	function checkboxesLimitMessage( fieldEl, kind, n ) {
+		const label = fieldEl.getAttribute( 'data-field-label' ) || '';
+		const cfg = window.weFormkit || {};
+		const i18n = cfg.i18n || {};
+		const tpl =
+			kind === 'min'
+				? i18n.checkboxesMin || 'Please select at least %2$d option(s) for %1$s.'
+				: i18n.checkboxesMax || 'Please select at most %2$d option(s) for %1$s.';
+		return String( tpl )
+			.replace( /%1\$s/g, label || 'This field' )
+			.replace( /%2\$d/g, String( n ) );
+	}
+
+	function validateCheckboxesField( fieldEl ) {
+		if ( ( fieldEl.getAttribute( 'data-field-type' ) || '' ) !== 'checkboxes' ) {
+			return '';
+		}
+		const min = parseInt( fieldEl.getAttribute( 'data-min-selected' ) || '0', 10 );
+		const max = parseInt( fieldEl.getAttribute( 'data-max-selected' ) || '0', 10 );
+		const count = qsa( fieldEl, 'input[type="checkbox"]:checked' ).length;
+		if ( min > 0 && count < min ) {
+			return checkboxesLimitMessage( fieldEl, 'min', min );
+		}
+		if ( max > 0 && count > max ) {
+			return checkboxesLimitMessage( fieldEl, 'max', max );
+		}
+		return '';
+	}
+
+	function syncCheckboxesMaxLock( fieldEl ) {
+		if ( ( fieldEl.getAttribute( 'data-field-type' ) || '' ) !== 'checkboxes' ) {
+			return;
+		}
+		const max = parseInt( fieldEl.getAttribute( 'data-max-selected' ) || '0', 10 );
+		if ( max < 1 ) {
+			return;
+		}
+		const boxes = qsa( fieldEl, 'input[type="checkbox"]' );
+		const checked = boxes.filter( function ( box ) {
+			return box.checked;
+		} ).length;
+		boxes.forEach( function ( box ) {
+			if ( box.checked ) {
+				box.disabled = false;
+				return;
+			}
+			box.disabled = checked >= max;
+		} );
+	}
+
 	function showFieldError( form, fieldId, message ) {
 		const field = qs( form, '[data-field-id="' + fieldId + '"]' );
 		if ( ! field ) {
@@ -730,11 +806,17 @@
 				if ( fieldEl.classList.contains( 'is-hidden' ) ) {
 					return;
 				}
+				const type = fieldEl.getAttribute( 'data-field-type' );
+				const id = fieldEl.getAttribute( 'data-field-id' );
+				const cbMsg = validateCheckboxesField( fieldEl );
+				if ( cbMsg ) {
+					ok = false;
+					showFieldError( form, id, cbMsg );
+					return;
+				}
 				if ( fieldEl.getAttribute( 'data-required' ) !== '1' ) {
 					return;
 				}
-				const type = fieldEl.getAttribute( 'data-field-type' );
-				const id = fieldEl.getAttribute( 'data-field-id' );
 				let empty = false;
 				if ( type === 'checkbox' || type === 'consent' ) {
 					const box = qs( fieldEl, 'input[type="checkbox"]' );
@@ -1004,6 +1086,49 @@
 		} );
 	}
 
+	function validateVisibleFields( form ) {
+		let ok = true;
+		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
+			if ( fieldEl.classList.contains( 'is-hidden' ) ) {
+				return;
+			}
+			const type = fieldEl.getAttribute( 'data-field-type' );
+			const id = fieldEl.getAttribute( 'data-field-id' );
+			const cbMsg = validateCheckboxesField( fieldEl );
+			if ( cbMsg ) {
+				ok = false;
+				showFieldError( form, id, cbMsg );
+				return;
+			}
+			if ( fieldEl.getAttribute( 'data-required' ) !== '1' ) {
+				return;
+			}
+			let empty = false;
+			if ( type === 'checkbox' || type === 'consent' ) {
+				const box = qs( fieldEl, 'input[type="checkbox"]' );
+				empty = ! box || ! box.checked;
+			} else if ( type === 'checkboxes' ) {
+				empty = qsa( fieldEl, 'input[type="checkbox"]:checked' ).length === 0;
+			} else if ( type === 'radio' || type === 'radio_image' ) {
+				empty = ! qs( fieldEl, 'input[type="radio"]:checked' );
+			} else if ( type === 'upload' ) {
+				const file = qs( fieldEl, 'input[type="file"]' );
+				empty = ! file || ! file.files || ! file.files.length;
+			} else if ( type === 'signature' ) {
+				const sig = qs( fieldEl, '[data-wek-signature-input]' );
+				empty = ! sig || ! sig.value;
+			} else {
+				const input = qs( fieldEl, 'input, textarea, select' );
+				empty = ! input || ! String( input.value || '' ).trim();
+			}
+			if ( empty ) {
+				ok = false;
+				showFieldError( form, id, fieldRequiredMessage( fieldEl ) );
+			}
+		} );
+		return ok;
+	}
+
 	function initRoot( root ) {
 		const form = qs( root, '[data-wek-form]' );
 		if ( ! form || form.getAttribute( 'data-wek-ready' ) ) {
@@ -1014,8 +1139,19 @@
 		initPagination( root );
 		bindSaveResume( root );
 
-		form.addEventListener( 'change', function () {
+		qsa( form, '[data-field-type="checkboxes"]' ).forEach( function ( fieldEl ) {
+			syncCheckboxesMaxLock( fieldEl );
+		} );
+
+		form.addEventListener( 'change', function ( event ) {
 			applyConditionals( root );
+			const target = event.target;
+			if ( target && target.matches && target.matches( 'input[type="checkbox"]' ) ) {
+				const wrap = target.closest( '[data-field-type="checkboxes"]' );
+				if ( wrap ) {
+					syncCheckboxesMaxLock( wrap );
+				}
+			}
 		} );
 		form.addEventListener( 'input', function () {
 			applyConditionals( root );
@@ -1045,21 +1181,33 @@
 			if ( form.getAttribute( 'data-wek-submitting' ) === '1' ) {
 				return;
 			}
-			form.setAttribute( 'data-wek-submitting', '1' );
 
 			clearErrors( form );
 			setStatus( root, '', false );
+
+			if ( ! validateVisibleFields( form ) ) {
+				setStatus(
+					root,
+					( ( window.weFormkit || {} ).i18n && ( window.weFormkit || {} ).i18n.correctFields ) ||
+						'Please correct the highlighted fields.',
+					true
+				);
+				return;
+			}
+
+			form.setAttribute( 'data-wek-submitting', '1' );
 
 			const liveCfg = window.weFormkit || {};
 			const values = collectValues( form );
 			const honeypot = qs( form, '[name="website_url"]' );
 			const useMultipart = formHasFiles( form );
 
-			const submitBtn = qs( form, '[type="submit"]' );
-			if ( submitBtn ) {
-				submitBtn.disabled = true;
-				submitBtn.textContent = ( liveCfg.i18n && liveCfg.i18n.submitting ) || 'Submitting…';
-			}
+			const submitBtn = qs( form, '[data-wek-submit], [type="submit"]' );
+			setSubmitBusy(
+				submitBtn,
+				true,
+				( liveCfg.i18n && liveCfg.i18n.submitting ) || 'Submitting…'
+			)
 
 			const fetchOpts = {
 				method: 'POST',
@@ -1093,10 +1241,7 @@
 				} )
 				.then( function ( result ) {
 					form.removeAttribute( 'data-wek-submitting' );
-					if ( submitBtn ) {
-						submitBtn.disabled = false;
-						submitBtn.textContent = 'Submit form';
-					}
+					setSubmitBusy( submitBtn, false );
 
 					if ( result.ok && result.data && result.data.success ) {
 						const conf = result.data.confirmation || {};
@@ -1144,10 +1289,7 @@
 				} )
 				.catch( function () {
 					form.removeAttribute( 'data-wek-submitting' );
-					if ( submitBtn ) {
-						submitBtn.disabled = false;
-						submitBtn.textContent = 'Submit form';
-					}
+					setSubmitBusy( submitBtn, false );
 					setStatus(
 						root,
 						( liveCfg.i18n && liveCfg.i18n.error ) || 'Something went wrong.',

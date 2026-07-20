@@ -25,6 +25,7 @@ final class Form_Schema {
 	public const META_CONFIRMATION_MESSAGE = '_wek_form_confirmation_message';
 	public const META_CONFIRMATION         = '_wek_form_confirmation';
 	public const META_PAGINATION           = '_wek_form_pagination';
+	public const META_SUBMIT_BUTTON        = '_wek_form_submit_button';
 
 	public const SUB_FORM_ID    = '_wek_submission_form_id';
 	public const SUB_DATA       = '_wek_submission_data';
@@ -341,6 +342,160 @@ final class Form_Schema {
 	}
 
 	/**
+	 * Submit button label + optional inline SVG icon.
+	 *
+	 * @param int $form_id Form ID.
+	 * @return array{label:string,icon_svg:string,icon_position:string}
+	 */
+	public static function get_submit_button( $form_id ) {
+		$form_id = (int) $form_id;
+		$raw     = get_post_meta( $form_id, self::META_SUBMIT_BUTTON, true );
+		$decoded = is_string( $raw ) && '' !== $raw ? json_decode( $raw, true ) : null;
+		if ( ! is_array( $decoded ) ) {
+			$decoded = array();
+		}
+
+		$label = isset( $decoded['label'] ) ? sanitize_text_field( (string) $decoded['label'] ) : '';
+		if ( '' === $label ) {
+			$label = __( 'Submit form', 'we-formkit' );
+		}
+
+		$position = isset( $decoded['icon_position'] ) ? sanitize_key( (string) $decoded['icon_position'] ) : 'before';
+		if ( ! in_array( $position, array( 'before', 'after' ), true ) ) {
+			$position = 'before';
+		}
+
+		return array(
+			'label'         => $label,
+			'icon_svg'      => self::sanitize_submit_icon_svg( $decoded['icon_svg'] ?? '' ),
+			'icon_position' => $position,
+		);
+	}
+
+	/**
+	 * @param int                  $form_id Form ID.
+	 * @param array<string, mixed> $data    Submit button data.
+	 * @return void
+	 */
+	public static function set_submit_button( $form_id, array $data ) {
+		$label = isset( $data['label'] ) ? sanitize_text_field( (string) $data['label'] ) : '';
+		$pos   = isset( $data['icon_position'] ) ? sanitize_key( (string) $data['icon_position'] ) : 'before';
+		if ( ! in_array( $pos, array( 'before', 'after' ), true ) ) {
+			$pos = 'before';
+		}
+		$payload = array(
+			'label'         => $label,
+			'icon_svg'      => self::sanitize_submit_icon_svg( $data['icon_svg'] ?? '' ),
+			'icon_position' => $pos,
+		);
+		update_post_meta( (int) $form_id, self::META_SUBMIT_BUTTON, wp_json_encode( $payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+	}
+
+	/**
+	 * Allow a small inline SVG subset for submit button icons (no scripts).
+	 *
+	 * @param mixed $raw Raw SVG markup.
+	 * @return string
+	 */
+	public static function sanitize_submit_icon_svg( $raw ) {
+		$svg = is_string( $raw ) ? trim( $raw ) : '';
+		if ( '' === $svg ) {
+			return '';
+		}
+		// Reject obvious script / event handlers before kses.
+		if ( preg_match( '/<script|javascript:|on[a-z]+\s*=/i', $svg ) ) {
+			return '';
+		}
+		$clean = wp_kses( $svg, self::submit_icon_svg_allowed_html() );
+		$clean = trim( $clean );
+		if ( '' === $clean || false === stripos( $clean, '<svg' ) ) {
+			return '';
+		}
+		return $clean;
+	}
+
+	/**
+	 * @return array<string, array<string, bool>>
+	 */
+	public static function submit_icon_svg_allowed_html() {
+		$common = array(
+			'fill'             => true,
+			'stroke'           => true,
+			'stroke-width'     => true,
+			'stroke-linecap'   => true,
+			'stroke-linejoin'  => true,
+			'stroke-dasharray' => true,
+			'opacity'          => true,
+			'transform'        => true,
+			'class'            => true,
+		);
+		return array(
+			'svg'      => array_merge(
+				$common,
+				array(
+					'xmlns'       => true,
+					'viewbox'     => true,
+					'width'       => true,
+					'height'      => true,
+					'aria-hidden' => true,
+					'role'        => true,
+					'focusable'   => true,
+				)
+			),
+			'g'        => $common,
+			'path'     => array_merge(
+				$common,
+				array(
+					'd'         => true,
+					'fill-rule' => true,
+					'clip-rule' => true,
+				)
+			),
+			'circle'   => array_merge(
+				$common,
+				array(
+					'cx' => true,
+					'cy' => true,
+					'r'  => true,
+				)
+			),
+			'ellipse'  => array_merge(
+				$common,
+				array(
+					'cx' => true,
+					'cy' => true,
+					'rx' => true,
+					'ry' => true,
+				)
+			),
+			'rect'     => array_merge(
+				$common,
+				array(
+					'x'      => true,
+					'y'      => true,
+					'width'  => true,
+					'height' => true,
+					'rx'     => true,
+					'ry'     => true,
+				)
+			),
+			'line'     => array_merge(
+				$common,
+				array(
+					'x1' => true,
+					'y1' => true,
+					'x2' => true,
+					'y2' => true,
+				)
+			),
+			'polyline' => array_merge( $common, array( 'points' => true ) ),
+			'polygon'  => array_merge( $common, array( 'points' => true ) ),
+			'title'    => array(),
+			'desc'     => array(),
+		);
+	}
+
+	/**
 	 * Pagination mode: single | per_section.
 	 *
 	 * @param int $form_id Form ID.
@@ -454,12 +609,11 @@ final class Form_Schema {
 					continue;
 				}
 
-				if ( ! $type->is_empty_value( $sanitized ) ) {
-					$valid = $type->validate( $sanitized, $field );
-					if ( is_wp_error( $valid ) ) {
-						$errors[ $id ] = $valid->get_error_message();
-						continue;
-					}
+				// Always validate so constraints like checkbox min selections apply to empty values.
+				$valid = $type->validate( $sanitized, $field );
+				if ( is_wp_error( $valid ) ) {
+					$errors[ $id ] = $valid->get_error_message();
+					continue;
 				}
 
 				$data[ $id ] = $sanitized;

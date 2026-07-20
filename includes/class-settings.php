@@ -128,8 +128,50 @@ final class Settings {
 			$url = isset( $settings['privacy_policy_url'] ) ? (string) $settings['privacy_policy_url'] : '';
 			return $url;
 		}
+		$page = self::wp_privacy_page();
+		return $page['url'];
+	}
+
+	/**
+	 * WordPress privacy policy page details for settings UI and URL resolution.
+	 *
+	 * @return array{id:int,title:string,url:string,configured:bool}
+	 */
+	public static function wp_privacy_page() {
+		$page_id = (int) get_option( 'wp_page_for_privacy_policy' );
+		$empty   = array(
+			'id'         => 0,
+			'title'      => '',
+			'url'        => '',
+			'configured' => false,
+		);
+		if ( $page_id < 1 ) {
+			return $empty;
+		}
+
+		$post = get_post( $page_id );
+		if ( ! $post instanceof \WP_Post || 'trash' === $post->post_status ) {
+			return $empty;
+		}
+
+		$title = get_the_title( $post );
+		if ( ! is_string( $title ) || '' === trim( $title ) ) {
+			/* translators: %d: page ID */
+			$title = sprintf( __( 'Page #%d', 'we-formkit' ), $page_id );
+		}
+
 		$url = get_privacy_policy_url();
-		return is_string( $url ) ? $url : '';
+		if ( ! is_string( $url ) || '' === $url ) {
+			$permalink = get_permalink( $post );
+			$url       = ( is_string( $permalink ) && '' !== $permalink ) ? $permalink : '';
+		}
+
+		return array(
+			'id'         => $page_id,
+			'title'      => $title,
+			'url'        => $url,
+			'configured' => true,
+		);
 	}
 
 	/**
@@ -138,12 +180,8 @@ final class Settings {
 	 * @return string Empty when no page is configured.
 	 */
 	public static function wp_privacy_page_label() {
-		$page_id = (int) get_option( 'wp_page_for_privacy_policy' );
-		if ( $page_id < 1 ) {
-			return '';
-		}
-		$title = get_the_title( $page_id );
-		return is_string( $title ) ? $title : '';
+		$page = self::wp_privacy_page();
+		return $page['configured'] ? $page['title'] : '';
 	}
 
 	/**

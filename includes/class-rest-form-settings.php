@@ -183,6 +183,15 @@ final class Rest_Form_Settings {
 		$style_in = isset( $params['style'] ) && is_array( $params['style'] ) ? $params['style'] : array();
 		Form_Style::save( $form_id, Form_Style::sanitize_from_request( $style_in ) );
 
+		Form_Schema::set_submit_button(
+			$form_id,
+			array(
+				'label'         => isset( $params['submit_label'] ) ? (string) $params['submit_label'] : '',
+				'icon_svg'      => isset( $params['submit_icon_svg'] ) ? (string) $params['submit_icon_svg'] : '',
+				'icon_position' => isset( $params['submit_icon_position'] ) ? (string) $params['submit_icon_position'] : 'before',
+			)
+		);
+
 		return true;
 	}
 
@@ -195,6 +204,7 @@ final class Rest_Form_Settings {
 		$secret = Form_Schema::get_secret( $form_id );
 		$style  = Form_Style::get( $form_id );
 		$colors = Form_Style::editable_colors( $form_id );
+		$submit = Form_Schema::get_submit_button( $form_id );
 
 		$secret_url = '';
 		if ( ! empty( $secret['enabled'] ) && ! empty( $secret['token'] ) ) {
@@ -215,13 +225,16 @@ final class Rest_Form_Settings {
 			'secret_url'   => $secret_url,
 			'secret_token' => (string) ( $secret['token'] ?? '' ),
 			'settings'     => array(
-				'title'          => (string) ( $schema['title'] ?? get_the_title( $form_id ) ),
-				'slug'           => (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true ),
-				'intro'          => (string) ( $schema['intro'] ?? '' ),
-				'privacy_url'    => (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true ),
-				'secret_enabled' => ! empty( $secret['enabled'] ),
-				'style_preset'   => (string) $style['preset'],
-				'colors'         => $colors,
+				'title'                => (string) ( $schema['title'] ?? get_the_title( $form_id ) ),
+				'slug'                 => (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true ),
+				'intro'                => (string) ( $schema['intro'] ?? '' ),
+				'privacy_url'          => (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true ),
+				'secret_enabled'       => ! empty( $secret['enabled'] ),
+				'style_preset'         => (string) $style['preset'],
+				'colors'               => $colors,
+				'submit_label'         => (string) $submit['label'],
+				'submit_icon_svg'      => (string) $submit['icon_svg'],
+				'submit_icon_position' => (string) $submit['icon_position'],
 			),
 		);
 	}

@@ -67,9 +67,9 @@ final class Settings_Page {
 		if ( '' === $from_display ) {
 			$from_display = $site_name;
 		}
-		$privacy_mode  = (string) $settings['privacy_policy_mode'];
-		$wp_page_label = Settings::wp_privacy_page_label();
-		$wp_page_url   = get_privacy_policy_url();
+		$privacy_mode = (string) $settings['privacy_policy_mode'];
+		$wp_privacy   = Settings::wp_privacy_page();
+		$privacy_link = '<a href="' . esc_url( admin_url( 'options-privacy.php' ) ) . '">' . esc_html__( 'Settings → Privacy', 'we-formkit' ) . '</a>';
 		?>
 		<div class="wrap wek-admin wek-admin--plugin-settings" data-wek-scheme="<?php echo esc_attr( $scheme ); ?>">
 			<h1><?php esc_html_e( 'Formkit Settings', 'we-formkit' ); ?></h1>
@@ -139,14 +139,14 @@ final class Settings_Page {
 						<th><label for="wek_privacy_mode"><?php esc_html_e( 'Default privacy policy', 'we-formkit' ); ?></label></th>
 						<td>
 							<select name="wek_settings[privacy_policy_mode]" id="wek_privacy_mode">
-								<?php if ( '' !== $wp_page_label && is_string( $wp_page_url ) && '' !== $wp_page_url ) : ?>
+								<?php if ( $wp_privacy['configured'] ) : ?>
 									<option value="wp" <?php selected( $privacy_mode, 'wp' ); ?>>
 										<?php
 										echo esc_html(
 											sprintf(
 												/* translators: %s: privacy page title */
 												__( 'WordPress privacy page: %s', 'we-formkit' ),
-												$wp_page_label
+												$wp_privacy['title']
 											)
 										);
 										?>
@@ -158,14 +158,14 @@ final class Settings_Page {
 								<?php endif; ?>
 								<option value="custom" <?php selected( $privacy_mode, 'custom' ); ?>><?php esc_html_e( 'Custom URL', 'we-formkit' ); ?></option>
 							</select>
-							<?php if ( '' === $wp_page_label ) : ?>
+							<?php if ( ! $wp_privacy['configured'] ) : ?>
 								<p class="description">
 									<?php
 									echo wp_kses(
 										sprintf(
 											/* translators: %s: link to WP privacy settings */
 											__( 'No privacy policy page is set in WordPress. Configure one under %s, or choose a custom URL.', 'we-formkit' ),
-											'<a href="' . esc_url( admin_url( 'options-privacy.php' ) ) . '">' . esc_html__( 'Settings → Privacy', 'we-formkit' ) . '</a>'
+											$privacy_link
 										),
 										array(
 											'a' => array(
@@ -178,12 +178,16 @@ final class Settings_Page {
 							<?php else : ?>
 								<p class="description">
 									<?php
+									$page_ref = esc_html( $wp_privacy['title'] );
+									if ( '' !== $wp_privacy['url'] ) {
+										$page_ref = '<a href="' . esc_url( $wp_privacy['url'] ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $wp_privacy['title'] ) . '</a>';
+									}
 									echo wp_kses(
 										sprintf(
-											/* translators: 1: privacy page URL, 2: link to WP privacy settings */
+											/* translators: 1: privacy page title (linked when URL exists), 2: link to WP privacy settings */
 											__( 'Uses the page from WordPress Privacy settings (%1$s). Change it under %2$s.', 'we-formkit' ),
-											'<a href="' . esc_url( $wp_page_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $wp_page_url ) . '</a>',
-											'<a href="' . esc_url( admin_url( 'options-privacy.php' ) ) . '">' . esc_html__( 'Settings → Privacy', 'we-formkit' ) . '</a>'
+											$page_ref,
+											$privacy_link
 										),
 										array(
 											'a' => array(

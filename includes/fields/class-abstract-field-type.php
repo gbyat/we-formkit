@@ -45,13 +45,14 @@ abstract class Abstract_Field_Type {
 	 * @return array<string, mixed>
 	 */
 	public function normalize_config( array $field ): array {
-		$field['id']          = isset( $field['id'] ) ? sanitize_key( (string) $field['id'] ) : '';
-		$field['type']        = $this->get_type();
-		$field['label']       = isset( $field['label'] ) ? sanitize_text_field( (string) $field['label'] ) : '';
-		$field['help']        = isset( $field['help'] ) ? sanitize_text_field( (string) $field['help'] ) : '';
-		$field['required']    = ! empty( $field['required'] );
-		$field['placeholder'] = isset( $field['placeholder'] ) ? sanitize_text_field( (string) $field['placeholder'] ) : '';
-		$field['width']       = isset( $field['width'] ) ? sanitize_key( (string) $field['width'] ) : 'full';
+		$field['id']            = isset( $field['id'] ) ? sanitize_key( (string) $field['id'] ) : '';
+		$field['type']          = $this->get_type();
+		$field['label']         = isset( $field['label'] ) ? sanitize_text_field( (string) $field['label'] ) : '';
+		$field['help']          = isset( $field['help'] ) ? sanitize_text_field( (string) $field['help'] ) : '';
+		$field['required']      = ! empty( $field['required'] );
+		$field['placeholder']   = isset( $field['placeholder'] ) ? sanitize_text_field( (string) $field['placeholder'] ) : '';
+		$field['default_value'] = isset( $field['default_value'] ) ? sanitize_text_field( (string) $field['default_value'] ) : '';
+		$field['width']         = isset( $field['width'] ) ? sanitize_key( (string) $field['width'] ) : 'full';
 		if ( ! in_array( $field['width'], array( 'full', 'two_thirds', 'half', 'third' ), true ) ) {
 			$field['width'] = 'full';
 		}

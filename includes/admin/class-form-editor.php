@@ -303,10 +303,11 @@ final class Form_Editor {
 	/**
 	 * Enqueue builder assets and inject the current schema for JS.
 	 *
-	 * @param array<string,mixed> $schema Normalized form schema.
+	 * @param array<string,mixed> $schema  Normalized form schema.
+	 * @param int                 $form_id Form ID (0 when new).
 	 * @return void
 	 */
-	public static function enqueue_builder_assets( array $schema ) {
+	public static function enqueue_builder_assets( array $schema, $form_id = 0 ) {
 		wp_enqueue_media();
 
 		wp_enqueue_script(
@@ -341,11 +342,18 @@ final class Form_Editor {
 			);
 		}
 
+		$submit = $form_id > 0
+			? Form_Schema::get_submit_button( (int) $form_id )
+			: array(
+				'label' => __( 'Submit form', 'we-formkit' ),
+			);
+
 		wp_localize_script(
 			'we-formkit-admin-form',
 			'weFormkitAdmin',
 			array(
 				'fieldTypes'        => $field_types,
+				'submitLabel'       => (string) $submit['label'],
 				'i18n'              => array(
 					'section'             => __( 'Section', 'we-formkit' ),
 					'field'               => __( 'Field', 'we-formkit' ),
@@ -364,6 +372,18 @@ final class Form_Editor {
 					'required'            => __( 'Required', 'we-formkit' ),
 					'help'                => __( 'Help text', 'we-formkit' ),
 					'options'             => __( 'Options (value + label)', 'we-formkit' ),
+					'optionsDefaultHint'  => __( 'Drag to reorder. Mark one option as default, or leave unset to use the placeholder (empty value).', 'we-formkit' ),
+					'dragToReorder'       => __( 'Drag to reorder', 'we-formkit' ),
+					'defaultOption'       => __( 'Default', 'we-formkit' ),
+					'clearDefault'        => __( 'Clear default (use placeholder)', 'we-formkit' ),
+					'optionValue'         => __( 'value', 'we-formkit' ),
+					'optionLabel'         => __( 'Label', 'we-formkit' ),
+					'collapseLibrary'     => __( 'Collapse fields library', 'we-formkit' ),
+					'expandLibrary'       => __( 'Expand fields library', 'we-formkit' ),
+					'collapseSettings'    => __( 'Collapse field settings', 'we-formkit' ),
+					'expandSettings'      => __( 'Expand field settings', 'we-formkit' ),
+					'resizeLibrary'       => __( 'Drag to resize', 'we-formkit' ),
+					'resizeSettings'      => __( 'Drag to resize', 'we-formkit' ),
 					'showWhen'            => __( 'Show when', 'we-formkit' ),
 					'showField'           => __( 'Depends on field', 'we-formkit' ),
 					'showOp'              => __( 'Operator', 'we-formkit' ),
@@ -433,6 +453,9 @@ final class Form_Editor {
 					'repeaterHint'        => __( 'Click or drag fields from the library into the repeater. Min/max control how many rows visitors can add.', 'we-formkit' ),
 					'minRows'             => __( 'Minimum rows', 'we-formkit' ),
 					'maxRows'             => __( 'Maximum rows', 'we-formkit' ),
+					'minSelected'         => __( 'Minimum selections', 'we-formkit' ),
+					'maxSelected'         => __( 'Maximum selections', 'we-formkit' ),
+					'checkboxesLimitsHint' => __( '0 minimum = no minimum (unless Required). 0 maximum = unlimited.', 'we-formkit' ),
 					'addRowLabel'         => __( 'Add row button label', 'we-formkit' ),
 					'repeaterDropHint'    => __( 'Drop fields here — they repeat together on the front end.', 'we-formkit' ),
 					'repeaterEmpty'       => __( 'Drop fields here from the library.', 'we-formkit' ),
@@ -526,7 +549,7 @@ final class Form_Editor {
 		}
 
 		if ( 'fields' === $view ) {
-			self::enqueue_builder_assets( is_array( $schema ) ? $schema : array() );
+			self::enqueue_builder_assets( is_array( $schema ) ? $schema : array(), $form_id );
 		}
 
 		$public_page = home_url( '/' );
@@ -581,6 +604,9 @@ final class Form_Editor {
 		<?php endif; ?>
 		<?php if ( ! empty( $_GET['doc_deleted'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Document deleted.', 'we-formkit' ); ?></p></div>
+		<?php endif; ?>
+		<?php if ( ! empty( $_GET['error'] ) && 'no_file' === sanitize_key( wp_unslash( (string) $_GET['error'] ) ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+			<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Please select a file from the Media Library before saving.', 'we-formkit' ); ?></p></div>
 		<?php endif; ?>
 
 		<?php if ( 'fields' !== $view ) : ?>
@@ -836,6 +862,13 @@ final class Form_Editor {
 
 		$style_stored = $form_id > 0 ? Form_Style::get( $form_id ) : Form_Style::normalize( array() );
 		$colors       = $form_id > 0 ? Form_Style::editable_colors( $form_id ) : Form_Style::theme_defaults();
+		$submit       = $form_id > 0
+			? Form_Schema::get_submit_button( $form_id )
+			: array(
+				'label'         => __( 'Submit form', 'we-formkit' ),
+				'icon_svg'      => '',
+				'icon_position' => 'before',
+			);
 
 		wp_localize_script(
 			'we-formkit-admin-form-settings',
@@ -853,13 +886,16 @@ final class Form_Editor {
 				'themeColors'   => Form_Style::theme_defaults(),
 				'formkitColors' => Form_Style::formkit_defaults(),
 				'settings'      => array(
-					'title'          => (string) $title,
-					'slug'           => (string) $slug,
-					'intro'          => (string) ( $schema['intro'] ?? '' ),
-					'privacy_url'    => (string) $privacy,
-					'secret_enabled' => ! empty( $secret['enabled'] ),
-					'style_preset'   => (string) $style_stored['preset'],
-					'colors'         => $colors,
+					'title'                => (string) $title,
+					'slug'                 => (string) $slug,
+					'intro'                => (string) ( $schema['intro'] ?? '' ),
+					'privacy_url'          => (string) $privacy,
+					'secret_enabled'       => ! empty( $secret['enabled'] ),
+					'style_preset'         => (string) $style_stored['preset'],
+					'colors'               => $colors,
+					'submit_label'         => (string) $submit['label'],
+					'submit_icon_svg'      => (string) $submit['icon_svg'],
+					'submit_icon_position' => (string) $submit['icon_position'],
 				),
 			)
 		);
@@ -1455,8 +1491,6 @@ final class Form_Editor {
 	 * @return void
 	 */
 	private static function render_document_edit( $form_id, array $doc, array $notifications, array $schema, $is_new ) {
-		wp_enqueue_media();
-
 		$list_url  = admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $form_id . '&view=documents' );
 		$did       = (string) $doc['id'];
 		$prefix    = 'wek_document';
@@ -1747,10 +1781,19 @@ final class Form_Editor {
 			var clear = document.getElementById('wek_doc_clear');
 			var idInput = document.getElementById('wek_doc_attachment_id');
 			var label = document.getElementById('wek_doc_file_label');
-			if (pick && typeof wp !== 'undefined' && wp.media) {
-				var frame;
+			var frame;
+			var mediaMissing = <?php echo wp_json_encode( __( 'Media Library could not be loaded. Please refresh the page.', 'we-formkit' ) ); ?>;
+			var openLabel = <?php echo wp_json_encode( __( 'Open', 'we-formkit' ) ); ?>;
+			var noFile = <?php echo wp_json_encode( __( 'No file selected.', 'we-formkit' ) ); ?>;
+			var needFile = <?php echo wp_json_encode( __( 'Please select a file from the Media Library.', 'we-formkit' ) ); ?>;
+
+			if (pick && idInput && label) {
 				pick.addEventListener('click', function (e) {
 					e.preventDefault();
+					if (typeof wp === 'undefined' || !wp.media) {
+						window.alert(mediaMissing);
+						return;
+					}
 					if (frame) {
 						frame.open();
 						return;
@@ -1771,7 +1814,7 @@ final class Form_Editor {
 							a.href = file.url;
 							a.target = '_blank';
 							a.rel = 'noopener noreferrer';
-							a.textContent = <?php echo wp_json_encode( __( 'Open', 'we-formkit' ) ); ?>;
+							a.textContent = openLabel;
 							label.appendChild(a);
 						}
 						if (clear) clear.disabled = false;
@@ -1779,14 +1822,22 @@ final class Form_Editor {
 					frame.open();
 				});
 			}
-			if (clear) {
+			if (clear && idInput && label) {
 				clear.addEventListener('click', function (e) {
 					e.preventDefault();
 					idInput.value = '0';
-					label.textContent = <?php echo wp_json_encode( __( 'No file selected.', 'we-formkit' ) ); ?>;
+					label.textContent = noFile;
 					clear.disabled = true;
 				});
 			}
+			form.addEventListener('submit', function (e) {
+				var aid = idInput ? parseInt(idInput.value || '0', 10) : 0;
+				if (!aid) {
+					e.preventDefault();
+					window.alert(needFile);
+					if (pick) pick.focus();
+				}
+			});
 		})();
 		</script>
 		<?php
@@ -2139,6 +2190,25 @@ final class Form_Editor {
 		$posted['show_download']   = ! empty( $posted['show_download'] );
 		$posted['attach_to_email'] = ! empty( $posted['attach_to_email'] );
 		$posted['attachment_id']   = isset( $posted['attachment_id'] ) ? absint( $posted['attachment_id'] ) : 0;
+
+		if ( $posted['attachment_id'] <= 0 ) {
+			$doc_id = isset( $posted['id'] ) ? sanitize_key( (string) $posted['id'] ) : '';
+			$list   = Form_Info_Documents::get( $form_id );
+			$exists = '' !== $doc_id && null !== Form_Info_Documents::find_by_id( $list, $doc_id );
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'page'     => 'we-formkit-form',
+						'form_id'  => $form_id,
+						'view'     => 'documents',
+						'document' => $exists ? $doc_id : 'new',
+						'error'    => 'no_file',
+					),
+					admin_url( 'admin.php' )
+				)
+			);
+			exit;
+		}
 
 		if ( isset( $posted['notification_ids'] ) && ! is_array( $posted['notification_ids'] ) ) {
 			$posted['notification_ids'] = array_filter( array_map( 'strval', (array) $posted['notification_ids'] ) );
