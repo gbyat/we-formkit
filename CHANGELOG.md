@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-07-20
+
+- Implement info documents feature in the admin form editor. Add functionality for managing documents, including toggling and deleting. Update CSS for document-related UI elements and enhance frontend JavaScript to display downloadable links. Modify notification handling to include document links in emails. Update documentation to reflect new features and usage of `{info_links}` tag.
 ## [0.2.2] - 2026-07-20
 
 - Refactor notification handling in the admin form editor. Introduce new methods for managing notifications, including duplication, deletion, and toggling status. Update CSS for notification UI elements, enhancing layout and usability. Implement schema hydration for notifications to ensure proper field linking. Improve overall notification management experience in the editor.
