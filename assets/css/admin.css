@@ -278,15 +278,18 @@ body.wek-scheme-violet .wek-admin {
 
 .wek-admin .wek-fields-bar__badge {
 	flex-shrink: 0;
-	display: inline-block;
-	padding: 0.35rem 0.7rem;
-	border-radius: 999px;
-	background: var(--wek-accent-soft);
-	color: var(--wek-accent-on-soft);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 34px;
+	padding: 0 0.75rem;
+	border-radius: var(--wek-radius-sm);
+	background: var(--wek-surface);
+	color: var(--wek-muted);
 	font-size: 12px;
 	font-weight: 600;
-	line-height: 1.2;
-	border: 0;
+	line-height: 1;
+	border: 1px solid var(--wek-line);
 }
 
 .wek-admin .wek-fields-bar__actions {
@@ -297,39 +300,43 @@ body.wek-scheme-violet .wek-admin {
 }
 
 .wek-admin .wek-fields-bar__actions .button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	margin: 0;
 	border-radius: var(--wek-radius-sm);
 	font-weight: 600;
+	height: 34px;
 	min-height: 34px;
 	line-height: 1;
 	padding: 0 14px;
+	box-shadow: none;
 }
 
 .wek-admin .wek-fields-bar__entries {
+	background: var(--wek-surface) !important;
+	border-color: var(--wek-line-strong) !important;
+	color: var(--wek-ink) !important;
+}
+
+.wek-admin .wek-fields-bar__entries:hover,
+.wek-admin .wek-fields-bar__entries:focus {
+	background: var(--wek-panel) !important;
+	border-color: var(--wek-line-strong) !important;
+	color: var(--wek-ink) !important;
+}
+
+.wek-admin .wek-fields-bar__actions .button-primary {
 	background: var(--wek-accent) !important;
 	border-color: var(--wek-accent) !important;
 	color: var(--wek-accent-ink) !important;
 }
 
-.wek-admin .wek-fields-bar__entries:hover,
-.wek-admin .wek-fields-bar__entries:focus {
+.wek-admin .wek-fields-bar__actions .button-primary:hover,
+.wek-admin .wek-fields-bar__actions .button-primary:focus {
 	background: var(--wek-accent-hover) !important;
 	border-color: var(--wek-accent-hover) !important;
 	color: #fff !important;
-}
-
-.wek-admin .wek-fields-bar__actions .button-primary {
-	background: var(--wek-surface);
-	border-color: var(--wek-line-strong);
-	color: var(--wek-ink);
-	box-shadow: none;
-}
-
-.wek-admin .wek-fields-bar__actions .button-primary:hover,
-.wek-admin .wek-fields-bar__actions .button-primary:focus {
-	background: var(--wek-panel);
-	border-color: var(--wek-line-strong);
-	color: var(--wek-ink);
 }
 
 .wek-admin .wek-admin__settings-panel,
@@ -349,7 +356,7 @@ body.wek-scheme-violet .wek-admin {
 /* —— Unified 3-column app shell (no gaps) —— */
 .wek-admin .wek-builder-layout {
 	display: grid;
-	grid-template-columns: minmax(240px, 280px) minmax(0, 1fr) minmax(300px, 340px);
+	grid-template-columns: minmax(200px, 220px) minmax(0, 1fr) minmax(300px, 340px);
 	gap: 0;
 	align-items: stretch;
 	max-width: none;
@@ -363,7 +370,7 @@ body.wek-scheme-violet .wek-admin {
 
 @media (max-width: 1280px) {
 	.wek-admin .wek-builder-layout {
-		grid-template-columns: minmax(220px, 250px) minmax(0, 1fr) minmax(280px, 310px);
+		grid-template-columns: minmax(180px, 200px) minmax(0, 1fr) minmax(280px, 310px);
 	}
 }
 
@@ -463,8 +470,8 @@ body.wek-scheme-violet .wek-admin {
 
 .wek-admin .wek-builder-library__grid {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 0.55rem;
+	grid-template-columns: 1fr;
+	gap: 0.4rem;
 	padding: 0 1rem 1.25rem;
 	max-height: none;
 	overflow: visible;

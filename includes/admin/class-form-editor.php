@@ -959,24 +959,30 @@ final class Form_Editor {
 
 		if ( $form_id > 0 ) {
 			$current = Form_Schema::get( $form_id );
-			if ( empty( $decoded['title'] ) && ! empty( $current['title'] ) ) {
-				$decoded['title'] = $current['title'];
-			}
 			if ( ! isset( $decoded['intro'] ) && isset( $current['intro'] ) ) {
 				$decoded['intro'] = $current['intro'];
 			}
-			$post_title = get_the_title( $form_id );
-		} else {
-			$post_title       = ! empty( $decoded['title'] ) ? (string) $decoded['title'] : ( $title ? $title : __( 'New form', 'we-formkit' ) );
-			$decoded['title'] = $post_title;
 		}
 
 		$schema = Form_Schema::normalize( $decoded );
 
 		if ( $form_id > 0 ) {
+			$post_title = '' !== $title ? $title : get_the_title( $form_id );
+			if ( '' === $post_title ) {
+				$post_title = __( 'Untitled form', 'we-formkit' );
+			}
+			$schema['title'] = $post_title;
+			wp_update_post(
+				array(
+					'ID'         => $form_id,
+					'post_title' => $post_title,
+				)
+			);
 			Form_Schema::save( $form_id, $schema );
 		} else {
-			$form_id = (int) wp_insert_post(
+			$post_title      = '' !== $title ? $title : ( ! empty( $decoded['title'] ) ? (string) $decoded['title'] : __( 'New form', 'we-formkit' ) );
+			$schema['title'] = $post_title;
+			$form_id         = (int) wp_insert_post(
 				array(
 					'post_type'   => Post_Types::FORM,
 					'post_status' => 'publish',
