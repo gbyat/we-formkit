@@ -147,7 +147,9 @@ final class Notifications {
 			$to = self::resolve_recipients( $notification, $data, $schema );
 		}
 		if ( empty( $to ) ) {
-			return __( 'No valid recipient email.', 'we-formkit' );
+			$err = __( 'No valid recipient email.', 'we-formkit' );
+			self::append_notify_log( $submission_id, $notification, '', false, $err );
+			return $err;
 		}
 
 		$vars    = self::merge_vars( $submission_id, $form_id, $schema, $data, $notification, $matched_docs );
@@ -162,7 +164,7 @@ final class Notifications {
 		}
 		$from_name = (string) $notification['from_name'];
 		if ( '' === $from_name ) {
-			$from_name = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+			$from_name = Settings::default_from_name();
 		}
 		if ( is_email( $from_email ) ) {
 			$headers[] = 'From: ' . self::format_address( $from_name, $from_email );
@@ -224,7 +226,57 @@ final class Notifications {
 			isset( $mail['attachments'] ) && is_array( $mail['attachments'] ) ? $mail['attachments'] : array()
 		);
 
+		self::append_notify_log(
+			$submission_id,
+			$notification,
+			isset( $mail['to'] ) ? (string) $mail['to'] : implode( ', ', $to ),
+			(bool) $ok,
+			$ok ? '' : __( 'wp_mail failed.', 'we-formkit' )
+		);
+
 		return $ok ? true : __( 'wp_mail failed.', 'we-formkit' );
+	}
+
+	/**
+	 * Append a notification delivery record to the submission.
+	 *
+	 * @param int                  $submission_id Submission ID.
+	 * @param array<string, mixed> $notification  Notification config.
+	 * @param string               $to            Recipient list (comma-separated).
+	 * @param bool                 $ok            Whether mail was accepted.
+	 * @param string               $error         Optional error message.
+	 * @return void
+	 */
+	private static function append_notify_log( $submission_id, array $notification, $to, $ok, $error = '' ) {
+		$submission_id = (int) $submission_id;
+		if ( $submission_id < 1 ) {
+			return;
+		}
+
+		$raw = (string) get_post_meta( $submission_id, Form_Schema::SUB_NOTIFY_LOG, true );
+		$log = json_decode( $raw, true );
+		if ( ! is_array( $log ) ) {
+			$log = array();
+		}
+
+		$log[] = array(
+			'id'    => sanitize_key( (string) ( $notification['id'] ?? '' ) ),
+			'name'  => sanitize_text_field( (string) ( $notification['name'] ?? '' ) ),
+			'to'    => sanitize_text_field( (string) $to ),
+			'ok'    => (bool) $ok,
+			'error' => sanitize_text_field( (string) $error ),
+			'at'    => current_time( 'mysql' ),
+		);
+
+		if ( count( $log ) > 40 ) {
+			$log = array_slice( $log, -40 );
+		}
+
+		update_post_meta(
+			$submission_id,
+			Form_Schema::SUB_NOTIFY_LOG,
+			wp_json_encode( array_values( $log ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES )
+		);
 	}
 
 	/**
@@ -245,12 +297,7 @@ final class Notifications {
 
 		$email_list = (string) $notification['to'];
 		if ( '' === $email_list ) {
-			$settings = Settings::get();
-			$fallback = isset( $settings['notify_email'] ) ? (string) $settings['notify_email'] : '';
-			if ( ! is_email( $fallback ) ) {
-				$fallback = (string) get_option( 'admin_email' );
-			}
-			$email_list = $fallback;
+			$email_list = Settings::default_notify_email();
 		}
 
 		$parts = preg_split( '/[,;]+/', $email_list );

@@ -269,13 +269,9 @@ final class Frontend {
 		wp_enqueue_style( 'we-formkit-form' );
 		wp_enqueue_script( 'we-formkit-form' );
 
-		$settings    = Settings::get();
 		$privacy_url = (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true );
 		if ( '' === $privacy_url ) {
-			$privacy_url = (string) $settings['privacy_policy_url'];
-		}
-		if ( '' === $privacy_url ) {
-			$privacy_url = get_privacy_policy_url();
+			$privacy_url = Settings::privacy_policy_url();
 		}
 
 		wp_localize_script(
@@ -345,7 +341,9 @@ final class Frontend {
 
 			<div class="we-formkit__status" data-wek-status role="status" aria-live="polite"></div>
 			<div class="we-formkit__info-docs" data-wek-info-docs hidden></div>
-			<p class="we-formkit__progress" data-wek-progress hidden></p>
+			<?php if ( 'per_section' === $pagination ) : ?>
+				<p class="we-formkit__progress" data-wek-progress hidden></p>
+			<?php endif; ?>
 
 			<form class="we-formkit__form" data-wek-form novalidate>
 				<input type="hidden" name="form_id" value="<?php echo esc_attr( (string) $form_id ); ?>" />
@@ -377,10 +375,12 @@ final class Frontend {
 					</section>
 				<?php endforeach; ?>
 
-				<p class="we-formkit__actions we-formkit__actions--nav" data-wek-nav hidden>
-					<button type="button" class="we-formkit__nav-btn" data-wek-prev><?php esc_html_e( 'Previous', 'we-formkit' ); ?></button>
-					<button type="button" class="we-formkit__nav-btn we-formkit__nav-btn--primary" data-wek-next><?php esc_html_e( 'Next', 'we-formkit' ); ?></button>
-				</p>
+				<?php if ( 'per_section' === $pagination ) : ?>
+					<p class="we-formkit__actions we-formkit__actions--nav" data-wek-nav hidden>
+						<button type="button" class="we-formkit__nav-btn" data-wek-prev><?php esc_html_e( 'Previous', 'we-formkit' ); ?></button>
+						<button type="button" class="we-formkit__nav-btn we-formkit__nav-btn--primary" data-wek-next><?php esc_html_e( 'Next', 'we-formkit' ); ?></button>
+					</p>
+				<?php endif; ?>
 
 				<p class="we-formkit__actions" data-wek-submit-wrap>
 					<button type="submit" class="we-formkit__submit"><?php esc_html_e( 'Submit form', 'we-formkit' ); ?></button>

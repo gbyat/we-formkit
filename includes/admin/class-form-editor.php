@@ -16,6 +16,7 @@ use Webentwicklerin\WeFormkit\Form_Schema;
 use Webentwicklerin\WeFormkit\Form_Style;
 use Webentwicklerin\WeFormkit\Plugin;
 use Webentwicklerin\WeFormkit\Post_Types;
+use Webentwicklerin\WeFormkit\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -1168,7 +1169,7 @@ final class Form_Editor {
 			</tr>
 			<tr>
 				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_from_name"><?php esc_html_e( 'From name', 'we-formkit' ); ?></label></th>
-				<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[from_name]" id="wek_n_<?php echo esc_attr( $nid ); ?>_from_name" value="<?php echo esc_attr( (string) $n['from_name'] ); ?>" placeholder="<?php echo esc_attr( wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) ); ?>" /></td>
+				<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[from_name]" id="wek_n_<?php echo esc_attr( $nid ); ?>_from_name" value="<?php echo esc_attr( (string) $n['from_name'] ); ?>" placeholder="<?php echo esc_attr( Settings::default_from_name() ); ?>" /></td>
 			</tr>
 			<tr>
 				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_from_email"><?php esc_html_e( 'From email', 'we-formkit' ); ?></label></th>

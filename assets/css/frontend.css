@@ -540,6 +540,12 @@
 	gap: 0.65rem;
 }
 
+.we-formkit__actions--nav[hidden],
+.we-formkit__progress[hidden],
+.we-formkit__actions[hidden] {
+	display: none !important;
+}
+
 .we-formkit__nav-btn {
 	appearance: none;
 	border: 1px solid var(--wek-line);

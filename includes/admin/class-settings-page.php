@@ -53,17 +53,30 @@ final class Settings_Page {
 		if ( ! Capabilities::can_manage() ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'we-formkit' ) );
 		}
-		$settings = Settings::get();
-		$schemes  = Settings::admin_schemes();
-		$scheme   = Settings::admin_scheme();
+		$settings       = Settings::get();
+		$schemes        = Settings::admin_schemes();
+		$scheme         = Settings::admin_scheme();
+		$admin_email    = (string) get_option( 'admin_email' );
+		$site_name      = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+		$notify_display = (string) $settings['notify_email'];
+		if ( '' === $notify_display ) {
+			$notify_display = $admin_email;
+		}
+		$from_display = (string) $settings['from_name'];
+		if ( '' === $from_display ) {
+			$from_display = $site_name;
+		}
+		$privacy_mode  = (string) $settings['privacy_policy_mode'];
+		$wp_page_label = Settings::wp_privacy_page_label();
+		$wp_page_url   = get_privacy_policy_url();
 		?>
-		<div class="wrap wek-admin" data-wek-scheme="<?php echo esc_attr( $scheme ); ?>">
+		<div class="wrap wek-admin wek-admin--plugin-settings" data-wek-scheme="<?php echo esc_attr( $scheme ); ?>">
 			<h1><?php esc_html_e( 'Formkit Settings', 'we-formkit' ); ?></h1>
 			<?php if ( ! empty( $_GET['saved'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'we-formkit' ); ?></p></div>
 			<?php endif; ?>
 
-			<form method="post">
+			<form method="post" id="wek-plugin-settings-form">
 				<?php wp_nonce_field( 'we_formkit_save_settings', 'we_formkit_settings_nonce' ); ?>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -90,14 +103,102 @@ final class Settings_Page {
 					<tr>
 						<th><label for="wek_notify_email"><?php esc_html_e( 'Default notification email', 'we-formkit' ); ?></label></th>
 						<td>
-							<input class="regular-text" type="email" name="wek_settings[notify_email]" id="wek_notify_email" value="<?php echo esc_attr( (string) $settings['notify_email'] ); ?>" />
-							<p class="description"><?php esc_html_e( 'Used when a form has no own notification address. Falls back to the site admin email.', 'we-formkit' ); ?></p>
+							<input class="regular-text" type="email" name="wek_settings[notify_email]" id="wek_notify_email" value="<?php echo esc_attr( $notify_display ); ?>" />
+							<p class="description">
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: %s: site admin email */
+										__( 'Prefilled with the WordPress admin email (%s). Change it to use a different default; leave as the admin email to follow that address.', 'we-formkit' ),
+										$admin_email
+									)
+								);
+								?>
+							</p>
 						</td>
 					</tr>
 					<tr>
-						<th><label for="wek_privacy_url"><?php esc_html_e( 'Default privacy policy URL', 'we-formkit' ); ?></label></th>
+						<th><label for="wek_from_name"><?php esc_html_e( 'Default from name', 'we-formkit' ); ?></label></th>
 						<td>
-							<input class="regular-text" type="url" name="wek_settings[privacy_policy_url]" id="wek_privacy_url" value="<?php echo esc_attr( (string) $settings['privacy_policy_url'] ); ?>" />
+							<input class="regular-text" type="text" name="wek_settings[from_name]" id="wek_from_name" value="<?php echo esc_attr( $from_display ); ?>" />
+							<p class="description">
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: %s: site title */
+										__( 'Used as the From name when a notification leaves it empty. Prefilled with the site title (%s).', 'we-formkit' ),
+										$site_name
+									)
+								);
+								?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="wek_privacy_mode"><?php esc_html_e( 'Default privacy policy', 'we-formkit' ); ?></label></th>
+						<td>
+							<select name="wek_settings[privacy_policy_mode]" id="wek_privacy_mode">
+								<?php if ( '' !== $wp_page_label && is_string( $wp_page_url ) && '' !== $wp_page_url ) : ?>
+									<option value="wp" <?php selected( $privacy_mode, 'wp' ); ?>>
+										<?php
+										echo esc_html(
+											sprintf(
+												/* translators: %s: privacy page title */
+												__( 'WordPress privacy page: %s', 'we-formkit' ),
+												$wp_page_label
+											)
+										);
+										?>
+									</option>
+								<?php else : ?>
+									<option value="wp" <?php selected( $privacy_mode, 'wp' ); ?>>
+										<?php esc_html_e( 'WordPress privacy page (not set yet)', 'we-formkit' ); ?>
+									</option>
+								<?php endif; ?>
+								<option value="custom" <?php selected( $privacy_mode, 'custom' ); ?>><?php esc_html_e( 'Custom URL', 'we-formkit' ); ?></option>
+							</select>
+							<?php if ( '' === $wp_page_label ) : ?>
+								<p class="description">
+									<?php
+									echo wp_kses(
+										sprintf(
+											/* translators: %s: link to WP privacy settings */
+											__( 'No privacy policy page is set in WordPress. Configure one under %s, or choose a custom URL.', 'we-formkit' ),
+											'<a href="' . esc_url( admin_url( 'options-privacy.php' ) ) . '">' . esc_html__( 'Settings → Privacy', 'we-formkit' ) . '</a>'
+										),
+										array(
+											'a' => array(
+												'href' => true,
+											),
+										)
+									);
+									?>
+								</p>
+							<?php else : ?>
+								<p class="description">
+									<?php
+									echo wp_kses(
+										sprintf(
+											/* translators: 1: privacy page URL, 2: link to WP privacy settings */
+											__( 'Uses the page from WordPress Privacy settings (%1$s). Change it under %2$s.', 'we-formkit' ),
+											'<a href="' . esc_url( $wp_page_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $wp_page_url ) . '</a>',
+											'<a href="' . esc_url( admin_url( 'options-privacy.php' ) ) . '">' . esc_html__( 'Settings → Privacy', 'we-formkit' ) . '</a>'
+										),
+										array(
+											'a' => array(
+												'href'   => true,
+												'target' => true,
+												'rel'    => true,
+											),
+										)
+									);
+									?>
+								</p>
+							<?php endif; ?>
+							<p class="wek-reveal" id="wek-privacy-custom-wrap" <?php echo 'custom' === $privacy_mode ? '' : 'hidden'; ?>>
+								<label for="wek_privacy_url" class="screen-reader-text"><?php esc_html_e( 'Custom privacy policy URL', 'we-formkit' ); ?></label>
+								<input class="regular-text" type="url" name="wek_settings[privacy_policy_url]" id="wek_privacy_url" value="<?php echo esc_attr( (string) $settings['privacy_policy_url'] ); ?>" placeholder="https://" />
+							</p>
 						</td>
 					</tr>
 					<tr>
@@ -129,6 +230,18 @@ final class Settings_Page {
 				<li><?php esc_html_e( 'Embed forms with the Formkit Form block. Optional secret-link tokens limit casual discovery.', 'we-formkit' ); ?></li>
 			</ul>
 		</div>
+		<script>
+		(function () {
+			var mode = document.getElementById('wek_privacy_mode');
+			var wrap = document.getElementById('wek-privacy-custom-wrap');
+			if (!mode || !wrap) return;
+			function sync() {
+				wrap.hidden = mode.value !== 'custom';
+			}
+			mode.addEventListener('change', sync);
+			sync();
+		})();
+		</script>
 		<?php
 	}
 }

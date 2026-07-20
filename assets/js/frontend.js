@@ -85,6 +85,7 @@
 		body.append( 'token', cfg.token || '' );
 		body.append( '_wek_started', String( cfg.started != null ? cfg.started : '' ) );
 		body.append( 'website_url', honeypot ? honeypot.value : '' );
+		body.append( 'source_url', typeof window !== 'undefined' && window.location ? String( window.location.href ) : '' );
 		body.append( 'values', JSON.stringify( values ) );
 
 		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
@@ -1036,6 +1037,7 @@
 					token: liveCfg.token || '',
 					_wek_started: liveCfg.started,
 					website_url: honeypot ? honeypot.value : '',
+					source_url: typeof window !== 'undefined' && window.location ? String( window.location.href ) : '',
 					values: values,
 				} );
 			}

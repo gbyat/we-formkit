@@ -191,6 +191,10 @@ final class Rest_Api {
 		update_post_meta( (int) $submission_id, Form_Schema::SUB_NOTES, '' );
 		update_post_meta( (int) $submission_id, Form_Schema::SUB_CONSENT, self::has_consent( $schema, $result['data'] ) ? 1 : 0 );
 		update_post_meta( (int) $submission_id, Form_Schema::SUB_IP_HASH, Spam::hash_ip( $ip ) );
+		update_post_meta( (int) $submission_id, Form_Schema::SUB_SOURCE_URL, self::resolve_source_url( $params ) );
+		update_post_meta( (int) $submission_id, Form_Schema::SUB_READ, 0 );
+		update_post_meta( (int) $submission_id, Form_Schema::SUB_SPAM, 0 );
+		update_post_meta( (int) $submission_id, Form_Schema::SUB_NOTIFY_LOG, '[]' );
 
 		/**
 		 * Fires after a submission is stored.
@@ -253,6 +257,23 @@ final class Rest_Api {
 		}
 
 		return is_array( $params ) ? $params : array();
+	}
+
+	/**
+	 * Page URL where the form was submitted (client-sent, else Referer).
+	 *
+	 * @param array<string, mixed> $params Request params.
+	 * @return string
+	 */
+	private static function resolve_source_url( array $params ) {
+		$candidate = '';
+		if ( isset( $params['source_url'] ) && is_string( $params['source_url'] ) ) {
+			$candidate = esc_url_raw( wp_unslash( $params['source_url'] ) );
+		}
+		if ( '' === $candidate && ! empty( $_SERVER['HTTP_REFERER'] ) ) {
+			$candidate = esc_url_raw( wp_unslash( (string) $_SERVER['HTTP_REFERER'] ) );
+		}
+		return $candidate;
 	}
 
 	/**

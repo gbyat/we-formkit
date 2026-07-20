@@ -66,7 +66,8 @@ final class Post_Types {
 				'labels'           => array(
 					'name'          => __( 'Submissions', 'we-formkit' ),
 					'singular_name' => __( 'Submission', 'we-formkit' ),
-					'edit_item'     => __( 'Edit Submission', 'we-formkit' ),
+					'edit_item'     => __( 'View Entry', 'we-formkit' ),
+					'view_item'     => __( 'View Entry', 'we-formkit' ),
 					'search_items'  => __( 'Search Submissions', 'we-formkit' ),
 					'not_found'     => __( 'No submissions found.', 'we-formkit' ),
 				),

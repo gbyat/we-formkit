@@ -26,11 +26,15 @@ final class Form_Schema {
 	public const META_CONFIRMATION         = '_wek_form_confirmation';
 	public const META_PAGINATION           = '_wek_form_pagination';
 
-	public const SUB_FORM_ID = '_wek_submission_form_id';
-	public const SUB_DATA    = '_wek_submission_data';
-	public const SUB_NOTES   = '_wek_submission_notes';
-	public const SUB_CONSENT = '_wek_submission_consent';
-	public const SUB_IP_HASH = '_wek_submission_ip_hash';
+	public const SUB_FORM_ID    = '_wek_submission_form_id';
+	public const SUB_DATA       = '_wek_submission_data';
+	public const SUB_NOTES      = '_wek_submission_notes';
+	public const SUB_CONSENT    = '_wek_submission_consent';
+	public const SUB_IP_HASH    = '_wek_submission_ip_hash';
+	public const SUB_SOURCE_URL = '_wek_submission_source_url';
+	public const SUB_READ       = '_wek_submission_read';
+	public const SUB_SPAM       = '_wek_submission_spam';
+	public const SUB_NOTIFY_LOG = '_wek_submission_notify_log';
 
 	/**
 	 * @param int $form_id Form post ID.

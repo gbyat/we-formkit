@@ -42,6 +42,28 @@
 	max-width: 100%;
 }
 
+/* Plugin Settings: keep WordPress-sized fields (not full width). */
+.wek-admin--plugin-settings .form-table input[type="text"],
+.wek-admin--plugin-settings .form-table input[type="email"],
+.wek-admin--plugin-settings .form-table input[type="url"],
+.wek-admin--plugin-settings .form-table input[type="tel"],
+.wek-admin--plugin-settings .form-table input[type="password"],
+.wek-admin--plugin-settings .form-table select,
+.wek-admin--plugin-settings .form-table .regular-text {
+	width: 25em;
+	max-width: 100%;
+}
+
+.wek-admin--plugin-settings .form-table input[type="number"],
+.wek-admin--plugin-settings .form-table .small-text {
+	width: 5em;
+	max-width: 100%;
+}
+
+.wek-admin--plugin-settings #wek-privacy-custom-wrap {
+	margin: 0.75rem 0 0;
+}
+
 .wek-admin .wek-builder__option-row input,
 .wek-admin .wek-builder__option-row select,
 .wek-admin .wek-doc-rule select,
@@ -394,6 +416,104 @@ body.wek-scheme-violet .wek-admin {
 	border-radius: var(--wek-radius);
 	padding: 0.5rem 1.25rem 1.25rem;
 	box-shadow: var(--wek-shadow);
+}
+
+.wek-admin .wek-admin__entries-panel--wide {
+	max-width: none;
+}
+
+.wek-admin .wek-entries-tabs {
+	margin: 0.75rem 0 1rem;
+	float: none;
+	display: block;
+}
+
+.wek-admin .wek-entries-search {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0 0 1rem;
+	clear: both;
+}
+
+.wek-admin .wek-entries-search input[type="search"] {
+	min-width: min(100%, 22rem);
+	max-width: 28rem;
+}
+
+.wek-admin .wek-entries-count {
+	margin: 0 0 0.5rem;
+	color: var(--wek-muted, #646970);
+}
+
+.wek-admin .wek-entries-table .column-id {
+	width: 5.5rem;
+	white-space: nowrap;
+}
+
+.wek-admin .wek-entry--unread td {
+	font-weight: 600;
+}
+
+.wek-admin .wek-entry-unread-dot {
+	display: inline-block;
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.35rem;
+	border-radius: 50%;
+	background: var(--wek-accent, #2271b1);
+	vertical-align: middle;
+}
+
+.wek-admin .wek-entry-source a {
+	word-break: break-all;
+}
+
+.wek-admin .wek-entry-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+	gap: 1.25rem;
+	align-items: start;
+	margin-top: 1rem;
+}
+
+@media (max-width: 960px) {
+	.wek-admin .wek-entry-layout {
+		grid-template-columns: 1fr;
+	}
+}
+
+.wek-admin .wek-entry-answers th {
+	width: 30%;
+	vertical-align: top;
+}
+
+.wek-admin .wek-entry-meta th {
+	width: 8rem;
+}
+
+.wek-admin .wek-notify-log {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.wek-admin .wek-notify-log li {
+	padding: 0.65rem 0;
+	border-bottom: 1px solid var(--wek-line, #dcdcde);
+}
+
+.wek-admin .wek-notify-log li:last-child {
+	border-bottom: 0;
+}
+
+.wek-admin .wek-notify-log .is-fail strong {
+	color: var(--wek-error, #b32d2e);
+}
+
+.wek-admin .wek-notify-log__to {
+	word-break: break-all;
 }
 
 .wek-admin .wek-admin__fields-only {

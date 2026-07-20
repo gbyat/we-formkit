@@ -28,6 +28,8 @@ final class Settings {
 	public static function defaults() {
 		return array(
 			'notify_email'             => '',
+			'from_name'                => '',
+			'privacy_policy_mode'      => 'wp',
 			'privacy_policy_url'       => '',
 			'retention_days'           => 365,
 			'delete_data_on_uninstall' => false,
@@ -63,7 +65,7 @@ final class Settings {
 	}
 
 	/**
-	 * Get merged settings.
+	 * Get merged settings (legacy privacy URL implies custom mode).
 	 *
 	 * @return array<string, mixed>
 	 */
@@ -72,7 +74,74 @@ final class Settings {
 		if ( ! is_array( $stored ) ) {
 			$stored = array();
 		}
-		return array_merge( self::defaults(), $stored );
+		$merged = array_merge( self::defaults(), $stored );
+
+		if ( ! isset( $stored['privacy_policy_mode'] ) && ! empty( $merged['privacy_policy_url'] ) ) {
+			$merged['privacy_policy_mode'] = 'custom';
+		}
+		if ( 'custom' !== $merged['privacy_policy_mode'] ) {
+			$merged['privacy_policy_mode'] = 'wp';
+		}
+
+		return $merged;
+	}
+
+	/**
+	 * Default notification recipient (plugin setting, else site admin email).
+	 *
+	 * @return string
+	 */
+	public static function default_notify_email() {
+		$settings = self::get();
+		$email    = isset( $settings['notify_email'] ) ? (string) $settings['notify_email'] : '';
+		if ( is_email( $email ) ) {
+			return $email;
+		}
+		$admin = (string) get_option( 'admin_email' );
+		return is_email( $admin ) ? $admin : '';
+	}
+
+	/**
+	 * Default From name for notification emails.
+	 *
+	 * @return string
+	 */
+	public static function default_from_name() {
+		$settings = self::get();
+		$name     = isset( $settings['from_name'] ) ? trim( (string) $settings['from_name'] ) : '';
+		if ( '' !== $name ) {
+			return $name;
+		}
+		return wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+	}
+
+	/**
+	 * Resolved privacy policy URL for forms that do not override it.
+	 *
+	 * @return string
+	 */
+	public static function privacy_policy_url() {
+		$settings = self::get();
+		if ( 'custom' === $settings['privacy_policy_mode'] ) {
+			$url = isset( $settings['privacy_policy_url'] ) ? (string) $settings['privacy_policy_url'] : '';
+			return $url;
+		}
+		$url = get_privacy_policy_url();
+		return is_string( $url ) ? $url : '';
+	}
+
+	/**
+	 * Label for the WordPress privacy policy page (for settings UI).
+	 *
+	 * @return string Empty when no page is configured.
+	 */
+	public static function wp_privacy_page_label() {
+		$page_id = (int) get_option( 'wp_page_for_privacy_policy' );
+		if ( $page_id < 1 ) {
+			return '';
+		}
+		$title = get_the_title( $page_id );
+		return is_string( $title ) ? $title : '';
 	}
 
 	/**
@@ -84,9 +153,32 @@ final class Settings {
 	 * @return array<string, mixed>
 	 */
 	public static function sanitize( array $input ) {
-		$out                             = self::defaults();
-		$out['notify_email']             = isset( $input['notify_email'] ) ? sanitize_email( (string) $input['notify_email'] ) : '';
-		$out['privacy_policy_url']       = isset( $input['privacy_policy_url'] ) ? esc_url_raw( (string) $input['privacy_policy_url'] ) : '';
+		$out = self::defaults();
+
+		$admin_email = (string) get_option( 'admin_email' );
+		$notify      = isset( $input['notify_email'] ) ? sanitize_email( (string) $input['notify_email'] ) : '';
+		// Empty or same as site admin → follow admin email dynamically.
+		if ( '' === $notify || ( is_email( $admin_email ) && strtolower( $notify ) === strtolower( $admin_email ) ) ) {
+			$out['notify_email'] = '';
+		} else {
+			$out['notify_email'] = $notify;
+		}
+
+		$site_name = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+		$from_name = isset( $input['from_name'] ) ? sanitize_text_field( (string) $input['from_name'] ) : '';
+		if ( '' === $from_name || $from_name === $site_name ) {
+			$out['from_name'] = '';
+		} else {
+			$out['from_name'] = $from_name;
+		}
+
+		$mode                       = isset( $input['privacy_policy_mode'] ) ? sanitize_key( (string) $input['privacy_policy_mode'] ) : 'wp';
+		$out['privacy_policy_mode'] = 'custom' === $mode ? 'custom' : 'wp';
+		$out['privacy_policy_url']  = '';
+		if ( 'custom' === $out['privacy_policy_mode'] ) {
+			$out['privacy_policy_url'] = isset( $input['privacy_policy_url'] ) ? esc_url_raw( (string) $input['privacy_policy_url'] ) : '';
+		}
+
 		$days                            = isset( $input['retention_days'] ) ? (int) $input['retention_days'] : 365;
 		$out['retention_days']           = max( 0, min( 3650, $days ) );
 		$out['delete_data_on_uninstall'] = ! empty( $input['delete_data_on_uninstall'] );
