@@ -230,6 +230,8 @@ final class Form_Editor {
 					'addField'            => __( 'Add field', 'we-formkit' ),
 					'addSection'          => __( 'Add section', 'we-formkit' ),
 					'fieldsLibrary'       => __( 'Fields', 'we-formkit' ),
+					'searchFields'        => __( 'Search fields', 'we-formkit' ),
+					'noFieldsMatch'       => __( 'No matching fields.', 'we-formkit' ),
 					'label'               => __( 'Label', 'we-formkit' ),
 					'id'                  => __( 'Field ID', 'we-formkit' ),
 					'type'                => __( 'Type', 'we-formkit' ),
@@ -485,19 +487,46 @@ final class Form_Editor {
 	 * @return void
 	 */
 	private static function render_view_fields( $form_id, $schema_json, $title, $is_new ) {
-		unset( $is_new );
+		$entries_url = '';
+		if ( ! $is_new && $form_id > 0 ) {
+			$entries_url = add_query_arg(
+				array(
+					'page'    => 'we-formkit-form',
+					'form_id' => $form_id,
+					'view'    => 'entries',
+				),
+				admin_url( 'admin.php' )
+			);
+		}
 		?>
 	<form method="post" id="wek-form-editor" class="wek-admin__fields-only">
 		<?php wp_nonce_field( 'we_formkit_save_form', 'we_formkit_save_nonce' ); ?>
 		<input type="hidden" name="form_id" value="<?php echo esc_attr( (string) $form_id ); ?>" />
 		<input type="hidden" name="wek_save_view" value="fields" />
-		<input type="hidden" name="wek_title" id="wek_title" value="<?php echo esc_attr( $title ); ?>" />
 		<textarea name="wek_schema_json" id="wek_schema_json" class="wek-admin__schema-input" hidden><?php echo esc_textarea( $schema_json ); ?></textarea>
+
+		<div class="wek-fields-bar">
+			<label class="wek-fields-bar__title-wrap">
+				<span class="screen-reader-text"><?php esc_html_e( 'Form title', 'we-formkit' ); ?></span>
+				<input
+					type="text"
+					name="wek_title"
+					id="wek_title"
+					class="wek-fields-bar__title"
+					value="<?php echo esc_attr( $title ); ?>"
+					placeholder="<?php esc_attr_e( 'Untitled form', 'we-formkit' ); ?>"
+				/>
+			</label>
+			<div class="wek-fields-bar__actions">
+				<?php if ( $entries_url ) : ?>
+					<a class="button button-secondary" href="<?php echo esc_url( $entries_url ); ?>"><?php esc_html_e( 'Entries', 'we-formkit' ); ?></a>
+				<?php endif; ?>
+				<?php submit_button( __( 'Save fields', 'we-formkit' ), 'primary', 'we_formkit_save_form', false ); ?>
+			</div>
+		</div>
 
 		<p class="description wek-admin__fields-hint"><?php esc_html_e( 'Build sections and fields here. Form settings, notifications, and confirmations are on the other tabs.', 'we-formkit' ); ?></p>
 		<div id="wek-builder" class="wek-builder"></div>
-
-		<?php submit_button( __( 'Save fields', 'we-formkit' ), 'primary', 'we_formkit_save_form' ); ?>
 	</form>
 		<?php
 	}

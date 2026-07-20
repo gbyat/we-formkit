@@ -1824,30 +1824,65 @@
 				] )
 			);
 
+			const search = el( 'input', {
+				type: 'search',
+				className: 'wek-builder-library__search',
+				placeholder: i18n.searchFields || 'Search fields',
+				'aria-label': i18n.searchFields || 'Search fields',
+			} );
+			panel.appendChild(
+				el( 'div', { className: 'wek-builder-library__search-wrap' }, [ search ] )
+			);
+
 			const grid = el( 'div', { className: 'wek-builder-library__grid' } );
+			const empty = el( 'p', {
+				className: 'wek-builder-library__empty',
+				text: i18n.noFieldsMatch || 'No matching fields.',
+			} );
+			empty.hidden = true;
+
+			const tiles = [];
 			fieldTypes.forEach( function ( item ) {
 				const typeId = item.type;
-				grid.appendChild(
-					el( 'button', {
-						type: 'button',
-						className: 'wek-builder-library__item',
-						title: item.label || typeId,
-						onClick: function () {
-							addFieldOfType( typeId );
-						},
-					}, [
-						el( 'span', {
-							className: 'wek-builder-library__icon',
-							text: FIELD_ICONS[ typeId ] || typeId.slice( 0, 2 ).toUpperCase(),
-						} ),
-						el( 'span', {
-							className: 'wek-builder-library__label',
-							text: item.label || typeId,
-						} ),
-					] )
-				);
+				const label = item.label || typeId;
+				const tile = el( 'button', {
+					type: 'button',
+					className: 'wek-builder-library__item',
+					title: label,
+					onClick: function () {
+						addFieldOfType( typeId );
+					},
+				}, [
+					el( 'span', {
+						className: 'wek-builder-library__icon',
+						text: FIELD_ICONS[ typeId ] || typeId.slice( 0, 2 ).toUpperCase(),
+					} ),
+					el( 'span', {
+						className: 'wek-builder-library__label',
+						text: label,
+					} ),
+				] );
+				tiles.push( { node: tile, haystack: ( label + ' ' + typeId ).toLowerCase() } );
+				grid.appendChild( tile );
 			} );
+
+			function applyFilter() {
+				const q = search.value.trim().toLowerCase();
+				let visible = 0;
+				tiles.forEach( function ( entry ) {
+					const match = ! q || entry.haystack.indexOf( q ) !== -1;
+					entry.node.hidden = ! match;
+					if ( match ) {
+						visible++;
+					}
+				} );
+				empty.hidden = visible !== 0;
+			}
+
+			search.addEventListener( 'input', applyFilter );
+
 			panel.appendChild( grid );
+			panel.appendChild( empty );
 			return panel;
 		}
 
