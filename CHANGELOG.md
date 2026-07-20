@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.18] - 2026-07-20
+
+- Enhance admin form editor UI and CSS for improved usability and layout. Update grid layout for builder components, refine responsive behavior, and adjust styles for empty states and drag-and-drop functionality. Modify text hints for clarity in field interactions, ensuring a more intuitive user experience.
 ## [0.1.17] - 2026-07-20
 
 - Refactor admin CSS for improved layout and visual consistency. Update styles for fields bar badges, actions, and entries, enhancing alignment and responsiveness. Modify form editor logic to ensure proper title handling for new and existing forms, improving user experience.
