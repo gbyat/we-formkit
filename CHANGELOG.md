@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-07-20
+
+- Enhance admin UI and functionality for form submissions. Introduce new features for managing submission actions, including trashing, restoring, and marking entries as read or spam. Update the submissions interface to support a read-only view and improve the layout with CSS adjustments. Add new metadata handling for source URLs and notification logs, ensuring better tracking and management of submissions. Update German translations for consistency.
 ## [0.2.5] - 2026-07-20
 
 - Update German translations in we-formkit plugin. Add missing translations for various plugin strings, including form-related actions and settings. Update the POT file creation date and ensure consistency in the localization files.
