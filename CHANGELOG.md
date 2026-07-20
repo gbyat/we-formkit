@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-07-20
+
+- Enhance validation message handling in the form editor and frontend. Introduce customizable required and invalid messages for form fields, allowing users to define default messages in settings. Update CSS for improved error display and layout. Refactor JavaScript to ensure proper rendering of validation messages and error handling. Update German translations for new validation message strings.
 ## [0.2.6] - 2026-07-20
 
 - Enhance admin UI and functionality for form submissions. Introduce new features for managing submission actions, including trashing, restoring, and marking entries as read or spam. Update the submissions interface to support a read-only view and improve the layout with CSS adjustments. Add new metadata handling for source URLs and notification logs, ensuring better tracking and management of submissions. Update German translations for consistency.
