@@ -54,8 +54,10 @@ final class Settings_Page {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'we-formkit' ) );
 		}
 		$settings = Settings::get();
+		$schemes  = Settings::admin_schemes();
+		$scheme   = Settings::admin_scheme();
 		?>
-		<div class="wrap wek-admin">
+		<div class="wrap wek-admin" data-wek-scheme="<?php echo esc_attr( $scheme ); ?>">
 			<h1><?php esc_html_e( 'Formkit Settings', 'we-formkit' ); ?></h1>
 			<?php if ( ! empty( $_GET['saved'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'we-formkit' ); ?></p></div>
@@ -64,6 +66,27 @@ final class Settings_Page {
 			<form method="post">
 				<?php wp_nonce_field( 'we_formkit_save_settings', 'we_formkit_settings_nonce' ); ?>
 				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Admin color scheme', 'we-formkit' ); ?></th>
+						<td>
+							<fieldset class="wek-admin-scheme">
+								<legend class="screen-reader-text"><?php esc_html_e( 'Admin color scheme', 'we-formkit' ); ?></legend>
+								<?php foreach ( $schemes as $slug => $label ) : ?>
+									<label class="wek-admin-scheme__option">
+										<input
+											type="radio"
+											name="wek_settings[admin_scheme]"
+											value="<?php echo esc_attr( $slug ); ?>"
+											<?php checked( $scheme, $slug ); ?>
+										/>
+										<span class="wek-admin-scheme__swatch" data-wek-scheme="<?php echo esc_attr( $slug ); ?>" aria-hidden="true"></span>
+										<span class="wek-admin-scheme__label"><?php echo esc_html( $label ); ?></span>
+									</label>
+								<?php endforeach; ?>
+							</fieldset>
+							<p class="description"><?php esc_html_e( 'Accent color for the Formkit admin UI (builder, settings). Does not change frontend form colors.', 'we-formkit' ); ?></p>
+						</td>
+					</tr>
 					<tr>
 						<th><label for="wek_notify_email"><?php esc_html_e( 'Default notification email', 'we-formkit' ); ?></label></th>
 						<td>

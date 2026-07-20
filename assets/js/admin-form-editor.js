@@ -27,25 +27,25 @@
 	];
 
 	const FIELD_ICONS = {
-		text: 'T',
-		email: '@',
-		tel: 'P',
-		url: 'U',
-		textarea: 'A',
-		number: '#',
-		select: 'S',
-		radio: 'R',
-		radio_image: 'I',
-		checkbox: 'C',
-		checkboxes: 'M',
-		date: 'D',
-		time: 'H',
-		datetime: 'DT',
-		consent: 'OK',
-		html: '<>',
-		hidden: '·',
-		upload: 'F',
-		repeater: '↻',
+		text: 'dashicons-editor-textcolor',
+		email: 'dashicons-email',
+		tel: 'dashicons-phone',
+		url: 'dashicons-admin-links',
+		textarea: 'dashicons-editor-paragraph',
+		number: 'dashicons-calculator',
+		select: 'dashicons-arrow-down-alt2',
+		radio: 'dashicons-marker',
+		radio_image: 'dashicons-format-image',
+		checkbox: 'dashicons-yes',
+		checkboxes: 'dashicons-yes-alt',
+		date: 'dashicons-calendar-alt',
+		time: 'dashicons-clock',
+		datetime: 'dashicons-calendar',
+		consent: 'dashicons-privacy',
+		html: 'dashicons-editor-code',
+		hidden: 'dashicons-hidden',
+		upload: 'dashicons-upload',
+		repeater: 'dashicons-image-rotate',
 	};
 
 	function getFieldTypes() {
@@ -1838,20 +1838,12 @@
 
 		function renderLibrary() {
 			const panel = el( 'aside', { className: 'wek-builder-library' } );
-			panel.appendChild(
-				el( 'div', { className: 'wek-builder-library__head' }, [
-					el( 'h3', {
-						className: 'wek-builder-library__title',
-						text: i18n.fieldsLibrary || 'Fields',
-					} ),
-				] )
-			);
 
 			const search = el( 'input', {
 				type: 'search',
 				className: 'wek-builder-library__search',
-				placeholder: i18n.searchFields || 'Search fields',
-				'aria-label': i18n.searchFields || 'Search fields',
+				placeholder: i18n.searchFields || 'Search fields…',
+				'aria-label': i18n.searchFields || 'Search fields…',
 			} );
 			panel.appendChild(
 				el( 'div', { className: 'wek-builder-library__search-wrap' }, [ search ] )
@@ -1868,6 +1860,7 @@
 			fieldTypes.forEach( function ( item ) {
 				const typeId = item.type;
 				const label = item.label || typeId;
+				const iconClass = FIELD_ICONS[ typeId ] || 'dashicons-plus-alt2';
 				const tile = el( 'button', {
 					type: 'button',
 					className: 'wek-builder-library__item',
@@ -1877,8 +1870,8 @@
 					},
 				}, [
 					el( 'span', {
-						className: 'wek-builder-library__icon',
-						text: FIELD_ICONS[ typeId ] || typeId.slice( 0, 2 ).toUpperCase(),
+						className: 'wek-builder-library__icon dashicons ' + iconClass,
+						'aria-hidden': 'true',
 					} ),
 					el( 'span', {
 						className: 'wek-builder-library__label',

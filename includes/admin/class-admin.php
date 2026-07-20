@@ -24,9 +24,26 @@ final class Admin {
 	public static function register() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
+		add_filter( 'admin_body_class', array( __CLASS__, 'body_class' ) );
 		add_action( 'admin_init', array( Form_Editor::class, 'handle_actions' ) );
 		add_action( 'admin_init', array( Submissions::class, 'handle_actions' ) );
 		add_action( 'admin_init', array( Settings_Page::class, 'handle_actions' ) );
+	}
+
+	/**
+	 * Add scheme class on Formkit admin screens.
+	 *
+	 * @param string $classes Body classes.
+	 * @return string
+	 */
+	public static function body_class( $classes ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- page routing only.
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) : '';
+		if ( 0 !== strpos( $page, 'we-formkit' ) ) {
+			return $classes;
+		}
+		$scheme = \Webentwicklerin\WeFormkit\Settings::admin_scheme();
+		return trim( $classes . ' wek-scheme-' . $scheme );
 	}
 
 	/**

@@ -1,7 +1,14 @@
 /**
  * WE Formkit admin — SaaS-style builder chrome.
- * Brick accent (#8b3a3a). Theme/form colors apply on the frontend only.
+ * Accent schemes via data-wek-scheme on .wek-admin. Theme/form colors stay frontend-only.
  */
+
+.wek-admin,
+.wek-admin *,
+.wek-admin *::before,
+.wek-admin *::after {
+	box-sizing: border-box;
+}
 
 .wek-admin {
 	--wek-accent: #8b3a3a;
@@ -12,17 +19,113 @@
 	--wek-accent-ring: rgba(139, 58, 58, 0.22);
 	--wek-danger: #c0392b;
 	--wek-surface: #ffffff;
-	--wek-panel: #f5f5f4;
-	--wek-canvas: #f0efed;
+	--wek-panel: #f4f4f5;
+	--wek-canvas: #ececed;
 	--wek-ink: #1f1d1c;
 	--wek-muted: #6b655e;
-	--wek-line: #e5e2dc;
-	--wek-line-strong: #d4d0c8;
+	--wek-line: #e4e4e7;
+	--wek-line-strong: #d4d4d8;
 	--wek-radius: 12px;
 	--wek-radius-sm: 8px;
 	--wek-shadow: 0 1px 2px rgba(31, 29, 28, 0.04);
 	--wek-shadow-sm: none;
 	color: var(--wek-ink);
+}
+
+/* Admin dashboard color schemes (builder + settings chrome) */
+body.wek-scheme-teal .wek-admin {
+	--wek-accent: #0f5c4c;
+	--wek-accent-soft: #e4f2ee;
+	--wek-accent-on-soft: #0a4539;
+	--wek-accent-hover: #0c4d40;
+	--wek-accent-ring: rgba(15, 92, 76, 0.22);
+}
+
+body.wek-scheme-blue .wek-admin {
+	--wek-accent: #2563eb;
+	--wek-accent-soft: #eff6ff;
+	--wek-accent-on-soft: #1e40af;
+	--wek-accent-hover: #1d4ed8;
+	--wek-accent-ring: rgba(37, 99, 235, 0.22);
+}
+
+body.wek-scheme-slate .wek-admin {
+	--wek-accent: #475569;
+	--wek-accent-soft: #f1f5f9;
+	--wek-accent-on-soft: #334155;
+	--wek-accent-hover: #334155;
+	--wek-accent-ring: rgba(71, 85, 105, 0.22);
+}
+
+body.wek-scheme-violet .wek-admin {
+	--wek-accent: #7c3aed;
+	--wek-accent-soft: #f5f3ff;
+	--wek-accent-on-soft: #5b21b6;
+	--wek-accent-hover: #6d28d9;
+	--wek-accent-ring: rgba(124, 58, 237, 0.22);
+}
+
+.wek-admin .wek-admin-scheme {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.wek-admin .wek-admin-scheme__option {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0.35rem 0.55rem 0.35rem 0.4rem;
+	border: 1px solid var(--wek-line);
+	border-radius: 999px;
+	background: var(--wek-surface);
+	cursor: pointer;
+}
+
+.wek-admin .wek-admin-scheme__option:has(input:checked) {
+	border-color: var(--wek-accent);
+	box-shadow: 0 0 0 1px var(--wek-accent);
+}
+
+.wek-admin .wek-admin-scheme__option input {
+	margin: 0;
+}
+
+.wek-admin .wek-admin-scheme__swatch {
+	width: 1rem;
+	height: 1rem;
+	border-radius: 999px;
+	background: #8b3a3a;
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.wek-admin .wek-admin-scheme__swatch[data-wek-scheme="teal"] {
+	background: #0f5c4c;
+}
+
+.wek-admin .wek-admin-scheme__swatch[data-wek-scheme="blue"] {
+	background: #2563eb;
+}
+
+.wek-admin .wek-admin-scheme__swatch[data-wek-scheme="slate"] {
+	background: #475569;
+}
+
+.wek-admin .wek-admin-scheme__swatch[data-wek-scheme="violet"] {
+	background: #7c3aed;
+}
+
+.wek-admin .wek-admin-scheme__swatch[data-wek-scheme="brick"] {
+	background: #8b3a3a;
+}
+
+.wek-admin .wek-admin-scheme__label {
+	font-size: 12px;
+	font-weight: 600;
 }
 
 .wek-admin__schema-input {
@@ -246,7 +349,7 @@
 /* —— Unified 3-column app shell (no gaps) —— */
 .wek-admin .wek-builder-layout {
 	display: grid;
-	grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(300px, 340px);
+	grid-template-columns: minmax(240px, 280px) minmax(0, 1fr) minmax(300px, 340px);
 	gap: 0;
 	align-items: stretch;
 	max-width: none;
@@ -260,7 +363,7 @@
 
 @media (max-width: 1280px) {
 	.wek-admin .wek-builder-layout {
-		grid-template-columns: minmax(200px, 230px) minmax(0, 1fr) minmax(280px, 310px);
+		grid-template-columns: minmax(220px, 250px) minmax(0, 1fr) minmax(280px, 310px);
 	}
 }
 
@@ -327,19 +430,29 @@
 }
 
 .wek-admin .wek-builder-library__search-wrap {
-	padding: 0 0.85rem 0.65rem;
+	padding: 1rem 1rem 0.75rem;
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background: var(--wek-panel);
 }
 
 .wek-admin .wek-builder-library__search {
 	width: 100%;
 	max-width: 100%;
 	margin: 0;
-	padding: 0.45rem 0.75rem;
+	padding: 0.55rem 0.85rem;
 	border: 1px solid var(--wek-line);
 	border-radius: var(--wek-radius-sm);
 	background: var(--wek-surface);
 	font-size: 13px;
+	line-height: 1.3;
+	color: var(--wek-ink);
 	box-shadow: none;
+}
+
+.wek-admin .wek-builder-library__search::placeholder {
+	color: var(--wek-muted);
 }
 
 .wek-admin .wek-builder-library__search:focus {
@@ -351,59 +464,77 @@
 .wek-admin .wek-builder-library__grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 0.5rem;
-	padding: 0 0.85rem 1rem;
+	gap: 0.55rem;
+	padding: 0 1rem 1.25rem;
 	max-height: none;
 	overflow: visible;
 }
 
 .wek-admin .wek-builder-library__empty {
 	margin: 0;
-	padding: 0 1rem 1rem;
+	padding: 0 1rem 1.25rem;
 	color: var(--wek-muted);
 	font-size: 12px;
 }
 
-/* Horizontal icon + label tiles (screenshot) */
+/* Quiet icon + label tiles (screenshot-like) */
 .wek-admin .wek-builder-library__item {
 	appearance: none;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	gap: 0.45rem;
+	gap: 0.5rem;
 	margin: 0;
-	padding: 0.55rem 0.6rem;
+	min-width: 0;
+	padding: 0.6rem 0.65rem;
 	border: 1px solid var(--wek-line);
 	border-radius: var(--wek-radius-sm);
 	background: var(--wek-surface);
-	cursor: pointer;
+	cursor: grab;
 	text-align: left;
-	transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+	transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
 	box-shadow: none;
+}
+
+.wek-admin .wek-builder-library__item:active {
+	cursor: grabbing;
 }
 
 .wek-admin .wek-builder-library__item:hover,
 .wek-admin .wek-builder-library__item:focus {
 	border-color: var(--wek-accent);
-	box-shadow: 0 0 0 3px var(--wek-accent-ring);
+	background: var(--wek-surface);
 	outline: none;
 	transform: none;
-	background: #fff;
+	box-shadow: none;
+	color: var(--wek-accent-on-soft);
+}
+
+.wek-admin .wek-builder-library__item:hover .wek-builder-library__icon,
+.wek-admin .wek-builder-library__item:focus .wek-builder-library__icon {
+	color: var(--wek-accent);
 }
 
 .wek-admin .wek-builder-library__icon {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 1.35rem;
-	height: 1.35rem;
-	border-radius: 4px;
-	background: transparent;
-	color: var(--wek-muted);
-	font-size: 11px;
-	font-weight: 700;
-	line-height: 1;
 	flex-shrink: 0;
+	margin: 0;
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
+	color: #8b8680;
+	font-size: 16px;
+	line-height: 1;
+	width: 18px;
+	height: 18px;
+}
+
+.wek-admin .wek-builder-library__icon.dashicons {
+	font-size: 16px;
+	width: 18px;
+	height: 18px;
 }
 
 .wek-admin .wek-builder-library__label {
@@ -412,6 +543,9 @@
 	color: var(--wek-ink);
 	line-height: 1.25;
 	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 /* Canvas — soft grey stage + white form sheet */
@@ -697,10 +831,11 @@
 .wek-admin .wek-builder__field {
 	position: relative;
 	grid-column: span 6;
+	min-width: 0;
 	background: transparent;
 	border: 1px solid transparent;
 	border-radius: var(--wek-radius-sm);
-	padding: 0.55rem 1.25rem 0.55rem 0.35rem;
+	padding: 0.65rem 1.1rem 0.65rem 0.4rem;
 	cursor: pointer;
 	user-select: none;
 	transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
@@ -839,9 +974,10 @@
 	color: var(--wek-ink);
 }
 
-.wek-admin .wek-builder__field-preview {
+	.wek-admin .wek-builder__field-preview {
 	display: block;
 	width: 100%;
+	max-width: 100%;
 	min-height: 2.15rem;
 	border: 1px solid var(--wek-line);
 	border-radius: var(--wek-radius-sm);
