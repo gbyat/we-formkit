@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-20T10:13:12+00:00\n"
+"POT-Creation-Date: 2026-07-20T10:21:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: we-formkit\n"
@@ -64,7 +64,7 @@ msgstr ""
 
 #: includes/admin/class-admin.php:87
 #: includes/admin/class-admin.php:88
-#: includes/admin/class-submissions.php:124
+#: includes/admin/class-submissions.php:185
 #: includes/class-post-types.php:67
 msgid "Submissions"
 msgstr ""
@@ -79,7 +79,8 @@ msgstr ""
 #: includes/admin/class-form-editor.php:1912
 #: includes/admin/class-form-editor.php:2236
 #: includes/admin/class-settings-page.php:37
-#: includes/admin/class-submissions.php:263
+#: includes/admin/class-submissions.php:84
+#: includes/admin/class-submissions.php:426
 #: includes/class-submission-list-export.php:37
 msgid "Invalid nonce."
 msgstr ""
@@ -99,7 +100,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:216
 #: includes/admin/class-form-editor.php:473
 #: includes/admin/class-settings-page.php:54
-#: includes/admin/class-submissions.php:66
+#: includes/admin/class-submissions.php:127
 msgid "You do not have permission to access this page."
 msgstr ""
 
@@ -117,7 +118,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:249
 #: includes/admin/class-form-editor.php:414
-#: includes/admin/class-submissions.php:150
+#: includes/admin/class-submissions.php:211
 #: src/admin-form-settings/index.jsx:101
 msgid "Title"
 msgstr ""
@@ -136,7 +137,8 @@ msgid "Shortcode-free usage"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:253
-#: includes/admin/class-submissions.php:155
+#: includes/admin/class-submissions.php:216
+#: includes/admin/class-submissions.php:321
 msgid "Actions"
 msgstr ""
 
@@ -153,7 +155,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:272
 #: includes/admin/class-form-editor.php:1499
 #: includes/admin/class-form-editor.php:1769
-#: includes/admin/class-submissions.php:171
+#: includes/admin/class-submissions.php:232
 msgid "Open"
 msgstr ""
 
@@ -176,7 +178,7 @@ msgid "Duplicate"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:281
-#: includes/admin/class-submissions.php:142
+#: includes/admin/class-submissions.php:203
 msgid "Export JSON"
 msgstr ""
 
@@ -187,7 +189,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:283
 #: includes/admin/class-form-editor.php:1010
 #: includes/admin/class-form-editor.php:1428
-#: includes/admin/class-submissions.php:175
+#: includes/admin/class-submissions.php:236
 msgid "Delete"
 msgstr ""
 
@@ -636,7 +638,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:632
 #: includes/admin/class-form-editor.php:746
-#: includes/admin/class-submissions.php:127
+#: includes/admin/class-submissions.php:188
 msgid "Entries"
 msgstr ""
 
@@ -645,7 +647,7 @@ msgid "Form editor sections"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:651
-#: includes/admin/class-submissions.php:93
+#: includes/admin/class-submissions.php:154
 msgid "Save the form first to view entries."
 msgstr ""
 
@@ -700,6 +702,7 @@ msgid "Modern settings UI is not built yet. Run npm install && npm run build:ass
 msgstr ""
 
 #: includes/admin/class-form-editor.php:917
+#: includes/class-notifications.php:123
 msgid "Notification not found."
 msgstr ""
 
@@ -719,6 +722,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:956
 #: includes/admin/class-form-editor.php:1023
 #: includes/admin/class-form-editor.php:1373
+#: includes/admin/class-submissions.php:320
 msgid "Status"
 msgstr ""
 
@@ -754,6 +758,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:988
 #: includes/admin/class-form-editor.php:1409
 #: includes/admin/class-form-editor.php:1414
+#: includes/admin/class-submissions.php:355
 msgid "Active"
 msgstr ""
 
@@ -761,6 +766,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:988
 #: includes/admin/class-form-editor.php:1409
 #: includes/admin/class-form-editor.php:1414
+#: includes/admin/class-submissions.php:355
 msgid "Inactive"
 msgstr ""
 
@@ -1173,73 +1179,105 @@ msgstr ""
 msgid "Embed forms with the Formkit Form block. Optional secret-link tokens limit casual discovery."
 msgstr ""
 
-#: includes/admin/class-submissions.php:128
+#: includes/admin/class-submissions.php:189
 msgid "Submissions for this form only."
 msgstr ""
 
-#: includes/admin/class-submissions.php:141
+#: includes/admin/class-submissions.php:202
 msgid "Export CSV"
 msgstr ""
 
-#: includes/admin/class-submissions.php:145
+#: includes/admin/class-submissions.php:206
 msgid "Submission deleted."
 msgstr ""
 
-#: includes/admin/class-submissions.php:152
+#: includes/admin/class-submissions.php:213
 #: includes/class-frontend.php:129
 #: includes/class-post-types.php:42
 msgid "Form"
 msgstr ""
 
-#: includes/admin/class-submissions.php:154
+#: includes/admin/class-submissions.php:215
 #: includes/fields/class-date-field.php:24
 msgid "Date"
 msgstr ""
 
-#: includes/admin/class-submissions.php:160
+#: includes/admin/class-submissions.php:221
 msgid "No submissions yet."
 msgstr ""
 
-#: includes/admin/class-submissions.php:173
+#: includes/admin/class-submissions.php:234
 msgid "PDF"
 msgstr ""
 
-#: includes/admin/class-submissions.php:175
+#: includes/admin/class-submissions.php:236
 msgid "Delete this submission permanently?"
 msgstr ""
 
-#: includes/admin/class-submissions.php:194
-#: includes/admin/class-submissions.php:269
+#: includes/admin/class-submissions.php:255
+#: includes/admin/class-submissions.php:432
+#: includes/class-notifications.php:68
 #: includes/class-submission-export.php:28
 msgid "Submission not found."
 msgstr ""
 
-#: includes/admin/class-submissions.php:212
+#: includes/admin/class-submissions.php:274
 msgid "Submission saved."
 msgstr ""
 
-#: includes/admin/class-submissions.php:217
+#. translators: 1: sent count, 2: failed count
+#: includes/admin/class-submissions.php:289
+#, php-format
+msgid "Notification resend finished. Sent: %1$d, failed: %2$d."
+msgstr ""
+
+#: includes/admin/class-submissions.php:304
 msgid "Back to form entries"
 msgstr ""
 
-#: includes/admin/class-submissions.php:219
+#: includes/admin/class-submissions.php:306
 msgid "Back to submissions"
 msgstr ""
 
-#: includes/admin/class-submissions.php:222
+#: includes/admin/class-submissions.php:309
 msgid "Export PDF"
 msgstr ""
 
-#: includes/admin/class-submissions.php:229
+#: includes/admin/class-submissions.php:314
+msgid "Resend notifications"
+msgstr ""
+
+#: includes/admin/class-submissions.php:315
+msgid "Resend uses the current notification templates and this entry’s answers — handy to check HTML layout. “To me” sends only to your WordPress account email."
+msgstr ""
+
+#: includes/admin/class-submissions.php:319
+#: includes/class-form-notifications.php:326
+msgid "Notification"
+msgstr ""
+
+#: includes/admin/class-submissions.php:359
+msgid "Resend"
+msgstr ""
+
+#: includes/admin/class-submissions.php:360
+msgid "Send to me"
+msgstr ""
+
+#: includes/admin/class-submissions.php:383
+msgid "Resend all active"
+msgstr ""
+
+#: includes/admin/class-submissions.php:392
 msgid "Answers"
 msgstr ""
 
-#: includes/admin/class-submissions.php:249
+#: includes/admin/class-submissions.php:412
 #: includes/class-submission-export.php:153
 msgid "Internal notes"
 msgstr ""
 
-#: includes/admin/class-submissions.php:252
+#: includes/admin/class-submissions.php:415
 msgid "Save submission"
 msgstr ""
 
@@ -1300,10 +1338,6 @@ msgstr ""
 msgid ""
 "<p>Thank you. We have received your submission.</p>\n"
 "<p>{all_fields}</p>"
-msgstr ""
-
-#: includes/class-form-notifications.php:326
-msgid "Notification"
 msgstr ""
 
 #. translators: %s: field label
@@ -1483,6 +1517,35 @@ msgstr ""
 
 #: includes/class-frontend.php:755
 msgid "Row"
+msgstr ""
+
+#: includes/class-notifications.php:77
+msgid "Form not found for this submission."
+msgstr ""
+
+#. translators: %s: notification name
+#: includes/class-notifications.php:112
+#, php-format
+msgid "Sent: %s"
+msgstr ""
+
+#: includes/class-notifications.php:115
+msgid "Could not send."
+msgstr ""
+
+#. translators: 1: notification name, 2: error
+#: includes/class-notifications.php:117
+#, php-format
+msgid "Failed (%1$s): %2$s"
+msgstr ""
+
+#: includes/class-notifications.php:150
+#: includes/class-notifications.php:216
+msgid "No valid recipient email."
+msgstr ""
+
+#: includes/class-notifications.php:227
+msgid "wp_mail failed."
 msgstr ""
 
 #: includes/class-post-types.php:43

@@ -36,28 +36,42 @@ function extractPotMsgids(filePath) {
 	let msgid = null;
 	let state = null;
 
+	const flushMsgid = () => {
+		if (null === msgid) {
+			return;
+		}
+		const unescaped = msgid
+			.replace(/\\n/g, '\n')
+			.replace(/\\"/g, '"')
+			.replace(/\\\\/g, '\\');
+		if ('' !== unescaped) {
+			msgids.push(unescaped);
+		}
+		msgid = null;
+		state = null;
+	};
+
 	for (const line of content.split(/\r?\n/)) {
 		if (line.startsWith('msgid ')) {
+			flushMsgid();
 			msgid = line.slice(6).trim().replace(/^"/, '').replace(/"$/, '');
 			state = 'msgid';
+			continue;
+		}
+		if (line.startsWith('msgstr ')) {
+			flushMsgid();
+			state = 'msgstr';
 			continue;
 		}
 		if (/^\s*"/.test(line) && 'msgid' === state) {
 			msgid += line.trim().slice(1, -1);
 			continue;
 		}
-		if ('' === line.trim() && msgid !== null) {
-			const unescaped = msgid
-				.replace(/\\n/g, '\n')
-				.replace(/\\"/g, '"')
-				.replace(/\\\\/g, '\\');
-			if ('' !== unescaped) {
-				msgids.push(unescaped);
-			}
-			msgid = null;
-			state = null;
+		if ('' === line.trim()) {
+			flushMsgid();
 		}
 	}
+	flushMsgid();
 
 	return msgids;
 }
