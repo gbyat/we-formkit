@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.15] - 2026-07-20
+
+- Enhance form appearance settings by adding font family options in the admin panel. Update related CSS for improved styling consistency across admin and frontend interfaces. Refactor JavaScript to support new typography settings and ensure proper handling of font family selections. Update translations for new font-related strings.
 ## [0.2.14] - 2026-07-20
 
 - Enhance email configuration settings in the admin panel. Introduce default 'From' email and name options, and update related UI elements for better user experience. Improve CSS for SMTP password status display. Update translations for new email settings strings.

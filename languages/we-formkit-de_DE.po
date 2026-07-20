@@ -429,7 +429,7 @@ msgstr "Ungültiger Sicherheitstoken."
 #: includes/admin/class-form-editor.php:126
 #: includes/admin/class-form-editor.php:192
 #: includes/admin/class-form-editor.php:2017
-#: includes/admin/class-form-editor.php:2449
+#: includes/admin/class-form-editor.php:2454
 #: includes/class-frontend.php:53
 #: includes/class-frontend.php:265
 #: includes/class-rest-api.php:96
@@ -455,24 +455,24 @@ msgstr "Titel ist erforderlich."
 msgid "No file uploaded."
 msgstr "Keine Datei hochgeladen."
 
-#: includes/admin/class-form-editor.php:2371
+#: includes/admin/class-form-editor.php:2376
 msgid "Invalid JSON file."
 msgstr "Ungültige JSON-Datei."
 
-#: includes/admin/class-form-editor.php:2378
+#: includes/admin/class-form-editor.php:2383
 msgid "Gravity Forms import is available as a future module. Please import WE Formkit JSON for now."
 msgstr "Gravity-Forms-Import kommt als späteres Modul. Bitte vorerst WE-Formkit-JSON importieren."
 
-#: includes/admin/class-form-editor.php:2387
+#: includes/admin/class-form-editor.php:2392
 msgid "Imported form"
 msgstr "Importiertes Formular"
 
-#: includes/admin/class-form-editor.php:2401
+#: includes/admin/class-form-editor.php:2406
 msgid "Could not import form."
 msgstr "Formular konnte nicht importiert werden."
 
 #. translators: %s: original form title
-#: includes/admin/class-form-editor.php:2483
+#: includes/admin/class-form-editor.php:2488
 #, php-format
 msgid "%s (Copy)"
 msgstr "%s (Kopie)"
@@ -1568,6 +1568,7 @@ msgstr "Dein gespeicherter Fortschritt wurde wiederhergestellt."
 msgid "Clear"
 msgstr "Löschen"
 
+#: includes/admin/class-form-editor.php:2369
 #: includes/class-private-files.php:53
 msgid "Invalid upload."
 msgstr "Ungültiger Upload."
