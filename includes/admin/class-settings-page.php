@@ -8,6 +8,7 @@
 namespace Webentwicklerin\WeFormkit\Admin;
 
 use Webentwicklerin\WeFormkit\Capabilities;
+use Webentwicklerin\WeFormkit\Mailer;
 use Webentwicklerin\WeFormkit\Settings;
 use Webentwicklerin\WeFormkit\Validation_Messages;
 
@@ -31,6 +32,12 @@ final class Settings_Page {
 		if ( ! isset( $_GET['page'] ) || 'we-formkit-settings' !== $_GET['page'] ) {
 			return;
 		}
+
+		if ( isset( $_POST['we_formkit_send_test_mail'] ) ) {
+			self::handle_test_mail();
+			return;
+		}
+
 		if ( ! isset( $_POST['we_formkit_save_settings'] ) ) {
 			return;
 		}
@@ -44,6 +51,31 @@ final class Settings_Page {
 		update_option( 'we_formkit_delete_data_on_uninstall', ! empty( $clean['delete_data_on_uninstall'] ) );
 
 		wp_safe_redirect( admin_url( 'admin.php?page=we-formkit-settings&saved=1' ) );
+		exit;
+	}
+
+	/**
+	 * Send a one-off transport test email.
+	 *
+	 * @return void
+	 */
+	private static function handle_test_mail() {
+		if ( ! isset( $_POST['we_formkit_test_mail_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( (string) $_POST['we_formkit_test_mail_nonce'] ) ), 'we_formkit_send_test_mail' ) ) {
+			wp_die( esc_html__( 'Invalid nonce.', 'we-formkit' ) );
+		}
+
+		$recipient = isset( $_POST['wek_test_mail_recipient'] ) ? sanitize_email( wp_unslash( (string) $_POST['wek_test_mail_recipient'] ) ) : '';
+		if ( ! is_email( $recipient ) ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=we-formkit-settings&test_mail=invalid' ) );
+			exit;
+		}
+
+		$ok = Mailer::send_test_email( $recipient );
+		wp_safe_redirect(
+			admin_url(
+				'admin.php?page=we-formkit-settings&test_mail=' . ( $ok ? 'sent' : 'failed' )
+			)
+		);
 		exit;
 	}
 
@@ -70,11 +102,22 @@ final class Settings_Page {
 		$privacy_mode = (string) $settings['privacy_policy_mode'];
 		$wp_privacy   = Settings::wp_privacy_page();
 		$privacy_link = '<a href="' . esc_url( admin_url( 'options-privacy.php' ) ) . '">' . esc_html__( 'Settings → Privacy', 'we-formkit' ) . '</a>';
+		$transport    = isset( $settings['mail_transport'] ) ? (string) $settings['mail_transport'] : 'wp_default';
+		$smtp_enc     = isset( $settings['smtp_encryption'] ) ? (string) $settings['smtp_encryption'] : 'tls';
+		$has_smtp_pw  = '' !== (string) ( $settings['smtp_password'] ?? '' );
+		$test_status  = isset( $_GET['test_mail'] ) ? sanitize_key( (string) wp_unslash( $_GET['test_mail'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		?>
 		<div class="wrap wek-admin wek-admin--plugin-settings" data-wek-scheme="<?php echo esc_attr( $scheme ); ?>">
 			<h1><?php esc_html_e( 'Formkit Settings', 'we-formkit' ); ?></h1>
 			<?php if ( ! empty( $_GET['saved'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'we-formkit' ); ?></p></div>
+			<?php endif; ?>
+			<?php if ( 'sent' === $test_status ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Test email sent. Check the inbox (and spam folder).', 'we-formkit' ); ?></p></div>
+			<?php elseif ( 'failed' === $test_status ) : ?>
+				<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Test email failed. Check SMTP settings and server logs.', 'we-formkit' ); ?></p></div>
+			<?php elseif ( 'invalid' === $test_status ) : ?>
+				<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Enter a valid recipient email for the transport test.', 'we-formkit' ); ?></p></div>
 			<?php endif; ?>
 
 			<form method="post" id="wek-plugin-settings-form">
@@ -131,6 +174,118 @@ final class Settings_Page {
 										$site_name
 									)
 								);
+								?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th colspan="2"><h2 class="title" style="margin:1.5rem 0 0;"><?php esc_html_e( 'Mail transport', 'we-formkit' ); ?></h2></th>
+					</tr>
+					<tr>
+						<th><label for="wek_mail_transport"><?php esc_html_e( 'Transport', 'we-formkit' ); ?></label></th>
+						<td>
+							<?php
+							$wstp_active = Mailer::subscribe_to_posts_active();
+							$wstp_ready  = Mailer::subscribe_to_posts_smtp_ready();
+							$wstp_mail   = Mailer::subscribe_to_posts_mail_settings();
+							$wstp_global = is_array( $wstp_mail ) && 'yes' === (string) ( $wstp_mail['apply_globally'] ?? 'no' );
+							?>
+							<select name="wek_settings[mail_transport]" id="wek_mail_transport">
+								<option value="wp_default" <?php selected( $transport, 'wp_default' ); ?>><?php esc_html_e( 'WordPress default (wp_mail)', 'we-formkit' ); ?></option>
+								<?php if ( $wstp_active ) : ?>
+									<option value="subscribe_to_posts" <?php selected( $transport, 'subscribe_to_posts' ); ?>><?php esc_html_e( 'WE Subscribe to Posts (shared SMTP)', 'we-formkit' ); ?></option>
+								<?php endif; ?>
+								<option value="smtp" <?php selected( $transport, 'smtp' ); ?>><?php esc_html_e( 'Custom SMTP', 'we-formkit' ); ?></option>
+								<option value="gmail" <?php selected( $transport, 'gmail' ); ?>><?php esc_html_e( 'Gmail (SMTP preset)', 'we-formkit' ); ?></option>
+							</select>
+							<p class="description"><?php esc_html_e( 'Applies only to Formkit notification and test emails — not to other plugins (unless Subscribe to Posts is set to apply globally).', 'we-formkit' ); ?></p>
+							<?php if ( $wstp_active ) : ?>
+								<p class="description wek-mail-wstp-hint" id="wek-mail-wstp-hint" <?php echo 'subscribe_to_posts' === $transport ? '' : 'hidden'; ?>>
+									<?php if ( $wstp_ready ) : ?>
+										<?php
+										echo wp_kses(
+											sprintf(
+												/* translators: %s: link to WSTP mail settings */
+												__( 'Uses the SMTP settings from %s. Change host, credentials, or Gmail preset there.', 'we-formkit' ),
+												'<a href="' . esc_url( admin_url( 'admin.php?page=wstp-mail-settings' ) ) . '">' . esc_html__( 'Post Subscriptions → Mail Transport', 'we-formkit' ) . '</a>'
+											),
+											array(
+												'a' => array(
+													'href' => true,
+												),
+											)
+										);
+										?>
+									<?php else : ?>
+										<?php
+										echo wp_kses(
+											sprintf(
+												/* translators: %s: link to WSTP mail settings */
+												__( 'Subscribe to Posts is active, but SMTP is not configured yet. Set Custom SMTP or Gmail under %s.', 'we-formkit' ),
+												'<a href="' . esc_url( admin_url( 'admin.php?page=wstp-mail-settings' ) ) . '">' . esc_html__( 'Post Subscriptions → Mail Transport', 'we-formkit' ) . '</a>'
+											),
+											array(
+												'a' => array(
+													'href' => true,
+												),
+											)
+										);
+										?>
+									<?php endif; ?>
+									<?php if ( $wstp_global ) : ?>
+										<br />
+										<?php esc_html_e( 'Note: Subscribe to Posts already applies its transport to all WordPress emails — Formkit can stay on WordPress default in that case.', 'we-formkit' ); ?>
+									<?php endif; ?>
+								</p>
+							<?php endif; ?>
+						</td>
+					</tr>
+					<tr class="wek-mail-smtp-only">
+						<th><label for="wek_smtp_host"><?php esc_html_e( 'SMTP host', 'we-formkit' ); ?></label></th>
+						<td>
+							<input class="regular-text" type="text" name="wek_settings[smtp_host]" id="wek_smtp_host" value="<?php echo esc_attr( (string) $settings['smtp_host'] ); ?>" autocomplete="off" />
+						</td>
+					</tr>
+					<tr class="wek-mail-smtp-only">
+						<th><label for="wek_smtp_port"><?php esc_html_e( 'SMTP port', 'we-formkit' ); ?></label></th>
+						<td>
+							<input class="small-text" type="number" min="1" max="65535" name="wek_settings[smtp_port]" id="wek_smtp_port" value="<?php echo esc_attr( (string) (int) $settings['smtp_port'] ); ?>" />
+						</td>
+					</tr>
+					<tr class="wek-mail-smtp-only">
+						<th><label for="wek_smtp_encryption"><?php esc_html_e( 'SMTP encryption', 'we-formkit' ); ?></label></th>
+						<td>
+							<select name="wek_settings[smtp_encryption]" id="wek_smtp_encryption">
+								<option value="none" <?php selected( $smtp_enc, 'none' ); ?>><?php esc_html_e( 'None', 'we-formkit' ); ?></option>
+								<option value="tls" <?php selected( $smtp_enc, 'tls' ); ?>>TLS</option>
+								<option value="ssl" <?php selected( $smtp_enc, 'ssl' ); ?>>SSL</option>
+							</select>
+						</td>
+					</tr>
+					<tr class="wek-mail-smtp-only">
+						<th><label for="wek_smtp_auth"><?php esc_html_e( 'SMTP authentication', 'we-formkit' ); ?></label></th>
+						<td>
+							<label>
+								<input type="checkbox" name="wek_settings[smtp_auth]" id="wek_smtp_auth" value="1" <?php checked( ! empty( $settings['smtp_auth'] ) ); ?> />
+								<?php esc_html_e( 'Use username and password', 'we-formkit' ); ?>
+							</label>
+						</td>
+					</tr>
+					<tr class="wek-mail-smtp-only">
+						<th><label for="wek_smtp_username"><?php esc_html_e( 'SMTP username', 'we-formkit' ); ?></label></th>
+						<td>
+							<input class="regular-text" type="text" name="wek_settings[smtp_username]" id="wek_smtp_username" value="<?php echo esc_attr( (string) $settings['smtp_username'] ); ?>" autocomplete="off" data-lpignore="true" data-1p-ignore="true" spellcheck="false" />
+						</td>
+					</tr>
+					<tr class="wek-mail-smtp-only">
+						<th><label for="wek_smtp_password"><?php esc_html_e( 'SMTP password / app password', 'we-formkit' ); ?></label></th>
+						<td>
+							<input class="regular-text" type="password" name="wek_settings[smtp_password]" id="wek_smtp_password" value="" autocomplete="new-password" data-lpignore="true" data-1p-ignore="true" />
+							<p class="description">
+								<?php
+								echo $has_smtp_pw
+									? esc_html__( 'A password is saved. Leave blank to keep it, or enter a new one to replace it.', 'we-formkit' )
+									: esc_html__( 'Leave blank if authentication is off.', 'we-formkit' );
 								?>
 							</p>
 						</td>
@@ -256,6 +411,17 @@ final class Settings_Page {
 				<?php submit_button( __( 'Save settings', 'we-formkit' ), 'primary', 'we_formkit_save_settings' ); ?>
 			</form>
 
+			<form method="post" style="margin-top:1.5rem;">
+				<?php wp_nonce_field( 'we_formkit_send_test_mail', 'we_formkit_test_mail_nonce' ); ?>
+				<h2><?php esc_html_e( 'Test mail transport', 'we-formkit' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Saves nothing — uses the currently stored transport settings. Save SMTP changes first.', 'we-formkit' ); ?></p>
+				<p>
+					<label for="wek_test_mail_recipient"><?php esc_html_e( 'Recipient', 'we-formkit' ); ?></label>
+					<input class="regular-text" type="email" name="wek_test_mail_recipient" id="wek_test_mail_recipient" value="<?php echo esc_attr( $admin_email ); ?>" required />
+					<?php submit_button( __( 'Send test email', 'we-formkit' ), 'secondary', 'we_formkit_send_test_mail', false ); ?>
+				</p>
+			</form>
+
 			<hr />
 			<h2><?php esc_html_e( 'Privacy notes', 'we-formkit' ); ?></h2>
 			<ul class="ul-disc">
@@ -269,12 +435,55 @@ final class Settings_Page {
 		(function () {
 			var mode = document.getElementById('wek_privacy_mode');
 			var wrap = document.getElementById('wek-privacy-custom-wrap');
-			if (!mode || !wrap) return;
-			function sync() {
-				wrap.hidden = mode.value !== 'custom';
+			if (mode && wrap) {
+				function syncPrivacy() {
+					wrap.hidden = mode.value !== 'custom';
+				}
+				mode.addEventListener('change', syncPrivacy);
+				syncPrivacy();
 			}
-			mode.addEventListener('change', sync);
-			sync();
+
+			var transport = document.getElementById('wek_mail_transport');
+			var smtpRows = document.querySelectorAll('.wek-mail-smtp-only');
+			var wstpHint = document.getElementById('wek-mail-wstp-hint');
+			var host = document.getElementById('wek_smtp_host');
+			var port = document.getElementById('wek_smtp_port');
+			var encryption = document.getElementById('wek_smtp_encryption');
+			var auth = document.getElementById('wek_smtp_auth');
+			var previous = transport ? transport.value : 'wp_default';
+
+			function applyGmailPreset() {
+				if (host) host.value = 'smtp.gmail.com';
+				if (port) port.value = '587';
+				if (encryption) encryption.value = 'tls';
+				if (auth) auth.checked = true;
+			}
+
+			function syncTransport() {
+				if (!transport) return;
+				var value = transport.value;
+				var showSmtp = value === 'smtp' || value === 'gmail';
+				smtpRows.forEach(function (row) {
+					row.hidden = !showSmtp;
+				});
+				if (wstpHint) {
+					wstpHint.hidden = value !== 'subscribe_to_posts';
+				}
+				if (value === 'gmail') {
+					applyGmailPreset();
+					if (host) host.readOnly = true;
+					if (port) port.readOnly = true;
+				} else {
+					if (host) host.readOnly = false;
+					if (port) port.readOnly = false;
+				}
+				previous = value;
+			}
+
+			if (transport) {
+				transport.addEventListener('change', syncTransport);
+				syncTransport();
+			}
 		})();
 		</script>
 		<?php

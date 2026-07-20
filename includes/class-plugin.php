@@ -56,6 +56,7 @@ final class Plugin {
 		Capabilities::register();
 		Frontend::register();
 		Rest_Api::register();
+		Mailer::register();
 		Notifications::register();
 		Retention::register();
 		Drafts::register();

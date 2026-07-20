@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-20T12:47:25+00:00\n"
+"POT-Creation-Date: 2026-07-20T16:31:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: we-formkit\n"
@@ -78,7 +78,8 @@ msgstr ""
 #: includes/admin/class-form-editor.php:187
 #: includes/admin/class-form-editor.php:2004
 #: includes/admin/class-form-editor.php:2358
-#: includes/admin/class-settings-page.php:38
+#: includes/admin/class-settings-page.php:45
+#: includes/admin/class-settings-page.php:64
 #: includes/admin/class-submissions.php:86
 #: includes/admin/class-submissions.php:125
 #: includes/admin/class-submissions.php:193
@@ -101,7 +102,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:218
 #: includes/admin/class-form-editor.php:528
-#: includes/admin/class-settings-page.php:55
+#: includes/admin/class-settings-page.php:87
 #: includes/admin/class-submissions.php:236
 msgid "You do not have permission to access this page."
 msgstr ""
@@ -986,6 +987,7 @@ msgid "Reply-To"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:1261
+#: includes/admin/class-settings-page.php:259
 #: src/admin-form-settings/index.jsx:168
 msgid "None"
 msgstr ""
@@ -1267,144 +1269,257 @@ msgstr ""
 msgid "%s (Copy)"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:72
+#: includes/admin/class-settings-page.php:104
 msgid "Settings → Privacy"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:75
+#: includes/admin/class-settings-page.php:111
 msgid "Formkit Settings"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:77
+#: includes/admin/class-settings-page.php:113
 #: src/admin-form-settings/index.jsx:330
 msgid "Settings saved."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:84
-#: includes/admin/class-settings-page.php:87
+#: includes/admin/class-settings-page.php:116
+msgid "Test email sent. Check the inbox (and spam folder)."
+msgstr ""
+
+#: includes/admin/class-settings-page.php:118
+msgid "Test email failed. Check SMTP settings and server logs."
+msgstr ""
+
+#: includes/admin/class-settings-page.php:120
+msgid "Enter a valid recipient email for the transport test."
+msgstr ""
+
+#: includes/admin/class-settings-page.php:127
+#: includes/admin/class-settings-page.php:130
 msgid "Admin color scheme"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:101
+#: includes/admin/class-settings-page.php:144
 msgid "Accent color for the Formkit admin UI (builder, settings). Does not change frontend form colors."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:105
+#: includes/admin/class-settings-page.php:148
 msgid "Default notification email"
 msgstr ""
 
 #. translators: %s: site admin email
-#: includes/admin/class-settings-page.php:113
+#: includes/admin/class-settings-page.php:156
 #, php-format
 msgid "Prefilled with the WordPress admin email (%s). Change it to use a different default; leave as the admin email to follow that address."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:122
+#: includes/admin/class-settings-page.php:165
 msgid "Default from name"
 msgstr ""
 
 #. translators: %s: site title
-#: includes/admin/class-settings-page.php:130
+#: includes/admin/class-settings-page.php:173
 #, php-format
 msgid "Used as the From name when a notification leaves it empty. Prefilled with the site title (%s)."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:139
+#: includes/admin/class-settings-page.php:182
+msgid "Mail transport"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:185
+msgid "Transport"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:194
+msgid "WordPress default (wp_mail)"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:196
+msgid "WE Subscribe to Posts (shared SMTP)"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:198
+msgid "Custom SMTP"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:199
+msgid "Gmail (SMTP preset)"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:201
+msgid "Applies only to Formkit notification and test emails — not to other plugins (unless Subscribe to Posts is set to apply globally)."
+msgstr ""
+
+#. translators: %s: link to WSTP mail settings
+#: includes/admin/class-settings-page.php:209
+#, php-format
+msgid "Uses the SMTP settings from %s. Change host, credentials, or Gmail preset there."
+msgstr ""
+
+#: includes/admin/class-settings-page.php:210
+#: includes/admin/class-settings-page.php:225
+msgid "Post Subscriptions → Mail Transport"
+msgstr ""
+
+#. translators: %s: link to WSTP mail settings
+#: includes/admin/class-settings-page.php:224
+#, php-format
+msgid "Subscribe to Posts is active, but SMTP is not configured yet. Set Custom SMTP or Gmail under %s."
+msgstr ""
+
+#: includes/admin/class-settings-page.php:237
+msgid "Note: Subscribe to Posts already applies its transport to all WordPress emails — Formkit can stay on WordPress default in that case."
+msgstr ""
+
+#: includes/admin/class-settings-page.php:244
+msgid "SMTP host"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:250
+msgid "SMTP port"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:256
+msgid "SMTP encryption"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:266
+msgid "SMTP authentication"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:270
+msgid "Use username and password"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:275
+msgid "SMTP username"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:281
+msgid "SMTP password / app password"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:287
+msgid "A password is saved. Leave blank to keep it, or enter a new one to replace it."
+msgstr ""
+
+#: includes/admin/class-settings-page.php:288
+msgid "Leave blank if authentication is off."
+msgstr ""
+
+#: includes/admin/class-settings-page.php:294
 msgid "Default privacy policy"
 msgstr ""
 
 #. translators: %s: privacy page title
-#: includes/admin/class-settings-page.php:148
+#: includes/admin/class-settings-page.php:303
 #, php-format
 msgid "WordPress privacy page: %s"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:156
+#: includes/admin/class-settings-page.php:311
 msgid "WordPress privacy page (not set yet)"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:159
+#: includes/admin/class-settings-page.php:314
 msgid "Custom URL"
 msgstr ""
 
 #. translators: %s: link to WP privacy settings
-#: includes/admin/class-settings-page.php:167
+#: includes/admin/class-settings-page.php:322
 #, php-format
 msgid "No privacy policy page is set in WordPress. Configure one under %s, or choose a custom URL."
 msgstr ""
 
 #. translators: 1: privacy page title (linked when URL exists), 2: link to WP privacy settings
-#: includes/admin/class-settings-page.php:188
+#: includes/admin/class-settings-page.php:343
 #, php-format
 msgid "Uses the page from WordPress Privacy settings (%1$s). Change it under %2$s."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:204
+#: includes/admin/class-settings-page.php:359
 msgid "Custom privacy policy URL"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:210
+#: includes/admin/class-settings-page.php:365
 msgid "Validation"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:213
+#: includes/admin/class-settings-page.php:368
 msgid "Default required message"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:222
+#: includes/admin/class-settings-page.php:377
 msgid "Used when a field has no own required message. Include {label} for the field label."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:226
+#: includes/admin/class-settings-page.php:381
 msgid "Default invalid message"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:235
+#: includes/admin/class-settings-page.php:390
 msgid "Used when a field has no own invalid message. Include {label} for the field label."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:236
+#: includes/admin/class-settings-page.php:391
 msgid "Errors appear under each field with an icon; color is never the only cue."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:240
+#: includes/admin/class-settings-page.php:395
 msgid "Retention (days)"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:243
+#: includes/admin/class-settings-page.php:398
 msgid "Submissions older than this are deleted automatically. Set 0 to disable automatic deletion."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:247
+#: includes/admin/class-settings-page.php:402
 msgid "Uninstall"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:251
+#: includes/admin/class-settings-page.php:406
 msgid "Delete all forms and submissions when the plugin is uninstalled"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:256
+#: includes/admin/class-settings-page.php:411
 #: src/admin-form-settings/index.jsx:412
 msgid "Save settings"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:260
+#: includes/admin/class-settings-page.php:416
+msgid "Test mail transport"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:417
+msgid "Saves nothing — uses the currently stored transport settings. Save SMTP changes first."
+msgstr ""
+
+#: includes/admin/class-settings-page.php:419
+msgid "Recipient"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:421
+msgid "Send test email"
+msgstr ""
+
+#: includes/admin/class-settings-page.php:426
 msgid "Privacy notes"
 msgstr ""
 
-#: includes/admin/class-settings-page.php:262
+#: includes/admin/class-settings-page.php:428
 msgid "Form submissions are stored in this WordPress site only (no third-party form SaaS)."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:263
+#: includes/admin/class-settings-page.php:429
 msgid "Spam protection uses a honeypot, timing check, and rate limiting — not reCAPTCHA."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:264
+#: includes/admin/class-settings-page.php:430
 msgid "IP addresses are not stored in plain text; only a salted hash may be kept for abuse handling."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:265
+#: includes/admin/class-settings-page.php:431
 msgid "Embed forms with the Formkit Form block. Optional secret-link tokens limit casual discovery."
 msgstr ""
 
@@ -1932,6 +2047,14 @@ msgstr ""
 msgid "Row"
 msgstr ""
 
+#: includes/class-mailer.php:124
+msgid "[Test] Formkit mail transport"
+msgstr ""
+
+#: includes/class-mailer.php:126
+msgid "This is a test email from WE Formkit mail transport settings."
+msgstr ""
+
 #: includes/class-notifications.php:77
 msgid "Form not found for this submission."
 msgstr ""
@@ -2073,28 +2196,28 @@ msgstr ""
 msgid "Submission %s"
 msgstr ""
 
-#: includes/class-settings.php:49
+#: includes/class-settings.php:56
 msgid "Brick"
 msgstr ""
 
-#: includes/class-settings.php:50
+#: includes/class-settings.php:57
 msgid "Teal"
 msgstr ""
 
-#: includes/class-settings.php:51
+#: includes/class-settings.php:58
 msgid "Blue"
 msgstr ""
 
-#: includes/class-settings.php:52
+#: includes/class-settings.php:59
 msgid "Slate"
 msgstr ""
 
-#: includes/class-settings.php:53
+#: includes/class-settings.php:60
 msgid "Violet"
 msgstr ""
 
 #. translators: %d: page ID
-#: includes/class-settings.php:160
+#: includes/class-settings.php:167
 #, php-format
 msgid "Page #%d"
 msgstr ""

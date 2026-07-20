@@ -18,7 +18,7 @@ Use this file to continue development without re-deriving decisions from chat hi
 | Entry print → PDF | Done (print dialog) |
 | Builder Preview + Duplicate form/field | Done (sidebar scope tabs polish still open) |
 | Module registry | Empty; integrations later |
-| Live WP smoke | **Not verified** |
+| Live WP smoke | **Not verified** (mail now in checklist) |
 
 ## Locked product decisions
 
@@ -46,10 +46,26 @@ Use this file to continue development without re-deriving decisions from chat hi
 
 ## Next implementation order (resume here)
 
-1. **Live smoke** on WP (create → block/shortcode → upload/signature → multipage → resume → entry CSV/PDF).
+1. **Live smoke** on WP (checklist below) — include notifications / mail.
 2. Sidebar always-visible scope tabs (Field / Form / Integrations stub) — polish.
 3. Modules: Spamfighter adapter, Subscribe-to-Posts, smart-tag picker, server PDF.
 4. PHPCS remaining warnings; i18n POT.
+
+## Live smoke checklist
+
+Run on a real WP install (not only the builder UI):
+
+1. Create form → Fields canvas → save.
+2. Embed via block and/or shortcode `[we_formkit id|slug]`.
+3. Submit: text + upload + signature; confirm private file download (gated).
+4. Multipage (`per_section`) + Save & Resume draft restore.
+5. Confirmations: message / redirect / page.
+6. Entry: list, detail, CSV/JSON export, print→PDF.
+7. **Notifications / mail** (required for a complete smoke):
+   - Form → **Notifications**: Admin notification **enabled**; recipient set (or empty → Formkit Settings “Default notification email” / `admin_email`).
+   - Submit once → open the entry → **Notification delivery log** (ok / failed + recipient).
+   - Use entry **Send to me** / **Resend** if inbox is empty (layout check without waiting for real delivery).
+   - Local/dev: prefer Formkit Settings → Mail transport (SMTP), or Mailpit; still verify the delivery log shows `ok` or a clear error (`No valid recipient`, `wp_mail failed`).
 
 ## Hard rules for agents
 
@@ -61,4 +77,4 @@ Use this file to continue development without re-deriving decisions from chat hi
 
 ## Quick continue prompt
 
-> Continue WE Formkit from AGENTS.md. Smoke-test private uploads + signature + multipage + Save & Resume + confirmations + CSV. Then polish sidebar scope tabs. Leave fro-anamnese untouched.
+> Continue WE Formkit from AGENTS.md. Smoke-test private uploads + signature + multipage + Save & Resume + confirmations + CSV + **notifications (delivery log / Send to me)**. Then polish sidebar scope tabs. Leave fro-anamnese untouched.

@@ -29,6 +29,13 @@ final class Settings {
 		return array(
 			'notify_email'             => '',
 			'from_name'                => '',
+			'mail_transport'           => 'wp_default',
+			'smtp_host'                => '',
+			'smtp_port'                => 587,
+			'smtp_encryption'          => 'tls',
+			'smtp_auth'                => true,
+			'smtp_username'            => '',
+			'smtp_password'            => '',
 			'privacy_policy_mode'      => 'wp',
 			'privacy_policy_url'       => '',
 			'validation_required'      => '',
@@ -210,6 +217,38 @@ final class Settings {
 			$out['from_name'] = '';
 		} else {
 			$out['from_name'] = $from_name;
+		}
+
+		$current               = self::get();
+		$transport             = isset( $input['mail_transport'] ) ? sanitize_key( (string) $input['mail_transport'] ) : 'wp_default';
+		$allowed_tr            = array( 'wp_default', 'smtp', 'gmail', 'subscribe_to_posts' );
+		$out['mail_transport'] = in_array( $transport, $allowed_tr, true ) ? $transport : 'wp_default';
+		if ( 'subscribe_to_posts' === $out['mail_transport'] && ! Mailer::subscribe_to_posts_active() ) {
+			$out['mail_transport'] = 'wp_default';
+		}
+
+		$out['smtp_host'] = isset( $input['smtp_host'] ) ? sanitize_text_field( (string) $input['smtp_host'] ) : '';
+		$port             = isset( $input['smtp_port'] ) ? (int) $input['smtp_port'] : 587;
+		$out['smtp_port'] = max( 1, min( 65535, $port ) );
+
+		$enc                    = isset( $input['smtp_encryption'] ) ? sanitize_key( (string) $input['smtp_encryption'] ) : 'tls';
+		$allowed_enc            = array( 'none', 'tls', 'ssl' );
+		$out['smtp_encryption'] = in_array( $enc, $allowed_enc, true ) ? $enc : 'tls';
+		$out['smtp_auth']       = ! empty( $input['smtp_auth'] );
+		$out['smtp_username']   = isset( $input['smtp_username'] ) ? sanitize_text_field( (string) $input['smtp_username'] ) : '';
+
+		$raw_password = isset( $input['smtp_password'] ) ? (string) $input['smtp_password'] : '';
+		if ( '' === $raw_password ) {
+			$out['smtp_password'] = isset( $current['smtp_password'] ) ? (string) $current['smtp_password'] : '';
+		} else {
+			$out['smtp_password'] = $raw_password;
+		}
+
+		if ( 'gmail' === $out['mail_transport'] ) {
+			$out['smtp_host']       = 'smtp.gmail.com';
+			$out['smtp_port']       = 587;
+			$out['smtp_encryption'] = 'tls';
+			$out['smtp_auth']       = true;
 		}
 
 		$mode                       = isset( $input['privacy_policy_mode'] ) ? sanitize_key( (string) $input['privacy_policy_mode'] ) : 'wp';

@@ -218,7 +218,7 @@ final class Notifications {
 			return __( 'No valid recipient email.', 'we-formkit' );
 		}
 
-		$ok = wp_mail(
+		$ok = Mailer::wp_mail(
 			(string) $mail['to'],
 			(string) $mail['subject'],
 			(string) $mail['body'],

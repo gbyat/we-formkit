@@ -471,26 +471,83 @@ body.wek-scheme-violet .wek-admin {
 }
 
 .wek-admin .wek-entry-layout {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
 	gap: 1.25rem;
-	align-items: start;
 	margin-top: 1rem;
 }
 
-@media (max-width: 960px) {
-	.wek-admin .wek-entry-layout {
-		grid-template-columns: 1fr;
-	}
+.wek-admin .wek-entry-layout__main {
+	flex: 1 1 28rem;
+	min-width: 0;
+	max-width: 52rem;
+}
+
+.wek-admin .wek-entry-layout__main .wek-admin__settings-panel {
+	max-width: none;
+}
+
+.wek-admin .wek-entry-layout__meta {
+	flex: 0 1 16.5rem;
+	width: 16.5rem;
+	max-width: 100%;
+	min-width: 0;
+}
+
+.wek-admin .wek-entry-layout__meta .wek-admin__settings-panel {
+	max-width: none;
+}
+
+.wek-admin .wek-entry-answers {
+	width: 100%;
+	table-layout: fixed;
+}
+
+.wek-admin .wek-entry-answers th,
+.wek-admin .wek-entry-answers td {
+	vertical-align: top;
+	overflow-wrap: anywhere;
+	word-break: break-word;
 }
 
 .wek-admin .wek-entry-answers th {
-	width: 30%;
-	vertical-align: top;
+	width: 32%;
 }
 
-.wek-admin .wek-entry-meta th {
-	width: 8rem;
+/* Compact key/value rows — avoid WP form-table’s 200px th gap */
+.wek-admin .wek-entry-meta.form-table {
+	margin: 0;
+	width: 100%;
+}
+
+.wek-admin .wek-entry-meta.form-table th,
+.wek-admin .wek-entry-meta.form-table td {
+	display: block;
+	width: auto;
+	padding: 0;
+	margin: 0;
+	line-height: 1.4;
+}
+
+.wek-admin .wek-entry-meta.form-table th {
+	padding-top: 0.65rem;
+	font-weight: 600;
+	color: #646970;
+}
+
+.wek-admin .wek-entry-meta.form-table tr:first-child th {
+	padding-top: 0;
+}
+
+.wek-admin .wek-entry-meta.form-table td {
+	padding-bottom: 0.15rem;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+.wek-admin .wek-entry-meta.form-table td a {
+	word-break: break-all;
 }
 
 .wek-admin .wek-notify-log {
