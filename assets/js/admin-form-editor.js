@@ -379,7 +379,6 @@
 					list.push( {
 						id: String( field.id ),
 						label: String( field.label || field.id ),
-						type: String( field.type || 'text' ),
 						options: Array.isArray( field.options ) ? field.options : [],
 					} );
 				} );
@@ -396,40 +395,76 @@
 					relation: 'AND',
 					rules: [
 						{
-							field: raw.field || '',
-							op: raw.op || 'equals',
+							field: String( raw.field || '' ),
+							op: String( raw.op || 'equals' ),
 							value: raw.value != null ? String( raw.value ) : '',
 						},
 					],
 				};
 			}
+			const rules = Array.isArray( raw.rules )
+				? raw.rules.map( function ( r ) {
+						return {
+							field: String( ( r && r.field ) || '' ),
+							op: String( ( r && r.op ) || 'equals' ),
+							value: r && r.value != null ? String( r.value ) : '',
+						};
+				  } )
+				: [];
 			return {
 				relation: String( raw.relation || 'AND' ).toUpperCase() === 'OR' ? 'OR' : 'AND',
-				rules: Array.isArray( raw.rules )
-					? raw.rules.map( function ( r ) {
-							return {
-								field: ( r && r.field ) || '',
-								op: ( r && r.op ) || 'equals',
-								value: r && r.value != null ? String( r.value ) : '',
-							};
-					  } )
-					: [],
+				rules: rules,
 			};
 		}
 
 		function commitShowWhen( target, container ) {
 			const rules = ( container.rules || [] ).filter( function ( r ) {
-				return r && r.field;
+				return r && r.field && r.op;
 			} );
 			if ( ! rules.length ) {
 				target.show_when = null;
 			} else {
 				target.show_when = {
 					relation: container.relation === 'OR' ? 'OR' : 'AND',
-					rules: rules,
+					rules: rules.map( function ( r ) {
+						return {
+							field: r.field,
+							op: r.op,
+							value: opsNoValue[ r.op ] ? '' : r.value || '',
+						};
+					} ),
 				};
 			}
 			syncHidden();
+		}
+
+		function fillFieldSelect( select, fields, selectedId ) {
+			select.innerHTML = '';
+			select.appendChild(
+				el( 'option', {
+					value: '',
+					text: i18n.selectField || '— Select field —',
+				} )
+			);
+			fields.forEach( function ( f ) {
+				const opt = el( 'option', {
+					value: f.id,
+					text: f.label,
+					title: f.id,
+				} );
+				if ( selectedId === f.id ) {
+					opt.selected = true;
+				}
+				select.appendChild( opt );
+			} );
+			if ( selectedId && ! fields.some( function ( f ) {
+				return f.id === selectedId;
+			} ) ) {
+				select.appendChild(
+					el( 'option', { value: selectedId, text: selectedId } )
+				);
+				select.value = selectedId;
+			}
 		}
 
 		function renderConditional( target, excludeFieldId ) {
@@ -470,6 +505,56 @@
 
 			const list = el( 'div', { className: 'wek-builder__conditions-list' } );
 
+			function paintValueControl( valueWrap, rule, fieldSelect, opSelect ) {
+				valueWrap.innerHTML = '';
+				const op = opSelect.value || 'equals';
+				if ( opsNoValue[ op ] ) {
+					valueWrap.hidden = true;
+					rule.value = '';
+					return;
+				}
+				valueWrap.hidden = false;
+				const meta = fields.find( function ( f ) {
+					return f.id === fieldSelect.value;
+				} );
+				const options = meta && Array.isArray( meta.options ) ? meta.options : [];
+				if ( options.length && ( op === 'equals' || op === 'not_equals' ) ) {
+					const sel = el( 'select' );
+					sel.appendChild(
+						el( 'option', {
+							value: '',
+							text: i18n.selectValue || '— Select value —',
+						} )
+					);
+					options.forEach( function ( o ) {
+						const v = o.value != null ? String( o.value ) : '';
+						const lab = o.label != null ? String( o.label ) : v;
+						const opt = el( 'option', { value: v, text: lab } );
+						if ( String( rule.value || '' ) === v ) {
+							opt.selected = true;
+						}
+						sel.appendChild( opt );
+					} );
+					sel.addEventListener( 'change', function () {
+						rule.value = sel.value;
+						commitShowWhen( target, container );
+					} );
+					valueWrap.appendChild( sel );
+					return;
+				}
+				const input = el( 'input', {
+					type: 'text',
+					className: 'regular-text',
+					placeholder: i18n.showValue || 'Value',
+					value: rule.value || '',
+				} );
+				input.addEventListener( 'input', function () {
+					rule.value = input.value;
+					commitShowWhen( target, container );
+				} );
+				valueWrap.appendChild( input );
+			}
+
 			function redrawRules() {
 				list.innerHTML = '';
 				if ( ! container.rules.length ) {
@@ -493,36 +578,16 @@
 						} )
 					);
 
-					const fieldSelect = el( 'select', { className: 'wek-builder__condition-field' } );
-					fieldSelect.appendChild(
-						el( 'option', {
-							value: '',
-							text: i18n.selectField || '— Select field —',
-						} )
-					);
-					fields.forEach( function ( f ) {
-						const opt = el( 'option', {
-							value: f.id,
-							text: f.label + ' (' + f.id + ')',
-						} );
-						if ( rule.field === f.id ) {
-							opt.selected = true;
-						}
-						fieldSelect.appendChild( opt );
+					const fieldSelect = el( 'select', {
+						className: 'wek-builder__condition-field',
+						'aria-label': i18n.showField || 'Depends on field',
 					} );
-					if ( rule.field && ! fields.some( function ( f ) {
-						return f.id === rule.field;
-					} ) ) {
-						fieldSelect.appendChild(
-							el( 'option', {
-								value: rule.field,
-								text: rule.field,
-							} )
-						);
-						fieldSelect.value = rule.field;
-					}
+					fillFieldSelect( fieldSelect, fields, rule.field );
 
-					const opSelect = el( 'select', { className: 'wek-builder__condition-op' } );
+					const opSelect = el( 'select', {
+						className: 'wek-builder__condition-op',
+						'aria-label': i18n.showOp || 'Operator',
+					} );
 					ops.forEach( function ( op ) {
 						const opt = el( 'option', { value: op.value, text: op.label } );
 						if ( ( rule.op || 'equals' ) === op.value ) {
@@ -533,61 +598,14 @@
 
 					const valueWrap = el( 'div', { className: 'wek-builder__condition-value' } );
 
-					function paintValue() {
-						valueWrap.innerHTML = '';
-						const op = opSelect.value || 'equals';
-						if ( opsNoValue[ op ] ) {
-							valueWrap.hidden = true;
-							return;
-						}
-						valueWrap.hidden = false;
-						const meta = fields.find( function ( f ) {
-							return f.id === fieldSelect.value;
-						} );
-						const options = meta && Array.isArray( meta.options ) ? meta.options : [];
-						if ( options.length && ( op === 'equals' || op === 'not_equals' ) ) {
-							const sel = el( 'select' );
-							sel.appendChild( el( 'option', { value: '', text: i18n.selectValue || '— Select value —' } ) );
-							options.forEach( function ( o ) {
-								const v = o.value != null ? String( o.value ) : '';
-								const lab = o.label != null ? String( o.label ) : v;
-								const opt = el( 'option', { value: v, text: lab } );
-								if ( String( rule.value || '' ) === v ) {
-									opt.selected = true;
-								}
-								sel.appendChild( opt );
-							} );
-							sel.addEventListener( 'change', function () {
-								rule.value = sel.value;
-								commitShowWhen( target, container );
-							} );
-							valueWrap.appendChild( sel );
-							return;
-						}
-						const input = el( 'input', {
-							type: 'text',
-							className: 'regular-text',
-							placeholder: i18n.showValue || 'Value',
-							value: rule.value || '',
-						} );
-						input.addEventListener( 'input', function () {
-							rule.value = input.value;
-							commitShowWhen( target, container );
-						} );
-						valueWrap.appendChild( input );
-					}
-
 					fieldSelect.addEventListener( 'change', function () {
 						rule.field = fieldSelect.value;
-						paintValue();
+						paintValueControl( valueWrap, rule, fieldSelect, opSelect );
 						commitShowWhen( target, container );
 					} );
 					opSelect.addEventListener( 'change', function () {
-						rule.op = opSelect.value;
-						if ( opsNoValue[ rule.op ] ) {
-							rule.value = '';
-						}
-						paintValue();
+						rule.op = opSelect.value || 'equals';
+						paintValueControl( valueWrap, rule, fieldSelect, opSelect );
 						commitShowWhen( target, container );
 					} );
 
@@ -606,7 +624,7 @@
 							},
 						} )
 					);
-					paintValue();
+					paintValueControl( valueWrap, rule, fieldSelect, opSelect );
 					list.appendChild( card );
 				} );
 			}
@@ -1663,6 +1681,128 @@
 			} );
 		}
 
+		function previewChoiceRows( field, inputKind ) {
+			const options = Array.isArray( field.options ) ? field.options : [];
+			const list = el( 'div', {
+				className: 'wek-builder__field-preview wek-builder__field-preview--choices',
+				'aria-hidden': 'true',
+			} );
+			const rows = options.length
+				? options.slice( 0, 4 )
+				: [
+						{ label: i18n.optionPreview || 'Option' },
+						{ label: ( i18n.optionPreview || 'Option' ) + ' 2' },
+				  ];
+			rows.forEach( function ( opt ) {
+				list.appendChild(
+					el( 'span', { className: 'wek-builder__choice-row' }, [
+						el( 'span', {
+							className:
+								'wek-builder__choice-mark wek-builder__choice-mark--' + inputKind,
+						} ),
+						el( 'span', {
+							className: 'wek-builder__choice-label',
+							text: opt.label || opt.value || '',
+						} ),
+					] )
+				);
+			} );
+			if ( options.length > 4 ) {
+				list.appendChild(
+					el( 'span', {
+						className: 'wek-builder__choice-more',
+						text: '+' + ( options.length - 4 ),
+					} )
+				);
+			}
+			return list;
+		}
+
+		function renderFieldPreview( field ) {
+			const type = field.type || 'text';
+			const hint = field.placeholder || field.help || '';
+
+			if ( type === 'checkbox' || type === 'consent' ) {
+				return el( 'div', {
+					className: 'wek-builder__field-preview wek-builder__field-preview--toggle',
+					'aria-hidden': 'true',
+				}, [
+					el( 'span', { className: 'wek-builder__choice-mark wek-builder__choice-mark--checkbox' } ),
+					el( 'span', {
+						className: 'wek-builder__choice-label',
+						text:
+							hint ||
+							( type === 'consent'
+								? i18n.consentPreview || 'Consent checkbox'
+								: i18n.checkboxPreview || 'Single checkbox' ),
+					} ),
+				] );
+			}
+
+			if ( type === 'checkboxes' ) {
+				return previewChoiceRows( field, 'checkbox' );
+			}
+			if ( type === 'radio' || type === 'radio_image' ) {
+				return previewChoiceRows( field, 'radio' );
+			}
+
+			if ( type === 'select' ) {
+				const options = Array.isArray( field.options ) ? field.options : [];
+				const first = options[ 0 ];
+				return el( 'div', {
+					className: 'wek-builder__field-preview wek-builder__field-preview--select',
+					'aria-hidden': 'true',
+					text: ( first && ( first.label || first.value ) ) || hint || i18n.selectPreview || 'Select…',
+				} );
+			}
+
+			if ( type === 'textarea' ) {
+				return el( 'div', {
+					className: 'wek-builder__field-preview wek-builder__field-preview--textarea',
+					'aria-hidden': 'true',
+					text: hint,
+				} );
+			}
+
+			if ( type === 'html' ) {
+				return el( 'div', {
+					className: 'wek-builder__field-preview wek-builder__field-preview--html',
+					'aria-hidden': 'true',
+					text: hint || i18n.htmlPreview || 'HTML block',
+				} );
+			}
+
+			if ( type === 'hidden' ) {
+				return el( 'div', {
+					className: 'wek-builder__field-preview wek-builder__field-preview--hidden',
+					'aria-hidden': 'true',
+					text: i18n.hiddenPreview || 'Hidden field',
+				} );
+			}
+
+			if ( type === 'upload' ) {
+				return el( 'div', {
+					className: 'wek-builder__field-preview wek-builder__field-preview--upload',
+					'aria-hidden': 'true',
+					text: hint || i18n.uploadPreview || 'Choose file…',
+				} );
+			}
+
+			if ( type === 'signature' ) {
+				return el( 'div', {
+					className: 'wek-builder__field-preview wek-builder__field-preview--signature',
+					'aria-hidden': 'true',
+					text: i18n.signaturePreview || 'Signature pad',
+				} );
+			}
+
+			return el( 'div', {
+				className: 'wek-builder__field-preview wek-builder__field-preview--input',
+				'aria-hidden': 'true',
+				text: hint,
+			} );
+		}
+
 		function renderNestedFieldCard( parent, child, sIndex, fIndex, nIndex ) {
 			const selected =
 				selection &&
@@ -1697,10 +1837,7 @@
 							className: 'wek-builder__field-label',
 							text: child.label || child.id || i18n.field || 'Field',
 						} ),
-						el( 'span', {
-							className: 'wek-builder__field-preview',
-							text: child.placeholder || child.help || child.type || '',
-						} ),
+						renderFieldPreview( child ),
 					] ),
 					el( 'span', { className: 'wek-builder__badge', text: child.type || 'text' } ),
 				] )
@@ -1815,6 +1952,17 @@
 			return card;
 		}
 
+		function cloneFieldDeep( field ) {
+			const copy = JSON.parse( JSON.stringify( field ) );
+			copy.id = ( copy.type || 'field' ) + '_' + Date.now().toString( 36 );
+			if ( copy.type === 'repeater' && copy.type_options && Array.isArray( copy.type_options.fields ) ) {
+				copy.type_options.fields = copy.type_options.fields.map( function ( child ) {
+					return cloneFieldDeep( child );
+				} );
+			}
+			return copy;
+		}
+
 		function renderFieldCard( section, field, sIndex, fIndex ) {
 			if ( field.type === 'repeater' ) {
 				return renderRepeaterCard( section, field, sIndex, fIndex );
@@ -1850,15 +1998,30 @@
 						className: 'wek-builder__field-label',
 						text: field.label || field.id || i18n.field || 'Field',
 					} ),
-					el( 'span', {
-						className: 'wek-builder__field-preview',
-						text: field.placeholder || field.help || '',
-					} ),
+					renderFieldPreview( field ),
 				] ),
+				el( 'span', { className: 'wek-builder__badge', text: field.type || 'text' } ),
 			] );
 			card.appendChild( main );
 
 			if ( selected ) {
+				card.appendChild(
+					el( 'button', {
+						type: 'button',
+						className: 'wek-builder__field-duplicate',
+						title: i18n.duplicate || 'Duplicate',
+						'aria-label': i18n.duplicate || 'Duplicate',
+						text: '⧉',
+						onClick: function ( e ) {
+							e.preventDefault();
+							e.stopPropagation();
+							const copy = cloneFieldDeep( field );
+							section.fields.splice( fIndex + 1, 0, copy );
+							syncHidden();
+							selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex + 1 } );
+						},
+					} )
+				);
 				card.appendChild(
 					el( 'button', {
 						type: 'button',
@@ -1894,7 +2057,8 @@
 				if (
 					e.target.closest( '.wek-builder__handle' ) ||
 					e.target.closest( '.wek-builder__resize' ) ||
-					e.target.closest( '.wek-builder__field-delete' )
+					e.target.closest( '.wek-builder__field-delete' ) ||
+					e.target.closest( '.wek-builder__field-duplicate' )
 				) {
 					return;
 				}

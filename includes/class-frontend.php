@@ -21,8 +21,76 @@ final class Frontend {
 	 */
 	public static function register() {
 		add_action( 'init', array( __CLASS__, 'register_block' ) );
+		add_action( 'init', array( __CLASS__, 'register_shortcode' ) );
+		add_action( 'template_redirect', array( __CLASS__, 'maybe_render_preview' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_assets' ) );
 		add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'enqueue_editor_assets' ) );
+	}
+
+	/**
+	 * Admin preview: ?wek_preview=1&form_id=N
+	 *
+	 * @return void
+	 */
+	public static function maybe_render_preview() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( empty( $_GET['wek_preview'] ) || '1' !== (string) $_GET['wek_preview'] ) {
+			return;
+		}
+		if ( ! current_user_can( 'edit_wek_forms' ) && ! Capabilities::can_manage() ) {
+			wp_die( esc_html__( 'You cannot preview this form.', 'we-formkit' ), 403 );
+		}
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$form_id = isset( $_GET['form_id'] ) ? absint( $_GET['form_id'] ) : 0;
+		if ( $form_id <= 0 ) {
+			wp_die( esc_html__( 'Form not found.', 'we-formkit' ), 404 );
+		}
+
+		status_header( 200 );
+		nocache_headers();
+		echo '<!DOCTYPE html><html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>';
+		echo esc_html__( 'Form preview', 'we-formkit' );
+		echo '</title>';
+		wp_enqueue_style( 'we-formkit-form' );
+		wp_enqueue_script( 'we-formkit-form' );
+		wp_print_styles( array( 'we-formkit-form' ) );
+		echo '</head><body class="we-formkit-preview-body" style="margin:0;padding:2rem;background:#f5f5f5;">';
+		echo self::render_block( array( 'formId' => $form_id ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		wp_print_scripts( array( 'we-formkit-form' ) );
+		echo '</body></html>';
+		exit;
+	}
+
+	/**
+	 * Shortcode: [we_formkit id="123"] or [we_formkit slug="contact"].
+	 *
+	 * @return void
+	 */
+	public static function register_shortcode() {
+		add_shortcode( 'we_formkit', array( __CLASS__, 'shortcode' ) );
+		add_shortcode( 'we-formkit', array( __CLASS__, 'shortcode' ) );
+	}
+
+	/**
+	 * @param array<string, string>|string $atts Shortcode attributes.
+	 * @return string
+	 */
+	public static function shortcode( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'id'   => '',
+				'slug' => '',
+			),
+			is_array( $atts ) ? $atts : array(),
+			'we_formkit'
+		);
+
+		return self::render_block(
+			array(
+				'formId' => absint( $atts['id'] ),
+				'slug'   => sanitize_title( $atts['slug'] ),
+			)
+		);
 	}
 
 	/**
@@ -214,23 +282,33 @@ final class Frontend {
 			'we-formkit-form',
 			'weFormkit',
 			array(
-				'restUrl'  => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/submit' ) ),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'formId'   => $form_id,
-				'token'    => $token,
-				'started'  => time(),
-				'autofill' => Capabilities::can_manage(),
-				'i18n'     => array(
-					'submitting'    => __( 'Submitting…', 'we-formkit' ),
-					'error'         => __( 'Something went wrong. Please try again.', 'we-formkit' ),
-					'required'      => __( 'This field is required.', 'we-formkit' ),
-					'addRow'        => __( 'Add another', 'we-formkit' ),
-					'removeRow'     => __( 'Remove', 'we-formkit' ),
+				'restUrl'    => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/submit' ) ),
+				'nonce'      => wp_create_nonce( 'wp_rest' ),
+				'formId'     => $form_id,
+				'token'      => $token,
+				'started'    => time(),
+				'autofill'   => Capabilities::can_manage(),
+				'pagination' => Form_Schema::get_pagination( $form_id ),
+				'saveResume' => Drafts::is_enabled( $form_id ),
+				'draftUrl'   => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/drafts' ) ),
+				'i18n'       => array(
+					'submitting'     => __( 'Submitting…', 'we-formkit' ),
+					'error'          => __( 'Something went wrong. Please try again.', 'we-formkit' ),
+					'required'       => __( 'This field is required.', 'we-formkit' ),
+					'addRow'         => __( 'Add another', 'we-formkit' ),
+					'removeRow'      => __( 'Remove', 'we-formkit' ),
 					/* translators: %d: row number (1-based). */
-					'rowLabel'      => __( 'Row %d', 'we-formkit' ),
-					'autofillReady' => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
+					'rowLabel'       => __( 'Row %d', 'we-formkit' ),
+					'autofillReady'  => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
 					'autofillManual' => __( 'Test fill applied. Click Submit form when ready.', 'we-formkit' ),
-					'autofillDone'  => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
+					'autofillDone'   => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
+					'next'           => __( 'Next', 'we-formkit' ),
+					'previous'       => __( 'Previous', 'we-formkit' ),
+					/* translators: 1: current page, 2: total pages. */
+					'pageOf'         => __( 'Step %1$d of %2$d', 'we-formkit' ),
+					'saveProgress'   => __( 'Save progress', 'we-formkit' ),
+					'savedProgress'  => __( 'Progress saved. Copy your resume link:', 'we-formkit' ),
+					'resumeLoaded'   => __( 'Your saved progress was restored.', 'we-formkit' ),
 				),
 			)
 		);
@@ -247,9 +325,16 @@ final class Frontend {
 	 * @return void
 	 */
 	public static function render_form( $form_id, array $schema, $privacy_url ) {
-		$title = $schema['title'] ? $schema['title'] : get_the_title( $form_id );
+		$title      = $schema['title'] ? $schema['title'] : get_the_title( $form_id );
+		$pagination = Form_Schema::get_pagination( $form_id );
 		?>
-		<div class="we-formkit" data-we-formkit data-form-id="<?php echo esc_attr( (string) $form_id ); ?>" style="<?php echo esc_attr( Form_Style::css_variables_attr( $form_id ) ); ?>">
+		<div
+			class="we-formkit"
+			data-we-formkit
+			data-form-id="<?php echo esc_attr( (string) $form_id ); ?>"
+			data-pagination="<?php echo esc_attr( $pagination ); ?>"
+			style="<?php echo esc_attr( Form_Style::css_variables_attr( $form_id ) ); ?>"
+		>
 			<header class="we-formkit__header">
 				<h2 class="we-formkit__title"><?php echo esc_html( $title ); ?></h2>
 				<?php if ( ! empty( $schema['intro'] ) ) : ?>
@@ -258,6 +343,7 @@ final class Frontend {
 			</header>
 
 			<div class="we-formkit__status" data-wek-status role="status" aria-live="polite"></div>
+			<p class="we-formkit__progress" data-wek-progress hidden></p>
 
 			<form class="we-formkit__form" data-wek-form novalidate>
 				<input type="hidden" name="form_id" value="<?php echo esc_attr( (string) $form_id ); ?>" />
@@ -289,8 +375,16 @@ final class Frontend {
 					</section>
 				<?php endforeach; ?>
 
-				<p class="we-formkit__actions">
+				<p class="we-formkit__actions we-formkit__actions--nav" data-wek-nav hidden>
+					<button type="button" class="we-formkit__nav-btn" data-wek-prev><?php esc_html_e( 'Previous', 'we-formkit' ); ?></button>
+					<button type="button" class="we-formkit__nav-btn we-formkit__nav-btn--primary" data-wek-next><?php esc_html_e( 'Next', 'we-formkit' ); ?></button>
+				</p>
+
+				<p class="we-formkit__actions" data-wek-submit-wrap>
 					<button type="submit" class="we-formkit__submit"><?php esc_html_e( 'Submit form', 'we-formkit' ); ?></button>
+					<?php if ( Drafts::is_enabled( $form_id ) ) : ?>
+						<button type="button" class="we-formkit__save-progress" data-wek-save-progress><?php esc_html_e( 'Save progress', 'we-formkit' ); ?></button>
+					<?php endif; ?>
 				</p>
 			</form>
 		</div>
@@ -505,6 +599,37 @@ final class Frontend {
 					<?php echo '' !== $accept ? 'accept="' . esc_attr( $accept ) . '"' : ''; ?>
 					aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
 				/>
+				<?php if ( ! empty( $field['help'] ) ) : ?>
+					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
+				<?php endif; ?>
+			<?php elseif ( 'signature' === $type ) : ?>
+				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
+					<?php echo esc_html( $field['label'] ); ?>
+					<?php
+					if ( $req ) :
+						?>
+						<span class="we-formkit__req" aria-hidden="true">*</span><?php endif; ?>
+				</label>
+				<?php
+				$pen = isset( $field['type_options']['pen_color'] ) ? (string) $field['type_options']['pen_color'] : '#222222';
+				$bg  = isset( $field['type_options']['background_color'] ) ? (string) $field['type_options']['background_color'] : '#ffffff';
+				?>
+				<div
+					class="we-formkit__signature"
+					data-wek-signature="<?php echo esc_attr( $id ); ?>"
+					data-pen="<?php echo esc_attr( $pen ); ?>"
+					data-bg="<?php echo esc_attr( $bg ); ?>"
+				>
+					<canvas
+						id="<?php echo esc_attr( $input_id ); ?>"
+						class="we-formkit__signature-canvas"
+						width="480"
+						height="180"
+						aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
+					></canvas>
+					<input type="hidden" name="<?php echo esc_attr( $id ); ?>" value="" data-wek-signature-input />
+					<button type="button" class="we-formkit__signature-clear"><?php esc_html_e( 'Clear', 'we-formkit' ); ?></button>
+				</div>
 				<?php if ( ! empty( $field['help'] ) ) : ?>
 					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 				<?php endif; ?>

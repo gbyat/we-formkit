@@ -29,12 +29,12 @@ class Upload_Field extends Abstract_Field_Type {
 
 	public function get_admin_schema(): array {
 		return array(
-			'max_files' => array(
+			'max_files'          => array(
 				'label'   => __( 'Maximum files', 'we-formkit' ),
 				'type'    => 'number',
 				'default' => 1,
 			),
-			'max_file_size_mb' => array(
+			'max_file_size_mb'   => array(
 				'label'   => __( 'Maximum size per file (MB)', 'we-formkit' ),
 				'type'    => 'number',
 				'default' => 5,
@@ -45,20 +45,20 @@ class Upload_Field extends Abstract_Field_Type {
 				'default'     => 'image/jpeg, image/png, application/pdf',
 				'description' => __( 'Comma-separated list. Leave empty for the WordPress default whitelist.', 'we-formkit' ),
 			),
-			'storage_mode' => array(
+			'storage_mode'       => array(
 				'label'       => __( 'Storage mode', 'we-formkit' ),
 				'type'        => 'select',
 				'default'     => self::STORAGE_UPLOADS_ONLY,
 				'enum'        => array( self::STORAGE_UPLOADS_ONLY, self::STORAGE_MEDIA_LIBRARY ),
-				'description' => __( 'Choose whether uploaded files are also registered in the Media Library or only stored in the uploads folder.', 'we-formkit' ),
+				'description' => __( 'Default: private Formkit folder (not in Media Library). Media Library is discouraged for personal data.', 'we-formkit' ),
 				'options'     => array(
 					array(
 						'value' => self::STORAGE_UPLOADS_ONLY,
-						'label' => __( 'Uploads folder only (no Media Library entry)', 'we-formkit' ),
+						'label' => __( 'Private Formkit folder (recommended)', 'we-formkit' ),
 					),
 					array(
 						'value' => self::STORAGE_MEDIA_LIBRARY,
-						'label' => __( 'Media Library + uploads folder', 'we-formkit' ),
+						'label' => __( 'Media Library (not recommended for personal data)', 'we-formkit' ),
 					),
 				),
 			),
@@ -69,10 +69,10 @@ class Upload_Field extends Abstract_Field_Type {
 		$field = parent::normalize_config( $field );
 		$opts  = $field['type_options'];
 
-		$field['type_options']['max_files'] = isset( $opts['max_files'] ) ? max( 1, (int) $opts['max_files'] ) : 1;
-		$field['type_options']['max_file_size_mb'] = isset( $opts['max_file_size_mb'] ) ? max( 1, (int) $opts['max_file_size_mb'] ) : 5;
+		$field['type_options']['max_files']          = isset( $opts['max_files'] ) ? max( 1, (int) $opts['max_files'] ) : 1;
+		$field['type_options']['max_file_size_mb']   = isset( $opts['max_file_size_mb'] ) ? max( 1, (int) $opts['max_file_size_mb'] ) : 5;
 		$field['type_options']['allowed_mime_types'] = isset( $opts['allowed_mime_types'] ) ? sanitize_text_field( (string) $opts['allowed_mime_types'] ) : '';
-		$field['type_options']['storage_mode'] = $this->resolve_storage_mode( $field );
+		$field['type_options']['storage_mode']       = $this->resolve_storage_mode( $field );
 
 		return $field;
 	}
@@ -115,7 +115,7 @@ class Upload_Field extends Abstract_Field_Type {
 				'name'  => isset( $entry['name'] ) ? sanitize_file_name( (string) $entry['name'] ) : '',
 				'size'  => isset( $entry['size'] ) ? max( 0, (int) $entry['size'] ) : 0,
 				'mime'  => isset( $entry['mime'] ) ? sanitize_mime_type( (string) $entry['mime'] ) : '',
-				'url'   => isset( $entry['url'] ) ? esc_url_raw( (string) $entry['url'] ) : '',
+				'path'  => self::sanitize_private_path( $entry['path'] ?? '' ),
 			);
 		}
 
@@ -157,13 +157,17 @@ class Upload_Field extends Abstract_Field_Type {
 			}
 
 			$name = isset( $entry['name'] ) ? (string) $entry['name'] : __( 'File', 'we-formkit' );
-			$url  = isset( $entry['url'] ) ? (string) $entry['url'] : '';
+			$url  = '';
 
-			if ( '' === $url && ! empty( $entry['attachment_id'] ) ) {
+			if ( ! empty( $entry['token'] ) && ! empty( $entry['name'] ) ) {
+				$url = \Webentwicklerin\WeFormkit\Private_Files::download_url( 'upload', (string) $entry['token'], (string) $entry['name'] );
+			} elseif ( ! empty( $entry['attachment_id'] ) ) {
 				$attachment_url = wp_get_attachment_url( (int) $entry['attachment_id'] );
 				if ( is_string( $attachment_url ) ) {
 					$url = $attachment_url;
 				}
+			} elseif ( ! empty( $entry['url'] ) ) {
+				$url = (string) $entry['url'];
 			}
 
 			if ( '' !== $url ) {
@@ -182,7 +186,7 @@ class Upload_Field extends Abstract_Field_Type {
 	}
 
 	public function render_attributes( array $field ): array {
-		$attrs = parent::render_attributes( $field );
+		$attrs         = parent::render_attributes( $field );
 		$attrs['type'] = 'file';
 
 		$max_files = isset( $field['type_options']['max_files'] ) ? max( 1, (int) $field['type_options']['max_files'] ) : 1;
@@ -265,5 +269,19 @@ class Upload_Field extends Abstract_Field_Type {
 		return in_array( $mode, array( self::STORAGE_UPLOADS_ONLY, self::STORAGE_MEDIA_LIBRARY ), true )
 			? $mode
 			: self::STORAGE_UPLOADS_ONLY;
+	}
+
+	/**
+	 * Keep path only if it is inside Formkit private storage.
+	 *
+	 * @param mixed $path Candidate path.
+	 * @return string
+	 */
+	private static function sanitize_private_path( $path ): string {
+		$path = is_string( $path ) ? $path : '';
+		if ( '' === $path ) {
+			return '';
+		}
+		return \Webentwicklerin\WeFormkit\Private_Files::is_private_path( $path ) ? $path : '';
 	}
 }

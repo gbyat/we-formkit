@@ -127,6 +127,20 @@ final class Submissions {
 			<h2><?php esc_html_e( 'Entries', 'we-formkit' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Submissions for this form only.', 'we-formkit' ); ?></p>
 		<?php endif; ?>
+		<?php
+		$csv_url  = wp_nonce_url(
+			admin_url( 'admin.php?page=we-formkit-submissions&wek_export_entries=1&format=csv&form_id=' . (int) $form_id ),
+			'wek_export_entries_' . (int) $form_id
+		);
+		$json_url = wp_nonce_url(
+			admin_url( 'admin.php?page=we-formkit-submissions&wek_export_entries=1&format=json&form_id=' . (int) $form_id ),
+			'wek_export_entries_' . (int) $form_id
+		);
+		?>
+		<p class="wek-admin__export-actions">
+			<a class="button" href="<?php echo esc_url( $csv_url ); ?>"><?php esc_html_e( 'Export CSV', 'we-formkit' ); ?></a>
+			<a class="button" href="<?php echo esc_url( $json_url ); ?>"><?php esc_html_e( 'Export JSON', 'we-formkit' ); ?></a>
+		</p>
 			<?php if ( ! empty( $_GET['deleted'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Submission deleted.', 'we-formkit' ); ?></p></div>
 			<?php endif; ?>

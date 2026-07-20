@@ -58,8 +58,10 @@ final class Plugin {
 		Rest_Api::register();
 		Notifications::register();
 		Retention::register();
+		Drafts::register();
 
 		add_action( 'admin_init', array( Capabilities::class, 'add_caps' ), 5 );
+		add_action( 'admin_init', array( Submission_List_Export::class, 'maybe_export' ) );
 
 		if ( is_admin() ) {
 			Admin\Admin::register();
@@ -103,6 +105,7 @@ final class Plugin {
 	 */
 	public static function deactivate() {
 		Retention::unschedule();
+		Drafts::unschedule();
 		flush_rewrite_rules();
 	}
 }

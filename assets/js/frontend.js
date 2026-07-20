@@ -27,6 +27,11 @@
 				values[ id ] = [];
 				return;
 			}
+			if ( type === 'signature' ) {
+				const sigInput = qs( fieldEl, '[data-wek-signature-input]' );
+				values[ id ] = sigInput ? sigInput.value : '';
+				return;
+			}
 			if ( type === 'repeater' ) {
 				values[ id ] = qsa( fieldEl, '[data-wek-repeater-row]' ).map( function ( row ) {
 					const rowVals = {};
@@ -566,12 +571,364 @@
 		}
 	}
 
+	function initPagination( root ) {
+		const mode = root.getAttribute( 'data-pagination' ) || ( window.weFormkit && window.weFormkit.pagination ) || 'single';
+		if ( mode !== 'per_section' ) {
+			return;
+		}
+		const form = qs( root, '[data-wek-form]' );
+		const sections = qsa( form, '[data-wek-section]' );
+		if ( sections.length < 2 ) {
+			return;
+		}
+
+		const nav = qs( form, '[data-wek-nav]' );
+		const prevBtn = qs( form, '[data-wek-prev]' );
+		const nextBtn = qs( form, '[data-wek-next]' );
+		const submitWrap = qs( form, '[data-wek-submit-wrap]' );
+		const progress = qs( root, '[data-wek-progress]' );
+		const i18n = ( window.weFormkit && window.weFormkit.i18n ) || {};
+		let index = 0;
+
+		function visibleSections() {
+			return sections.filter( function ( section ) {
+				return ! section.classList.contains( 'is-hidden' ) || section.getAttribute( 'data-wek-page-active' ) === '1';
+			} );
+		}
+
+		function pageList() {
+			// Pages = sections that are not conditionally hidden by show_when at paint time.
+			return sections.filter( function ( section ) {
+				const hiddenByRule = section.classList.contains( 'is-hidden' ) && section.getAttribute( 'data-wek-page-forced' ) !== '1';
+				// During multipage we manage visibility ourselves; ignore is-hidden from conditionals for counting when aria says visible candidate.
+				return true;
+			} );
+		}
+
+		function sync() {
+			const pages = sections;
+			pages.forEach( function ( section, i ) {
+				const on = i === index;
+				section.classList.toggle( 'is-page-hidden', ! on );
+				section.setAttribute( 'data-wek-page-active', on ? '1' : '0' );
+				if ( on ) {
+					section.removeAttribute( 'hidden' );
+				}
+			} );
+			if ( nav ) {
+				nav.hidden = false;
+			}
+			if ( prevBtn ) {
+				prevBtn.disabled = index <= 0;
+			}
+			if ( nextBtn ) {
+				nextBtn.hidden = index >= pages.length - 1;
+			}
+			if ( submitWrap ) {
+				submitWrap.hidden = index < pages.length - 1;
+			}
+			if ( progress ) {
+				progress.hidden = false;
+				const tpl = i18n.pageOf || 'Step %1$d of %2$d';
+				progress.textContent = tpl
+					.replace( '%1$d', String( index + 1 ) )
+					.replace( '%2$d', String( pages.length ) );
+			}
+		}
+
+		function validatePage() {
+			const section = sections[ index ];
+			if ( ! section ) {
+				return true;
+			}
+			let ok = true;
+			qsa( section, '[data-wek-field]' ).forEach( function ( fieldEl ) {
+				if ( fieldEl.classList.contains( 'is-hidden' ) ) {
+					return;
+				}
+				if ( fieldEl.getAttribute( 'data-required' ) !== '1' ) {
+					return;
+				}
+				const type = fieldEl.getAttribute( 'data-field-type' );
+				const id = fieldEl.getAttribute( 'data-field-id' );
+				let empty = false;
+				if ( type === 'checkbox' || type === 'consent' ) {
+					const box = qs( fieldEl, 'input[type="checkbox"]' );
+					empty = ! box || ! box.checked;
+				} else if ( type === 'checkboxes' ) {
+					empty = qsa( fieldEl, 'input[type="checkbox"]:checked' ).length === 0;
+				} else if ( type === 'radio' || type === 'radio_image' ) {
+					empty = ! qs( fieldEl, 'input[type="radio"]:checked' );
+				} else if ( type === 'upload' ) {
+					const file = qs( fieldEl, 'input[type="file"]' );
+					empty = ! file || ! file.files || ! file.files.length;
+				} else if ( type === 'signature' ) {
+					const sig = qs( fieldEl, '[data-wek-signature-input]' );
+					empty = ! sig || ! sig.value;
+				} else {
+					const input = qs( fieldEl, 'input, textarea, select' );
+					empty = ! input || ! String( input.value || '' ).trim();
+				}
+				if ( empty ) {
+					ok = false;
+					showFieldError( form, id, i18n.required || 'This field is required.' );
+				}
+			} );
+			return ok;
+		}
+
+		if ( nextBtn ) {
+			nextBtn.addEventListener( 'click', function () {
+				clearErrors( form );
+				if ( ! validatePage() ) {
+					return;
+				}
+				if ( index < sections.length - 1 ) {
+					index += 1;
+					sync();
+				}
+			} );
+		}
+		if ( prevBtn ) {
+			prevBtn.addEventListener( 'click', function () {
+				if ( index > 0 ) {
+					index -= 1;
+					sync();
+				}
+			} );
+		}
+
+		root.classList.add( 'we-formkit--multipage' );
+		sync();
+	}
+
+	function bindSaveResume( root ) {
+		const cfg = window.weFormkit || {};
+		if ( ! cfg.saveResume || ! cfg.draftUrl ) {
+			return;
+		}
+		const form = qs( root, '[data-wek-form]' );
+		const btn = qs( form, '[data-wek-save-progress]' );
+		const i18n = cfg.i18n || {};
+
+		function fillValues( values ) {
+			if ( ! values || typeof values !== 'object' ) {
+				return;
+			}
+			Object.keys( values ).forEach( function ( id ) {
+				const fieldEl = qs( form, '[data-field-id="' + id + '"]' );
+				if ( ! fieldEl ) {
+					return;
+				}
+				const type = fieldEl.getAttribute( 'data-field-type' );
+				const val = values[ id ];
+				if ( type === 'checkbox' || type === 'consent' ) {
+					const box = qs( fieldEl, 'input[type="checkbox"]' );
+					if ( box ) {
+						box.checked = val === '1' || val === true;
+					}
+					return;
+				}
+				if ( type === 'checkboxes' && Array.isArray( val ) ) {
+					qsa( fieldEl, 'input[type="checkbox"]' ).forEach( function ( box ) {
+						box.checked = val.indexOf( box.value ) !== -1;
+					} );
+					return;
+				}
+				if ( ( type === 'radio' || type === 'radio_image' ) && val ) {
+					qsa( fieldEl, 'input[type="radio"]' ).forEach( function ( radio ) {
+						radio.checked = radio.value === String( val );
+					} );
+					return;
+				}
+				if ( type === 'signature' || type === 'upload' || type === 'repeater' ) {
+					return;
+				}
+				const input = qs( fieldEl, 'input, textarea, select' );
+				if ( input ) {
+					input.value = val != null ? String( val ) : '';
+				}
+			} );
+			applyConditionals( root );
+		}
+
+		if ( btn ) {
+			btn.addEventListener( 'click', function () {
+				const values = collectValues( form );
+				fetch( cfg.draftUrl, {
+					method: 'POST',
+					credentials: 'same-origin',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': cfg.nonce || '',
+					},
+					body: JSON.stringify( {
+						nonce: cfg.nonce,
+						form_id: cfg.formId,
+						values: values,
+						page_index: 0,
+						page_url: window.location.href.split( '#' )[ 0 ],
+					} ),
+				} )
+					.then( function ( response ) {
+						return response.json();
+					} )
+					.then( function ( data ) {
+						if ( data && data.success && data.resume_url ) {
+							const msg =
+								( i18n.savedProgress || 'Progress saved. Copy your resume link:' ) +
+								' ' +
+								data.resume_url;
+							setStatus( root, msg, false );
+							try {
+								if ( navigator.clipboard && navigator.clipboard.writeText ) {
+									navigator.clipboard.writeText( data.resume_url );
+								}
+							} catch ( e ) {
+								/* ignore */
+							}
+						} else {
+							setStatus( root, ( data && data.message ) || i18n.error || 'Error', true );
+						}
+					} )
+					.catch( function () {
+						setStatus( root, i18n.error || 'Error', true );
+					} );
+			} );
+		}
+
+		try {
+			const params = new URLSearchParams( window.location.search );
+			const resume = params.get( 'wek_resume' );
+			if ( ! resume ) {
+				return;
+			}
+			fetch( cfg.draftUrl.replace( /\/?$/, '/' ) + encodeURIComponent( resume ), {
+				credentials: 'same-origin',
+				headers: { 'X-WP-Nonce': cfg.nonce || '' },
+			} )
+				.then( function ( response ) {
+					return response.json().then( function ( data ) {
+						return { ok: response.ok, data: data };
+					} );
+				} )
+				.then( function ( result ) {
+					if ( ! result.ok || ! result.data ) {
+						return;
+					}
+					fillValues( result.data.values );
+					setStatus( root, i18n.resumeLoaded || 'Your saved progress was restored.', false );
+				} )
+				.catch( function () {
+					/* ignore */
+				} );
+		} catch ( e ) {
+			/* ignore */
+		}
+	}
+
+	function bindSignatures( root ) {
+		qsa( root, '[data-wek-signature]' ).forEach( function ( wrap ) {
+			const canvas = qs( wrap, 'canvas' );
+			const input = qs( wrap, '[data-wek-signature-input]' );
+			const clearBtn = qs( wrap, '.we-formkit__signature-clear' );
+			if ( ! canvas || ! input || canvas.getAttribute( 'data-wek-bound' ) ) {
+				return;
+			}
+			canvas.setAttribute( 'data-wek-bound', '1' );
+
+			const ctx = canvas.getContext( '2d' );
+			if ( ! ctx ) {
+				return;
+			}
+
+			const pen = wrap.getAttribute( 'data-pen' ) || '#222222';
+			const bg = wrap.getAttribute( 'data-bg' ) || '#ffffff';
+			let drawing = false;
+			let dirty = false;
+
+			function paintBg() {
+				ctx.fillStyle = bg;
+				ctx.fillRect( 0, 0, canvas.width, canvas.height );
+			}
+
+			function syncValue() {
+				if ( ! dirty ) {
+					input.value = '';
+					return;
+				}
+				input.value = canvas.toDataURL( 'image/png' );
+			}
+
+			function pos( event ) {
+				const rect = canvas.getBoundingClientRect();
+				const clientX = event.touches ? event.touches[ 0 ].clientX : event.clientX;
+				const clientY = event.touches ? event.touches[ 0 ].clientY : event.clientY;
+				return {
+					x: ( ( clientX - rect.left ) / rect.width ) * canvas.width,
+					y: ( ( clientY - rect.top ) / rect.height ) * canvas.height,
+				};
+			}
+
+			function start( event ) {
+				event.preventDefault();
+				drawing = true;
+				const p = pos( event );
+				ctx.beginPath();
+				ctx.moveTo( p.x, p.y );
+			}
+
+			function move( event ) {
+				if ( ! drawing ) {
+					return;
+				}
+				event.preventDefault();
+				const p = pos( event );
+				ctx.strokeStyle = pen;
+				ctx.lineWidth = 2.2;
+				ctx.lineCap = 'round';
+				ctx.lineJoin = 'round';
+				ctx.lineTo( p.x, p.y );
+				ctx.stroke();
+				dirty = true;
+			}
+
+			function end() {
+				if ( ! drawing ) {
+					return;
+				}
+				drawing = false;
+				syncValue();
+			}
+
+			paintBg();
+			canvas.addEventListener( 'mousedown', start );
+			canvas.addEventListener( 'mousemove', move );
+			canvas.addEventListener( 'mouseup', end );
+			canvas.addEventListener( 'mouseleave', end );
+			canvas.addEventListener( 'touchstart', start, { passive: false } );
+			canvas.addEventListener( 'touchmove', move, { passive: false } );
+			canvas.addEventListener( 'touchend', end );
+
+			if ( clearBtn ) {
+				clearBtn.addEventListener( 'click', function () {
+					dirty = false;
+					paintBg();
+					input.value = '';
+				} );
+			}
+		} );
+	}
+
 	function initRoot( root ) {
 		const form = qs( root, '[data-wek-form]' );
 		if ( ! form || form.getAttribute( 'data-wek-ready' ) ) {
 			return;
 		}
 		form.setAttribute( 'data-wek-ready', '1' );
+		bindSignatures( root );
+		initPagination( root );
+		bindSaveResume( root );
 
 		form.addEventListener( 'change', function () {
 			applyConditionals( root );
@@ -657,6 +1014,16 @@
 					}
 
 					if ( result.ok && result.data && result.data.success ) {
+						const conf = result.data.confirmation || {};
+						const mode = conf.mode || 'message';
+						if ( mode === 'redirect' && conf.redirect_url ) {
+							window.location.href = conf.redirect_url;
+							return;
+						}
+						if ( mode === 'page' && conf.page_url ) {
+							window.location.href = conf.page_url;
+							return;
+						}
 						const okMsg =
 							wantsAutofill() && liveCfg.autofill
 								? ( liveCfg.i18n && liveCfg.i18n.autofillDone ) ||

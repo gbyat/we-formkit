@@ -498,6 +498,76 @@
 	cursor: not-allowed;
 }
 
+.we-formkit--multipage .we-formkit__section.is-page-hidden {
+	display: none !important;
+}
+
+.we-formkit__progress {
+	margin: 0 0 1rem;
+	font-size: 0.9rem;
+	color: var(--wek-muted);
+}
+
+.we-formkit__actions--nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+}
+
+.we-formkit__nav-btn {
+	appearance: none;
+	border: 1px solid var(--wek-line);
+	background: var(--wek-surface);
+	color: var(--wek-ink);
+	font: inherit;
+	font-weight: 600;
+	border-radius: 999px;
+	padding: 0.55rem 1.15rem;
+	cursor: pointer;
+}
+
+.we-formkit__nav-btn--primary {
+	border-color: var(--wek-accent);
+	background: var(--wek-accent);
+	color: #fff;
+}
+
+.we-formkit__nav-btn:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.we-formkit__signature {
+	display: grid;
+	gap: 0.5rem;
+	max-width: 100%;
+}
+
+.we-formkit__signature-canvas {
+	display: block;
+	width: 100%;
+	max-width: 480px;
+	height: auto;
+	border: 1px solid var(--wek-line);
+	border-radius: 8px;
+	background: #fff;
+	touch-action: none;
+	cursor: crosshair;
+}
+
+.we-formkit__signature-clear {
+	appearance: none;
+	justify-self: start;
+	border: 1px solid var(--wek-line);
+	background: var(--wek-surface);
+	color: var(--wek-ink);
+	font: inherit;
+	font-size: 0.9rem;
+	border-radius: 999px;
+	padding: 0.35rem 0.85rem;
+	cursor: pointer;
+}
+
 .we-formkit-error {
 	color: var(--wek-danger);
 	font-weight: 600;

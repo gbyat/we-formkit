@@ -8,6 +8,7 @@
 namespace Webentwicklerin\WeFormkit\Admin;
 
 use Webentwicklerin\WeFormkit\Capabilities;
+use Webentwicklerin\WeFormkit\Drafts;
 use Webentwicklerin\WeFormkit\Fields\Repeater_Field;
 use Webentwicklerin\WeFormkit\Form_Notifications;
 use Webentwicklerin\WeFormkit\Form_Schema;
@@ -254,12 +255,21 @@ final class Form_Editor {
 					'selectValue'         => __( '— Select value —', 'we-formkit' ),
 					'conditionsEmpty'     => __( 'No conditions — this item is always visible. Add a rule to show it only when…', 'we-formkit' ),
 					'conditionsNoFields'  => __( 'Add other fields first — conditions depend on another field’s value.', 'we-formkit' ),
+					'checkboxPreview'     => __( 'Single checkbox', 'we-formkit' ),
+					'consentPreview'      => __( 'Consent checkbox', 'we-formkit' ),
+					'selectPreview'       => __( 'Select…', 'we-formkit' ),
+					'optionPreview'       => __( 'Option', 'we-formkit' ),
+					'htmlPreview'         => __( 'HTML block', 'we-formkit' ),
+					'hiddenPreview'       => __( 'Hidden field', 'we-formkit' ),
+					'uploadPreview'       => __( 'Choose file…', 'we-formkit' ),
 					'opEquals'            => __( 'equals', 'we-formkit' ),
 					'opNotEquals'         => __( 'not equals', 'we-formkit' ),
 					'opContains'          => __( 'contains', 'we-formkit' ),
 					'opIsChecked'         => __( 'is checked', 'we-formkit' ),
 					'opIsNotEmpty'        => __( 'is not empty', 'we-formkit' ),
 					'confirmDel'          => __( 'Remove this item?', 'we-formkit' ),
+					'duplicate'           => __( 'Duplicate', 'we-formkit' ),
+					'signaturePreview'    => __( 'Signature pad', 'we-formkit' ),
 					'empty'               => __( 'No sections yet. Add a section or pick a field from the library.', 'we-formkit' ),
 					'loadError'           => __( 'Form builder failed to load. Hard-refresh the page or check the browser console.', 'we-formkit' ),
 					'width'               => __( 'Columns', 'we-formkit' ),
@@ -360,7 +370,7 @@ final class Form_Editor {
 			);
 			$notify  = '';
 			$privacy = '';
-			$confirm = '';
+			$confirm = Form_Schema::get_confirmation( 0 );
 			$form_id = 0;
 			if ( 'entries' === $view ) {
 				$view = 'fields';
@@ -372,7 +382,7 @@ final class Form_Editor {
 			$secret  = Form_Schema::get_secret( $form_id );
 			$notify  = (string) get_post_meta( $form_id, Form_Schema::META_NOTIFY_EMAIL, true );
 			$privacy = (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true );
-			$confirm = (string) get_post_meta( $form_id, Form_Schema::META_CONFIRMATION_MESSAGE, true );
+			$confirm = Form_Schema::get_confirmation( $form_id );
 		}
 
 		$notifications = $form_id > 0 ? Form_Notifications::get( $form_id ) : Form_Notifications::defaults();
@@ -512,6 +522,11 @@ final class Form_Editor {
 	private static function render_view_fields( $form_id, $schema_json, $title, $is_new ) {
 		$forms_url   = admin_url( 'admin.php?page=we-formkit' );
 		$entries_url = '';
+		$preview_url = '';
+		$clone_url   = '';
+		$pagination  = 'single';
+		$shortcode   = '';
+		$save_resume = false;
 		if ( ! $is_new && $form_id > 0 ) {
 			$entries_url = add_query_arg(
 				array(
@@ -521,6 +536,20 @@ final class Form_Editor {
 				),
 				admin_url( 'admin.php' )
 			);
+			$preview_url = add_query_arg(
+				array(
+					'wek_preview' => '1',
+					'form_id'     => $form_id,
+				),
+				home_url( '/' )
+			);
+			$clone_url   = wp_nonce_url( admin_url( 'admin.php?page=we-formkit&wek_clone_form=1&form_id=' . $form_id ), 'wek_clone_form_' . $form_id );
+			$pagination  = Form_Schema::get_pagination( $form_id );
+			$save_resume = Drafts::is_enabled( $form_id );
+			$slug        = (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true );
+			$shortcode   = $slug
+				? sprintf( '[we_formkit slug="%s"]', $slug )
+				: sprintf( '[we_formkit id="%d"]', $form_id );
 		}
 		?>
 	<form method="post" id="wek-form-editor" class="wek-admin__fields-only">
@@ -548,13 +577,36 @@ final class Form_Editor {
 			<?php if ( $form_id > 0 ) : ?>
 				<code class="wek-fields-bar__badge" title="<?php esc_attr_e( 'Form ID for the Formkit block', 'we-formkit' ); ?>">ID <?php echo esc_html( (string) $form_id ); ?></code>
 			<?php endif; ?>
+			<label class="wek-fields-bar__pagination">
+				<span class="screen-reader-text"><?php esc_html_e( 'Pagination', 'we-formkit' ); ?></span>
+				<select name="wek_pagination" id="wek_pagination" title="<?php esc_attr_e( 'Pagination', 'we-formkit' ); ?>">
+					<option value="single" <?php selected( $pagination, 'single' ); ?>><?php esc_html_e( 'Single page', 'we-formkit' ); ?></option>
+					<option value="per_section" <?php selected( $pagination, 'per_section' ); ?>><?php esc_html_e( 'One section per page', 'we-formkit' ); ?></option>
+				</select>
+			</label>
+			<label class="wek-fields-bar__save-resume">
+				<input type="checkbox" name="wek_save_resume" value="1" <?php checked( $save_resume ); ?> />
+				<?php esc_html_e( 'Save & Resume', 'we-formkit' ); ?>
+			</label>
 			<div class="wek-fields-bar__actions">
+				<?php if ( $preview_url ) : ?>
+					<a class="button" href="<?php echo esc_url( $preview_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Preview', 'we-formkit' ); ?></a>
+				<?php endif; ?>
+				<?php if ( $clone_url ) : ?>
+					<a class="button" href="<?php echo esc_url( $clone_url ); ?>"><?php esc_html_e( 'Duplicate', 'we-formkit' ); ?></a>
+				<?php endif; ?>
 				<?php if ( $entries_url ) : ?>
 					<a class="button wek-fields-bar__entries" href="<?php echo esc_url( $entries_url ); ?>"><?php esc_html_e( 'Entries', 'we-formkit' ); ?></a>
 				<?php endif; ?>
 				<?php submit_button( __( 'Save Form', 'we-formkit' ), 'primary', 'we_formkit_save_form', false ); ?>
 			</div>
 		</div>
+		<?php if ( $shortcode ) : ?>
+			<p class="wek-fields-bar__shortcode description">
+				<?php esc_html_e( 'Shortcode:', 'we-formkit' ); ?>
+				<code><?php echo esc_html( $shortcode ); ?></code>
+			</p>
+		<?php endif; ?>
 
 		<?php self::render_form_nav( $form_id, 'fields', $is_new ); ?>
 
@@ -893,32 +945,96 @@ final class Form_Editor {
 	}
 
 	/**
-	 * @param int    $form_id Form ID.
-	 * @param string $confirm Confirmation message.
-	 * @param bool   $is_new Whether new.
+	 * @param int                  $form_id Form ID.
+	 * @param array<string, mixed> $confirm Confirmation settings.
+	 * @param bool                 $is_new  Whether new.
 	 * @return void
 	 */
 	private static function render_view_confirmations( $form_id, $confirm, $is_new ) {
 		unset( $is_new );
+		if ( ! is_array( $confirm ) ) {
+			$confirm = Form_Schema::get_confirmation( $form_id );
+		}
+		$mode        = isset( $confirm['mode'] ) ? (string) $confirm['mode'] : 'message';
+		$message     = isset( $confirm['message'] ) ? (string) $confirm['message'] : '';
+		$redirect    = isset( $confirm['redirect_url'] ) ? (string) $confirm['redirect_url'] : '';
+		$page_id     = isset( $confirm['page_id'] ) ? (int) $confirm['page_id'] : 0;
 		$placeholder = __( 'Thank you. Your form was submitted successfully.', 'we-formkit' );
 		?>
-	<form method="post" class="wek-admin__settings-panel">
+	<form method="post" class="wek-admin__settings-panel" id="wek-confirmations-form">
 		<?php wp_nonce_field( 'we_formkit_save_form', 'we_formkit_save_nonce' ); ?>
 		<input type="hidden" name="form_id" value="<?php echo esc_attr( (string) $form_id ); ?>" />
 		<input type="hidden" name="wek_save_view" value="confirmations" />
 
 		<table class="form-table" role="presentation">
 			<tr>
+				<th><label for="wek_confirmation_mode"><?php esc_html_e( 'After submit', 'we-formkit' ); ?></label></th>
+				<td>
+					<select name="wek_confirmation_mode" id="wek_confirmation_mode">
+						<option value="message" <?php selected( $mode, 'message' ); ?>><?php esc_html_e( 'Show message', 'we-formkit' ); ?></option>
+						<option value="redirect" <?php selected( $mode, 'redirect' ); ?>><?php esc_html_e( 'Redirect to URL', 'we-formkit' ); ?></option>
+						<option value="page" <?php selected( $mode, 'page' ); ?>><?php esc_html_e( 'Show a WordPress page', 'we-formkit' ); ?></option>
+					</select>
+				</td>
+			</tr>
+			<tr class="wek-confirm-row wek-confirm-row--message">
 				<th><label for="wek_confirmation_message"><?php esc_html_e( 'Confirmation message', 'we-formkit' ); ?></label></th>
 				<td>
-					<textarea class="large-text" rows="4" name="wek_confirmation_message" id="wek_confirmation_message" placeholder="<?php echo esc_attr( $placeholder ); ?>"><?php echo esc_textarea( $confirm ); ?></textarea>
+					<textarea class="large-text" rows="4" name="wek_confirmation_message" id="wek_confirmation_message" placeholder="<?php echo esc_attr( $placeholder ); ?>"><?php echo esc_textarea( $message ); ?></textarea>
 					<p class="description"><?php esc_html_e( 'Shown on the page after a successful submission. Leave empty to use the default message.', 'we-formkit' ); ?></p>
+				</td>
+			</tr>
+			<tr class="wek-confirm-row wek-confirm-row--redirect">
+				<th><label for="wek_confirmation_redirect"><?php esc_html_e( 'Redirect URL', 'we-formkit' ); ?></label></th>
+				<td>
+					<input type="url" class="large-text" name="wek_confirmation_redirect" id="wek_confirmation_redirect" value="<?php echo esc_attr( $redirect ); ?>" placeholder="https://" />
+				</td>
+			</tr>
+			<tr class="wek-confirm-row wek-confirm-row--page">
+				<th><label for="wek_confirmation_page"><?php esc_html_e( 'Thank-you page', 'we-formkit' ); ?></label></th>
+				<td>
+					<?php
+					echo wp_dropdown_pages( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core helper escapes options.
+						array(
+							'name'              => 'wek_confirmation_page',
+							'id'                => 'wek_confirmation_page',
+							'selected'          => $page_id,
+							'show_option_none'  => __( '— Select a page —', 'we-formkit' ),
+							'option_none_value' => '0',
+							'echo'              => 0,
+						)
+					);
+					?>
 				</td>
 			</tr>
 		</table>
 
 		<?php submit_button( __( 'Save confirmation', 'we-formkit' ), 'primary', 'we_formkit_save_form' ); ?>
 	</form>
+	<script>
+	(function () {
+		var form = document.getElementById('wek-confirmations-form');
+		if (!form) return;
+		var select = form.querySelector('#wek_confirmation_mode');
+		function sync() {
+			var mode = select ? select.value : 'message';
+			form.querySelectorAll('.wek-confirm-row').forEach(function (row) {
+				var show = row.classList.contains('wek-confirm-row--' + mode) ||
+					(mode === 'message' && row.classList.contains('wek-confirm-row--message'));
+				if (mode === 'redirect') {
+					show = row.classList.contains('wek-confirm-row--redirect');
+				} else if (mode === 'page') {
+					show = row.classList.contains('wek-confirm-row--page');
+				} else {
+					show = row.classList.contains('wek-confirm-row--message');
+				}
+				row.hidden = !show;
+			});
+		}
+		if (select) select.addEventListener('change', sync);
+		sync();
+	})();
+	</script>
 		<?php
 	}
 
@@ -1016,6 +1132,12 @@ final class Form_Editor {
 			Form_Schema::set_secret( $form_id, false );
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$pagination = isset( $_POST['wek_pagination'] ) ? sanitize_key( wp_unslash( (string) $_POST['wek_pagination'] ) ) : 'single';
+		Form_Schema::set_pagination( $form_id, $pagination );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		Drafts::set_enabled( $form_id, ! empty( $_POST['wek_save_resume'] ) );
+
 		wp_safe_redirect( admin_url( 'admin.php?page=we-formkit-form&form_id=' . $form_id . '&view=fields&saved=1' ) );
 		exit;
 	}
@@ -1104,8 +1226,22 @@ final class Form_Editor {
 		$form_id = self::ensure_form_exists( $form_id );
 		// Nonce verified in save_form().
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$mode = isset( $_POST['wek_confirmation_mode'] ) ? sanitize_key( wp_unslash( (string) $_POST['wek_confirmation_mode'] ) ) : 'message';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$message = isset( $_POST['wek_confirmation_message'] ) ? sanitize_textarea_field( wp_unslash( (string) $_POST['wek_confirmation_message'] ) ) : '';
-		update_post_meta( $form_id, Form_Schema::META_CONFIRMATION_MESSAGE, $message );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$redirect = isset( $_POST['wek_confirmation_redirect'] ) ? esc_url_raw( wp_unslash( (string) $_POST['wek_confirmation_redirect'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$page_id = isset( $_POST['wek_confirmation_page'] ) ? absint( $_POST['wek_confirmation_page'] ) : 0;
+		Form_Schema::set_confirmation(
+			$form_id,
+			array(
+				'mode'         => $mode,
+				'message'      => $message,
+				'redirect_url' => $redirect,
+				'page_id'      => $page_id,
+			)
+		);
 		wp_safe_redirect( admin_url( 'admin.php?page=we-formkit-form&form_id=' . $form_id . '&view=confirmations&saved=1' ) );
 		exit;
 	}

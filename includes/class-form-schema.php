@@ -23,6 +23,8 @@ final class Form_Schema {
 	public const META_SLUG                 = '_wek_form_slug';
 	public const META_PRIVACY_URL          = '_wek_form_privacy_url';
 	public const META_CONFIRMATION_MESSAGE = '_wek_form_confirmation_message';
+	public const META_CONFIRMATION         = '_wek_form_confirmation';
+	public const META_PAGINATION           = '_wek_form_pagination';
 
 	public const SUB_FORM_ID = '_wek_submission_form_id';
 	public const SUB_DATA    = '_wek_submission_data';
@@ -243,18 +245,91 @@ final class Form_Schema {
 	}
 
 	/**
-	 * Confirmation message shown after a successful submit.
+	 * Confirmation message shown after a successful submit (legacy helper).
 	 *
 	 * @param int $form_id Form ID.
 	 * @return string
 	 */
 	public static function get_confirmation_message( $form_id ) {
-		$custom = (string) get_post_meta( (int) $form_id, self::META_CONFIRMATION_MESSAGE, true );
-		$custom = trim( $custom );
-		if ( '' !== $custom ) {
-			return $custom;
+		$conf = self::get_confirmation( $form_id );
+		return (string) $conf['message'];
+	}
+
+	/**
+	 * Structured confirmation settings.
+	 *
+	 * @param int $form_id Form ID.
+	 * @return array{mode:string,message:string,redirect_url:string,page_id:int}
+	 */
+	public static function get_confirmation( $form_id ) {
+		$form_id = (int) $form_id;
+		$raw     = get_post_meta( $form_id, self::META_CONFIRMATION, true );
+		$decoded = is_string( $raw ) && '' !== $raw ? json_decode( $raw, true ) : null;
+		if ( ! is_array( $decoded ) ) {
+			$decoded = array();
 		}
-		return __( 'Thank you. Your form was submitted successfully.', 'we-formkit' );
+
+		$mode = isset( $decoded['mode'] ) ? sanitize_key( (string) $decoded['mode'] ) : 'message';
+		if ( ! in_array( $mode, array( 'message', 'redirect', 'page' ), true ) ) {
+			$mode = 'message';
+		}
+
+		$message = isset( $decoded['message'] ) ? (string) $decoded['message'] : '';
+		if ( '' === trim( $message ) ) {
+			$message = (string) get_post_meta( $form_id, self::META_CONFIRMATION_MESSAGE, true );
+		}
+		$message = trim( $message );
+		if ( '' === $message ) {
+			$message = __( 'Thank you. Your form was submitted successfully.', 'we-formkit' );
+		}
+
+		return array(
+			'mode'         => $mode,
+			'message'      => $message,
+			'redirect_url' => isset( $decoded['redirect_url'] ) ? esc_url_raw( (string) $decoded['redirect_url'] ) : '',
+			'page_id'      => isset( $decoded['page_id'] ) ? absint( $decoded['page_id'] ) : 0,
+		);
+	}
+
+	/**
+	 * @param int                  $form_id Form ID.
+	 * @param array<string, mixed> $data    Confirmation data.
+	 * @return void
+	 */
+	public static function set_confirmation( $form_id, array $data ) {
+		$mode = isset( $data['mode'] ) ? sanitize_key( (string) $data['mode'] ) : 'message';
+		if ( ! in_array( $mode, array( 'message', 'redirect', 'page' ), true ) ) {
+			$mode = 'message';
+		}
+		$payload = array(
+			'mode'         => $mode,
+			'message'      => isset( $data['message'] ) ? sanitize_textarea_field( (string) $data['message'] ) : '',
+			'redirect_url' => isset( $data['redirect_url'] ) ? esc_url_raw( (string) $data['redirect_url'] ) : '',
+			'page_id'      => isset( $data['page_id'] ) ? absint( $data['page_id'] ) : 0,
+		);
+		update_post_meta( (int) $form_id, self::META_CONFIRMATION, wp_json_encode( $payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+		update_post_meta( (int) $form_id, self::META_CONFIRMATION_MESSAGE, $payload['message'] );
+	}
+
+	/**
+	 * Pagination mode: single | per_section.
+	 *
+	 * @param int $form_id Form ID.
+	 * @return string
+	 */
+	public static function get_pagination( $form_id ) {
+		$mode = sanitize_key( (string) get_post_meta( (int) $form_id, self::META_PAGINATION, true ) );
+		return 'per_section' === $mode ? 'per_section' : 'single';
+	}
+
+	/**
+	 * @param int    $form_id Form ID.
+	 * @param string $mode    Pagination mode.
+	 * @return void
+	 */
+	public static function set_pagination( $form_id, $mode ) {
+		$mode = sanitize_key( (string) $mode );
+		update_post_meta( (int) $form_id, self::META_PAGINATION, 'per_section' === $mode ? 'per_section' : 'single' );
 	}
 
 	/**

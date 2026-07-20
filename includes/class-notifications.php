@@ -357,10 +357,16 @@ final class Notifications {
 	private static function collect_attachment_paths( array $schema, array $data ) {
 		$paths = array();
 		foreach ( Form_Schema::fields_by_id( $schema ) as $field_id => $field ) {
-			if ( empty( $field['type'] ) || 'upload' !== $field['type'] ) {
+			$type = isset( $field['type'] ) ? (string) $field['type'] : '';
+			if ( 'upload' !== $type && 'signature' !== $type ) {
 				continue;
 			}
-			$files = isset( $data[ $field_id ] ) && is_array( $data[ $field_id ] ) ? $data[ $field_id ] : array();
+			$raw = isset( $data[ $field_id ] ) ? $data[ $field_id ] : null;
+			if ( 'signature' === $type && is_array( $raw ) && isset( $raw['token'] ) ) {
+				$files = array( $raw );
+			} else {
+				$files = is_array( $raw ) ? $raw : array();
+			}
 			foreach ( $files as $file ) {
 				if ( ! is_array( $file ) ) {
 					continue;
@@ -368,6 +374,9 @@ final class Notifications {
 				$path = '';
 				if ( ! empty( $file['path'] ) && is_string( $file['path'] ) ) {
 					$path = $file['path'];
+				} elseif ( ! empty( $file['token'] ) && ! empty( $file['name'] ) ) {
+					$subdir = 'signature' === $type ? Private_Files::SIGNATURES_SUBDIR : Private_Files::UPLOADS_SUBDIR;
+					$path   = Private_Files::absolute_path( $subdir, (string) $file['token'], (string) $file['name'] );
 				} elseif ( ! empty( $file['attachment_id'] ) ) {
 					$attached = get_attached_file( (int) $file['attachment_id'] );
 					if ( is_string( $attached ) ) {

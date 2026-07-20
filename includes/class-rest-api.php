@@ -41,6 +41,35 @@ final class Rest_Api {
 			)
 		);
 
+		register_rest_route(
+			self::NAMESPACE,
+			'/file',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( Private_Files::class, 'rest_download' ),
+				'permission_callback' => static function () {
+					return current_user_can( 'edit_wek_submissions' ) || current_user_can( 'manage_we_formkit' );
+				},
+				'args'                => array(
+					'kind'  => array(
+						'type'              => 'string',
+						'default'           => 'upload',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'token' => array(
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'name'  => array(
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_file_name',
+					),
+				),
+			)
+		);
+
 		Rest_Form_Settings::register_routes();
 	}
 
@@ -133,6 +162,12 @@ final class Rest_Api {
 			);
 		}
 
+		$persisted = self::persist_signatures( $schema, $result['data'] );
+		if ( is_wp_error( $persisted ) ) {
+			return $persisted;
+		}
+		$result['data'] = $persisted;
+
 		$ip = Spam::client_ip();
 		Spam::record_attempt( $ip );
 
@@ -172,10 +207,23 @@ final class Rest_Api {
 			)
 		);
 
+		$confirmation = Form_Schema::get_confirmation( $form_id );
+		$page_url     = '';
+		if ( 'page' === $confirmation['mode'] && $confirmation['page_id'] > 0 ) {
+			$permalink = get_permalink( $confirmation['page_id'] );
+			$page_url  = is_string( $permalink ) ? $permalink : '';
+		}
+
 		return rest_ensure_response(
 			array(
-				'success' => true,
-				'message' => Form_Schema::get_confirmation_message( $form_id ),
+				'success'      => true,
+				'message'      => $confirmation['message'],
+				'confirmation' => array(
+					'mode'         => $confirmation['mode'],
+					'message'      => $confirmation['message'],
+					'redirect_url' => $confirmation['redirect_url'],
+					'page_url'     => $page_url,
+				),
 			)
 		);
 	}
@@ -224,6 +272,43 @@ final class Rest_Api {
 	}
 
 	/**
+	 * Convert signature data URLs into private PNG files.
+	 *
+	 * @param array<string, mixed> $schema Schema.
+	 * @param array<string, mixed> $data   Sanitized submission data.
+	 * @return array<string, mixed>|\WP_Error
+	 */
+	private static function persist_signatures( array $schema, array $data ) {
+		$registry = Plugin::instance()->field_registry();
+		foreach ( Form_Schema::fields_by_id( $schema ) as $field_id => $field ) {
+			if ( empty( $field['type'] ) || 'signature' !== $field['type'] ) {
+				continue;
+			}
+			$type_obj = $registry ? $registry->get( 'signature' ) : null;
+			if ( ! $type_obj instanceof Fields\Signature_Field ) {
+				continue;
+			}
+			$value = isset( $data[ $field_id ] ) ? $data[ $field_id ] : '';
+			if ( ! is_string( $value ) || '' === $value ) {
+				continue;
+			}
+			$stored = $type_obj->persist_data_url( $value, 0, $field_id );
+			if ( is_wp_error( $stored ) ) {
+				return new \WP_Error(
+					'we_formkit_validation',
+					__( 'Please correct the highlighted fields.', 'we-formkit' ),
+					array(
+						'status' => 422,
+						'errors' => array( $field_id => $stored->get_error_message() ),
+					)
+				);
+			}
+			$data[ $field_id ] = $stored;
+		}
+		return $data;
+	}
+
+	/**
 	 * Process $_FILES for upload fields and return sanitized entry arrays keyed by field id.
 	 *
 	 * @param array<string, mixed> $schema Schema.
@@ -239,10 +324,6 @@ final class Rest_Api {
 
 		if ( ! function_exists( 'wp_handle_upload' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-		if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/image.php';
-			require_once ABSPATH . 'wp-admin/includes/media.php';
 		}
 
 		foreach ( Form_Schema::fields_by_id( $schema ) as $field_id => $field ) {
@@ -303,55 +384,47 @@ final class Rest_Api {
 					break;
 				}
 
-				$upload = wp_handle_upload(
-					$file,
-					array(
-						'test_form' => false,
-						'mimes'     => self::mimes_map_from_list( $allowed ),
-					)
-				);
-
-				if ( isset( $upload['error'] ) ) {
-					$errors[ $field_id ] = (string) $upload['error'];
+				$stored_file = Private_Files::store_upload( $file, $allowed );
+				if ( is_wp_error( $stored_file ) ) {
+					$errors[ $field_id ] = $stored_file->get_error_message();
 					break;
 				}
 
-				$url  = isset( $upload['url'] ) ? (string) $upload['url'] : '';
-				$path = isset( $upload['file'] ) ? (string) $upload['file'] : '';
-				$name = isset( $file['name'] ) ? sanitize_file_name( (string) $file['name'] ) : '';
-
 				if ( Upload_Field::STORAGE_MEDIA_LIBRARY === $mode ) {
+					if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
+						require_once ABSPATH . 'wp-admin/includes/image.php';
+						require_once ABSPATH . 'wp-admin/includes/media.php';
+					}
 					$attachment    = array(
-						'post_mime_type' => $mime,
-						'post_title'     => preg_replace( '/\.[^.]+$/', '', $name ),
+						'post_mime_type' => $stored_file['mime'],
+						'post_title'     => preg_replace( '/\.[^.]+$/', '', $stored_file['name'] ),
 						'post_content'   => '',
 						'post_status'    => 'inherit',
 					);
-					$attachment_id = wp_insert_attachment( $attachment, $path );
+					$attachment_id = wp_insert_attachment( $attachment, $stored_file['path'] );
 					if ( is_wp_error( $attachment_id ) || ! $attachment_id ) {
 						$errors[ $field_id ] = __( 'Could not save the uploaded file.', 'we-formkit' );
 						break;
 					}
-					$meta = wp_generate_attachment_metadata( (int) $attachment_id, $path );
+					$meta = wp_generate_attachment_metadata( (int) $attachment_id, $stored_file['path'] );
 					if ( is_array( $meta ) ) {
 						wp_update_attachment_metadata( (int) $attachment_id, $meta );
 					}
 					$stored[] = array(
 						'attachment_id' => (int) $attachment_id,
-						'name'          => $name,
-						'size'          => $size,
-						'mime'          => $mime,
-						'url'           => $url ? $url : (string) wp_get_attachment_url( (int) $attachment_id ),
-						'path'          => $path,
+						'name'          => $stored_file['name'],
+						'size'          => $stored_file['size'],
+						'mime'          => $stored_file['mime'],
+						'url'           => (string) wp_get_attachment_url( (int) $attachment_id ),
+						'path'          => $stored_file['path'],
 					);
 				} else {
 					$stored[] = array(
-						'token' => wp_generate_password( 32, false, false ),
-						'name'  => $name,
-						'size'  => $size,
-						'mime'  => $mime,
-						'url'   => $url,
-						'path'  => $path,
+						'token' => $stored_file['token'],
+						'name'  => $stored_file['name'],
+						'size'  => $stored_file['size'],
+						'mime'  => $stored_file['mime'],
+						'path'  => $stored_file['path'],
 					);
 				}
 			}

@@ -1050,7 +1050,29 @@ body.wek-scheme-violet .wek-admin {
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.wek-admin .wek-builder__field.is-selected .wek-builder__field-delete {
+.wek-admin .wek-builder__field-duplicate {
+	appearance: none;
+	position: absolute;
+	top: -10px;
+	left: 1.1rem;
+	z-index: 2;
+	width: 1.4rem;
+	height: 1.4rem;
+	padding: 0;
+	border: 1px solid var(--wek-line);
+	border-radius: 4px;
+	background: var(--wek-surface);
+	color: var(--wek-ink);
+	font-size: 11px;
+	line-height: 1;
+	cursor: pointer;
+	display: none;
+	align-items: center;
+	justify-content: center;
+}
+
+.wek-admin .wek-builder__field.is-selected .wek-builder__field-delete,
+.wek-admin .wek-builder__field.is-selected .wek-builder__field-duplicate {
 	display: inline-flex;
 }
 
@@ -1138,7 +1160,7 @@ body.wek-scheme-violet .wek-admin {
 	color: var(--wek-ink);
 }
 
-	.wek-admin .wek-builder__field-preview {
+.wek-admin .wek-builder__field-preview {
 	display: block;
 	width: 100%;
 	max-width: 100%;
@@ -1153,10 +1175,136 @@ body.wek-scheme-violet .wek-admin {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	pointer-events: none;
+	user-select: none;
+}
+
+.wek-admin .wek-builder__field-preview--textarea {
+	min-height: 4.2rem;
+	line-height: 1.4;
+	padding: 0.55rem 0.75rem;
+	white-space: normal;
+}
+
+.wek-admin .wek-builder__field-preview--select {
+	position: relative;
+	padding-right: 1.75rem;
+}
+
+.wek-admin .wek-builder__field-preview--select::after {
+	content: "";
+	position: absolute;
+	right: 0.7rem;
+	top: 50%;
+	width: 0;
+	height: 0;
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-top: 5px solid var(--wek-muted);
+	transform: translateY(-35%);
+}
+
+.wek-admin .wek-builder__field-preview--toggle,
+.wek-admin .wek-builder__field-preview--choices {
+	display: grid;
+	gap: 0.35rem;
+	min-height: 0;
+	border: 0;
+	background: transparent;
+	padding: 0.15rem 0 0;
+	line-height: 1.35;
+	white-space: normal;
+	overflow: visible;
+}
+
+.wek-admin .wek-builder__field-preview--toggle {
+	grid-template-columns: auto 1fr;
+	align-items: start;
+	gap: 0.5rem;
+}
+
+.wek-admin .wek-builder__choice-row {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	align-items: center;
+	gap: 0.45rem;
+}
+
+.wek-admin .wek-builder__choice-mark {
+	width: 1rem;
+	height: 1rem;
+	flex-shrink: 0;
+	border: 1.5px solid #9a9590;
+	background: #fff;
+	box-sizing: border-box;
+}
+
+.wek-admin .wek-builder__choice-mark--checkbox {
+	border-radius: 3px;
+}
+
+.wek-admin .wek-builder__choice-mark--radio {
+	border-radius: 50%;
+}
+
+.wek-admin .wek-builder__choice-label {
+	font-size: 13px;
+	color: var(--wek-ink);
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.wek-admin .wek-builder__choice-more {
+	font-size: 11px;
+	color: var(--wek-muted);
+	padding-left: 1.45rem;
+}
+
+.wek-admin .wek-builder__field-preview--html,
+.wek-admin .wek-builder__field-preview--hidden {
+	border-style: dashed;
+	background: var(--wek-panel);
+	font-style: italic;
+}
+
+.wek-admin .wek-builder__field-preview--upload {
+	display: inline-flex;
+	align-items: center;
+	width: auto;
+	max-width: 100%;
+	padding: 0 0.85rem;
+	border-style: dashed;
+}
+
+.wek-admin .wek-builder__field-preview--signature {
+	min-height: 4rem;
+	border-style: dashed;
+	background: repeating-linear-gradient(
+		-45deg,
+		transparent,
+		transparent 6px,
+		rgba(0, 0, 0, 0.03) 6px,
+		rgba(0, 0, 0, 0.03) 12px
+	);
+	line-height: 4rem;
+	text-align: center;
+	font-style: italic;
 }
 
 .wek-admin .wek-builder__badge {
-	display: none;
+	display: inline-flex;
+	align-self: flex-start;
+	margin-top: 0.15rem;
+	padding: 0.12rem 0.4rem;
+	border-radius: 999px;
+	background: var(--wek-panel);
+	border: 1px solid var(--wek-line);
+	color: var(--wek-muted);
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	flex-shrink: 0;
 }
 
 .wek-admin .wek-builder__handle,

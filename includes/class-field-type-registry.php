@@ -47,6 +47,7 @@ final class Field_Type_Registry {
 		$this->register( new Fields\Html_Field() );
 		$this->register( new Fields\Hidden_Field() );
 		$this->register( new Fields\Upload_Field() );
+		$this->register( new Fields\Signature_Field() );
 		$this->register( new Fields\Repeater_Field() );
 
 		/**
