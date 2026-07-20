@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-07-20
+
+- Enhance notification handling in the admin form editor by introducing HTML support for email bodies. Implement a WYSIWYG editor for notification headers, messages, and footers, allowing for rich text formatting and the use of merge tags. Update CSS for improved layout of notification elements. Refactor notification body composition to support HTML formatting, ensuring a better user experience in email communications.
+- Enhance admin form editor UI and functionality. Update CSS to enforce consistent box-sizing and width for form elements, improving layout within the admin interface. Refactor rule display logic to dynamically manage field options and values based on selected conditions, enhancing user experience. Introduce JavaScript for handling field options and value selection, ensuring a more intuitive interaction in the form editor.
 ## [0.2.3] - 2026-07-20
 
 - Implement info documents feature in the admin form editor. Add functionality for managing documents, including toggling and deleting. Update CSS for document-related UI elements and enhance frontend JavaScript to display downloadable links. Modify notification handling to include document links in emails. Update documentation to reflect new features and usage of `{info_links}` tag.
