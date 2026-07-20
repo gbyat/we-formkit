@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.12] - 2026-07-20
+
+- Enhance admin form editor and frontend functionality. Update CSS for improved field label display and required indicators. Refactor JavaScript to implement debounced synchronization for hidden inputs, improve conditional visibility handling, and streamline field width application. Introduce caching for show-when attributes to optimize performance.
 ## [0.2.11] - 2026-07-20
 
 - Enhance admin form editor with MIME type management features. Introduce multi-select for allowed MIME types, allowing users to specify file types for uploads. Update CSS for improved UI consistency in the admin interface, including adjustments to button styles and section visibility. Refactor JavaScript to support new MIME type functionalities and improve validation message handling.
