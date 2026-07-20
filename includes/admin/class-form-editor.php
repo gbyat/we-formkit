@@ -85,6 +85,76 @@ final class Form_Editor {
 				exit;
 			}
 		}
+
+		if ( isset( $_GET['wek_notify_action'] ) && isset( $_GET['form_id'] ) && isset( $_GET['notification_id'] ) && isset( $_GET['_wpnonce'] ) ) {
+			self::handle_notification_action();
+		}
+	}
+
+	/**
+	 * Duplicate, delete, or toggle a notification from the list view.
+	 *
+	 * @return void
+	 */
+	private static function handle_notification_action() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$form_id = absint( $_GET['form_id'] );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$notify_id = sanitize_key( wp_unslash( (string) $_GET['notification_id'] ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$action = sanitize_key( wp_unslash( (string) $_GET['wek_notify_action'] ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$nonce = sanitize_text_field( wp_unslash( (string) $_GET['_wpnonce'] ) );
+
+		if ( ! in_array( $action, array( 'toggle', 'duplicate', 'delete' ), true ) || '' === $notify_id ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( $nonce, 'wek_notify_' . $action . '_' . $form_id . '_' . $notify_id ) ) {
+			wp_die( esc_html__( 'Invalid nonce.', 'we-formkit' ) );
+		}
+
+		$post = $form_id ? get_post( $form_id ) : null;
+		if ( ! $post || Post_Types::FORM !== $post->post_type ) {
+			wp_die( esc_html__( 'Form not found.', 'we-formkit' ) );
+		}
+
+		$list = Form_Notifications::get( $form_id );
+		$base = admin_url( 'admin.php?page=we-formkit-form&form_id=' . $form_id . '&view=notifications' );
+
+		if ( 'toggle' === $action ) {
+			$list = Form_Notifications::toggle_enabled( $list, $notify_id );
+			Form_Notifications::save( $form_id, $list );
+			wp_safe_redirect( add_query_arg( 'notify_toggled', '1', $base ) );
+			exit;
+		}
+
+		if ( 'duplicate' === $action ) {
+			$copy = Form_Notifications::duplicate_by_id( $list, $notify_id );
+			if ( null === $copy ) {
+				wp_safe_redirect( add_query_arg( 'notify_error', 'missing', $base ) );
+				exit;
+			}
+			$list[] = $copy;
+			Form_Notifications::save( $form_id, $list );
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'notification'      => (string) $copy['id'],
+						'notify_duplicated' => '1',
+					),
+					$base
+				)
+			);
+			exit;
+		}
+
+		if ( 'delete' === $action ) {
+			$list = Form_Notifications::remove_by_id( $list, $notify_id );
+			Form_Notifications::save( $form_id, $list );
+			wp_safe_redirect( add_query_arg( 'notify_deleted', '1', $base ) );
+			exit;
+		}
 	}
 
 	/**
@@ -389,7 +459,9 @@ final class Form_Editor {
 			$confirm = Form_Schema::get_confirmation( $form_id );
 		}
 
-		$notifications = $form_id > 0 ? Form_Notifications::get( $form_id ) : Form_Notifications::defaults();
+		$notifications = $form_id > 0
+			? Form_Notifications::get( $form_id )
+			: Form_Notifications::defaults( is_array( $schema ) ? $schema : array() );
 
 		$schema_json = wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 		if ( false === $schema_json ) {
@@ -437,6 +509,15 @@ final class Form_Editor {
 		<?php endif; ?>
 		<?php if ( ! empty( $_GET['token_regenerated'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Secret token regenerated. Old links no longer work.', 'we-formkit' ); ?></p></div>
+		<?php endif; ?>
+		<?php if ( ! empty( $_GET['notify_toggled'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Notification status updated.', 'we-formkit' ); ?></p></div>
+		<?php endif; ?>
+		<?php if ( ! empty( $_GET['notify_deleted'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Notification deleted.', 'we-formkit' ); ?></p></div>
+		<?php endif; ?>
+		<?php if ( ! empty( $_GET['notify_duplicated'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Notification duplicated. Review the copy, then save.', 'we-formkit' ); ?></p></div>
 		<?php endif; ?>
 
 		<?php if ( 'fields' !== $view ) : ?>
@@ -760,7 +841,192 @@ final class Form_Editor {
 	 * @return void
 	 */
 	private static function render_view_notifications( $form_id, array $notifications, array $schema, $is_new ) {
-		unset( $is_new );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$edit_id = isset( $_GET['notification'] ) ? sanitize_key( wp_unslash( (string) $_GET['notification'] ) ) : '';
+
+		if ( 'new' === $edit_id ) {
+			self::render_notification_edit( $form_id, Form_Notifications::blank(), $schema, true );
+			return;
+		}
+		if ( '' !== $edit_id ) {
+			$current = Form_Notifications::find_by_id( $notifications, $edit_id );
+			if ( null === $current ) {
+				echo '<div class="notice notice-error"><p>';
+				esc_html_e( 'Notification not found.', 'we-formkit' );
+				echo '</p></div>';
+				self::render_notifications_list( $form_id, $notifications, $is_new );
+				return;
+			}
+			self::render_notification_edit( $form_id, $current, $schema, false );
+			return;
+		}
+
+		self::render_notifications_list( $form_id, $notifications, $is_new );
+	}
+
+	/**
+	 * @param int                        $form_id       Form ID.
+	 * @param list<array<string, mixed>> $notifications Notifications.
+	 * @param bool                       $is_new        Whether new.
+	 * @return void
+	 */
+	private static function render_notifications_list( $form_id, array $notifications, $is_new ) {
+		$list_url = admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $form_id . '&view=notifications' );
+		$add_url  = add_query_arg( 'notification', 'new', $list_url );
+		?>
+		<div class="wek-admin__settings-panel wek-admin__notifications">
+			<div class="wek-notify-list__header">
+				<h2><?php esc_html_e( 'Notifications', 'we-formkit' ); ?></h2>
+				<a href="<?php echo esc_url( $add_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add New', 'we-formkit' ); ?></a>
+			</div>
+
+			<p class="description">
+				<?php esc_html_e( 'Configure who receives emails after a submission. Use {all_fields}, {form_title}, {submission_url}, {date}, {site_name}, or {field:field_id} in subject and message.', 'we-formkit' ); ?>
+			</p>
+
+			<?php if ( $is_new ) : ?>
+				<div class="notice notice-info inline"><p><?php esc_html_e( 'Default admin and submitter notifications are shown below. Save a notification to create the form first.', 'we-formkit' ); ?></p></div>
+			<?php endif; ?>
+
+			<table class="wp-list-table widefat fixed striped table-view-list wek-notify-table">
+				<thead>
+					<tr>
+						<th scope="col" class="wek-notify-table__status"><?php esc_html_e( 'Status', 'we-formkit' ); ?></th>
+						<th scope="col" class="column-primary"><?php esc_html_e( 'Name', 'we-formkit' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'Subject', 'we-formkit' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php if ( empty( $notifications ) ) : ?>
+						<tr>
+							<td colspan="3"><?php esc_html_e( 'No notifications yet.', 'we-formkit' ); ?></td>
+						</tr>
+					<?php else : ?>
+						<?php foreach ( $notifications as $n ) : ?>
+							<?php
+							$nid       = (string) $n['id'];
+							$edit_url  = add_query_arg( 'notification', $nid, $list_url );
+							$active    = ! empty( $n['enabled'] );
+							$can_quick = $form_id > 0 && ! $is_new;
+							?>
+							<tr>
+								<td class="wek-notify-table__status">
+									<?php if ( $can_quick ) : ?>
+										<a
+											href="<?php echo esc_url( self::notification_action_url( $form_id, $nid, 'toggle' ) ); ?>"
+											class="wek-notify-status <?php echo $active ? 'wek-notify-status--active' : 'wek-notify-status--inactive'; ?>"
+											title="<?php echo esc_attr( $active ? __( 'Click to deactivate', 'we-formkit' ) : __( 'Click to activate', 'we-formkit' ) ); ?>"
+										>
+											<span class="wek-notify-status__dot" aria-hidden="true"></span>
+											<?php echo $active ? esc_html__( 'Active', 'we-formkit' ) : esc_html__( 'Inactive', 'we-formkit' ); ?>
+										</a>
+									<?php else : ?>
+										<span class="wek-notify-status <?php echo $active ? 'wek-notify-status--active' : 'wek-notify-status--inactive'; ?>">
+											<span class="wek-notify-status__dot" aria-hidden="true"></span>
+											<?php echo $active ? esc_html__( 'Active', 'we-formkit' ) : esc_html__( 'Inactive', 'we-formkit' ); ?>
+										</span>
+									<?php endif; ?>
+								</td>
+								<td class="column-primary">
+									<strong><a class="row-title" href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( (string) $n['name'] ); ?></a></strong>
+									<div class="row-actions">
+										<span class="edit">
+											<a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Edit', 'we-formkit' ); ?></a>
+											<?php if ( $can_quick ) : ?>
+												|
+											<?php endif; ?>
+										</span>
+										<?php if ( $can_quick ) : ?>
+											<span class="duplicate">
+												<a href="<?php echo esc_url( self::notification_action_url( $form_id, $nid, 'duplicate' ) ); ?>"><?php esc_html_e( 'Duplicate', 'we-formkit' ); ?></a> |
+											</span>
+											<span class="delete">
+												<a
+													class="submitdelete"
+													href="<?php echo esc_url( self::notification_action_url( $form_id, $nid, 'delete' ) ); ?>"
+													onclick="return confirm('<?php echo esc_js( __( 'Delete this notification?', 'we-formkit' ) ); ?>');"
+												><?php esc_html_e( 'Delete', 'we-formkit' ); ?></a>
+											</span>
+										<?php endif; ?>
+									</div>
+									<button type="button" class="toggle-row"><span class="screen-reader-text"><?php esc_html_e( 'Show more details', 'we-formkit' ); ?></span></button>
+								</td>
+								<td><?php echo esc_html( (string) $n['subject'] ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					<?php endif; ?>
+				</tbody>
+				<tfoot>
+					<tr>
+						<th scope="col" class="wek-notify-table__status"><?php esc_html_e( 'Status', 'we-formkit' ); ?></th>
+						<th scope="col" class="column-primary"><?php esc_html_e( 'Name', 'we-formkit' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'Subject', 'we-formkit' ); ?></th>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+		<?php
+	}
+
+	/**
+	 * @param int                  $form_id Form ID.
+	 * @param array<string, mixed> $n       Notification.
+	 * @param array<string, mixed> $schema  Schema.
+	 * @param bool                 $is_new  Whether this is a new notification row.
+	 * @return void
+	 */
+	private static function render_notification_edit( $form_id, array $n, array $schema, $is_new ) {
+		$list_url = admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $form_id . '&view=notifications' );
+		$nid      = (string) $n['id'];
+		$prefix   = 'wek_notification';
+		?>
+		<form method="post" class="wek-admin__settings-panel wek-admin__notifications" id="wek-notifications-form">
+			<?php wp_nonce_field( 'we_formkit_save_form', 'we_formkit_save_nonce' ); ?>
+			<input type="hidden" name="form_id" value="<?php echo esc_attr( (string) $form_id ); ?>" />
+			<input type="hidden" name="wek_save_view" value="notifications" />
+			<input type="hidden" name="<?php echo esc_attr( $prefix ); ?>[id]" value="<?php echo esc_attr( $nid ); ?>" />
+
+			<p>
+				<a href="<?php echo esc_url( $list_url ); ?>">&larr; <?php esc_html_e( 'Back to notifications', 'we-formkit' ); ?></a>
+			</p>
+
+			<h2><?php echo $is_new ? esc_html__( 'Add notification', 'we-formkit' ) : esc_html( (string) $n['name'] ); ?></h2>
+
+			<?php self::render_notification_fields_table( $n, $schema, $prefix, $nid ); ?>
+
+			<?php submit_button( $is_new ? __( 'Add notification', 'we-formkit' ) : __( 'Update notification', 'we-formkit' ), 'primary', 'we_formkit_save_form' ); ?>
+		</form>
+		<script>
+		(function () {
+			var form = document.getElementById('wek-notifications-form');
+			if (!form) return;
+			function syncCard(card) {
+				card.querySelectorAll('[data-wek-reveal]').forEach(function (sel) {
+					var key = sel.getAttribute('data-wek-reveal');
+					var val = sel.value;
+					card.querySelectorAll('[data-wek-when^="' + key + ':"]').forEach(function (el) {
+						var when = el.getAttribute('data-wek-when');
+						el.hidden = when !== (key + ':' + val);
+					});
+				});
+			}
+			syncCard(form);
+			form.querySelectorAll('[data-wek-reveal]').forEach(function (sel) {
+				sel.addEventListener('change', function () { syncCard(form); });
+			});
+		})();
+		</script>
+		<?php
+	}
+
+	/**
+	 * @param array<string, mixed> $n       Notification.
+	 * @param array<string, mixed> $schema  Schema.
+	 * @param string               $prefix  Input name prefix.
+	 * @param string               $nid     Notification ID (for field IDs).
+	 * @return void
+	 */
+	private static function render_notification_fields_table( array $n, array $schema, $prefix, $nid ) {
 		$email_fields = array();
 		$value_fields = array();
 		foreach ( Form_Schema::fields_by_id( $schema ) as $fid => $field ) {
@@ -774,178 +1040,154 @@ final class Form_Editor {
 			}
 		}
 		?>
-	<form method="post" class="wek-admin__settings-panel wek-admin__notifications" id="wek-notifications-form">
-		<?php wp_nonce_field( 'we_formkit_save_form', 'we_formkit_save_nonce' ); ?>
-		<input type="hidden" name="form_id" value="<?php echo esc_attr( (string) $form_id ); ?>" />
-		<input type="hidden" name="wek_save_view" value="notifications" />
-
-		<p class="description">
-			<?php esc_html_e( 'Configure who receives emails after a submission. Use {all_fields}, {form_title}, {submission_url}, {date}, {site_name}, or {field:field_id} in subject and message.', 'we-formkit' ); ?>
-		</p>
-
-		<?php foreach ( $notifications as $index => $n ) : ?>
-			<?php
-			$prefix = 'wek_notifications[' . (int) $index . ']';
-			$nid    = (string) $n['id'];
-			?>
-			<details class="wek-notify-card" open data-wek-notify-card>
-				<summary class="wek-notify-card__summary">
-					<strong><?php echo esc_html( (string) $n['name'] ); ?></strong>
-					<span class="wek-notify-card__badge"><?php echo ! empty( $n['enabled'] ) ? esc_html__( 'On', 'we-formkit' ) : esc_html__( 'Off', 'we-formkit' ); ?></span>
-				</summary>
-
-				<input type="hidden" name="<?php echo esc_attr( $prefix ); ?>[id]" value="<?php echo esc_attr( $nid ); ?>" />
-
-				<table class="form-table" role="presentation">
-					<tr>
-						<th><?php esc_html_e( 'Enabled', 'we-formkit' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[enabled]" value="1" <?php checked( ! empty( $n['enabled'] ) ); ?> />
-								<?php esc_html_e( 'Send this notification', 'we-formkit' ); ?>
-							</label>
-						</td>
-					</tr>
-					<tr>
-						<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_name"><?php esc_html_e( 'Name', 'we-formkit' ); ?></label></th>
-						<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[name]" id="wek_n_<?php echo esc_attr( $nid ); ?>_name" value="<?php echo esc_attr( (string) $n['name'] ); ?>" /></td>
-					</tr>
-					<tr>
-						<th><?php esc_html_e( 'Send to', 'we-formkit' ); ?></th>
-						<td>
-							<select name="<?php echo esc_attr( $prefix ); ?>[to_mode]" data-wek-reveal="to" data-wek-card>
-								<option value="email" <?php selected( $n['to_mode'], 'email' ); ?>><?php esc_html_e( 'Email address(es)', 'we-formkit' ); ?></option>
-								<option value="field" <?php selected( $n['to_mode'], 'field' ); ?>><?php esc_html_e( 'Email field from form', 'we-formkit' ); ?></option>
-							</select>
-							<p class="wek-reveal" data-wek-when="to:email">
-								<input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[to]" value="<?php echo esc_attr( (string) $n['to'] ); ?>" placeholder="admin@example.com, team@example.com" />
-								<span class="description"><?php esc_html_e( 'Comma-separated. Empty uses the plugin default, then the site admin email.', 'we-formkit' ); ?></span>
-							</p>
-							<p class="wek-reveal" data-wek-when="to:field">
-								<select name="<?php echo esc_attr( $prefix ); ?>[to_field]">
-									<option value=""><?php esc_html_e( '— Select email field —', 'we-formkit' ); ?></option>
-									<?php foreach ( $email_fields as $fid => $label ) : ?>
-										<option value="<?php echo esc_attr( $fid ); ?>" <?php selected( $n['to_field'], $fid ); ?>><?php echo esc_html( $label ); ?></option>
-									<?php endforeach; ?>
-								</select>
-								<span class="description"><?php esc_html_e( 'Typical for “confirmation to submitter”.', 'we-formkit' ); ?></span>
-							</p>
-						</td>
-					</tr>
-					<tr>
-						<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_from_name"><?php esc_html_e( 'From name', 'we-formkit' ); ?></label></th>
-						<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[from_name]" id="wek_n_<?php echo esc_attr( $nid ); ?>_from_name" value="<?php echo esc_attr( (string) $n['from_name'] ); ?>" placeholder="<?php echo esc_attr( wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) ); ?>" /></td>
-					</tr>
-					<tr>
-						<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_from_email"><?php esc_html_e( 'From email', 'we-formkit' ); ?></label></th>
-						<td>
-							<input class="regular-text" type="email" name="<?php echo esc_attr( $prefix ); ?>[from_email]" id="wek_n_<?php echo esc_attr( $nid ); ?>_from_email" value="<?php echo esc_attr( (string) $n['from_email'] ); ?>" placeholder="<?php echo esc_attr( (string) get_option( 'admin_email' ) ); ?>" />
-							<p class="description"><?php esc_html_e( 'Prefer an address on your site domain for deliverability.', 'we-formkit' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th><?php esc_html_e( 'Reply-To', 'we-formkit' ); ?></th>
-						<td>
-							<select name="<?php echo esc_attr( $prefix ); ?>[reply_to_mode]" data-wek-reveal="reply" data-wek-card>
-								<option value="none" <?php selected( $n['reply_to_mode'], 'none' ); ?>><?php esc_html_e( 'None', 'we-formkit' ); ?></option>
-								<option value="email" <?php selected( $n['reply_to_mode'], 'email' ); ?>><?php esc_html_e( 'Fixed email', 'we-formkit' ); ?></option>
-								<option value="field" <?php selected( $n['reply_to_mode'], 'field' ); ?>><?php esc_html_e( 'Email field from form', 'we-formkit' ); ?></option>
-							</select>
-							<p class="wek-reveal" data-wek-when="reply:email">
-								<input class="regular-text" type="email" name="<?php echo esc_attr( $prefix ); ?>[reply_to]" value="<?php echo esc_attr( (string) $n['reply_to'] ); ?>" />
-							</p>
-							<p class="wek-reveal" data-wek-when="reply:field">
-								<select name="<?php echo esc_attr( $prefix ); ?>[reply_to_field]">
-									<option value=""><?php esc_html_e( '— First email field / any email value —', 'we-formkit' ); ?></option>
-									<?php foreach ( $email_fields as $fid => $label ) : ?>
-										<option value="<?php echo esc_attr( $fid ); ?>" <?php selected( $n['reply_to_field'], $fid ); ?>><?php echo esc_html( $label ); ?></option>
-									<?php endforeach; ?>
-								</select>
-								<span class="description"><?php esc_html_e( 'Useful so admins can reply directly to the submitter.', 'we-formkit' ); ?></span>
-							</p>
-						</td>
-					</tr>
-					<tr>
-						<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_cc"><?php esc_html_e( 'CC', 'we-formkit' ); ?></label></th>
-						<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[cc]" id="wek_n_<?php echo esc_attr( $nid ); ?>_cc" value="<?php echo esc_attr( (string) $n['cc'] ); ?>" /></td>
-					</tr>
-					<tr>
-						<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_bcc"><?php esc_html_e( 'BCC', 'we-formkit' ); ?></label></th>
-						<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[bcc]" id="wek_n_<?php echo esc_attr( $nid ); ?>_bcc" value="<?php echo esc_attr( (string) $n['bcc'] ); ?>" /></td>
-					</tr>
-					<tr>
-						<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_subject"><?php esc_html_e( 'Subject', 'we-formkit' ); ?></label></th>
-						<td><input class="large-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[subject]" id="wek_n_<?php echo esc_attr( $nid ); ?>_subject" value="<?php echo esc_attr( (string) $n['subject'] ); ?>" /></td>
-					</tr>
-					<tr>
-						<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_message"><?php esc_html_e( 'Message', 'we-formkit' ); ?></label></th>
-						<td><textarea class="large-text" rows="8" name="<?php echo esc_attr( $prefix ); ?>[message]" id="wek_n_<?php echo esc_attr( $nid ); ?>_message"><?php echo esc_textarea( (string) $n['message'] ); ?></textarea></td>
-					</tr>
-					<tr>
-						<th><?php esc_html_e( 'Fields in {all_fields}', 'we-formkit' ); ?></th>
-						<td>
-							<select name="<?php echo esc_attr( $prefix ); ?>[include_fields]" data-wek-reveal="fields" data-wek-card>
-								<option value="all" <?php selected( $n['include_fields'], 'all' ); ?>><?php esc_html_e( 'All fields', 'we-formkit' ); ?></option>
-								<option value="selected" <?php selected( $n['include_fields'], 'selected' ); ?>><?php esc_html_e( 'Selected fields', 'we-formkit' ); ?></option>
-								<option value="none" <?php selected( $n['include_fields'], 'none' ); ?>><?php esc_html_e( 'None (message only)', 'we-formkit' ); ?></option>
-							</select>
-							<div class="wek-reveal" data-wek-when="fields:selected" style="margin-top:0.5rem;max-height:12rem;overflow:auto;border:1px solid #c3c4c7;padding:0.5rem;background:#fff;">
-								<?php if ( empty( $value_fields ) ) : ?>
-									<p class="description"><?php esc_html_e( 'Add fields on the Fields tab first.', 'we-formkit' ); ?></p>
-								<?php else : ?>
-									<?php foreach ( $value_fields as $fid => $label ) : ?>
-										<label style="display:block;margin:0.2rem 0;">
-											<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[field_ids][]" value="<?php echo esc_attr( $fid ); ?>" <?php checked( in_array( $fid, $n['field_ids'], true ) ); ?> />
-											<?php echo esc_html( $label ); ?>
-										</label>
-									<?php endforeach; ?>
-								<?php endif; ?>
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_footer"><?php esc_html_e( 'Footer', 'we-formkit' ); ?></label></th>
-						<td>
-							<textarea class="large-text" rows="3" name="<?php echo esc_attr( $prefix ); ?>[footer]" id="wek_n_<?php echo esc_attr( $nid ); ?>_footer"><?php echo esc_textarea( (string) $n['footer'] ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'Appended below the message (signature, legal line, contact). Supports the same tags.', 'we-formkit' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th><?php esc_html_e( 'Attachments', 'we-formkit' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[attach_uploads]" value="1" <?php checked( ! empty( $n['attach_uploads'] ) ); ?> />
-								<?php esc_html_e( 'Attach uploaded files to this email', 'we-formkit' ); ?>
-							</label>
-						</td>
-					</tr>
-				</table>
-			</details>
-		<?php endforeach; ?>
-
-		<?php submit_button( __( 'Save notifications', 'we-formkit' ), 'primary', 'we_formkit_save_form' ); ?>
-	</form>
-	<script>
-	(function () {
-		function syncCard(card) {
-			card.querySelectorAll('[data-wek-reveal]').forEach(function (sel) {
-				var key = sel.getAttribute('data-wek-reveal');
-				var val = sel.value;
-				card.querySelectorAll('[data-wek-when^="' + key + ':"]').forEach(function (el) {
-					var when = el.getAttribute('data-wek-when');
-					el.hidden = when !== (key + ':' + val);
-				});
-			});
-		}
-		document.querySelectorAll('[data-wek-notify-card]').forEach(function (card) {
-			syncCard(card);
-			card.querySelectorAll('[data-wek-reveal]').forEach(function (sel) {
-				sel.addEventListener('change', function () { syncCard(card); });
-			});
-		});
-	})();
-	</script>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th><?php esc_html_e( 'Enabled', 'we-formkit' ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[enabled]" value="1" <?php checked( ! empty( $n['enabled'] ) ); ?> />
+						<?php esc_html_e( 'Send this notification', 'we-formkit' ); ?>
+					</label>
+				</td>
+			</tr>
+			<tr>
+				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_name"><?php esc_html_e( 'Name', 'we-formkit' ); ?></label></th>
+				<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[name]" id="wek_n_<?php echo esc_attr( $nid ); ?>_name" value="<?php echo esc_attr( (string) $n['name'] ); ?>" /></td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Send to', 'we-formkit' ); ?></th>
+				<td>
+					<select name="<?php echo esc_attr( $prefix ); ?>[to_mode]" data-wek-reveal="to">
+						<option value="email" <?php selected( $n['to_mode'], 'email' ); ?>><?php esc_html_e( 'Email address(es)', 'we-formkit' ); ?></option>
+						<option value="field" <?php selected( $n['to_mode'], 'field' ); ?>><?php esc_html_e( 'Email field from form', 'we-formkit' ); ?></option>
+					</select>
+					<p class="wek-reveal" data-wek-when="to:email">
+						<input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[to]" value="<?php echo esc_attr( (string) $n['to'] ); ?>" placeholder="admin@example.com, team@example.com" />
+						<span class="description"><?php esc_html_e( 'Comma-separated. Empty uses the plugin default, then the site admin email.', 'we-formkit' ); ?></span>
+					</p>
+					<p class="wek-reveal" data-wek-when="to:field">
+						<select name="<?php echo esc_attr( $prefix ); ?>[to_field]">
+							<option value=""><?php esc_html_e( '— Select email field —', 'we-formkit' ); ?></option>
+							<?php foreach ( $email_fields as $fid => $label ) : ?>
+								<option value="<?php echo esc_attr( $fid ); ?>" <?php selected( $n['to_field'], $fid ); ?>><?php echo esc_html( $label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<span class="description"><?php esc_html_e( 'Typical for submitter confirmations.', 'we-formkit' ); ?></span>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_from_name"><?php esc_html_e( 'From name', 'we-formkit' ); ?></label></th>
+				<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[from_name]" id="wek_n_<?php echo esc_attr( $nid ); ?>_from_name" value="<?php echo esc_attr( (string) $n['from_name'] ); ?>" placeholder="<?php echo esc_attr( wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) ); ?>" /></td>
+			</tr>
+			<tr>
+				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_from_email"><?php esc_html_e( 'From email', 'we-formkit' ); ?></label></th>
+				<td>
+					<input class="regular-text" type="email" name="<?php echo esc_attr( $prefix ); ?>[from_email]" id="wek_n_<?php echo esc_attr( $nid ); ?>_from_email" value="<?php echo esc_attr( (string) $n['from_email'] ); ?>" placeholder="<?php echo esc_attr( (string) get_option( 'admin_email' ) ); ?>" />
+					<p class="description"><?php esc_html_e( 'Prefer an address on your site domain for deliverability.', 'we-formkit' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Reply-To', 'we-formkit' ); ?></th>
+				<td>
+					<select name="<?php echo esc_attr( $prefix ); ?>[reply_to_mode]" data-wek-reveal="reply">
+						<option value="none" <?php selected( $n['reply_to_mode'], 'none' ); ?>><?php esc_html_e( 'None', 'we-formkit' ); ?></option>
+						<option value="email" <?php selected( $n['reply_to_mode'], 'email' ); ?>><?php esc_html_e( 'Fixed email', 'we-formkit' ); ?></option>
+						<option value="field" <?php selected( $n['reply_to_mode'], 'field' ); ?>><?php esc_html_e( 'Email field from form', 'we-formkit' ); ?></option>
+					</select>
+					<p class="wek-reveal" data-wek-when="reply:email">
+						<input class="regular-text" type="email" name="<?php echo esc_attr( $prefix ); ?>[reply_to]" value="<?php echo esc_attr( (string) $n['reply_to'] ); ?>" />
+					</p>
+					<p class="wek-reveal" data-wek-when="reply:field">
+						<select name="<?php echo esc_attr( $prefix ); ?>[reply_to_field]">
+							<option value=""><?php esc_html_e( '— First email field / any email value —', 'we-formkit' ); ?></option>
+							<?php foreach ( $email_fields as $fid => $label ) : ?>
+								<option value="<?php echo esc_attr( $fid ); ?>" <?php selected( $n['reply_to_field'], $fid ); ?>><?php echo esc_html( $label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<span class="description"><?php esc_html_e( 'Useful so admins can reply directly to the submitter.', 'we-formkit' ); ?></span>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_cc"><?php esc_html_e( 'CC', 'we-formkit' ); ?></label></th>
+				<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[cc]" id="wek_n_<?php echo esc_attr( $nid ); ?>_cc" value="<?php echo esc_attr( (string) $n['cc'] ); ?>" /></td>
+			</tr>
+			<tr>
+				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_bcc"><?php esc_html_e( 'BCC', 'we-formkit' ); ?></label></th>
+				<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[bcc]" id="wek_n_<?php echo esc_attr( $nid ); ?>_bcc" value="<?php echo esc_attr( (string) $n['bcc'] ); ?>" /></td>
+			</tr>
+			<tr>
+				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_subject"><?php esc_html_e( 'Subject', 'we-formkit' ); ?></label></th>
+				<td><input class="large-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[subject]" id="wek_n_<?php echo esc_attr( $nid ); ?>_subject" value="<?php echo esc_attr( (string) $n['subject'] ); ?>" /></td>
+			</tr>
+			<tr>
+				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_message"><?php esc_html_e( 'Message', 'we-formkit' ); ?></label></th>
+				<td><textarea class="large-text" rows="8" name="<?php echo esc_attr( $prefix ); ?>[message]" id="wek_n_<?php echo esc_attr( $nid ); ?>_message"><?php echo esc_textarea( (string) $n['message'] ); ?></textarea></td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Fields in {all_fields}', 'we-formkit' ); ?></th>
+				<td>
+					<select name="<?php echo esc_attr( $prefix ); ?>[include_fields]" data-wek-reveal="fields">
+						<option value="all" <?php selected( $n['include_fields'], 'all' ); ?>><?php esc_html_e( 'All fields', 'we-formkit' ); ?></option>
+						<option value="selected" <?php selected( $n['include_fields'], 'selected' ); ?>><?php esc_html_e( 'Selected fields', 'we-formkit' ); ?></option>
+						<option value="none" <?php selected( $n['include_fields'], 'none' ); ?>><?php esc_html_e( 'None (message only)', 'we-formkit' ); ?></option>
+					</select>
+					<div class="wek-reveal wek-notify-field-pick" data-wek-when="fields:selected">
+						<?php if ( empty( $value_fields ) ) : ?>
+							<p class="description"><?php esc_html_e( 'Add fields on the Fields tab first.', 'we-formkit' ); ?></p>
+						<?php else : ?>
+							<?php foreach ( $value_fields as $fid => $label ) : ?>
+								<label class="wek-notify-field-pick__item">
+									<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[field_ids][]" value="<?php echo esc_attr( $fid ); ?>" <?php checked( in_array( $fid, $n['field_ids'], true ) ); ?> />
+									<?php echo esc_html( $label ); ?>
+								</label>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_footer"><?php esc_html_e( 'Footer', 'we-formkit' ); ?></label></th>
+				<td>
+					<textarea class="large-text" rows="3" name="<?php echo esc_attr( $prefix ); ?>[footer]" id="wek_n_<?php echo esc_attr( $nid ); ?>_footer"><?php echo esc_textarea( (string) $n['footer'] ); ?></textarea>
+					<p class="description"><?php esc_html_e( 'Appended below the message (signature, legal line, contact). Supports the same tags.', 'we-formkit' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Attachments', 'we-formkit' ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[attach_uploads]" value="1" <?php checked( ! empty( $n['attach_uploads'] ) ); ?> />
+						<?php esc_html_e( 'Attach uploaded files to this email', 'we-formkit' ); ?>
+					</label>
+				</td>
+			</tr>
+		</table>
 		<?php
+	}
+
+	/**
+	 * @param int    $form_id   Form ID.
+	 * @param string $notify_id Notification ID.
+	 * @param string $action    Action slug.
+	 * @return string
+	 */
+	private static function notification_action_url( $form_id, $notify_id, $action ) {
+		return wp_nonce_url(
+			add_query_arg(
+				array(
+					'page'              => 'we-formkit-form',
+					'form_id'           => (int) $form_id,
+					'view'              => 'notifications',
+					'wek_notify_action' => sanitize_key( $action ),
+					'notification_id'   => sanitize_key( $notify_id ),
+				),
+				admin_url( 'admin.php' )
+			),
+			'wek_notify_' . sanitize_key( $action ) . '_' . (int) $form_id . '_' . sanitize_key( $notify_id ),
+			'_wpnonce'
+		);
 	}
 
 	/**
@@ -1213,12 +1455,41 @@ final class Form_Editor {
 		$form_id = self::ensure_form_exists( $form_id );
 		// Nonce verified in save_form().
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$posted = isset( $_POST['wek_notifications'] ) && is_array( $_POST['wek_notifications'] ) ? wp_unslash( $_POST['wek_notifications'] ) : array();
+		$posted = isset( $_POST['wek_notification'] ) && is_array( $_POST['wek_notification'] ) ? wp_unslash( $_POST['wek_notification'] ) : array();
 		if ( ! is_array( $posted ) ) {
 			$posted = array();
 		}
-		Form_Notifications::save( $form_id, Form_Notifications::from_request( $posted ) );
-		wp_safe_redirect( admin_url( 'admin.php?page=we-formkit-form&form_id=' . $form_id . '&view=notifications&saved=1' ) );
+		if ( empty( $posted['enabled'] ) ) {
+			$posted['enabled'] = false;
+		} else {
+			$posted['enabled'] = true;
+		}
+		if ( empty( $posted['attach_uploads'] ) ) {
+			$posted['attach_uploads'] = false;
+		} else {
+			$posted['attach_uploads'] = true;
+		}
+		if ( isset( $posted['field_ids'] ) && ! is_array( $posted['field_ids'] ) ) {
+			$posted['field_ids'] = array_filter( array_map( 'strval', (array) $posted['field_ids'] ) );
+		}
+
+		$list       = Form_Notifications::get( $form_id );
+		$normalized = Form_Notifications::normalize_one( $posted );
+		$list       = Form_Notifications::upsert( $list, $normalized );
+		Form_Notifications::save( $form_id, $list );
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'         => 'we-formkit-form',
+					'form_id'      => $form_id,
+					'view'         => 'notifications',
+					'notification' => (string) $normalized['id'],
+					'saved'        => '1',
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 

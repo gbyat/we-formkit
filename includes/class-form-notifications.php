@@ -29,14 +29,14 @@ final class Form_Notifications {
 		if ( is_string( $raw ) && '' !== $raw ) {
 			$decoded = json_decode( $raw, true );
 			if ( is_array( $decoded ) ) {
-				return self::normalize_list( $decoded );
+				return self::hydrate_with_schema( self::normalize_list( $decoded ), Form_Schema::get( $form_id ) );
 			}
 		}
 		if ( is_array( $raw ) ) {
-			return self::normalize_list( $raw );
+			return self::hydrate_with_schema( self::normalize_list( $raw ), Form_Schema::get( $form_id ) );
 		}
 
-		return self::normalize_list( self::migrate_legacy( $form_id ) );
+		return self::hydrate_with_schema( self::normalize_list( self::migrate_legacy( $form_id ) ), Form_Schema::get( $form_id ) );
 	}
 
 	/**
@@ -61,12 +61,160 @@ final class Form_Notifications {
 	}
 
 	/**
-	 * Default templates (admin + submitter confirmation).
+	 * Blank template for a new notification.
 	 *
+	 * @return array<string, mixed>
+	 */
+	public static function blank() {
+		$base            = self::defaults()[0];
+		$base['id']      = 'n_' . wp_generate_password( 8, false, false );
+		$base['name']    = __( 'New notification', 'we-formkit' );
+		$base['enabled'] = true;
+		return $base;
+	}
+
+	/**
+	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param string                     $id     Notification ID.
+	 * @return int|false
+	 */
+	public static function find_index( array $list, $id ) {
+		$id = sanitize_key( (string) $id );
+		foreach ( $list as $index => $item ) {
+			if ( isset( $item['id'] ) && (string) $item['id'] === $id ) {
+				return (int) $index;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param string                     $id     Notification ID.
+	 * @return array<string, mixed>|null
+	 */
+	public static function find_by_id( array $list, $id ) {
+		$index = self::find_index( $list, $id );
+		if ( false === $index ) {
+			return null;
+		}
+		return $list[ $index ];
+	}
+
+	/**
+	 * Replace or append a notification by ID.
+	 *
+	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param array<string, mixed>       $one  Notification.
 	 * @return list<array<string, mixed>>
 	 */
-	public static function defaults() {
-		return array(
+	public static function upsert( array $list, array $one ) {
+		$one   = self::normalize_one( $one );
+		$index = self::find_index( $list, (string) $one['id'] );
+		if ( false === $index ) {
+			$list[] = $one;
+			return $list;
+		}
+		$list[ $index ] = $one;
+		return $list;
+	}
+
+	/**
+	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param string                     $id     Notification ID.
+	 * @return list<array<string, mixed>>
+	 */
+	public static function remove_by_id( array $list, $id ) {
+		$index = self::find_index( $list, $id );
+		if ( false === $index ) {
+			return $list;
+		}
+		array_splice( $list, $index, 1 );
+		return $list;
+	}
+
+	/**
+	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param string                     $id     Notification ID.
+	 * @return list<array<string, mixed>>
+	 */
+	public static function toggle_enabled( array $list, $id ) {
+		$index = self::find_index( $list, $id );
+		if ( false === $index ) {
+			return $list;
+		}
+		$list[ $index ]['enabled'] = empty( $list[ $index ]['enabled'] );
+		return $list;
+	}
+
+	/**
+	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param string                     $id     Notification ID.
+	 * @return array<string, mixed>|null
+	 */
+	public static function duplicate_by_id( array $list, $id ) {
+		$item = self::find_by_id( $list, $id );
+		if ( null === $item ) {
+			return null;
+		}
+		$copy         = $item;
+		$copy['id']   = 'n_' . wp_generate_password( 8, false, false );
+		$copy['name'] = trim( (string) $copy['name'] ) . ' ' . __( '(copy)', 'we-formkit' );
+		return self::normalize_one( $copy );
+	}
+
+	/**
+	 * Fill empty field targets from the form schema (first email field).
+	 *
+	 * Does not override an explicitly chosen field ID.
+	 *
+	 * @param list<array<string, mixed>> $items  Notifications.
+	 * @param array<string, mixed>       $schema Form schema.
+	 * @return list<array<string, mixed>>
+	 */
+	public static function hydrate_with_schema( array $items, array $schema ) {
+		$email_id = Form_Schema::first_email_field_id( $schema );
+		$fields   = Form_Schema::fields_by_id( $schema );
+
+		foreach ( $items as $index => $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+
+			if ( 'field' === ( $item['to_mode'] ?? '' ) ) {
+				$to_field = sanitize_key( (string) ( $item['to_field'] ?? '' ) );
+				if ( '' !== $to_field && ! isset( $fields[ $to_field ] ) ) {
+					$to_field = '';
+				}
+				if ( '' === $to_field && '' !== $email_id ) {
+					$to_field = $email_id;
+				}
+				$items[ $index ]['to_field'] = $to_field;
+			}
+
+			if ( 'field' === ( $item['reply_to_mode'] ?? '' ) ) {
+				$reply_field = sanitize_key( (string) ( $item['reply_to_field'] ?? '' ) );
+				if ( '' !== $reply_field && ! isset( $fields[ $reply_field ] ) ) {
+					$reply_field = '';
+				}
+				if ( '' === $reply_field && '' !== $email_id ) {
+					$reply_field = $email_id;
+				}
+				$items[ $index ]['reply_to_field'] = $reply_field;
+			}
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Default templates (admin + submitter confirmation).
+	 *
+	 * @param array<string, mixed>|null $schema Optional schema to pre-link email fields.
+	 * @return list<array<string, mixed>>
+	 */
+	public static function defaults( $schema = null ) {
+		$items = array(
 			array(
 				'id'             => 'admin',
 				'name'           => __( 'Admin notification', 'we-formkit' ),
@@ -90,7 +238,7 @@ final class Form_Notifications {
 			),
 			array(
 				'id'             => 'user',
-				'name'           => __( 'Confirmation to submitter', 'we-formkit' ),
+				'name'           => __( 'Submitter confirmation', 'we-formkit' ),
 				'enabled'        => false,
 				'to_mode'        => 'field',
 				'to'             => '',
@@ -110,6 +258,12 @@ final class Form_Notifications {
 				'attach_uploads' => false,
 			),
 		);
+
+		if ( is_array( $schema ) ) {
+			return self::hydrate_with_schema( $items, $schema );
+		}
+
+		return $items;
 	}
 
 	/**

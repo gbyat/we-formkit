@@ -141,9 +141,12 @@ final class Notifications {
 	 * @return list<string>
 	 */
 	private static function resolve_recipients( array $notification, array $data, array $schema ) {
-		unset( $schema );
 		if ( 'field' === $notification['to_mode'] ) {
-			$email = self::value_as_email( $data, (string) $notification['to_field'] );
+			$field = (string) $notification['to_field'];
+			if ( '' === $field ) {
+				$field = Form_Schema::first_email_field_id( $schema );
+			}
+			$email = self::value_as_email( $data, $field );
 			return is_email( $email ) ? array( $email ) : array();
 		}
 
@@ -182,7 +185,7 @@ final class Notifications {
 		if ( 'field' === $mode ) {
 			$field = (string) $notification['reply_to_field'];
 			if ( '' === $field ) {
-				$field = self::first_email_field_id( $schema );
+				$field = Form_Schema::first_email_field_id( $schema );
 			}
 			if ( '' !== $field ) {
 				return self::value_as_email( $data, $field );
@@ -197,19 +200,6 @@ final class Notifications {
 		if ( 'email' === $mode ) {
 			$email = sanitize_email( (string) $notification['reply_to'] );
 			return is_email( $email ) ? $email : '';
-		}
-		return '';
-	}
-
-	/**
-	 * @param array<string, mixed> $schema Schema.
-	 * @return string
-	 */
-	private static function first_email_field_id( array $schema ) {
-		foreach ( Form_Schema::fields_by_id( $schema ) as $id => $field ) {
-			if ( isset( $field['type'] ) && 'email' === $field['type'] ) {
-				return (string) $id;
-			}
 		}
 		return '';
 	}

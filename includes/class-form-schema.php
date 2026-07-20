@@ -234,6 +234,21 @@ final class Form_Schema {
 	}
 
 	/**
+	 * First email field ID in schema order, or empty string.
+	 *
+	 * @param array<string, mixed> $schema Schema.
+	 * @return string
+	 */
+	public static function first_email_field_id( array $schema ) {
+		foreach ( self::fields_by_id( $schema ) as $id => $field ) {
+			if ( isset( $field['type'] ) && 'email' === $field['type'] ) {
+				return (string) $id;
+			}
+		}
+		return '';
+	}
+
+	/**
 	 * @param int $form_id Form ID.
 	 * @return array{enabled:bool,token:string}
 	 */

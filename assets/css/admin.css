@@ -1502,32 +1502,77 @@ body.wek-scheme-violet .wek-admin {
 	color: var(--wek-danger);
 }
 
-.wek-admin .wek-notify-card {
-	margin: 1rem 0;
-	padding: 0 1rem 0.5rem;
-	border: 1px solid var(--wek-line);
-	border-radius: var(--wek-radius-sm);
-	background: var(--wek-surface);
-}
-
-.wek-admin .wek-notify-card__summary {
+.wek-admin .wek-notify-list__header {
 	display: flex;
 	align-items: center;
-	gap: 0.75rem;
-	cursor: pointer;
-	padding: 0.85rem 0;
-	font-size: 14px;
+	justify-content: space-between;
+	gap: 1rem;
+	margin: 0 0 0.75rem;
 }
 
-.wek-admin .wek-notify-card__badge {
+.wek-admin .wek-notify-list__header h2 {
+	margin: 0;
+	font-size: 1.1rem;
+}
+
+.wek-admin .wek-notify-table {
+	margin-top: 0.75rem;
+}
+
+.wek-admin .wek-notify-table__status {
+	width: 8.5rem;
+}
+
+.wek-admin .wek-notify-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.2rem 0.55rem;
+	border-radius: 999px;
 	font-size: 11px;
 	font-weight: 700;
 	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	padding: 0.2rem 0.45rem;
-	border-radius: 999px;
-	background: var(--wek-accent-soft);
-	color: var(--wek-accent-on-soft);
+	letter-spacing: 0.03em;
+	text-decoration: none;
+	border: 1px solid transparent;
+}
+
+.wek-admin a.wek-notify-status:hover,
+.wek-admin a.wek-notify-status:focus {
+	box-shadow: 0 0 0 1px currentColor;
+}
+
+.wek-admin .wek-notify-status--active {
+	background: #e8f5e9;
+	color: #1b5e20;
+	border-color: #a5d6a7;
+}
+
+.wek-admin .wek-notify-status--inactive {
+	background: #f3f4f6;
+	color: #6b7280;
+	border-color: #d1d5db;
+}
+
+.wek-admin .wek-notify-status__dot {
+	width: 0.45rem;
+	height: 0.45rem;
+	border-radius: 50%;
+	background: currentColor;
+}
+
+.wek-admin .wek-notify-field-pick {
+	margin-top: 0.5rem;
+	max-height: 12rem;
+	overflow: auto;
+	border: 1px solid var(--wek-line);
+	padding: 0.5rem;
+	background: #fff;
+}
+
+.wek-admin .wek-notify-field-pick__item {
+	display: block;
+	margin: 0.2rem 0;
 }
 
 .wek-admin .wek-reveal[hidden] {
