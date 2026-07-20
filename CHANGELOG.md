@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-07-20
+
+- Update German translations in we-formkit plugin. Add missing translations for various plugin strings, including form-related actions and settings. Update the POT file creation date and ensure consistency in the localization files.
+- Implement resend notification functionality in the admin submissions interface. Add a method to resend one or all notifications for a submission, including an option to override the recipient email. Enhance the UI to allow users to resend notifications directly from the submission details page, displaying success and failure messages accordingly. Update related CSS for improved layout of the notification resend options.
 ## [0.2.4] - 2026-07-20
 
 - Enhance notification handling in the admin form editor by introducing HTML support for email bodies. Implement a WYSIWYG editor for notification headers, messages, and footers, allowing for rich text formatting and the use of merge tags. Update CSS for improved layout of notification elements. Refactor notification body composition to support HTML formatting, ensuring a better user experience in email communications.
