@@ -11,6 +11,7 @@ use Webentwicklerin\WeFormkit\Capabilities;
 use Webentwicklerin\WeFormkit\Form_Notifications;
 use Webentwicklerin\WeFormkit\Form_Schema;
 use Webentwicklerin\WeFormkit\Notifications;
+use Webentwicklerin\WeFormkit\Plugin;
 use Webentwicklerin\WeFormkit\Post_Types;
 use Webentwicklerin\WeFormkit\Submission_Export;
 
@@ -814,12 +815,13 @@ final class Submissions {
 								<?php else : ?>
 									<?php foreach ( $data as $key => $value ) : ?>
 										<?php
-										$label   = isset( $fields[ $key ]['label'] ) ? $fields[ $key ]['label'] : $key;
-										$display = self::format_answer_value( $value );
+										$field   = isset( $fields[ $key ] ) && is_array( $fields[ $key ] ) ? $fields[ $key ] : array();
+										$label   = isset( $field['label'] ) ? $field['label'] : $key;
+										$display = self::format_answer_value( $value, $field );
 										?>
 										<tr>
 											<th scope="row"><?php echo esc_html( $label ); ?></th>
-											<td><?php echo esc_html( $display ); ?></td>
+											<td><?php echo wp_kses_post( $display ); ?></td>
 										</tr>
 									<?php endforeach; ?>
 								<?php endif; ?>
@@ -1001,22 +1003,39 @@ final class Submissions {
 	}
 
 	/**
-	 * @param mixed $value Field value.
-	 * @return string
+	 * Human-readable answer for the entry view (option labels, not stored keys).
+	 *
+	 * @param mixed                     $value Stored value.
+	 * @param array<string, mixed>|null $field Field config when known.
+	 * @return string Already escaped HTML when using field formatters.
 	 */
-	private static function format_answer_value( $value ) {
+	private static function format_answer_value( $value, $field = null ) {
+		if ( is_array( $field ) && ! empty( $field['type'] ) ) {
+			$registry = Plugin::instance()->field_registry();
+			$type_obj = $registry ? $registry->get( (string) $field['type'] ) : null;
+			if ( $type_obj ) {
+				$display = $type_obj->format_for_display( $value, $field );
+				if ( is_string( $display ) && '' !== $display ) {
+					return $display;
+				}
+			}
+		}
+
 		if ( is_array( $value ) ) {
 			$flat = array();
 			foreach ( $value as $item ) {
 				if ( is_array( $item ) ) {
-					$flat[] = isset( $item['url'] ) ? (string) $item['url'] : wp_json_encode( $item );
+					$flat[] = isset( $item['url'] ) ? (string) $item['url'] : ( isset( $item['name'] ) ? (string) $item['name'] : wp_json_encode( $item ) );
 				} else {
 					$flat[] = (string) $item;
 				}
 			}
-			return implode( ', ', $flat );
+			return esc_html( implode( ', ', $flat ) );
 		}
-		return (string) $value;
+		if ( null === $value || '' === $value ) {
+			return '—';
+		}
+		return esc_html( (string) $value );
 	}
 
 	/**

@@ -94,7 +94,7 @@ final class Submission_Export {
 				$has_answer = false;
 				foreach ( $section['fields'] as $field ) {
 					$fid = isset( $field['id'] ) ? (string) $field['id'] : '';
-					if ( $fid && array_key_exists( $fid, $data ) && '' !== self::format_value( $data[ $fid ] ) ) {
+					if ( $fid && array_key_exists( $fid, $data ) && '' !== wp_strip_all_tags( self::format_value( $data[ $fid ], is_array( $field ) ? $field : array() ) ) ) {
 						$has_answer = true;
 						break;
 					}
@@ -114,15 +114,15 @@ final class Submission_Export {
 							if ( '' === $fid || ! array_key_exists( $fid, $data ) ) {
 								continue;
 							}
-							$display = self::format_value( $data[ $fid ] );
-							if ( '' === $display ) {
+							$display = self::format_value( $data[ $fid ], is_array( $field ) ? $field : array() );
+							if ( '' === wp_strip_all_tags( $display ) ) {
 								continue;
 							}
 							$label = isset( $field['label'] ) ? (string) $field['label'] : $fid;
 							?>
 							<div class="wek-export-doc__row">
 								<dt><?php echo esc_html( $label ); ?></dt>
-								<dd><?php echo esc_html( $display ); ?></dd>
+								<dd><?php echo wp_kses_post( $display ); ?></dd>
 							</div>
 						<?php endforeach; ?>
 					</dl>
@@ -198,15 +198,27 @@ final class Submission_Export {
 	}
 
 	/**
-	 * @param mixed $value Field value.
-	 * @return string
+	 * @param mixed                $value Field value.
+	 * @param array<string, mixed> $field Field config.
+	 * @return string Escaped HTML when field formatter is used.
 	 */
-	private static function format_value( $value ) {
+	private static function format_value( $value, array $field = array() ) {
+		if ( ! empty( $field['type'] ) ) {
+			$registry = Plugin::instance()->field_registry();
+			$type_obj = $registry ? $registry->get( (string) $field['type'] ) : null;
+			if ( $type_obj ) {
+				$display = $type_obj->format_for_display( $value, $field );
+				if ( is_string( $display ) && '' !== $display ) {
+					return $display;
+				}
+			}
+		}
+
 		if ( is_array( $value ) ) {
 			$value = array_filter( array_map( 'strval', $value ) );
-			return implode( ', ', $value );
+			return esc_html( implode( ', ', $value ) );
 		}
-		return trim( (string) $value );
+		return esc_html( trim( (string) $value ) );
 	}
 
 	/**
