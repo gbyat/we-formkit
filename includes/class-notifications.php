@@ -48,18 +48,106 @@ final class Notifications {
 	}
 
 	/**
-	 * @param int                  $submission_id Submission ID.
-	 * @param int                  $form_id       Form ID.
-	 * @param array<string, mixed> $schema        Schema.
-	 * @param array<string, mixed> $data          Sanitized values.
+	 * Resend one or all notifications for an existing submission (admin).
+	 *
+	 * Disabled notifications can still be sent when a specific ID is requested
+	 * (useful for layout checks). Pass null / empty to resend all enabled ones.
+	 *
+	 * @param int         $submission_id   Submission ID.
+	 * @param string|null $notification_id Notification ID or null for all enabled.
+	 * @param string      $to_override     Optional email override (e.g. current admin).
+	 * @return array{sent:int,failed:int,messages:list<string>}
+	 */
+	public static function resend( $submission_id, $notification_id = null, $to_override = '' ) {
+		$submission_id = (int) $submission_id;
+		$post          = get_post( $submission_id );
+		if ( ! $post || Post_Types::SUBMISSION !== $post->post_type ) {
+			return array(
+				'sent'     => 0,
+				'failed'   => 1,
+				'messages' => array( __( 'Submission not found.', 'we-formkit' ) ),
+			);
+		}
+
+		$form_id = (int) get_post_meta( $submission_id, Form_Schema::SUB_FORM_ID, true );
+		if ( $form_id <= 0 ) {
+			return array(
+				'sent'     => 0,
+				'failed'   => 1,
+				'messages' => array( __( 'Form not found for this submission.', 'we-formkit' ) ),
+			);
+		}
+
+		$raw  = (string) get_post_meta( $submission_id, Form_Schema::SUB_DATA, true );
+		$data = json_decode( $raw, true );
+		if ( ! is_array( $data ) ) {
+			$data = array();
+		}
+
+		$schema       = Form_Schema::get( $form_id );
+		$list         = Form_Notifications::get( $form_id );
+		$matched_docs = Form_Info_Documents::resolve_matching( $form_id, $data );
+		$want_id      = null !== $notification_id && '' !== $notification_id ? sanitize_key( (string) $notification_id ) : '';
+		$override     = is_email( $to_override ) ? sanitize_email( $to_override ) : '';
+
+		$sent     = 0;
+		$failed   = 0;
+		$messages = array();
+
+		foreach ( $list as $notification ) {
+			$id = (string) ( $notification['id'] ?? '' );
+			if ( '' !== $want_id ) {
+				if ( $id !== $want_id ) {
+					continue;
+				}
+			} elseif ( empty( $notification['enabled'] ) ) {
+				continue;
+			}
+
+			$result = self::send_one( $submission_id, $form_id, $schema, $data, $notification, $matched_docs, $override );
+			$name   = (string) ( $notification['name'] ?? $id );
+			if ( true === $result ) {
+				++$sent;
+				/* translators: %s: notification name */
+				$messages[] = sprintf( __( 'Sent: %s', 'we-formkit' ), $name );
+			} else {
+				++$failed;
+				$reason = is_string( $result ) && '' !== $result ? $result : __( 'Could not send.', 'we-formkit' );
+				/* translators: 1: notification name, 2: error */
+				$messages[] = sprintf( __( 'Failed (%1$s): %2$s', 'we-formkit' ), $name, $reason );
+			}
+		}
+
+		if ( '' !== $want_id && 0 === $sent && 0 === $failed ) {
+			$failed     = 1;
+			$messages[] = __( 'Notification not found.', 'we-formkit' );
+		}
+
+		return array(
+			'sent'     => $sent,
+			'failed'   => $failed,
+			'messages' => $messages,
+		);
+	}
+
+	/**
+	 * @param int                        $submission_id Submission ID.
+	 * @param int                        $form_id       Form ID.
+	 * @param array<string, mixed>       $schema        Schema.
+	 * @param array<string, mixed>       $data          Sanitized values.
 	 * @param array<string, mixed>       $notification  Notification config.
 	 * @param list<array<string, mixed>> $matched_docs  Resolved info documents.
-	 * @return void
+	 * @param string                     $to_override   Optional recipient override.
+	 * @return true|string True on success, error message on failure.
 	 */
-	private static function send_one( $submission_id, $form_id, array $schema, array $data, array $notification, array $matched_docs = array() ) {
-		$to = self::resolve_recipients( $notification, $data, $schema );
+	private static function send_one( $submission_id, $form_id, array $schema, array $data, array $notification, array $matched_docs = array(), $to_override = '' ) {
+		if ( is_email( $to_override ) ) {
+			$to = array( sanitize_email( $to_override ) );
+		} else {
+			$to = self::resolve_recipients( $notification, $data, $schema );
+		}
 		if ( empty( $to ) ) {
-			return;
+			return __( 'No valid recipient email.', 'we-formkit' );
 		}
 
 		$vars    = self::merge_vars( $submission_id, $form_id, $schema, $data, $notification, $matched_docs );
@@ -125,16 +213,18 @@ final class Notifications {
 		);
 
 		if ( empty( $mail['to'] ) ) {
-			return;
+			return __( 'No valid recipient email.', 'we-formkit' );
 		}
 
-		wp_mail(
+		$ok = wp_mail(
 			(string) $mail['to'],
 			(string) $mail['subject'],
 			(string) $mail['body'],
 			isset( $mail['headers'] ) && is_array( $mail['headers'] ) ? $mail['headers'] : array(),
 			isset( $mail['attachments'] ) && is_array( $mail['attachments'] ) ? $mail['attachments'] : array()
 		);
+
+		return $ok ? true : __( 'wp_mail failed.', 'we-formkit' );
 	}
 
 	/**

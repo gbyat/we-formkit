@@ -8,7 +8,9 @@
 namespace Webentwicklerin\WeFormkit\Admin;
 
 use Webentwicklerin\WeFormkit\Capabilities;
+use Webentwicklerin\WeFormkit\Form_Notifications;
 use Webentwicklerin\WeFormkit\Form_Schema;
+use Webentwicklerin\WeFormkit\Notifications;
 use Webentwicklerin\WeFormkit\Post_Types;
 use Webentwicklerin\WeFormkit\Submission_Export;
 
@@ -56,6 +58,65 @@ final class Submissions {
 				Submission_Export::stream_print_document( $id );
 			}
 		}
+
+		if ( isset( $_GET['wek_resend_mail'] ) && isset( $_GET['submission_id'] ) && isset( $_GET['_wpnonce'] ) ) {
+			self::handle_resend_mail();
+		}
+	}
+
+	/**
+	 * Resend notification email(s) for a submission.
+	 *
+	 * @return void
+	 */
+	private static function handle_resend_mail() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$submission_id = absint( $_GET['submission_id'] );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$nonce = sanitize_text_field( wp_unslash( (string) $_GET['_wpnonce'] ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$notify_id = isset( $_GET['notification_id'] ) ? sanitize_key( wp_unslash( (string) $_GET['notification_id'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$to_me = ! empty( $_GET['to_me'] );
+
+		$action_key = 'wek_resend_' . $submission_id . '_' . ( '' !== $notify_id ? $notify_id : 'all' ) . ( $to_me ? '_me' : '' );
+		if ( ! wp_verify_nonce( $nonce, $action_key ) ) {
+			wp_die( esc_html__( 'Invalid nonce.', 'we-formkit' ) );
+		}
+
+		$override = '';
+		if ( $to_me ) {
+			$user = wp_get_current_user();
+			if ( $user && is_email( $user->user_email ) ) {
+				$override = $user->user_email;
+			} else {
+				$override = (string) get_option( 'admin_email' );
+			}
+		}
+
+		$result = Notifications::resend(
+			$submission_id,
+			'' !== $notify_id ? $notify_id : null,
+			$override
+		);
+
+		$args = array(
+			'page'          => 'we-formkit-submissions',
+			'action'        => 'edit',
+			'submission_id' => $submission_id,
+			'mail_sent'     => (int) $result['sent'],
+			'mail_failed'   => (int) $result['failed'],
+		);
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! empty( $_GET['form_id'] ) ) {
+			$args['form_id'] = absint( $_GET['form_id'] );
+		}
+		if ( ! empty( $result['messages'] ) ) {
+			$args['mail_msg'] = rawurlencode( implode( ' | ', array_slice( $result['messages'], 0, 5 ) ) );
+		}
+
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
+		exit;
 	}
 
 	/**
@@ -205,11 +266,37 @@ final class Submissions {
 		$notes  = (string) get_post_meta( $submission_id, Form_Schema::SUB_NOTES, true );
 		$schema = $form_id ? Form_Schema::get( $form_id ) : Form_Schema::normalize( array() );
 		$fields = Form_Schema::fields_by_id( $schema );
+		$notifs = $form_id > 0 ? Form_Notifications::get( $form_id ) : array();
 		?>
 		<div class="wrap wek-admin">
 			<h1><?php echo esc_html( get_the_title( $post ) ); ?></h1>
 			<?php if ( ! empty( $_GET['saved'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Submission saved.', 'we-formkit' ); ?></p></div>
+			<?php endif; ?>
+			<?php if ( isset( $_GET['mail_sent'] ) || isset( $_GET['mail_failed'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+				<?php
+				$sent   = isset( $_GET['mail_sent'] ) ? absint( $_GET['mail_sent'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$failed = isset( $_GET['mail_failed'] ) ? absint( $_GET['mail_failed'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$detail = isset( $_GET['mail_msg'] ) ? sanitize_text_field( rawurldecode( wp_unslash( (string) $_GET['mail_msg'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$class  = $failed > 0 && $sent < 1 ? 'notice-error' : 'notice-success';
+				?>
+				<div class="notice <?php echo esc_attr( $class ); ?> is-dismissible">
+					<p>
+						<?php
+						echo esc_html(
+							sprintf(
+								/* translators: 1: sent count, 2: failed count */
+								__( 'Notification resend finished. Sent: %1$d, failed: %2$d.', 'we-formkit' ),
+								$sent,
+								$failed
+							)
+						);
+						?>
+					</p>
+					<?php if ( '' !== $detail ) : ?>
+						<p class="description"><?php echo esc_html( $detail ); ?></p>
+					<?php endif; ?>
+				</div>
 			<?php endif; ?>
 
 			<p>
@@ -221,6 +308,82 @@ final class Submissions {
 				|
 				<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=we-formkit-submissions&wek_export_pdf=1&autoprint=1&submission_id=' . (int) $submission_id ), 'wek_export_pdf_' . (int) $submission_id ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Export PDF', 'we-formkit' ); ?></a>
 			</p>
+
+			<?php if ( ! empty( $notifs ) ) : ?>
+				<div class="wek-admin__settings-panel" style="margin:1rem 0 1.5rem;">
+					<h2><?php esc_html_e( 'Resend notifications', 'we-formkit' ); ?></h2>
+					<p class="description"><?php esc_html_e( 'Resend uses the current notification templates and this entry’s answers — handy to check HTML layout. “To me” sends only to your WordPress account email.', 'we-formkit' ); ?></p>
+					<table class="widefat striped" style="max-width:48rem;">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Notification', 'we-formkit' ); ?></th>
+								<th><?php esc_html_e( 'Status', 'we-formkit' ); ?></th>
+								<th><?php esc_html_e( 'Actions', 'we-formkit' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ( $notifs as $n ) : ?>
+								<?php
+								$nid    = (string) $n['id'];
+								$active = ! empty( $n['enabled'] );
+								$base   = array(
+									'page'            => 'we-formkit-submissions',
+									'action'          => 'edit',
+									'submission_id'   => (int) $submission_id,
+									'wek_resend_mail' => '1',
+									'notification_id' => $nid,
+								);
+								if ( $return_form > 0 ) {
+									$base['form_id'] = (int) $return_form;
+								}
+								$resend_url = wp_nonce_url(
+									add_query_arg( $base, admin_url( 'admin.php' ) ),
+									'wek_resend_' . (int) $submission_id . '_' . $nid,
+									'_wpnonce'
+								);
+								$to_me_url  = wp_nonce_url(
+									add_query_arg( array_merge( $base, array( 'to_me' => '1' ) ), admin_url( 'admin.php' ) ),
+									'wek_resend_' . (int) $submission_id . '_' . $nid . '_me',
+									'_wpnonce'
+								);
+								?>
+								<tr>
+									<td><strong><?php echo esc_html( (string) $n['name'] ); ?></strong></td>
+									<td>
+										<span class="wek-notify-status <?php echo $active ? 'wek-notify-status--active' : 'wek-notify-status--inactive'; ?>">
+											<span class="wek-notify-status__dot" aria-hidden="true"></span>
+											<?php echo $active ? esc_html__( 'Active', 'we-formkit' ) : esc_html__( 'Inactive', 'we-formkit' ); ?>
+										</span>
+									</td>
+									<td>
+										<a class="button button-small" href="<?php echo esc_url( $resend_url ); ?>"><?php esc_html_e( 'Resend', 'we-formkit' ); ?></a>
+										<a class="button button-small" href="<?php echo esc_url( $to_me_url ); ?>"><?php esc_html_e( 'Send to me', 'we-formkit' ); ?></a>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+					<?php
+					$all_base = array(
+						'page'            => 'we-formkit-submissions',
+						'action'          => 'edit',
+						'submission_id'   => (int) $submission_id,
+						'wek_resend_mail' => '1',
+					);
+					if ( $return_form > 0 ) {
+						$all_base['form_id'] = (int) $return_form;
+					}
+					$all_url = wp_nonce_url(
+						add_query_arg( $all_base, admin_url( 'admin.php' ) ),
+						'wek_resend_' . (int) $submission_id . '_all',
+						'_wpnonce'
+					);
+					?>
+					<p style="margin-top:0.75rem;">
+						<a class="button" href="<?php echo esc_url( $all_url ); ?>"><?php esc_html_e( 'Resend all active', 'we-formkit' ); ?></a>
+					</p>
+				</div>
+			<?php endif; ?>
 
 			<form method="post">
 				<?php wp_nonce_field( 'we_formkit_save_submission', 'we_formkit_submission_nonce' ); ?>
