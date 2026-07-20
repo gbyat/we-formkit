@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.17] - 2026-07-20
+
+- Refactor admin CSS for improved layout and visual consistency. Update styles for fields bar badges, actions, and entries, enhancing alignment and responsiveness. Modify form editor logic to ensure proper title handling for new and existing forms, improving user experience.
 ## [0.1.16] - 2026-07-20
 
 - Implement admin color scheme selection in settings, enhancing UI customization. Update CSS for improved layout and visual consistency across admin components, including new accent color schemes. Refactor field icons in the form editor for better clarity and accessibility.
