@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.10] - 2026-07-20
+
+- Refactor admin CSS and JavaScript for improved layout and responsiveness. Adjust button dimensions, positioning, and opacity for better UI consistency. Update width settings for collapsed states in the admin form editor to enhance user experience.
 ## [0.2.9] - 2026-07-20
 
 - Implement form appearance customization features. Introduce methods to get and set form-wide appearance settings, including label weight, required mark, help placement, and help style. Update frontend rendering to apply these settings, enhancing the visual consistency of forms. Refactor related JavaScript and CSS for improved layout and user experience. Update translations for new appearance-related strings.
