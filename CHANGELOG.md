@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-07-20
+
+- Enhance admin form editor UI with a new search feature for fields, allowing users to filter available fields. Update CSS styles for improved visual consistency and accessibility, including new color tokens and layout adjustments. Introduce a sticky action bar for better usability when editing forms.
 ## [0.1.13] - 2026-07-19
 
 - Refactor notification handling in the form editor and enhance admin notifications UI. Update AGENTS.md to reflect changes in notification features. Add new CSS styles for notification cards in admin interface. Improve developer documentation with new notification merge tags and filter for mail arguments.
