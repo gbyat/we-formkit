@@ -257,7 +257,15 @@
 			}
 		}
 
-		function syncHidden() {
+		let syncDirty = false;
+		let syncTimer = null;
+
+		function flushSyncHidden() {
+			if ( syncTimer ) {
+				window.clearTimeout( syncTimer );
+				syncTimer = null;
+			}
+			syncDirty = false;
 			if ( titleInput ) {
 				schema.title = titleInput.value;
 			}
@@ -277,6 +285,20 @@
 			if ( posInput ) {
 				posInput.value = submitButton.icon_position || 'before';
 			}
+		}
+
+		/** Debounced schema → hidden input write. Use flushSyncHidden() before save/render. */
+		function syncHidden() {
+			syncDirty = true;
+			if ( syncTimer ) {
+				window.clearTimeout( syncTimer );
+			}
+			syncTimer = window.setTimeout( function () {
+				syncTimer = null;
+				if ( syncDirty ) {
+					flushSyncHidden();
+				}
+			}, 150 );
 		}
 
 		function normalizeWidth( width ) {
@@ -300,6 +322,42 @@
 				normalizeWidth( width ) +
 				( selected ? ' is-selected' : '' )
 			);
+		}
+
+		function applyFieldWidthToCard( field, width ) {
+			field.width = normalizeWidth( width );
+			const selectedNow = getSelected();
+			const cardSelector =
+				selectedNow && selectedNow.field === field
+					? canvasFieldCardSelector( selectedNow )
+					: null;
+			const card = cardSelector ? root.querySelector( cardSelector ) : null;
+			if ( card ) {
+				const isSelected = card.classList.contains( 'is-selected' );
+				card.className =
+					widthClass( field.width, isSelected ) +
+					( card.className.indexOf( 'wek-builder__field--repeater' ) !== -1 ||
+					field.type === 'repeater'
+						? ' wek-builder__field--repeater'
+						: '' ) +
+					( card.className.indexOf( 'wek-builder__field--nested' ) !== -1
+						? ' wek-builder__field--nested'
+						: '' );
+			}
+			const picker = ui.aside
+				? ui.aside.querySelector( '.wek-builder__columns' )
+				: null;
+			if ( picker ) {
+				Array.prototype.forEach.call(
+					picker.querySelectorAll( '.wek-builder__column-btn' ),
+					function ( btn ) {
+						const isActive = btn.getAttribute( 'data-width' ) === field.width;
+						btn.classList.toggle( 'is-active', isActive );
+						btn.setAttribute( 'aria-pressed', isActive ? 'true' : 'false' );
+					}
+				);
+			}
+			announce( ( i18n.width || 'Columns' ) + ': ' + widthLabel( field.width ) );
 		}
 
 		function renderColumnPicker( field ) {
@@ -327,22 +385,23 @@
 					);
 				}
 				wrap.appendChild(
-					el( 'button', {
-						type: 'button',
-						className:
-							'wek-builder__column-btn' +
-							( field.width === item.value ? ' is-active' : '' ),
-						'aria-pressed': field.width === item.value ? 'true' : 'false',
-						title: item.label,
-						onClick: function () {
-							field.width = item.value;
-							syncHidden();
-							render();
+					el(
+						'button',
+						{
+							type: 'button',
+							className:
+								'wek-builder__column-btn' +
+								( field.width === item.value ? ' is-active' : '' ),
+							'aria-pressed': field.width === item.value ? 'true' : 'false',
+							title: item.label,
+							'data-width': item.value,
+							onClick: function () {
+								applyFieldWidthToCard( field, item.value );
+								syncHidden();
+							},
 						},
-					}, [
-						preview,
-						el( 'strong', { text: item.label } ),
-					] )
+						[ preview, el( 'strong', { text: item.label } ) ]
+					)
 				);
 			} );
 			return wrap;
@@ -454,6 +513,76 @@
 			};
 		}
 
+		function patchCanvasSelection() {
+			if ( ! ui.sheet ) {
+				return;
+			}
+			const sheet = ui.sheet;
+			Array.prototype.forEach.call(
+				sheet.querySelectorAll( '.wek-builder__field.is-selected, .wek-builder__section.is-selected, .wek-builder__submit-preview.is-selected' ),
+				function ( node ) {
+					node.classList.remove( 'is-selected' );
+					if ( node.getAttribute( 'aria-pressed' ) !== null ) {
+						node.setAttribute( 'aria-pressed', 'false' );
+					}
+				}
+			);
+
+			if ( ! selection ) {
+				return;
+			}
+
+			if ( selection.type === 'submit' ) {
+				const submit = sheet.querySelector( '.wek-builder__submit-preview' );
+				if ( submit ) {
+					submit.classList.add( 'is-selected' );
+					submit.setAttribute( 'aria-pressed', 'true' );
+				}
+				return;
+			}
+
+			if ( selection.type === 'section' ) {
+				const section = sheet.querySelector(
+					'.wek-builder__section[data-s="' + selection.sIndex + '"]'
+				);
+				if ( section ) {
+					section.classList.add( 'is-selected' );
+				}
+				return;
+			}
+
+			if ( selection.type === 'nested' ) {
+				const nested = sheet.querySelector(
+					'.wek-builder__field[data-s="' +
+						selection.sIndex +
+						'"][data-f="' +
+						selection.fIndex +
+						'"][data-n="' +
+						selection.nIndex +
+						'"]'
+				);
+				if ( nested ) {
+					nested.classList.add( 'is-selected' );
+					nested.setAttribute( 'aria-pressed', 'true' );
+				}
+				return;
+			}
+
+			if ( selection.type === 'field' ) {
+				const field = sheet.querySelector(
+					'.wek-builder__field[data-s="' +
+						selection.sIndex +
+						'"][data-f="' +
+						selection.fIndex +
+						'"]:not([data-n])'
+				);
+				if ( field ) {
+					field.classList.add( 'is-selected' );
+					field.setAttribute( 'aria-pressed', 'true' );
+				}
+			}
+		}
+
 		function selectItem( next, tab ) {
 			selection = next;
 			if ( tab ) {
@@ -465,7 +594,10 @@
 			} else if ( next && next.type === 'submit' ) {
 				activeTab = 'general';
 			}
-			render();
+			ensureShell();
+			patchCanvasSelection();
+			flushSyncHidden();
+			refreshSidebar();
 		}
 
 		function fieldRow( labelText, control ) {
@@ -779,6 +911,148 @@
 			return input;
 		}
 
+		function canvasFieldCardSelector( selected ) {
+			if ( ! selected ) {
+				return null;
+			}
+			if ( selected.kind === 'nested' ) {
+				return (
+					'.wek-builder__field[data-s="' +
+					selected.sIndex +
+					'"][data-f="' +
+					selected.fIndex +
+					'"][data-n="' +
+					selected.nIndex +
+					'"]'
+				);
+			}
+			if ( selected.kind === 'field' ) {
+				return (
+					'.wek-builder__field[data-s="' +
+					selected.sIndex +
+					'"][data-f="' +
+					selected.fIndex +
+					'"]:not([data-n])'
+				);
+			}
+			return null;
+		}
+
+		function fieldLabelText( field, labelText ) {
+			if ( labelText != null && String( labelText ) !== '' ) {
+				return String( labelText );
+			}
+			return ( field && ( field.label || field.id ) ) || i18n.field || 'Field';
+		}
+
+		function buildFieldLabelEl( field, labelText ) {
+			const wrap = el( 'span', {
+				className:
+					'wek-builder__field-label' + ( field && field.required ? ' is-required' : '' ),
+			} );
+			wrap.appendChild(
+				el( 'span', {
+					className: 'wek-builder__field-label-text',
+					text: fieldLabelText( field, labelText ),
+				} )
+			);
+			if ( field && field.required ) {
+				wrap.appendChild(
+					el( 'span', {
+						className: 'wek-builder__field-required',
+						title: i18n.required || 'Required',
+						'aria-label': i18n.required || 'Required',
+						text: '*',
+					} )
+				);
+			}
+			return wrap;
+		}
+
+		function updateCanvasFieldLabel( selected, labelText ) {
+			const selector = canvasFieldCardSelector( selected );
+			if ( ! selector || ! selected || ! selected.field ) {
+				return;
+			}
+			const body = root.querySelector( selector + ' .wek-builder__field-body' );
+			if ( ! body ) {
+				return;
+			}
+			const oldLabel = body.querySelector( '.wek-builder__field-label' );
+			const nextLabel = buildFieldLabelEl( selected.field, labelText );
+			if ( oldLabel ) {
+				body.replaceChild( nextLabel, oldLabel );
+			} else {
+				body.insertBefore( nextLabel, body.firstChild );
+			}
+		}
+
+		function updateSubmitPreview() {
+			const btn = root.querySelector( '.wek-builder__submit-preview' );
+			if ( ! btn ) {
+				return;
+			}
+			const label =
+				submitButton.label || i18n.submitPreview || 'Submit';
+			const iconSvg = String( submitButton.icon_svg || '' ).trim();
+			const hasIcon = iconSvg.indexOf( '<svg' ) !== -1;
+			btn.innerHTML = '';
+			if ( hasIcon && submitButton.icon_position !== 'after' ) {
+				const iconBefore = el( 'span', {
+					className: 'wek-builder__submit-preview-icon',
+					'aria-hidden': 'true',
+				} );
+				iconBefore.innerHTML = iconSvg;
+				btn.appendChild( iconBefore );
+			}
+			btn.appendChild(
+				el( 'span', {
+					className: 'wek-builder__submit-preview-text',
+					text: label,
+				} )
+			);
+			if ( hasIcon && submitButton.icon_position === 'after' ) {
+				const iconAfter = el( 'span', {
+					className: 'wek-builder__submit-preview-icon',
+					'aria-hidden': 'true',
+				} );
+				iconAfter.innerHTML = iconSvg;
+				btn.appendChild( iconAfter );
+			}
+		}
+
+		function updateCanvasFieldPreview( field ) {
+			const selected = getSelected();
+			if ( ! selected || ( selected.kind !== 'field' && selected.kind !== 'nested' ) ) {
+				return;
+			}
+			const target = selected.field;
+			if ( ! target || target !== field ) {
+				return;
+			}
+			const selector = canvasFieldCardSelector( selected );
+			if ( ! selector ) {
+				return;
+			}
+			const body = root.querySelector( selector + ' .wek-builder__field-body' );
+			if ( ! body ) {
+				return;
+			}
+			const oldPreview = body.querySelector( '.wek-builder__field-preview' );
+			const nextPreview = renderFieldPreview( field );
+			if ( oldPreview ) {
+				body.replaceChild( nextPreview, oldPreview );
+			} else {
+				body.appendChild( nextPreview );
+			}
+		}
+
+		function refreshFieldOptionsUi( field ) {
+			flushSyncHidden();
+			refreshSidebar();
+			updateCanvasFieldPreview( field );
+		}
+
 		function renderOptionsEditor( field ) {
 			if ( ! Array.isArray( field.options ) ) {
 				field.options = [];
@@ -846,8 +1120,7 @@
 					}
 					const moved = field.options.splice( from, 1 )[ 0 ];
 					field.options.splice( to, 0, moved );
-					syncHidden();
-					render();
+					refreshFieldOptionsUi( field );
 				} );
 
 				const valueInput = el( 'input', {
@@ -891,8 +1164,7 @@
 				defRadio.addEventListener( 'change', function () {
 					if ( defRadio.checked ) {
 						field.default_value = String( field.options[ oIndex ].value || '' );
-						syncHidden();
-						render();
+						refreshFieldOptionsUi( field );
 					}
 				} );
 				defLabel.appendChild( defRadio );
@@ -947,8 +1219,7 @@
 							if ( removed && field.default_value === removed.value ) {
 								field.default_value = '';
 							}
-							syncHidden();
-							render();
+							refreshFieldOptionsUi( field );
 						},
 					}, [
 						el( 'span', {
@@ -968,8 +1239,7 @@
 				text: i18n.clearDefault || 'Clear default (use placeholder)',
 				onClick: function () {
 					field.default_value = '';
-					syncHidden();
-					render();
+					refreshFieldOptionsUi( field );
 				},
 			} );
 			if ( ! field.default_value ) {
@@ -992,8 +1262,7 @@
 							next.image_url = '';
 						}
 						field.options.push( next );
-						syncHidden();
-						render();
+						refreshFieldOptionsUi( field );
 					},
 				} )
 			);
@@ -1664,7 +1933,7 @@
 							ta.addEventListener( 'input', function () {
 								submitButton.icon_svg = ta.value;
 								syncHidden();
-								render();
+								updateSubmitPreview();
 							} );
 							return ta;
 						} )()
@@ -1694,7 +1963,7 @@
 				posSelect.addEventListener( 'change', function () {
 					submitButton.icon_position = posSelect.value === 'after' ? 'after' : 'before';
 					syncHidden();
-					render();
+					updateSubmitPreview();
 				} );
 				panel.appendChild( fieldRow( i18n.iconPosition || 'Icon position', posSelect ) );
 				aside.appendChild( panel );
@@ -1763,7 +2032,8 @@
 						text: tab.label,
 						onClick: function () {
 							activeTab = tab.id;
-							render();
+							flushSyncHidden();
+							refreshSidebar();
 						},
 					} )
 				);
@@ -1791,7 +2061,6 @@
 							if ( titleEl ) {
 								titleEl.textContent = ( i18n.field || 'Field' ) + ': ' + field.id;
 							}
-							render();
 						} )
 					)
 				);
@@ -1801,7 +2070,7 @@
 						textInput( field.label || '', function ( v ) {
 							field.label = v;
 							syncHidden();
-							render();
+							updateCanvasFieldLabel( selected, v );
 						} )
 					)
 				);
@@ -1842,7 +2111,8 @@
 				req.addEventListener( 'change', function () {
 					field.required = !! req.checked;
 					syncHidden();
-					render();
+					updateCanvasFieldLabel( selected, field.label );
+					refreshSidebar();
 				} );
 				panel.appendChild( toggleRow( i18n.required || 'Required', req ) );
 
@@ -1946,7 +2216,7 @@
 				showTitle.addEventListener( 'change', function () {
 					section.show_title = !! showTitle.checked;
 					syncHidden();
-					render();
+					refreshCanvas();
 				} );
 				panel.appendChild(
 					toggleRow( i18n.showSectionTitle || 'Show title on form', showTitle )
@@ -2020,8 +2290,20 @@
 					handle.removeEventListener( 'pointermove', onMove );
 					handle.removeEventListener( 'pointerup', onUp );
 					handle.removeEventListener( 'pointercancel', onUp );
-					syncHidden();
-					render();
+					flushSyncHidden();
+					const picker = ui.aside
+						? ui.aside.querySelector( '.wek-builder__columns' )
+						: null;
+					if ( picker ) {
+						Array.prototype.forEach.call(
+							picker.querySelectorAll( '.wek-builder__column-btn' ),
+							function ( btn ) {
+								const isActive = btn.getAttribute( 'data-width' ) === field.width;
+								btn.classList.toggle( 'is-active', isActive );
+								btn.setAttribute( 'aria-pressed', isActive ? 'true' : 'false' );
+							}
+						);
+					}
 				};
 				handle.addEventListener( 'pointermove', onMove );
 				handle.addEventListener( 'pointerup', onUp );
@@ -2075,16 +2357,15 @@
 				( to.index === from.index || to.index === from.index + 1 )
 			) {
 				if ( from.scope === 'repeater' ) {
-					selection = {
+					selectItem( {
 						type: 'nested',
 						sIndex: from.s,
 						fIndex: from.f,
 						nIndex: from.index,
-					};
+					} );
 				} else {
-					selection = { type: 'field', sIndex: from.s, fIndex: from.index };
+					selectItem( { type: 'field', sIndex: from.s, fIndex: from.index } );
 				}
-				render();
 				return;
 			}
 
@@ -2112,8 +2393,8 @@
 				selection = { type: 'field', sIndex: to.s, fIndex: insertAt };
 			}
 			announce( i18n.moved || 'Item moved.' );
-			syncHidden();
-			render();
+			flushSyncHidden();
+			render( { skipSync: true } );
 		}
 
 		function moveField( fromS, fromF, toS, toF ) {
@@ -2143,6 +2424,92 @@
 			render();
 		}
 
+		const dropUi = {
+			line: null,
+			target: null,
+			raf: 0,
+			pending: null,
+		};
+
+		function ensureDropLine() {
+			if ( ! dropUi.line ) {
+				dropUi.line = el( 'div', { className: 'wek-builder__drop-line' } );
+			}
+			return dropUi.line;
+		}
+
+		function clearDropIndicators() {
+			if ( dropUi.raf ) {
+				window.cancelAnimationFrame( dropUi.raf );
+				dropUi.raf = 0;
+			}
+			dropUi.pending = null;
+			if ( dropUi.line && dropUi.line.parentNode ) {
+				dropUi.line.parentNode.removeChild( dropUi.line );
+			}
+			if ( dropUi.target ) {
+				dropUi.target.classList.remove( 'is-drop-target' );
+				dropUi.target = null;
+			}
+			Array.prototype.forEach.call( root.querySelectorAll( '.is-drop-target' ), function ( n ) {
+				n.classList.remove( 'is-drop-target' );
+			} );
+		}
+
+		function placeDropLine( parent, beforeNode ) {
+			const line = ensureDropLine();
+			if ( beforeNode ) {
+				parent.insertBefore( line, beforeNode );
+			} else {
+				parent.appendChild( line );
+			}
+		}
+
+		function setDropTarget( node ) {
+			if ( dropUi.target && dropUi.target !== node ) {
+				dropUi.target.classList.remove( 'is-drop-target' );
+			}
+			dropUi.target = node || null;
+			if ( node ) {
+				node.classList.add( 'is-drop-target' );
+			}
+		}
+
+		function scheduleDropResolve( clientX, clientY, dragCard, onResolved ) {
+			dropUi.pending = {
+				clientX: clientX,
+				clientY: clientY,
+				dragCard: dragCard,
+				onResolved: onResolved,
+			};
+			if ( dropUi.raf ) {
+				return;
+			}
+			dropUi.raf = window.requestAnimationFrame( function () {
+				dropUi.raf = 0;
+				const pending = dropUi.pending;
+				dropUi.pending = null;
+				if ( ! pending ) {
+					return;
+				}
+				if ( dropUi.line && dropUi.line.parentNode ) {
+					dropUi.line.parentNode.removeChild( dropUi.line );
+				}
+				if ( dropUi.target ) {
+					dropUi.target.classList.remove( 'is-drop-target' );
+					dropUi.target = null;
+				}
+				const loc = resolveDropLocation(
+					pending.clientX,
+					pending.clientY,
+					pending.dragCard
+				);
+				if ( pending.onResolved ) {
+					pending.onResolved( loc );
+				}
+			} );
+		}
+
 		function resolveDropLocation( clientX, clientY, dragCard ) {
 			const elUnder = document.elementFromPoint( clientX, clientY );
 			if ( ! elUnder ) {
@@ -2156,12 +2523,10 @@
 				const n = parseInt( nestedCard.getAttribute( 'data-n' ), 10 );
 				const rect = nestedCard.getBoundingClientRect();
 				const before = clientY < rect.top + rect.height / 2;
-				const line = el( 'div', { className: 'wek-builder__drop-line' } );
-				if ( before ) {
-					nestedCard.parentNode.insertBefore( line, nestedCard );
-				} else {
-					nestedCard.parentNode.insertBefore( line, nestedCard.nextSibling );
-				}
+				placeDropLine(
+					nestedCard.parentNode,
+					before ? nestedCard : nestedCard.nextSibling
+				);
 				return { scope: 'repeater', s: s, f: f, index: before ? n : n + 1 };
 			}
 
@@ -2170,9 +2535,9 @@
 				const s = parseInt( repeaterCard.getAttribute( 'data-s' ), 10 );
 				const f = parseInt( repeaterCard.getAttribute( 'data-f' ), 10 );
 				const grid = repeaterCard.querySelector( '.wek-builder__repeater-canvas' );
-				repeaterCard.classList.add( 'is-drop-target' );
+				setDropTarget( repeaterCard );
 				if ( grid ) {
-					grid.appendChild( el( 'div', { className: 'wek-builder__drop-line' } ) );
+					placeDropLine( grid, null );
 				}
 				const parent = schema.sections[ s ] && schema.sections[ s ].fields
 					? schema.sections[ s ].fields[ f ]
@@ -2190,12 +2555,10 @@
 				const f = parseInt( fieldCard.getAttribute( 'data-f' ), 10 );
 				const rect = fieldCard.getBoundingClientRect();
 				const before = clientY < rect.top + rect.height / 2;
-				const line = el( 'div', { className: 'wek-builder__drop-line' } );
-				if ( before ) {
-					fieldCard.parentNode.insertBefore( line, fieldCard );
-				} else {
-					fieldCard.parentNode.insertBefore( line, fieldCard.nextSibling );
-				}
+				placeDropLine(
+					fieldCard.parentNode,
+					before ? fieldCard : fieldCard.nextSibling
+				);
 				return { scope: 'section', s: s, f: null, index: before ? f : f + 1 };
 			}
 
@@ -2203,9 +2566,9 @@
 			if ( sectionCard ) {
 				const s = parseInt( sectionCard.getAttribute( 'data-s' ), 10 );
 				const grid = sectionCard.querySelector( ':scope > .wek-builder__fields' );
-				sectionCard.classList.add( 'is-drop-target' );
+				setDropTarget( sectionCard );
 				if ( grid ) {
-					grid.appendChild( el( 'div', { className: 'wek-builder__drop-line' } ) );
+					placeDropLine( grid, null );
 				}
 				const len =
 					schema.sections[ s ] && schema.sections[ s ].fields
@@ -2232,15 +2595,6 @@
 				let started = false;
 				let dropLoc = null;
 
-				function clearIndicators() {
-					root.querySelectorAll( '.wek-builder__drop-line' ).forEach( function ( n ) {
-						n.remove();
-					} );
-					root.querySelectorAll( '.is-drop-target' ).forEach( function ( n ) {
-						n.classList.remove( 'is-drop-target' );
-					} );
-				}
-
 				const onMove = function ( e ) {
 					const dx = e.clientX - startX;
 					const dy = e.clientY - startY;
@@ -2248,8 +2602,9 @@
 						return;
 					}
 					started = true;
-					clearIndicators();
-					dropLoc = resolveDropLocation( e.clientX, e.clientY, card );
+					scheduleDropResolve( e.clientX, e.clientY, card, function ( loc ) {
+						dropLoc = loc;
+					} );
 				};
 
 				const onUp = function () {
@@ -2258,7 +2613,7 @@
 					document.removeEventListener( 'pointercancel', onUp );
 					handle.setAttribute( 'aria-grabbed', 'false' );
 					card.classList.remove( 'is-dragging' );
-					clearIndicators();
+					clearDropIndicators();
 					if ( ! started ) {
 						if ( fromLoc.scope === 'repeater' ) {
 							selectItem( {
@@ -2588,10 +2943,7 @@
 				el( 'div', { className: 'wek-builder__field-main' }, [
 					handle,
 					el( 'div', { className: 'wek-builder__field-body' }, [
-						el( 'span', {
-							className: 'wek-builder__field-label',
-							text: child.label || child.id || i18n.field || 'Field',
-						} ),
+						buildFieldLabelEl( child ),
 						renderFieldPreview( child ),
 					] ),
 				] )
@@ -2709,10 +3061,7 @@
 			const head = el( 'div', { className: 'wek-builder__repeater-head' }, [
 				handle,
 				el( 'div', { className: 'wek-builder__field-body' }, [
-					el( 'span', {
-						className: 'wek-builder__field-label',
-						text: field.label || field.id || i18n.field || 'Field',
-					} ),
+					buildFieldLabelEl( field ),
 					el( 'span', {
 						className: 'wek-builder__field-preview',
 						text:
@@ -2834,10 +3183,7 @@
 			const main = el( 'div', { className: 'wek-builder__field-main' }, [
 				handle,
 				el( 'div', { className: 'wek-builder__field-body' }, [
-					el( 'span', {
-						className: 'wek-builder__field-label',
-						text: field.label || field.id || i18n.field || 'Field',
-					} ),
+					buildFieldLabelEl( field ),
 					renderFieldPreview( field ),
 				] ),
 			] );
@@ -3045,12 +3391,7 @@
 				let dropLoc = null;
 
 				function clearIndicators() {
-					root.querySelectorAll( '.wek-builder__drop-line' ).forEach( function ( n ) {
-						n.remove();
-					} );
-					root.querySelectorAll( '.is-drop-target' ).forEach( function ( n ) {
-						n.classList.remove( 'is-drop-target' );
-					} );
+					clearDropIndicators();
 				}
 
 				const onMove = function ( e ) {
@@ -3061,8 +3402,9 @@
 					}
 					started = true;
 					tile.classList.add( 'is-dragging' );
-					clearIndicators();
-					dropLoc = resolveDropLocation( e.clientX, e.clientY, null );
+					scheduleDropResolve( e.clientX, e.clientY, null, function ( loc ) {
+						dropLoc = loc;
+					} );
 				};
 
 				const onUp = function () {
@@ -3202,7 +3544,33 @@
 			return panel;
 		}
 
-		function render() {
+		function render( opts ) {
+			opts = opts || {};
+			ensureShell();
+			if ( opts.canvas !== false ) {
+				refreshCanvas();
+			}
+			if ( opts.sidebar !== false ) {
+				refreshSidebar();
+			}
+			applyChrome( ui.layout );
+			if ( opts.skipSync ) {
+				return;
+			}
+			flushSyncHidden();
+		}
+
+		const ui = {
+			layout: null,
+			sheet: null,
+			aside: null,
+		};
+
+		function ensureShell() {
+			if ( ui.layout && root.contains( ui.layout ) ) {
+				return;
+			}
+
 			root.innerHTML = '';
 			const layout = el( 'div', { className: 'wek-builder-layout' } );
 			const library = renderLibrary();
@@ -3221,11 +3589,130 @@
 			canvas.appendChild( live.node );
 			canvas.appendChild( sheet );
 
+			const libWrap = el( 'div', { className: 'wek-builder-col wek-builder-col--lib' } );
+			const libToggle = el(
+				'button',
+				{
+					type: 'button',
+					className: 'wek-builder-col__toggle',
+					title: chrome.libCollapsed
+						? i18n.expandLibrary || 'Expand fields library'
+						: i18n.collapseLibrary || 'Collapse fields library',
+					'aria-expanded': chrome.libCollapsed ? 'false' : 'true',
+					'aria-label': chrome.libCollapsed
+						? i18n.expandLibrary || 'Expand fields library'
+						: i18n.collapseLibrary || 'Collapse fields library',
+					onClick: function () {
+						chrome.libCollapsed = ! chrome.libCollapsed;
+						saveChrome();
+						applyChrome( layout );
+						libToggle.setAttribute( 'aria-expanded', chrome.libCollapsed ? 'false' : 'true' );
+						libToggle.title = chrome.libCollapsed
+							? i18n.expandLibrary || 'Expand fields library'
+							: i18n.collapseLibrary || 'Collapse fields library';
+						libToggle.setAttribute( 'aria-label', libToggle.title );
+						const caret = libToggle.querySelector( '.wek-builder-col__caret' );
+						if ( caret ) {
+							caret.className =
+								'wek-builder-col__caret wek-builder-col__caret--' +
+								( chrome.libCollapsed ? 'right' : 'left' );
+						}
+					},
+				},
+				[
+					el( 'span', {
+						className:
+							'wek-builder-col__caret wek-builder-col__caret--' +
+							( chrome.libCollapsed ? 'right' : 'left' ),
+						'aria-hidden': 'true',
+					} ),
+				]
+			);
+			const libResize = el( 'div', {
+				className: 'wek-builder-resize wek-builder-resize--lib',
+				role: 'separator',
+				'aria-orientation': 'vertical',
+				title: i18n.resizeLibrary || 'Drag to resize',
+			} );
+			bindChromeResize( libResize, 'lib', layout );
+			libWrap.appendChild( libToggle );
+			libWrap.appendChild( library );
+			libWrap.appendChild( libResize );
+
+			const sideWrap = el( 'div', { className: 'wek-builder-col wek-builder-col--side' } );
+			const sideToggle = el(
+				'button',
+				{
+					type: 'button',
+					className: 'wek-builder-col__toggle',
+					title: chrome.sideCollapsed
+						? i18n.expandSettings || 'Expand field settings'
+						: i18n.collapseSettings || 'Collapse field settings',
+					'aria-expanded': chrome.sideCollapsed ? 'false' : 'true',
+					'aria-label': chrome.sideCollapsed
+						? i18n.expandSettings || 'Expand field settings'
+						: i18n.collapseSettings || 'Collapse field settings',
+					onClick: function () {
+						chrome.sideCollapsed = ! chrome.sideCollapsed;
+						saveChrome();
+						applyChrome( layout );
+						sideToggle.setAttribute( 'aria-expanded', chrome.sideCollapsed ? 'false' : 'true' );
+						sideToggle.title = chrome.sideCollapsed
+							? i18n.expandSettings || 'Expand field settings'
+							: i18n.collapseSettings || 'Collapse field settings';
+						sideToggle.setAttribute( 'aria-label', sideToggle.title );
+						const caret = sideToggle.querySelector( '.wek-builder-col__caret' );
+						if ( caret ) {
+							caret.className =
+								'wek-builder-col__caret wek-builder-col__caret--' +
+								( chrome.sideCollapsed ? 'left' : 'right' );
+						}
+					},
+				},
+				[
+					el( 'span', {
+						className:
+							'wek-builder-col__caret wek-builder-col__caret--' +
+							( chrome.sideCollapsed ? 'left' : 'right' ),
+						'aria-hidden': 'true',
+					} ),
+				]
+			);
+			const sideResize = el( 'div', {
+				className: 'wek-builder-resize wek-builder-resize--side',
+				role: 'separator',
+				'aria-orientation': 'vertical',
+				title: i18n.resizeSettings || 'Drag to resize',
+			} );
+			bindChromeResize( sideResize, 'side', layout );
+			sideWrap.appendChild( sideResize );
+			sideWrap.appendChild( sideToggle );
+			sideWrap.appendChild( aside );
+
+			layout.appendChild( libWrap );
+			layout.appendChild( canvas );
+			layout.appendChild( sideWrap );
+			root.appendChild( layout );
+
+			ui.layout = layout;
+			ui.sheet = sheet;
+			ui.aside = aside;
+			applyChrome( layout );
+			root.setAttribute( 'data-wek-builder-ready', '1' );
+		}
+
+		function refreshCanvas() {
+			ensureShell();
+			const sheet = ui.sheet;
+			sheet.innerHTML = '';
+
 			if ( ! schema.sections.length ) {
 				sheet.appendChild(
 					el( 'p', {
 						className: 'description',
-						text: i18n.empty || 'No sections yet. Add a section or pick a field from the library.',
+						text:
+							i18n.empty ||
+							'No sections yet. Add a section or pick a field from the library.',
 					} )
 				);
 			}
@@ -3303,120 +3790,25 @@
 					)
 				);
 			}
+		}
 
-			renderSidebar( aside );
-
-			const libWrap = el( 'div', { className: 'wek-builder-col wek-builder-col--lib' } );
-			const libToggle = el( 'button', {
-				type: 'button',
-				className: 'wek-builder-col__toggle',
-				title: chrome.libCollapsed
-					? i18n.expandLibrary || 'Expand fields library'
-					: i18n.collapseLibrary || 'Collapse fields library',
-				'aria-expanded': chrome.libCollapsed ? 'false' : 'true',
-				'aria-label': chrome.libCollapsed
-					? i18n.expandLibrary || 'Expand fields library'
-					: i18n.collapseLibrary || 'Collapse fields library',
-				onClick: function () {
-					chrome.libCollapsed = ! chrome.libCollapsed;
-					saveChrome();
-					applyChrome( layout );
-					libToggle.setAttribute( 'aria-expanded', chrome.libCollapsed ? 'false' : 'true' );
-					libToggle.title = chrome.libCollapsed
-						? i18n.expandLibrary || 'Expand fields library'
-						: i18n.collapseLibrary || 'Collapse fields library';
-					libToggle.setAttribute( 'aria-label', libToggle.title );
-					const caret = libToggle.querySelector( '.wek-builder-col__caret' );
-					if ( caret ) {
-						caret.className =
-							'wek-builder-col__caret wek-builder-col__caret--' +
-							( chrome.libCollapsed ? 'right' : 'left' );
-					}
-				},
-			}, [
-				el( 'span', {
-					className:
-						'wek-builder-col__caret wek-builder-col__caret--' +
-						( chrome.libCollapsed ? 'right' : 'left' ),
-					'aria-hidden': 'true',
-				} ),
-			] );
-			const libResize = el( 'div', {
-				className: 'wek-builder-resize wek-builder-resize--lib',
-				role: 'separator',
-				'aria-orientation': 'vertical',
-				title: i18n.resizeLibrary || 'Drag to resize',
-			} );
-			bindChromeResize( libResize, 'lib', layout );
-			libWrap.appendChild( libToggle );
-			libWrap.appendChild( library );
-			libWrap.appendChild( libResize );
-
-			const sideWrap = el( 'div', { className: 'wek-builder-col wek-builder-col--side' } );
-			const sideToggle = el( 'button', {
-				type: 'button',
-				className: 'wek-builder-col__toggle',
-				title: chrome.sideCollapsed
-					? i18n.expandSettings || 'Expand field settings'
-					: i18n.collapseSettings || 'Collapse field settings',
-				'aria-expanded': chrome.sideCollapsed ? 'false' : 'true',
-				'aria-label': chrome.sideCollapsed
-					? i18n.expandSettings || 'Expand field settings'
-					: i18n.collapseSettings || 'Collapse field settings',
-				onClick: function () {
-					chrome.sideCollapsed = ! chrome.sideCollapsed;
-					saveChrome();
-					applyChrome( layout );
-					sideToggle.setAttribute( 'aria-expanded', chrome.sideCollapsed ? 'false' : 'true' );
-					sideToggle.title = chrome.sideCollapsed
-						? i18n.expandSettings || 'Expand field settings'
-						: i18n.collapseSettings || 'Collapse field settings';
-					sideToggle.setAttribute( 'aria-label', sideToggle.title );
-					const caret = sideToggle.querySelector( '.wek-builder-col__caret' );
-					if ( caret ) {
-						caret.className =
-							'wek-builder-col__caret wek-builder-col__caret--' +
-							( chrome.sideCollapsed ? 'left' : 'right' );
-					}
-				},
-			}, [
-				el( 'span', {
-					className:
-						'wek-builder-col__caret wek-builder-col__caret--' +
-						( chrome.sideCollapsed ? 'left' : 'right' ),
-					'aria-hidden': 'true',
-				} ),
-			] );
-			const sideResize = el( 'div', {
-				className: 'wek-builder-resize wek-builder-resize--side',
-				role: 'separator',
-				'aria-orientation': 'vertical',
-				title: i18n.resizeSettings || 'Drag to resize',
-			} );
-			bindChromeResize( sideResize, 'side', layout );
-			sideWrap.appendChild( sideResize );
-			sideWrap.appendChild( sideToggle );
-			sideWrap.appendChild( aside );
-
-			layout.appendChild( libWrap );
-			layout.appendChild( canvas );
-			layout.appendChild( sideWrap );
-			applyChrome( layout );
-			root.appendChild( layout );
-			syncHidden();
-			root.setAttribute( 'data-wek-builder-ready', '1' );
+		function refreshSidebar() {
+			ensureShell();
+			renderSidebar( ui.aside );
 		}
 
 		try {
 			const form = document.getElementById( 'wek-form-editor' );
 			if ( form ) {
-				form.addEventListener( 'submit', syncHidden );
+				form.addEventListener( 'submit', flushSyncHidden );
 			}
 			if ( titleInput ) {
 				titleInput.addEventListener( 'input', syncHidden );
+				titleInput.addEventListener( 'blur', flushSyncHidden );
 			}
 			if ( introInput ) {
 				introInput.addEventListener( 'input', syncHidden );
+				introInput.addEventListener( 'blur', flushSyncHidden );
 			}
 			render();
 		} catch ( err ) {

@@ -194,51 +194,140 @@
 		return relation === 'AND';
 	}
 
+	const showWhenCache = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+
+	function parseShowWhenAttr( el ) {
+		if ( showWhenCache && showWhenCache.has( el ) ) {
+			return showWhenCache.get( el );
+		}
+		const json = el.getAttribute( 'data-show-when' );
+		let parsed = null;
+		if ( json ) {
+			try {
+				parsed = JSON.parse( json );
+			} catch ( e ) {
+				parsed = null;
+			}
+		} else {
+			const field = el.getAttribute( 'data-show-field' );
+			if ( field ) {
+				parsed = {
+					field: field,
+					op: el.getAttribute( 'data-show-op' ) || 'equals',
+					value: el.getAttribute( 'data-show-value' ) || '',
+				};
+			}
+		}
+		if ( showWhenCache ) {
+			showWhenCache.set( el, parsed );
+		}
+		return parsed;
+	}
+
+	function collectRuleDeps( container, deps ) {
+		if ( ! container || typeof container !== 'object' ) {
+			return;
+		}
+		if ( container.field ) {
+			deps[ String( container.field ) ] = true;
+		}
+		const rules = Array.isArray( container.rules ) ? container.rules : [];
+		rules.forEach( function ( rule ) {
+			if ( rule && rule.field ) {
+				deps[ String( rule.field ) ] = true;
+			}
+		} );
+	}
+
+	function setControlsVisibility( el, visible ) {
+		qsa( el, 'input, textarea, select' ).forEach( function ( control ) {
+			if ( ! visible ) {
+				control.setAttribute( 'tabindex', '-1' );
+				control.disabled = true;
+				control.required = false;
+			} else {
+				control.removeAttribute( 'tabindex' );
+				control.disabled = false;
+				const wrap = control.closest( '[data-wek-field]' );
+				if ( wrap && wrap.getAttribute( 'data-required' ) === '1' ) {
+					if (
+						control.type !== 'checkbox' ||
+						wrap.getAttribute( 'data-field-type' ) === 'consent' ||
+						wrap.getAttribute( 'data-field-type' ) === 'checkbox'
+					) {
+						control.required = wrap.getAttribute( 'data-field-type' ) !== 'checkboxes';
+					}
+				}
+			}
+		} );
+	}
+
 	function applyConditionals( root ) {
 		const form = qs( root, '[data-wek-form]' );
 		if ( ! form ) {
 			return;
 		}
 		const values = collectValues( form );
+		const watched =
+			root._wekCondWatched || qsa( root, '[data-wek-section], [data-wek-field]' );
 
-		qsa( root, '[data-wek-section], [data-wek-field]' ).forEach( function ( el ) {
-			const json = el.getAttribute( 'data-show-when' );
-			let visible = true;
-			if ( json ) {
-				visible = evaluateShowWhen( json, values );
-			} else {
-				const field = el.getAttribute( 'data-show-field' );
-				if ( ! field ) {
-					return;
-				}
-				const op = el.getAttribute( 'data-show-op' ) || 'equals';
-				const value = el.getAttribute( 'data-show-value' ) || '';
-				visible = matchesRule( field, op, value, values );
+		watched.forEach( function ( el ) {
+			const rule = parseShowWhenAttr( el );
+			if ( ! rule ) {
+				return;
+			}
+			const visible = evaluateShowWhen( rule, values );
+			const wasHidden = el.classList.contains( 'is-hidden' );
+			if ( wasHidden === ! visible ) {
+				return;
 			}
 			el.classList.toggle( 'is-hidden', ! visible );
 			el.setAttribute( 'aria-hidden', visible ? 'false' : 'true' );
-
-			qsa( el, 'input, textarea, select' ).forEach( function ( control ) {
-				if ( ! visible ) {
-					control.setAttribute( 'tabindex', '-1' );
-					control.disabled = true;
-					control.required = false;
-				} else {
-					control.removeAttribute( 'tabindex' );
-					control.disabled = false;
-					const wrap = control.closest( '[data-wek-field]' );
-					if ( wrap && wrap.getAttribute( 'data-required' ) === '1' ) {
-						if (
-							control.type !== 'checkbox' ||
-							wrap.getAttribute( 'data-field-type' ) === 'consent' ||
-							wrap.getAttribute( 'data-field-type' ) === 'checkbox'
-						) {
-							control.required = wrap.getAttribute( 'data-field-type' ) !== 'checkboxes';
-						}
-					}
-				}
-			} );
+			setControlsVisibility( el, visible );
 		} );
+	}
+
+	function initConditionals( root, form ) {
+		const watched = [];
+		const deps = {};
+		qsa( root, '[data-wek-section], [data-wek-field]' ).forEach( function ( el ) {
+			const rule = parseShowWhenAttr( el );
+			if ( ! rule ) {
+				return;
+			}
+			watched.push( el );
+			collectRuleDeps( rule, deps );
+		} );
+		root._wekCondWatched = watched;
+		root._wekCondDeps = deps;
+
+		let inputTimer = null;
+		form.addEventListener( 'change', function ( event ) {
+			applyConditionals( root );
+			const target = event.target;
+			if ( target && target.matches && target.matches( 'input[type="checkbox"]' ) ) {
+				const wrap = target.closest( '[data-field-type="checkboxes"]' );
+				if ( wrap ) {
+					syncCheckboxesMaxLock( wrap );
+				}
+			}
+		} );
+		form.addEventListener( 'input', function ( event ) {
+			const target = event.target;
+			const wrap = target && target.closest ? target.closest( '[data-field-id]' ) : null;
+			const fieldId = wrap ? wrap.getAttribute( 'data-field-id' ) : '';
+			if ( fieldId && deps && Object.keys( deps ).length && ! deps[ fieldId ] ) {
+				return;
+			}
+			if ( inputTimer ) {
+				window.clearTimeout( inputTimer );
+			}
+			inputTimer = window.setTimeout( function () {
+				inputTimer = null;
+				applyConditionals( root );
+			}, 120 );
+		} );
+		applyConditionals( root );
 	}
 
 	function clearErrors( form ) {
@@ -1143,20 +1232,7 @@
 			syncCheckboxesMaxLock( fieldEl );
 		} );
 
-		form.addEventListener( 'change', function ( event ) {
-			applyConditionals( root );
-			const target = event.target;
-			if ( target && target.matches && target.matches( 'input[type="checkbox"]' ) ) {
-				const wrap = target.closest( '[data-field-type="checkboxes"]' );
-				if ( wrap ) {
-					syncCheckboxesMaxLock( wrap );
-				}
-			}
-		} );
-		form.addEventListener( 'input', function () {
-			applyConditionals( root );
-		} );
-		applyConditionals( root );
+		initConditionals( root, form );
 		initRepeaters( form );
 
 		const cfg = window.weFormkit || {};

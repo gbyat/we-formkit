@@ -1730,12 +1730,27 @@ body.wek-builder-is-resizing iframe {
 }
 
 .wek-admin .wek-builder__field-label {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.2rem;
+	max-width: 100%;
 	font-weight: 600;
 	font-size: 13px;
+	color: var(--wek-ink);
+}
+
+.wek-admin .wek-builder__field-label-text {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	color: var(--wek-ink);
+	min-width: 0;
+}
+
+.wek-admin .wek-builder__field-required {
+	flex: 0 0 auto;
+	color: #b32d2e;
+	font-weight: 700;
+	line-height: 1;
 }
 
 .wek-admin .wek-builder__field-preview {
