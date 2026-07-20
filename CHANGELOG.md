@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-07-20
+
+- Refactor notification handling in the admin form editor. Introduce new methods for managing notifications, including duplication, deletion, and toggling status. Update CSS for notification UI elements, enhancing layout and usability. Implement schema hydration for notifications to ensure proper field linking. Improve overall notification management experience in the editor.
 ## [0.2.1] - 2026-07-20
 
 - Enhance admin form editor with new field toolbar functionality, allowing users to edit, duplicate, move, and delete fields directly. Update CSS for improved UI elements, including the addition of a field toolbar and adjustments to button styles. Modify plugin configuration to exclude build and dist directories from POT generation.
