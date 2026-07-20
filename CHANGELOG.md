@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.13] - 2026-07-20
+
+- Enhance email notification system by introducing SMTP settings in the admin panel. Implement test email functionality to verify SMTP configurations. Update CSS for improved layout in the admin interface. Revise AGENTS.md to include mail notifications in the live smoke checklist.
 ## [0.2.12] - 2026-07-20
 
 - Enhance admin form editor and frontend functionality. Update CSS for improved field label display and required indicators. Refactor JavaScript to implement debounced synchronization for hidden inputs, improve conditional visibility handling, and streamline field width application. Introduce caching for show-when attributes to optimize performance.

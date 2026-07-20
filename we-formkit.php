@@ -4,7 +4,7 @@
  * Plugin Name:       WE Formkit
  * Plugin URI:        https://github.com/gbyat/we-formkit
  * Description:       Modular WordPress form builder with typed fields, entries, and a developer module API.
- * Version: 0.2.12
+ * Version: 0.2.13
  * Requires at least: 6.9
  * Requires PHP:      8.0
  * Author:            webentwicklerin, Gabriele Laesser
@@ -22,7 +22,7 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-define( 'WE_FORMKIT_VERSION', '0.2.12' );
+define( 'WE_FORMKIT_VERSION', '0.2.13' );
 define('WE_FORMKIT_FILE', __FILE__);
 define('WE_FORMKIT_PATH', plugin_dir_path(__FILE__));
 define('WE_FORMKIT_URL', plugin_dir_url(__FILE__));
