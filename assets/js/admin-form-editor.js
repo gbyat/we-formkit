@@ -755,7 +755,7 @@
 					className: 'description',
 					text:
 						i18n.repeaterHint ||
-						'Add fields into this repeater on the canvas. The whole group is cloned for each row on the front end.',
+						'Drag or click fields from the library into this repeater. The whole group is cloned for each row on the front end.',
 				} )
 			);
 
@@ -1564,7 +1564,7 @@
 						className: 'wek-builder__repeater-empty',
 						text:
 							i18n.repeaterEmpty ||
-							'No fields yet. Drag fields here or use Add field.',
+							'Drop fields here from the library.',
 					} )
 				);
 			} else {
@@ -1573,31 +1573,6 @@
 				} );
 			}
 			card.appendChild( canvas );
-
-			card.appendChild(
-				el( 'div', { className: 'wek-builder__toolbar' }, [
-					el( 'button', {
-						type: 'button',
-						className: 'button',
-						text: i18n.addField || 'Add field',
-						onClick: function ( e ) {
-							e.stopPropagation();
-							ensureRepeaterDefaults( field );
-							const blank = createBlankField( 'text' );
-							field.type_options.fields.push( blank );
-							selection = {
-								type: 'nested',
-								sIndex: sIndex,
-								fIndex: fIndex,
-								nIndex: field.type_options.fields.length - 1,
-							};
-							activeTab = 'general';
-							syncHidden();
-							render();
-						},
-					} ),
-				] )
-			);
 
 			const resize = el( 'button', {
 				type: 'button',
@@ -1752,35 +1727,132 @@
 			box.appendChild( head );
 
 			const grid = el( 'div', { className: 'wek-builder__fields' } );
-			( section.fields || [] ).forEach( function ( field, fIndex ) {
-				grid.appendChild( renderFieldCard( section, field, sIndex, fIndex ) );
-			} );
+			const fields = section.fields || [];
+			if ( ! fields.length ) {
+				grid.appendChild(
+					el( 'p', {
+						className: 'wek-builder__fields-empty',
+						text:
+							i18n.sectionEmpty ||
+							'Click or drag a field from the library.',
+					} )
+				);
+			} else {
+				fields.forEach( function ( field, fIndex ) {
+					grid.appendChild( renderFieldCard( section, field, sIndex, fIndex ) );
+				} );
+			}
 			box.appendChild( grid );
-
-			box.appendChild(
-				el( 'div', { className: 'wek-builder__toolbar' }, [
-					el( 'button', {
-						type: 'button',
-						className: 'button',
-						text: i18n.addField || 'Add field',
-						onClick: function () {
-							section.fields = section.fields || [];
-							section.fields.push( createBlankField( 'text' ) );
-							selection = {
-								type: 'field',
-								sIndex: sIndex,
-								fIndex: section.fields.length - 1,
-							};
-							activeTab = 'general';
-							syncHidden();
-							render();
-						},
-					} ),
-				] )
-			);
 
 			bindSectionDrag( handle, box, sIndex );
 			return box;
+		}
+
+		function insertFieldAt( typeId, dropLoc ) {
+			if ( ! dropLoc ) {
+				addFieldOfType( typeId );
+				return;
+			}
+
+			if ( dropLoc.scope === 'repeater' ) {
+				if ( typeId === 'repeater' || ! isAllowedInRepeater( typeId ) ) {
+					announce(
+						i18n.repeaterTypeBlocked ||
+							'This field type cannot be used inside a repeater.'
+					);
+					return;
+				}
+				const parent =
+					schema.sections[ dropLoc.s ] && schema.sections[ dropLoc.s ].fields
+						? schema.sections[ dropLoc.s ].fields[ dropLoc.f ]
+						: null;
+				if ( ! parent || parent.type !== 'repeater' ) {
+					addFieldOfType( typeId );
+					return;
+				}
+				ensureRepeaterDefaults( parent );
+				const list = parent.type_options.fields;
+				let at = typeof dropLoc.index === 'number' ? dropLoc.index : list.length;
+				at = Math.max( 0, Math.min( at, list.length ) );
+				list.splice( at, 0, createBlankField( typeId ) );
+				selection = {
+					type: 'nested',
+					sIndex: dropLoc.s,
+					fIndex: dropLoc.f,
+					nIndex: at,
+				};
+				activeTab = 'general';
+				syncHidden();
+				render();
+				return;
+			}
+
+			if ( dropLoc.scope === 'section' && schema.sections[ dropLoc.s ] ) {
+				const section = schema.sections[ dropLoc.s ];
+				section.fields = section.fields || [];
+				let at = typeof dropLoc.index === 'number' ? dropLoc.index : section.fields.length;
+				at = Math.max( 0, Math.min( at, section.fields.length ) );
+				section.fields.splice( at, 0, createBlankField( typeId ) );
+				selection = { type: 'field', sIndex: dropLoc.s, fIndex: at };
+				activeTab = 'general';
+				syncHidden();
+				render();
+				return;
+			}
+
+			addFieldOfType( typeId );
+		}
+
+		function bindLibraryDrag( tile, typeId ) {
+			tile.addEventListener( 'pointerdown', function ( event ) {
+				if ( event.button !== 0 ) {
+					return;
+				}
+				event.preventDefault();
+
+				const startX = event.clientX;
+				const startY = event.clientY;
+				let started = false;
+				let dropLoc = null;
+
+				function clearIndicators() {
+					root.querySelectorAll( '.wek-builder__drop-line' ).forEach( function ( n ) {
+						n.remove();
+					} );
+					root.querySelectorAll( '.is-drop-target' ).forEach( function ( n ) {
+						n.classList.remove( 'is-drop-target' );
+					} );
+				}
+
+				const onMove = function ( e ) {
+					const dx = e.clientX - startX;
+					const dy = e.clientY - startY;
+					if ( ! started && Math.abs( dx ) + Math.abs( dy ) < 6 ) {
+						return;
+					}
+					started = true;
+					tile.classList.add( 'is-dragging' );
+					clearIndicators();
+					dropLoc = resolveDropLocation( e.clientX, e.clientY, null );
+				};
+
+				const onUp = function () {
+					document.removeEventListener( 'pointermove', onMove );
+					document.removeEventListener( 'pointerup', onUp );
+					document.removeEventListener( 'pointercancel', onUp );
+					tile.classList.remove( 'is-dragging' );
+					clearIndicators();
+					if ( ! started ) {
+						addFieldOfType( typeId );
+						return;
+					}
+					insertFieldAt( typeId, dropLoc );
+				};
+
+				document.addEventListener( 'pointermove', onMove );
+				document.addEventListener( 'pointerup', onUp );
+				document.addEventListener( 'pointercancel', onUp );
+			} );
 		}
 
 		function addFieldOfType( typeId ) {
@@ -1865,9 +1937,6 @@
 					type: 'button',
 					className: 'wek-builder-library__item',
 					title: label,
-					onClick: function () {
-						addFieldOfType( typeId );
-					},
 				}, [
 					el( 'span', {
 						className: 'wek-builder-library__icon dashicons ' + iconClass,
@@ -1878,6 +1947,7 @@
 						text: label,
 					} ),
 				] );
+				bindLibraryDrag( tile, typeId );
 				tiles.push( { node: tile, haystack: ( label + ' ' + typeId ).toLowerCase() } );
 				grid.appendChild( tile );
 			} );
