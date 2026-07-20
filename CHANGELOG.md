@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.14] - 2026-07-20
+
+- Enhance email configuration settings in the admin panel. Introduce default 'From' email and name options, and update related UI elements for better user experience. Improve CSS for SMTP password status display. Update translations for new email settings strings.
 ## [0.2.13] - 2026-07-20
 
 - Enhance email notification system by introducing SMTP settings in the admin panel. Implement test email functionality to verify SMTP configurations. Update CSS for improved layout in the admin interface. Revise AGENTS.md to include mail notifications in the live smoke checklist.

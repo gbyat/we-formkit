@@ -390,7 +390,7 @@ msgstr "Optional. Fallback: Plugin-Standard, dann Datenschutzerklärung der Webs
 msgid "Intro text"
 msgstr "Einleitungstext"
 
-#: includes/admin/class-settings-page.php:428
+#: includes/admin/class-settings-page.php:449
 #: src/admin-form-settings/index.jsx:412
 msgid "Save settings"
 msgstr "Einstellungen speichern"
@@ -477,52 +477,52 @@ msgstr "Formular konnte nicht importiert werden."
 msgid "%s (Copy)"
 msgstr "%s (Kopie)"
 
-#: includes/admin/class-settings-page.php:111
+#: includes/admin/class-settings-page.php:115
 msgid "Formkit Settings"
 msgstr "Formkit-Einstellungen"
 
-#: includes/admin/class-settings-page.php:113
+#: includes/admin/class-settings-page.php:117
 #: src/admin-form-settings/index.jsx:330
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
-#: includes/admin/class-settings-page.php:148
+#: includes/admin/class-settings-page.php:152
 msgid "Default notification email"
 msgstr "Standard-Benachrichtigungs-E-Mail"
 
-#: includes/admin/class-settings-page.php:412
+#: includes/admin/class-settings-page.php:433
 msgid "Retention (days)"
 msgstr "Aufbewahrung (Tage)"
 
-#: includes/admin/class-settings-page.php:415
+#: includes/admin/class-settings-page.php:436
 msgid "Submissions older than this are deleted automatically. Set 0 to disable automatic deletion."
 msgstr "Ältere Einträge werden automatisch gelöscht. 0 deaktiviert die automatische Löschung."
 
-#: includes/admin/class-settings-page.php:419
+#: includes/admin/class-settings-page.php:440
 msgid "Uninstall"
 msgstr "Deinstallation"
 
-#: includes/admin/class-settings-page.php:423
+#: includes/admin/class-settings-page.php:444
 msgid "Delete all forms and submissions when the plugin is uninstalled"
 msgstr "Alle Formulare und Einträge beim Deinstallieren des Plugins löschen"
 
-#: includes/admin/class-settings-page.php:447
+#: includes/admin/class-settings-page.php:468
 msgid "Privacy notes"
 msgstr "Hinweise zum Datenschutz"
 
-#: includes/admin/class-settings-page.php:449
+#: includes/admin/class-settings-page.php:470
 msgid "Form submissions are stored in this WordPress site only (no third-party form SaaS)."
 msgstr "Formulareinträge werden nur auf dieser WordPress-Website gespeichert (kein externes Formular-SaaS)."
 
-#: includes/admin/class-settings-page.php:450
+#: includes/admin/class-settings-page.php:471
 msgid "Spam protection uses a honeypot, timing check, and rate limiting — not reCAPTCHA."
 msgstr "Spamschutz nutzt Honeypot, Zeitprüfung und Ratenbegrenzung — kein reCAPTCHA."
 
-#: includes/admin/class-settings-page.php:451
+#: includes/admin/class-settings-page.php:472
 msgid "IP addresses are not stored in plain text; only a salted hash may be kept for abuse handling."
 msgstr "IP-Adressen werden nicht im Klartext gespeichert; ggf. nur ein gesalzener Hash zur Missbrauchsbekämpfung."
 
-#: includes/admin/class-settings-page.php:452
+#: includes/admin/class-settings-page.php:473
 msgid "Embed forms with the Formkit Form block. Optional secret-link tokens limit casual discovery."
 msgstr "Formulare mit dem Formkit-Formular-Block einbinden. Optionale Geheim-Link-Token erschweren zufälliges Auffinden."
 
@@ -1321,10 +1321,12 @@ msgid "— Select email field —"
 msgstr "— E-Mail-Feld wählen —"
 
 #: includes/admin/class-form-editor.php:1247
+#: includes/admin/class-settings-page.php:172
 msgid "From name"
 msgstr "Absendername"
 
 #: includes/admin/class-form-editor.php:1251
+#: includes/admin/class-settings-page.php:189
 msgid "From email"
 msgstr "Absender-E-Mail"
 
@@ -1337,7 +1339,7 @@ msgid "Reply-To"
 msgstr "Antwort an"
 
 #: includes/admin/class-form-editor.php:1261
-#: includes/admin/class-settings-page.php:259
+#: includes/admin/class-settings-page.php:280
 #: src/admin-form-settings/index.jsx:168
 msgid "None"
 msgstr "Keine"
@@ -1432,12 +1434,12 @@ msgstr "Danke-Seite"
 msgid "— Select a page —"
 msgstr "— Seite wählen —"
 
-#: includes/admin/class-settings-page.php:127
-#: includes/admin/class-settings-page.php:130
+#: includes/admin/class-settings-page.php:131
+#: includes/admin/class-settings-page.php:134
 msgid "Admin color scheme"
 msgstr "Admin-Farbschema"
 
-#: includes/admin/class-settings-page.php:144
+#: includes/admin/class-settings-page.php:148
 msgid "Accent color for the Formkit admin UI (builder, settings). Does not change frontend form colors."
 msgstr "Akzentfarbe für die Formkit-Admin-Oberfläche (Builder, Einstellungen). Ändert keine Frontend-Formularfarben."
 
@@ -1603,23 +1605,23 @@ msgstr "Du kannst diese Datei nicht herunterladen."
 msgid "File not found."
 msgstr "Datei nicht gefunden."
 
-#: includes/class-settings.php:56
+#: includes/class-settings.php:57
 msgid "Brick"
 msgstr "Ziegel"
 
-#: includes/class-settings.php:57
+#: includes/class-settings.php:58
 msgid "Teal"
 msgstr "Petrol"
 
-#: includes/class-settings.php:58
+#: includes/class-settings.php:59
 msgid "Blue"
 msgstr "Blau"
 
-#: includes/class-settings.php:59
+#: includes/class-settings.php:60
 msgid "Slate"
 msgstr "Schiefer"
 
-#: includes/class-settings.php:60
+#: includes/class-settings.php:61
 msgid "Violet"
 msgstr "Violett"
 
@@ -2214,56 +2216,46 @@ msgid "View Entry"
 msgstr "Eintrag anzeigen"
 
 #. translators: %s: site admin email
-#: includes/admin/class-settings-page.php:156
+#: includes/admin/class-settings-page.php:160
 #, php-format
 msgid "Prefilled with the WordPress admin email (%s). Change it to use a different default; leave as the admin email to follow that address."
 msgstr "Vorausgefüllt mit der WordPress-Admin-E-Mail (%s). Ändern für eine andere Standardadresse; Admin-E-Mail belassen, um dieser Adresse zu folgen."
 
-#: includes/admin/class-settings-page.php:165
-msgid "Default from name"
-msgstr "Standard-Absendername"
-
-#. translators: %s: site title
-#: includes/admin/class-settings-page.php:173
-#, php-format
-msgid "Used as the From name when a notification leaves it empty. Prefilled with the site title (%s)."
-msgstr "Wird als Absendername genutzt, wenn eine Benachrichtigung ihn leer lässt. Vorausgefüllt mit dem Seitentitel (%s)."
-
-#: includes/admin/class-settings-page.php:311
+#: includes/admin/class-settings-page.php:332
 msgid "Default privacy policy"
 msgstr "Standard-Datenschutzerklärung"
 
 #. translators: %s: privacy page title
-#: includes/admin/class-settings-page.php:320
+#: includes/admin/class-settings-page.php:341
 #, php-format
 msgid "WordPress privacy page: %s"
 msgstr "WordPress-Datenschutzseite: %s"
 
-#: includes/admin/class-settings-page.php:328
+#: includes/admin/class-settings-page.php:349
 msgid "WordPress privacy page (not set yet)"
 msgstr "WordPress-Datenschutzseite (noch nicht gesetzt)"
 
-#: includes/admin/class-settings-page.php:331
+#: includes/admin/class-settings-page.php:352
 msgid "Custom URL"
 msgstr "Benutzerdefinierte URL"
 
 #. translators: %s: link to WP privacy settings
-#: includes/admin/class-settings-page.php:339
+#: includes/admin/class-settings-page.php:360
 #, php-format
 msgid "No privacy policy page is set in WordPress. Configure one under %s, or choose a custom URL."
 msgstr "In WordPress ist keine Datenschutzseite gesetzt. Unter %s festlegen oder eine benutzerdefinierte URL wählen."
 
-#: includes/admin/class-settings-page.php:104
+#: includes/admin/class-settings-page.php:108
 msgid "Settings → Privacy"
 msgstr "Einstellungen → Datenschutz"
 
 #. translators: 1: privacy page title (linked when URL exists), 2: link to WP privacy settings
-#: includes/admin/class-settings-page.php:360
+#: includes/admin/class-settings-page.php:381
 #, php-format
 msgid "Uses the page from WordPress Privacy settings (%1$s). Change it under %2$s."
 msgstr "Nutzt die Seite aus den WordPress-Datenschutz-Einstellungen (%1$s). Ändern unter %2$s."
 
-#: includes/admin/class-settings-page.php:376
+#: includes/admin/class-settings-page.php:397
 msgid "Custom privacy policy URL"
 msgstr "Benutzerdefinierte Datenschutz-URL"
 
@@ -2283,27 +2275,27 @@ msgstr "Ungültig-Meldung"
 msgid "Leave empty to use Formkit Settings defaults. Use {label} for the field label."
 msgstr "Leer lassen für die Formkit-Einstellungen. {label} für die Feldbeschriftung verwenden."
 
-#: includes/admin/class-settings-page.php:382
+#: includes/admin/class-settings-page.php:403
 msgid "Validation"
 msgstr "Validierung"
 
-#: includes/admin/class-settings-page.php:385
+#: includes/admin/class-settings-page.php:406
 msgid "Default required message"
 msgstr "Standard-Pflichtfeld-Meldung"
 
-#: includes/admin/class-settings-page.php:394
+#: includes/admin/class-settings-page.php:415
 msgid "Used when a field has no own required message. Include {label} for the field label."
 msgstr "Wird verwendet, wenn ein Feld keine eigene Pflichtfeld-Meldung hat. {label} für die Feldbeschriftung einsetzen."
 
-#: includes/admin/class-settings-page.php:398
+#: includes/admin/class-settings-page.php:419
 msgid "Default invalid message"
 msgstr "Standard-Ungültig-Meldung"
 
-#: includes/admin/class-settings-page.php:407
+#: includes/admin/class-settings-page.php:428
 msgid "Used when a field has no own invalid message. Include {label} for the field label."
 msgstr "Wird verwendet, wenn ein Feld keine eigene Ungültig-Meldung hat. {label} für die Feldbeschriftung einsetzen."
 
-#: includes/admin/class-settings-page.php:408
+#: includes/admin/class-settings-page.php:429
 msgid "Errors appear under each field with an icon; color is never the only cue."
 msgstr "Fehler erscheinen unter jedem Feld mit einem Icon; Farbe ist nie das einzige Signal."
 
@@ -2408,7 +2400,7 @@ msgid "Select at most %d option(s)."
 msgstr "Höchstens %d Option(en) auswählen."
 
 #. translators: %d: page ID
-#: includes/class-settings.php:167
+#: includes/class-settings.php:183
 #, php-format
 msgid "Page #%d"
 msgstr "Seite #%d"
@@ -2549,79 +2541,79 @@ msgstr ""
 msgid "Select one or more types. Leave empty to use the WordPress default whitelist."
 msgstr ""
 
-#: includes/admin/class-settings-page.php:116
+#: includes/admin/class-settings-page.php:120
 msgid "Test email sent. Check the inbox (and spam folder)."
 msgstr "Test-E-Mail gesendet. Posteingang (und Spam-Ordner) prüfen."
 
-#: includes/admin/class-settings-page.php:118
+#: includes/admin/class-settings-page.php:122
 msgid "Test email failed. Check SMTP settings and server logs."
 msgstr "Test-E-Mail fehlgeschlagen. SMTP-Einstellungen und Server-Logs prüfen."
 
-#: includes/admin/class-settings-page.php:120
+#: includes/admin/class-settings-page.php:124
 msgid "Enter a valid recipient email for the transport test."
 msgstr "Eine gültige Empfänger-E-Mail für den Transport-Test eingeben."
 
-#: includes/admin/class-settings-page.php:182
+#: includes/admin/class-settings-page.php:169
 msgid "Mail transport"
 msgstr "Mail-Transport"
 
-#: includes/admin/class-settings-page.php:185
+#: includes/admin/class-settings-page.php:206
 msgid "Transport"
 msgstr "Transport"
 
-#: includes/admin/class-settings-page.php:194
+#: includes/admin/class-settings-page.php:215
 msgid "WordPress default (wp_mail)"
 msgstr "WordPress-Standard (wp_mail)"
 
-#: includes/admin/class-settings-page.php:198
+#: includes/admin/class-settings-page.php:219
 msgid "Custom SMTP"
 msgstr "Benutzerdefiniertes SMTP"
 
-#: includes/admin/class-settings-page.php:199
+#: includes/admin/class-settings-page.php:220
 msgid "Gmail (SMTP preset)"
 msgstr "Gmail (SMTP-Voreinstellung)"
 
-#: includes/admin/class-settings-page.php:244
+#: includes/admin/class-settings-page.php:265
 msgid "SMTP host"
 msgstr "SMTP-Host"
 
-#: includes/admin/class-settings-page.php:250
+#: includes/admin/class-settings-page.php:271
 msgid "SMTP port"
 msgstr "SMTP-Port"
 
-#: includes/admin/class-settings-page.php:256
+#: includes/admin/class-settings-page.php:277
 msgid "SMTP encryption"
 msgstr "SMTP-Verschlüsselung"
 
-#: includes/admin/class-settings-page.php:266
+#: includes/admin/class-settings-page.php:287
 msgid "SMTP authentication"
 msgstr "SMTP-Authentifizierung"
 
-#: includes/admin/class-settings-page.php:270
+#: includes/admin/class-settings-page.php:291
 msgid "Use username and password"
 msgstr "Benutzername und Passwort verwenden"
 
-#: includes/admin/class-settings-page.php:275
+#: includes/admin/class-settings-page.php:296
 msgid "SMTP username"
 msgstr "SMTP-Benutzername"
 
-#: includes/admin/class-settings-page.php:281
+#: includes/admin/class-settings-page.php:302
 msgid "SMTP password / app password"
 msgstr "SMTP-Passwort / App-Passwort"
 
-#: includes/admin/class-settings-page.php:305
+#: includes/admin/class-settings-page.php:326
 msgid "Leave blank if authentication is off."
 msgstr "Leer lassen, wenn Authentifizierung aus ist."
 
-#: includes/admin/class-settings-page.php:433
+#: includes/admin/class-settings-page.php:454
 msgid "Test mail transport"
 msgstr "Mail-Transport testen"
 
-#: includes/admin/class-settings-page.php:437
+#: includes/admin/class-settings-page.php:458
 msgid "Recipient"
 msgstr "Empfänger"
 
-#: includes/admin/class-settings-page.php:440
+#: includes/admin/class-settings-page.php:461
 msgid "Send test email"
 msgstr "Test-E-Mail senden"
 
@@ -2633,43 +2625,55 @@ msgstr "[Test] Formkit-Mail-Transport"
 msgid "This is a test email from WE Formkit mail transport settings."
 msgstr "Dies ist eine Test-E-Mail aus den WE-Formkit-Mail-Transport-Einstellungen."
 
-#: includes/admin/class-settings-page.php:196
+#: includes/admin/class-settings-page.php:217
 msgid "WE Subscribe to Posts (shared SMTP)"
 msgstr "WE Subscribe to Posts (gemeinsames SMTP)"
 
-#: includes/admin/class-settings-page.php:201
+#: includes/admin/class-settings-page.php:222
 msgid "Applies only to Formkit notification and test emails — not to other plugins (unless Subscribe to Posts is set to apply globally)."
 msgstr "Gilt nur für Formkit-Benachrichtigungen und Test-Mails — nicht für andere Plugins (außer Subscribe to Posts ist global aktiv)."
 
 #. translators: %s: link to WSTP mail settings
-#: includes/admin/class-settings-page.php:209
+#: includes/admin/class-settings-page.php:230
 #, php-format
 msgid "Uses the SMTP settings from %s. Change host, credentials, or Gmail preset there."
 msgstr "Verwendet die SMTP-Einstellungen von %s. Host, Zugangsdaten oder Gmail-Preset dort ändern."
 
-#: includes/admin/class-settings-page.php:210
-#: includes/admin/class-settings-page.php:225
+#: includes/admin/class-settings-page.php:231
+#: includes/admin/class-settings-page.php:246
 msgid "Post Subscriptions → Mail Transport"
 msgstr "Beitrags-Abos → Mail-Transport"
 
 #. translators: %s: link to WSTP mail settings
-#: includes/admin/class-settings-page.php:224
+#: includes/admin/class-settings-page.php:245
 #, php-format
 msgid "Subscribe to Posts is active, but SMTP is not configured yet. Set Custom SMTP or Gmail under %s."
 msgstr "Subscribe to Posts ist aktiv, aber SMTP ist noch nicht konfiguriert. Unter %s Custom SMTP oder Gmail einstellen."
 
-#: includes/admin/class-settings-page.php:237
+#: includes/admin/class-settings-page.php:258
 msgid "Note: Subscribe to Posts already applies its transport to all WordPress emails — Formkit can stay on WordPress default in that case."
 msgstr "Hinweis: Subscribe to Posts wendet den Transport bereits auf alle WordPress-E-Mails an — Formkit kann dann beim WordPress-Standard bleiben."
 
-#: includes/admin/class-settings-page.php:286
+#: includes/admin/class-settings-page.php:307
 msgid "Password saved"
 msgstr "Passwort gespeichert"
 
-#: includes/admin/class-settings-page.php:304
+#: includes/admin/class-settings-page.php:325
 msgid "Leave blank to keep the saved password, or type a new one to replace it."
 msgstr "Leer lassen, um das gespeicherte Passwort zu behalten, oder ein neues eingeben zum Ersetzen."
 
-#: includes/admin/class-settings-page.php:434
+#: includes/admin/class-settings-page.php:455
 msgid "Saves nothing — uses the currently stored transport settings. Save transport changes first."
 msgstr "Speichert nichts — verwendet die aktuell gespeicherten Transport-Einstellungen. Transport-Änderungen zuerst speichern."
+
+#. translators: %s: site title
+#: includes/admin/class-settings-page.php:180
+#, php-format
+msgid "Used when a notification leaves From name empty. Prefilled with the site title (%s)."
+msgstr "Wird verwendet, wenn eine Benachrichtigung den Absendernamen leer lässt. Vorausgefüllt mit dem Seitentitel (%s)."
+
+#. translators: %s: site admin email
+#: includes/admin/class-settings-page.php:197
+#, php-format
+msgid "Used when a notification leaves From email empty. Prefilled with the WordPress admin email (%s). For SMTP, use an address your provider allows."
+msgstr "Wird verwendet, wenn eine Benachrichtigung die Absender-E-Mail leer lässt. Vorausgefüllt mit der WordPress-Admin-E-Mail (%s). Bei SMTP eine Adresse verwenden, die der Anbieter erlaubt."
