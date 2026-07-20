@@ -61,9 +61,10 @@ function flattenSettings( payload ) {
 		privacy_url: payload.privacy_url || '',
 		secret_enabled: !! payload.secret_enabled,
 		style_preset: payload.style_preset || 'theme',
-		submit_label: payload.submit_label || __( 'Submit form', 'we-formkit' ),
-		submit_icon_svg: payload.submit_icon_svg || '',
-		submit_icon_position: payload.submit_icon_position || 'before',
+		label_weight: payload.label_weight || 'bold',
+		required_mark: payload.required_mark || 'asterisk',
+		help_placement: payload.help_placement || 'below_label',
+		help_style: payload.help_style || 'muted',
 		...colorsFromMap( colors ),
 	};
 }
@@ -79,9 +80,10 @@ function toApiPayload( data ) {
 		intro: data.intro || '',
 		privacy_url: data.privacy_url || '',
 		secret_enabled: !! data.secret_enabled,
-		submit_label: data.submit_label || '',
-		submit_icon_svg: data.submit_icon_svg || '',
-		submit_icon_position: data.submit_icon_position || 'before',
+		label_weight: data.label_weight || 'bold',
+		required_mark: data.required_mark || 'asterisk',
+		help_placement: data.help_placement || 'below_label',
+		help_style: data.help_style || 'muted',
 		style: {
 			preset: data.style_preset || 'theme',
 			colors,
@@ -138,37 +140,56 @@ function FormSettingsApp() {
 				Edit: 'toggle',
 			},
 			{
-				id: 'submit_label',
-				label: __( 'Submit button text', 'we-formkit' ),
+				id: 'label_weight',
+				label: __( 'Label weight', 'we-formkit' ),
 				type: 'text',
-				description: __(
-					'Label shown on the form submit button.',
-					'we-formkit'
-				),
+				elements: [
+					{ value: 'normal', label: __( 'Normal', 'we-formkit' ) },
+					{ value: 'bold', label: __( 'Bold', 'we-formkit' ) },
+				],
 			},
 			{
-				id: 'submit_icon_svg',
-				label: __( 'Submit button SVG icon', 'we-formkit' ),
+				id: 'required_mark',
+				label: __( 'Required mark', 'we-formkit' ),
 				type: 'text',
-				Edit: 'textarea',
 				description: __(
-					'Optional. Paste inline SVG markup (no scripts). Leave empty for text only.',
+					'Shown next to required field labels.',
 					'we-formkit'
 				),
+				elements: [
+					{
+						value: 'asterisk',
+						label: __( 'Asterisk (*)', 'we-formkit' ),
+					},
+					{
+						value: 'text',
+						label: __( 'Text “(required)”', 'we-formkit' ),
+					},
+					{ value: 'none', label: __( 'None', 'we-formkit' ) },
+				],
 			},
 			{
-				id: 'submit_icon_position',
-				label: __( 'Icon position', 'we-formkit' ),
+				id: 'help_placement',
+				label: __( 'Help text placement', 'we-formkit' ),
 				type: 'text',
 				elements: [
 					{
-						value: 'before',
-						label: __( 'Before text', 'we-formkit' ),
+						value: 'below_label',
+						label: __( 'Below label', 'we-formkit' ),
 					},
 					{
-						value: 'after',
-						label: __( 'After text', 'we-formkit' ),
+						value: 'below_field',
+						label: __( 'Below field', 'we-formkit' ),
 					},
+				],
+			},
+			{
+				id: 'help_style',
+				label: __( 'Help text style', 'we-formkit' ),
+				type: 'text',
+				elements: [
+					{ value: 'muted', label: __( 'Muted', 'we-formkit' ) },
+					{ value: 'boxed', label: __( 'Boxed', 'we-formkit' ) },
 				],
 			},
 			{
@@ -218,9 +239,17 @@ function FormSettingsApp() {
 						'intro',
 						'privacy_url',
 						'secret_enabled',
-						'submit_label',
-						'submit_icon_svg',
-						'submit_icon_position',
+					],
+				},
+				{
+					id: 'labels',
+					label: __( 'Labels & help', 'we-formkit' ),
+					layout: { type: 'card', isOpened: true },
+					children: [
+						'label_weight',
+						'required_mark',
+						'help_placement',
+						'help_style',
 					],
 				},
 				{

@@ -17,6 +17,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Frontend {
 
 	/**
+	 * Active appearance while rendering a form.
+	 *
+	 * @var array{label_weight:string,required_mark:string,help_placement:string,help_style:string}|null
+	 */
+	private static $appearance = null;
+
+	/**
 	 * @return void
 	 */
 	public static function register() {
@@ -329,11 +336,13 @@ final class Frontend {
 	 * @return void
 	 */
 	public static function render_form( $form_id, array $schema, $privacy_url ) {
-		$title      = $schema['title'] ? $schema['title'] : get_the_title( $form_id );
-		$pagination = Form_Schema::get_pagination( $form_id );
+		$title            = $schema['title'] ? $schema['title'] : get_the_title( $form_id );
+		$pagination       = Form_Schema::get_pagination( $form_id );
+		self::$appearance = Form_Schema::get_appearance( $form_id );
+		$appearance_class = Form_Schema::appearance_root_classes( $form_id );
 		?>
 		<div
-			class="we-formkit"
+			class="we-formkit <?php echo esc_attr( $appearance_class ); ?>"
 			data-we-formkit
 			data-form-id="<?php echo esc_attr( (string) $form_id ); ?>"
 			data-pagination="<?php echo esc_attr( $pagination ); ?>"
@@ -398,6 +407,28 @@ final class Frontend {
 			</form>
 		</div>
 		<?php
+		self::$appearance = null;
+	}
+
+	/**
+	 * Required indicator based on form appearance settings.
+	 *
+	 * @param bool $show Whether to show a required mark.
+	 * @return void
+	 */
+	private static function echo_required_mark( $show ) {
+		if ( ! $show ) {
+			return;
+		}
+		$mark = is_array( self::$appearance ) ? (string) ( self::$appearance['required_mark'] ?? 'asterisk' ) : 'asterisk';
+		if ( 'none' === $mark ) {
+			return;
+		}
+		if ( 'text' === $mark ) {
+			echo ' <span class="we-formkit__req we-formkit__req--text">' . esc_html__( '(required)', 'we-formkit' ) . '</span>';
+			return;
+		}
+		echo ' <span class="we-formkit__req" aria-hidden="true">*</span>';
 	}
 
 	/**
@@ -483,10 +514,7 @@ final class Frontend {
 					/>
 					<label for="<?php echo esc_attr( $input_id ); ?>">
 						<?php echo esc_html( $field['label'] ); ?>
-						<?php
-						if ( $req ) :
-							?>
-							<span class="we-formkit__req" aria-hidden="true">*</span><?php endif; ?>
+						<?php self::echo_required_mark( $req ); ?>
 					</label>
 				</div>
 				<?php if ( 'consent' === $type && $privacy_url ) : ?>
@@ -528,10 +556,7 @@ final class Frontend {
 				<fieldset class="we-formkit__fieldset">
 					<legend class="we-formkit__label">
 						<?php echo esc_html( $field['label'] ); ?>
-						<?php
-						if ( $req || $min_sel > 0 ) :
-							?>
-							<span class="we-formkit__req" aria-hidden="true">*</span><?php endif; ?>
+						<?php self::echo_required_mark( $req || $min_sel > 0 ); ?>
 					</legend>
 					<?php if ( '' !== $help_text ) : ?>
 						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $help_text ); ?></p>
@@ -562,10 +587,7 @@ final class Frontend {
 				<fieldset class="we-formkit__fieldset">
 					<legend class="we-formkit__label">
 						<?php echo esc_html( $field['label'] ); ?>
-						<?php
-						if ( $req ) :
-							?>
-							<span class="we-formkit__req" aria-hidden="true">*</span><?php endif; ?>
+						<?php self::echo_required_mark( $req ); ?>
 					</legend>
 					<?php if ( ! empty( $field['help'] ) ) : ?>
 						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
@@ -612,10 +634,7 @@ final class Frontend {
 				?>
 				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
-					<?php
-					if ( $req ) :
-						?>
-						<span class="we-formkit__req" aria-hidden="true">*</span><?php endif; ?>
+					<?php self::echo_required_mark( $req ); ?>
 				</label>
 				<select
 					id="<?php echo esc_attr( $input_id ); ?>"
@@ -639,10 +658,7 @@ final class Frontend {
 			<?php elseif ( 'textarea' === $type ) : ?>
 				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
-					<?php
-					if ( $req ) :
-						?>
-						<span class="we-formkit__req" aria-hidden="true">*</span><?php endif; ?>
+					<?php self::echo_required_mark( $req ); ?>
 				</label>
 				<textarea
 					id="<?php echo esc_attr( $input_id ); ?>"
@@ -675,10 +691,7 @@ final class Frontend {
 			<?php elseif ( 'upload' === $type ) : ?>
 				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
-					<?php
-					if ( $req ) :
-						?>
-						<span class="we-formkit__req" aria-hidden="true">*</span><?php endif; ?>
+					<?php self::echo_required_mark( $req ); ?>
 				</label>
 				<?php
 				$upload_attrs = $type_obj ? $type_obj->render_attributes( $field ) : array( 'type' => 'file' );
@@ -705,10 +718,7 @@ final class Frontend {
 			<?php elseif ( 'signature' === $type ) : ?>
 				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
-					<?php
-					if ( $req ) :
-						?>
-						<span class="we-formkit__req" aria-hidden="true">*</span><?php endif; ?>
+					<?php self::echo_required_mark( $req ); ?>
 				</label>
 				<?php
 				$pen = isset( $field['type_options']['pen_color'] ) ? (string) $field['type_options']['pen_color'] : '#222222';
@@ -738,10 +748,7 @@ final class Frontend {
 			<?php else : ?>
 				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
-					<?php
-					if ( $req ) :
-						?>
-						<span class="we-formkit__req" aria-hidden="true">*</span><?php endif; ?>
+					<?php self::echo_required_mark( $req ); ?>
 				</label>
 				<?php
 				$input_attrs = $type_obj ? $type_obj->render_attributes( $field ) : array( 'type' => $type );
@@ -796,9 +803,7 @@ final class Frontend {
 		?>
 		<div class="we-formkit__label we-formkit__label--repeater" id="<?php echo esc_attr( $input_id . '-label' ); ?>">
 			<?php echo esc_html( $field['label'] ); ?>
-			<?php if ( $req ) : ?>
-				<span class="we-formkit__req" aria-hidden="true">*</span>
-			<?php endif; ?>
+			<?php self::echo_required_mark( $req ); ?>
 		</div>
 		<?php if ( ! empty( $field['help'] ) ) : ?>
 			<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
@@ -899,9 +904,7 @@ final class Frontend {
 		<div class="we-formkit__repeater-control we-formkit__repeater-control--<?php echo esc_attr( $ctype ); ?>">
 			<label class="we-formkit__label we-formkit__label--nested" for="<?php echo esc_attr( $input_id ); ?>">
 				<?php echo esc_html( $label ); ?>
-				<?php if ( $req ) : ?>
-					<span class="we-formkit__req" aria-hidden="true">*</span>
-				<?php endif; ?>
+				<?php self::echo_required_mark( $req ); ?>
 			</label>
 			<?php if ( 'textarea' === $ctype ) : ?>
 				<textarea

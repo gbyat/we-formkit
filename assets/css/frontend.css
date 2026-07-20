@@ -33,8 +33,7 @@
 }
 
 .we-formkit__intro,
-.we-formkit__section-intro,
-.we-formkit__help {
+.we-formkit__section-intro {
 	color: var(--wek-muted);
 	margin: 0.35rem 0 0;
 	font-size: 0.95rem;
@@ -114,9 +113,109 @@
 	margin-bottom: 0.35rem;
 }
 
+.we-formkit--label-normal .we-formkit__label,
+.we-formkit--label-normal .we-formkit__fieldset legend {
+	font-weight: 500;
+}
+
+.we-formkit--label-bold .we-formkit__label,
+.we-formkit--label-bold .we-formkit__fieldset legend {
+	font-weight: 600;
+}
+
 .we-formkit__req {
 	color: var(--wek-danger);
 	margin-left: 0.15rem;
+}
+
+.we-formkit__req--text {
+	font-weight: 500;
+	font-size: 0.85em;
+}
+
+.we-formkit__help {
+	color: var(--wek-muted);
+	margin: 0.35rem 0 0;
+	font-size: 0.95rem;
+}
+
+.we-formkit--help-style-boxed .we-formkit__help {
+	margin-top: 0.45rem;
+	padding: 0.55rem 0.7rem;
+	border: 1px solid var(--wek-line);
+	border-radius: 8px;
+	background: var(--wek-accent-soft);
+	color: var(--wek-ink);
+}
+
+/* Help placement via flex order (label / control / help / error). */
+.we-formkit--help-below-label .we-formkit__field:not(.we-formkit__field--checkbox):not(.we-formkit__field--consent),
+.we-formkit--help-below-field .we-formkit__field:not(.we-formkit__field--checkbox):not(.we-formkit__field--consent) {
+	display: flex;
+	flex-direction: column;
+}
+
+.we-formkit--help-below-label .we-formkit__field > .we-formkit__label,
+.we-formkit--help-below-field .we-formkit__field > .we-formkit__label {
+	order: 1;
+}
+
+.we-formkit--help-below-label .we-formkit__field > .we-formkit__help {
+	order: 2;
+	margin-top: 0;
+	margin-bottom: 0.45rem;
+}
+
+.we-formkit--help-below-label .we-formkit__field > :not(.we-formkit__label):not(.we-formkit__help):not(.we-formkit__error) {
+	order: 3;
+}
+
+.we-formkit--help-below-field .we-formkit__field > .we-formkit__help {
+	order: 3;
+}
+
+.we-formkit--help-below-field .we-formkit__field > :not(.we-formkit__label):not(.we-formkit__help):not(.we-formkit__error) {
+	order: 2;
+}
+
+.we-formkit--help-below-label .we-formkit__field > .we-formkit__error,
+.we-formkit--help-below-field .we-formkit__field > .we-formkit__error {
+	order: 4;
+}
+
+.we-formkit--help-below-label .we-formkit__fieldset,
+.we-formkit--help-below-field .we-formkit__fieldset {
+	display: flex;
+	flex-direction: column;
+	border: 0;
+	margin: 0;
+	padding: 0;
+	min-width: 0;
+}
+
+.we-formkit--help-below-label .we-formkit__fieldset > .we-formkit__label,
+.we-formkit--help-below-field .we-formkit__fieldset > .we-formkit__label,
+.we-formkit--help-below-label .we-formkit__fieldset > legend,
+.we-formkit--help-below-field .we-formkit__fieldset > legend {
+	order: 1;
+}
+
+.we-formkit--help-below-label .we-formkit__fieldset > .we-formkit__help {
+	order: 2;
+	margin-top: 0;
+	margin-bottom: 0.45rem;
+}
+
+.we-formkit--help-below-label .we-formkit__fieldset > .we-formkit__choices {
+	order: 3;
+}
+
+.we-formkit--help-below-field .we-formkit__fieldset > .we-formkit__choices {
+	order: 2;
+}
+
+.we-formkit--help-below-field .we-formkit__fieldset > .we-formkit__help {
+	order: 3;
 }
 
 .we-formkit input[type="text"],

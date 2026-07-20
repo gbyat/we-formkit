@@ -114,7 +114,14 @@
 			schema.sections = [];
 		}
 
-		/** @type {{ type: string, sIndex: number, fIndex?: number }|null} */
+		const bootSubmit = ( window.weFormkitAdmin && window.weFormkitAdmin.submitButton ) || {};
+		const submitButton = {
+			label: bootSubmit.label || ( window.weFormkitAdmin && window.weFormkitAdmin.submitLabel ) || i18n.submitPreview || 'Submit form',
+			icon_svg: bootSubmit.icon_svg || '',
+			icon_position: bootSubmit.icon_position === 'after' ? 'after' : 'before',
+		};
+
+		/** @type {{ type: string, sIndex?: number, fIndex?: number, nIndex?: number }|null} */
 		let selection = null;
 		let activeTab = 'general';
 		const live = { node: null };
@@ -161,17 +168,24 @@
 			layout.classList.toggle( 'is-side-collapsed', !! chrome.sideCollapsed );
 			layout.style.setProperty(
 				'--wek-lib-w',
-				( chrome.libCollapsed ? 44 : clampWidth( chrome.libW, 200, 420 ) ) + 'px'
+				( chrome.libCollapsed ? 28 : clampWidth( chrome.libW, 200, 420 ) ) + 'px'
 			);
 			layout.style.setProperty(
 				'--wek-side-w',
-				( chrome.sideCollapsed ? 44 : clampWidth( chrome.sideW, 280, 560 ) ) + 'px'
+				( chrome.sideCollapsed ? 28 : clampWidth( chrome.sideW, 280, 560 ) ) + 'px'
 			);
 		}
 
-		function bindResize( handle, which, layout ) {
-			handle.addEventListener( 'mousedown', function ( event ) {
+		/** Panel column resize (not field-width — that is bindFieldWidthResize). */
+		function bindChromeResize( handle, which, layout ) {
+			handle.addEventListener( 'pointerdown', function ( event ) {
+				if ( event.button !== 0 ) {
+					return;
+				}
 				event.preventDefault();
+				event.stopPropagation();
+				handle.setPointerCapture( event.pointerId );
+				document.body.classList.add( 'wek-builder-is-resizing' );
 				const startX = event.clientX;
 				const startW = which === 'lib' ? chrome.libW : chrome.sideW;
 				function onMove( ev ) {
@@ -186,12 +200,16 @@
 					applyChrome( layout );
 				}
 				function onUp() {
-					document.removeEventListener( 'mousemove', onMove );
-					document.removeEventListener( 'mouseup', onUp );
+					handle.releasePointerCapture( event.pointerId );
+					handle.removeEventListener( 'pointermove', onMove );
+					handle.removeEventListener( 'pointerup', onUp );
+					handle.removeEventListener( 'pointercancel', onUp );
+					document.body.classList.remove( 'wek-builder-is-resizing' );
 					saveChrome();
 				}
-				document.addEventListener( 'mousemove', onMove );
-				document.addEventListener( 'mouseup', onUp );
+				handle.addEventListener( 'pointermove', onMove );
+				handle.addEventListener( 'pointerup', onUp );
+				handle.addEventListener( 'pointercancel', onUp );
 			} );
 		}
 
@@ -247,6 +265,18 @@
 				schema.intro = introInput.value;
 			}
 			hidden.value = JSON.stringify( schema );
+			const labelInput = document.getElementById( 'wek_submit_label' );
+			const iconInput = document.getElementById( 'wek_submit_icon_svg' );
+			const posInput = document.getElementById( 'wek_submit_icon_position' );
+			if ( labelInput ) {
+				labelInput.value = submitButton.label || '';
+			}
+			if ( iconInput ) {
+				iconInput.value = submitButton.icon_svg || '';
+			}
+			if ( posInput ) {
+				posInput.value = submitButton.icon_position || 'before';
+			}
 		}
 
 		function normalizeWidth( width ) {
@@ -321,6 +351,9 @@
 		function getSelected() {
 			if ( ! selection ) {
 				return null;
+			}
+			if ( selection.type === 'submit' ) {
+				return { kind: 'submit' };
 			}
 			const section = schema.sections[ selection.sIndex ];
 			if ( ! section ) {
@@ -419,9 +452,11 @@
 			selection = next;
 			if ( tab ) {
 				activeTab = tab;
-			} else if ( next && next.type === 'section' && activeTab === 'appearance' ) {
+			} else if ( next && ( next.type === 'section' || next.type === 'submit' ) && activeTab === 'appearance' ) {
 				activeTab = 'general';
 			} else if ( next && next.type === 'nested' && ( activeTab === 'appearance' || activeTab === 'conditional' ) ) {
+				activeTab = 'general';
+			} else if ( next && next.type === 'submit' ) {
 				activeTab = 'general';
 			}
 			render();
@@ -1382,6 +1417,91 @@
 				return;
 			}
 
+			if ( selected.kind === 'submit' ) {
+				aside.appendChild(
+					el( 'div', { className: 'wek-builder-sidebar__head' }, [
+						el( 'h3', {
+							className: 'wek-builder-sidebar__title',
+							id: 'wek-builder-sidebar-title',
+							text: i18n.submitSettings || 'Submit button',
+						} ),
+					] )
+				);
+				const panel = el( 'div', {
+					className: 'wek-builder-tabs__panel is-active',
+					role: 'tabpanel',
+				} );
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.submitSettingsHint ||
+							'Shown at the end of the form. Save the form to apply changes on the front end.',
+					} )
+				);
+				panel.appendChild(
+					fieldRow(
+						i18n.submitButtonText || 'Submit button text',
+						textInput( submitButton.label || '', function ( v ) {
+							submitButton.label = v;
+							syncHidden();
+							const preview = root.querySelector( '.wek-builder__submit-preview-text' );
+							if ( preview ) {
+								preview.textContent = v || i18n.submitPreview || 'Submit';
+							}
+						} )
+					)
+				);
+				panel.appendChild(
+					fieldRow(
+						i18n.submitIconSvg || 'SVG icon (optional)',
+						( function () {
+							const ta = el( 'textarea', {
+								rows: '4',
+								className: 'large-text code',
+								placeholder: '<svg …>',
+							} );
+							ta.value = submitButton.icon_svg || '';
+							ta.addEventListener( 'input', function () {
+								submitButton.icon_svg = ta.value;
+								syncHidden();
+								render();
+							} );
+							return ta;
+						} )()
+					)
+				);
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.submitIconSvgHint ||
+							'Paste inline SVG markup (no scripts). Leave empty for text only.',
+					} )
+				);
+				const posSelect = el( 'select' );
+				[
+					{ value: 'before', label: i18n.iconBefore || 'Before text' },
+					{ value: 'after', label: i18n.iconAfter || 'After text' },
+				].forEach( function ( opt ) {
+					posSelect.appendChild(
+						el( 'option', {
+							value: opt.value,
+							text: opt.label,
+							selected: submitButton.icon_position === opt.value,
+						} )
+					);
+				} );
+				posSelect.addEventListener( 'change', function () {
+					submitButton.icon_position = posSelect.value === 'after' ? 'after' : 'before';
+					syncHidden();
+					render();
+				} );
+				panel.appendChild( fieldRow( i18n.iconPosition || 'Icon position', posSelect ) );
+				aside.appendChild( panel );
+				return;
+			}
+
 			const isNested = selected.kind === 'nested';
 			const isField = selected.kind === 'field' || isNested;
 			const title = isField
@@ -1666,7 +1786,7 @@
 			}
 		}
 
-		function bindResize( handle, field, card ) {
+		function bindFieldWidthResize( handle, field, card ) {
 			handle.addEventListener( 'pointerdown', function ( event ) {
 				event.preventDefault();
 				event.stopPropagation();
@@ -2458,7 +2578,7 @@
 				f: null,
 				index: fIndex,
 			} );
-			bindResize( resize, field, card );
+			bindFieldWidthResize( resize, field, card );
 			return card;
 		}
 
@@ -2569,7 +2689,7 @@
 				f: null,
 				index: fIndex,
 			} );
-			bindResize( resize, field, card );
+			bindFieldWidthResize( resize, field, card );
 			return card;
 		}
 
@@ -2906,14 +3026,48 @@
 			);
 
 			if ( schema.sections.length ) {
-				sheet.appendChild(
-					el( 'div', {
-						className: 'wek-builder__submit-preview',
-						text:
-							( window.weFormkitAdmin && window.weFormkitAdmin.submitLabel ) ||
-							i18n.submitPreview ||
-							'Submit',
+				const submitSelected = selection && selection.type === 'submit';
+				const submitChildren = [];
+				const iconSvg = String( submitButton.icon_svg || '' ).trim();
+				const hasIcon = iconSvg.indexOf( '<svg' ) !== -1;
+				if ( hasIcon && submitButton.icon_position !== 'after' ) {
+					const iconBefore = el( 'span', {
+						className: 'wek-builder__submit-preview-icon',
+						'aria-hidden': 'true',
+					} );
+					iconBefore.innerHTML = iconSvg;
+					submitChildren.push( iconBefore );
+				}
+				submitChildren.push(
+					el( 'span', {
+						className: 'wek-builder__submit-preview-text',
+						text: submitButton.label || i18n.submitPreview || 'Submit',
 					} )
+				);
+				if ( hasIcon && submitButton.icon_position === 'after' ) {
+					const iconAfter = el( 'span', {
+						className: 'wek-builder__submit-preview-icon',
+						'aria-hidden': 'true',
+					} );
+					iconAfter.innerHTML = iconSvg;
+					submitChildren.push( iconAfter );
+				}
+				sheet.appendChild(
+					el(
+						'button',
+						{
+							type: 'button',
+							className:
+								'wek-builder__submit-preview' + ( submitSelected ? ' is-selected' : '' ),
+							title: i18n.editSubmit || 'Edit submit button',
+							'aria-pressed': submitSelected ? 'true' : 'false',
+							onClick: function ( event ) {
+								event.stopPropagation();
+								selectItem( { type: 'submit' }, 'general' );
+							},
+						},
+						submitChildren
+					)
 				);
 			}
 
@@ -2960,7 +3114,7 @@
 				'aria-orientation': 'vertical',
 				title: i18n.resizeLibrary || 'Drag to resize',
 			} );
-			bindResize( libResize, 'lib', layout );
+			bindChromeResize( libResize, 'lib', layout );
 			libWrap.appendChild( libToggle );
 			libWrap.appendChild( library );
 			libWrap.appendChild( libResize );
@@ -3006,7 +3160,7 @@
 				'aria-orientation': 'vertical',
 				title: i18n.resizeSettings || 'Drag to resize',
 			} );
-			bindResize( sideResize, 'side', layout );
+			bindChromeResize( sideResize, 'side', layout );
 			sideWrap.appendChild( sideResize );
 			sideWrap.appendChild( sideToggle );
 			sideWrap.appendChild( aside );

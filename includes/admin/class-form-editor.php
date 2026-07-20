@@ -345,7 +345,9 @@ final class Form_Editor {
 		$submit = $form_id > 0
 			? Form_Schema::get_submit_button( (int) $form_id )
 			: array(
-				'label' => __( 'Submit form', 'we-formkit' ),
+				'label'         => __( 'Submit form', 'we-formkit' ),
+				'icon_svg'      => '',
+				'icon_position' => 'before',
 			);
 
 		wp_localize_script(
@@ -353,6 +355,11 @@ final class Form_Editor {
 			'weFormkitAdmin',
 			array(
 				'fieldTypes'        => $field_types,
+				'submitButton'      => array(
+					'label'         => (string) $submit['label'],
+					'icon_svg'      => (string) ( $submit['icon_svg'] ?? '' ),
+					'icon_position' => (string) ( $submit['icon_position'] ?? 'before' ),
+				),
 				'submitLabel'       => (string) $submit['label'],
 				'i18n'              => array(
 					'section'             => __( 'Section', 'we-formkit' ),
@@ -428,7 +435,16 @@ final class Form_Editor {
 					'tabGeneral'          => __( 'General', 'we-formkit' ),
 					'tabAppearance'       => __( 'Appearance', 'we-formkit' ),
 					'tabConditional'      => __( 'Conditional', 'we-formkit' ),
-					'selectHint'          => __( 'Select a field or section to edit its settings.', 'we-formkit' ),
+					'selectHint'          => __( 'Select a field, section, or the submit button to edit its settings.', 'we-formkit' ),
+					'submitSettings'      => __( 'Submit button', 'we-formkit' ),
+					'submitSettingsHint'  => __( 'Shown at the end of the form. Save the form to apply changes on the front end.', 'we-formkit' ),
+					'submitButtonText'    => __( 'Submit button text', 'we-formkit' ),
+					'submitIconSvg'       => __( 'SVG icon (optional)', 'we-formkit' ),
+					'submitIconSvgHint'   => __( 'Paste inline SVG markup (no scripts). Leave empty for text only.', 'we-formkit' ),
+					'iconPosition'        => __( 'Icon position', 'we-formkit' ),
+					'iconBefore'          => __( 'Before text', 'we-formkit' ),
+					'iconAfter'           => __( 'After text', 'we-formkit' ),
+					'editSubmit'          => __( 'Edit submit button', 'we-formkit' ),
 					'dragHandle'          => __( 'Drag to reorder', 'we-formkit' ),
 					'resizeHandle'        => __( 'Drag to resize', 'we-formkit' ),
 					'resizeHint'          => __( 'You can also drag the right edge of a field on the canvas to change its width.', 'we-formkit' ),
@@ -735,6 +751,18 @@ final class Form_Editor {
 		<input type="hidden" name="form_id" value="<?php echo esc_attr( (string) $form_id ); ?>" />
 		<input type="hidden" name="wek_save_view" value="fields" />
 		<textarea name="wek_schema_json" id="wek_schema_json" class="wek-admin__schema-input" hidden><?php echo esc_textarea( $schema_json ); ?></textarea>
+		<?php
+		$submit_boot = $form_id > 0
+			? Form_Schema::get_submit_button( $form_id )
+			: array(
+				'label'         => __( 'Submit form', 'we-formkit' ),
+				'icon_svg'      => '',
+				'icon_position' => 'before',
+			);
+		?>
+		<input type="hidden" name="wek_submit_label" id="wek_submit_label" value="<?php echo esc_attr( (string) $submit_boot['label'] ); ?>" />
+		<input type="hidden" name="wek_submit_icon_svg" id="wek_submit_icon_svg" value="<?php echo esc_attr( (string) $submit_boot['icon_svg'] ); ?>" />
+		<input type="hidden" name="wek_submit_icon_position" id="wek_submit_icon_position" value="<?php echo esc_attr( (string) $submit_boot['icon_position'] ); ?>" />
 
 		<div class="wek-fields-bar">
 			<a class="wek-fields-bar__back" href="<?php echo esc_url( $forms_url ); ?>" title="<?php esc_attr_e( 'All Forms', 'we-formkit' ); ?>">
@@ -862,13 +890,9 @@ final class Form_Editor {
 
 		$style_stored = $form_id > 0 ? Form_Style::get( $form_id ) : Form_Style::normalize( array() );
 		$colors       = $form_id > 0 ? Form_Style::editable_colors( $form_id ) : Form_Style::theme_defaults();
-		$submit       = $form_id > 0
-			? Form_Schema::get_submit_button( $form_id )
-			: array(
-				'label'         => __( 'Submit form', 'we-formkit' ),
-				'icon_svg'      => '',
-				'icon_position' => 'before',
-			);
+		$appear       = $form_id > 0
+			? Form_Schema::get_appearance( $form_id )
+			: Form_Schema::normalize_appearance( array() );
 
 		wp_localize_script(
 			'we-formkit-admin-form-settings',
@@ -886,16 +910,17 @@ final class Form_Editor {
 				'themeColors'   => Form_Style::theme_defaults(),
 				'formkitColors' => Form_Style::formkit_defaults(),
 				'settings'      => array(
-					'title'                => (string) $title,
-					'slug'                 => (string) $slug,
-					'intro'                => (string) ( $schema['intro'] ?? '' ),
-					'privacy_url'          => (string) $privacy,
-					'secret_enabled'       => ! empty( $secret['enabled'] ),
-					'style_preset'         => (string) $style_stored['preset'],
-					'colors'               => $colors,
-					'submit_label'         => (string) $submit['label'],
-					'submit_icon_svg'      => (string) $submit['icon_svg'],
-					'submit_icon_position' => (string) $submit['icon_position'],
+					'title'          => (string) $title,
+					'slug'           => (string) $slug,
+					'intro'          => (string) ( $schema['intro'] ?? '' ),
+					'privacy_url'    => (string) $privacy,
+					'secret_enabled' => ! empty( $secret['enabled'] ),
+					'style_preset'   => (string) $style_stored['preset'],
+					'colors'         => $colors,
+					'label_weight'   => (string) $appear['label_weight'],
+					'required_mark'  => (string) $appear['required_mark'],
+					'help_placement' => (string) $appear['help_placement'],
+					'help_style'     => (string) $appear['help_style'],
 				),
 			)
 		);
@@ -2063,6 +2088,17 @@ final class Form_Editor {
 		Form_Schema::set_pagination( $form_id, $pagination );
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		Drafts::set_enabled( $form_id, ! empty( $_POST['wek_save_resume'] ) );
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		Form_Schema::set_submit_button(
+			$form_id,
+			array(
+				'label'         => isset( $_POST['wek_submit_label'] ) ? wp_unslash( (string) $_POST['wek_submit_label'] ) : '',
+				'icon_svg'      => isset( $_POST['wek_submit_icon_svg'] ) ? wp_unslash( (string) $_POST['wek_submit_icon_svg'] ) : '',
+				'icon_position' => isset( $_POST['wek_submit_icon_position'] ) ? wp_unslash( (string) $_POST['wek_submit_icon_position'] ) : 'before',
+			)
+		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		wp_safe_redirect( admin_url( 'admin.php?page=we-formkit-form&form_id=' . $form_id . '&view=fields&saved=1' ) );
 		exit;

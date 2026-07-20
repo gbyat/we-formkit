@@ -26,6 +26,7 @@ final class Form_Schema {
 	public const META_CONFIRMATION         = '_wek_form_confirmation';
 	public const META_PAGINATION           = '_wek_form_pagination';
 	public const META_SUBMIT_BUTTON        = '_wek_form_submit_button';
+	public const META_APPEARANCE           = '_wek_form_appearance';
 
 	public const SUB_FORM_ID    = '_wek_submission_form_id';
 	public const SUB_DATA       = '_wek_submission_data';
@@ -389,6 +390,84 @@ final class Form_Schema {
 			'icon_position' => $pos,
 		);
 		update_post_meta( (int) $form_id, self::META_SUBMIT_BUTTON, wp_json_encode( $payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+	}
+
+	/**
+	 * Form-wide label / help appearance presets.
+	 *
+	 * @param int $form_id Form ID.
+	 * @return array{label_weight:string,required_mark:string,help_placement:string,help_style:string}
+	 */
+	public static function get_appearance( $form_id ) {
+		$form_id = (int) $form_id;
+		$raw     = get_post_meta( $form_id, self::META_APPEARANCE, true );
+		$decoded = is_string( $raw ) && '' !== $raw ? json_decode( $raw, true ) : null;
+		if ( ! is_array( $decoded ) ) {
+			$decoded = array();
+		}
+		return self::normalize_appearance( $decoded );
+	}
+
+	/**
+	 * @param int                  $form_id Form ID.
+	 * @param array<string, mixed> $data    Appearance data.
+	 * @return void
+	 */
+	public static function set_appearance( $form_id, array $data ) {
+		$payload = self::normalize_appearance( $data );
+		update_post_meta( (int) $form_id, self::META_APPEARANCE, wp_json_encode( $payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+	}
+
+	/**
+	 * @param array<string, mixed> $data Raw.
+	 * @return array{label_weight:string,required_mark:string,help_placement:string,help_style:string}
+	 */
+	public static function normalize_appearance( array $data ) {
+		$weight = isset( $data['label_weight'] ) ? sanitize_key( (string) $data['label_weight'] ) : 'bold';
+		if ( ! in_array( $weight, array( 'normal', 'bold' ), true ) ) {
+			$weight = 'bold';
+		}
+
+		$mark = isset( $data['required_mark'] ) ? sanitize_key( (string) $data['required_mark'] ) : 'asterisk';
+		if ( ! in_array( $mark, array( 'asterisk', 'text', 'none' ), true ) ) {
+			$mark = 'asterisk';
+		}
+
+		$placement = isset( $data['help_placement'] ) ? sanitize_key( (string) $data['help_placement'] ) : 'below_label';
+		if ( ! in_array( $placement, array( 'below_label', 'below_field' ), true ) ) {
+			$placement = 'below_label';
+		}
+
+		$style = isset( $data['help_style'] ) ? sanitize_key( (string) $data['help_style'] ) : 'muted';
+		if ( ! in_array( $style, array( 'muted', 'boxed' ), true ) ) {
+			$style = 'muted';
+		}
+
+		return array(
+			'label_weight'   => $weight,
+			'required_mark'  => $mark,
+			'help_placement' => $placement,
+			'help_style'     => $style,
+		);
+	}
+
+	/**
+	 * CSS modifier classes for the form root.
+	 *
+	 * @param int $form_id Form ID.
+	 * @return string
+	 */
+	public static function appearance_root_classes( $form_id ) {
+		$a = self::get_appearance( $form_id );
+		return implode(
+			' ',
+			array(
+				'we-formkit--label-' . $a['label_weight'],
+				'we-formkit--req-' . $a['required_mark'],
+				'we-formkit--help-' . $a['help_placement'],
+				'we-formkit--help-style-' . $a['help_style'],
+			)
+		);
 	}
 
 	/**
