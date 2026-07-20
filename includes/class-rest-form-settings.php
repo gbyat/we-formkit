@@ -203,6 +203,7 @@ final class Rest_Form_Settings {
 				'required_mark'  => isset( $params['required_mark'] ) ? (string) $params['required_mark'] : 'asterisk',
 				'help_placement' => isset( $params['help_placement'] ) ? (string) $params['help_placement'] : 'below_label',
 				'help_style'     => isset( $params['help_style'] ) ? (string) $params['help_style'] : 'muted',
+				'font_family'    => isset( $params['font_family'] ) ? (string) $params['font_family'] : 'inherit',
 			)
 		);
 
@@ -239,17 +240,18 @@ final class Rest_Form_Settings {
 			'secret_url'   => $secret_url,
 			'secret_token' => (string) ( $secret['token'] ?? '' ),
 			'settings'     => array(
-				'title'                => (string) ( $schema['title'] ?? get_the_title( $form_id ) ),
-				'slug'                 => (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true ),
-				'intro'                => (string) ( $schema['intro'] ?? '' ),
-				'privacy_url'          => (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true ),
-				'secret_enabled'       => ! empty( $secret['enabled'] ),
-				'style_preset'         => (string) $style['preset'],
-				'colors'               => $colors,
-				'label_weight'         => (string) $appear['label_weight'],
-				'required_mark'        => (string) $appear['required_mark'],
-				'help_placement'       => (string) $appear['help_placement'],
-				'help_style'           => (string) $appear['help_style'],
+				'title'          => (string) ( $schema['title'] ?? get_the_title( $form_id ) ),
+				'slug'           => (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true ),
+				'intro'          => (string) ( $schema['intro'] ?? '' ),
+				'privacy_url'    => (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true ),
+				'secret_enabled' => ! empty( $secret['enabled'] ),
+				'style_preset'   => (string) $style['preset'],
+				'colors'         => $colors,
+				'label_weight'   => (string) $appear['label_weight'],
+				'required_mark'  => (string) $appear['required_mark'],
+				'help_placement' => (string) $appear['help_placement'],
+				'help_style'     => (string) $appear['help_style'],
+				'font_family'    => (string) $appear['font_family'],
 			),
 		);
 	}

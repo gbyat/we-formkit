@@ -169,7 +169,99 @@ final class Form_Style {
 			}
 			$parts[] = $var . ':' . $colors[ $key ];
 		}
+
+		$font_css = self::resolve_font_family_css( $form_id );
+		if ( '' !== $font_css ) {
+			$parts[] = '--wek-font-family:' . $font_css;
+		}
+
 		return implode( ';', $parts );
+	}
+
+	/**
+	 * CSS value for --wek-font-family, or empty to inherit the theme.
+	 *
+	 * @param int $form_id Form ID.
+	 * @return string
+	 */
+	public static function resolve_font_family_css( $form_id ) {
+		$appear = Form_Schema::get_appearance( $form_id );
+		$slug   = isset( $appear['font_family'] ) ? (string) $appear['font_family'] : 'inherit';
+		if ( 'inherit' === $slug || '' === $slug ) {
+			return '';
+		}
+
+		$stack = '';
+		foreach ( self::theme_font_families() as $font ) {
+			if ( $slug === (string) $font['slug'] ) {
+				$stack = (string) $font['fontFamily'];
+				break;
+			}
+		}
+		if ( '' === $stack ) {
+			return '';
+		}
+
+		// Prefer the Global Styles preset variable; fall back to the theme.json stack.
+		return 'var(--wp--preset--font-family--' . $slug . ',' . $stack . ')';
+	}
+
+	/**
+	 * Font families from theme.json + Site Editor Font Library (merged global settings).
+	 *
+	 * @return list<array{slug:string,name:string,fontFamily:string}>
+	 */
+	public static function theme_font_families(): array {
+		$out  = array();
+		$seen = array();
+
+		if ( ! function_exists( 'wp_get_global_settings' ) ) {
+			return $out;
+		}
+
+		$raw = wp_get_global_settings( array( 'typography', 'fontFamilies' ) );
+		if ( ! is_array( $raw ) ) {
+			return $out;
+		}
+
+		$groups = array();
+		if ( isset( $raw['theme'] ) || isset( $raw['custom'] ) || isset( $raw['default'] ) ) {
+			foreach ( array( 'theme', 'custom', 'default' ) as $origin ) {
+				if ( ! empty( $raw[ $origin ] ) && is_array( $raw[ $origin ] ) ) {
+					$groups[] = $raw[ $origin ];
+				}
+			}
+		} else {
+			$groups[] = $raw;
+		}
+
+		foreach ( $groups as $group ) {
+			foreach ( $group as $font ) {
+				if ( ! is_array( $font ) ) {
+					continue;
+				}
+				$slug  = isset( $font['slug'] ) ? (string) $font['slug'] : '';
+				$name  = isset( $font['name'] ) ? sanitize_text_field( (string) $font['name'] ) : '';
+				$stack = isset( $font['fontFamily'] ) ? trim( (string) $font['fontFamily'] ) : '';
+				if ( '' === $slug || '' === $stack || isset( $seen[ $slug ] ) ) {
+					continue;
+				}
+				if ( ! preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*$/i', $slug ) ) {
+					continue;
+				}
+				$seen[ $slug ] = true;
+				if ( '' === $name ) {
+					$name = $slug;
+				}
+				$out[] = array(
+					'slug'       => $slug,
+					'name'       => $name,
+					'fontFamily' => $stack,
+				);
+			}
+		}
+
+		return $out;
 	}
 
 	/**

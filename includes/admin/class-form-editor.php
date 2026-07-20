@@ -920,6 +920,7 @@ final class Form_Editor {
 					: '',
 				'themeColors'   => Form_Style::theme_defaults(),
 				'formkitColors' => Form_Style::formkit_defaults(),
+				'fontFamilies'  => Form_Style::theme_font_families(),
 				'settings'      => array(
 					'title'          => (string) $title,
 					'slug'           => (string) $slug,
@@ -932,6 +933,7 @@ final class Form_Editor {
 					'required_mark'  => (string) $appear['required_mark'],
 					'help_placement' => (string) $appear['help_placement'],
 					'help_style'     => (string) $appear['help_style'],
+					'font_family'    => (string) $appear['font_family'],
 				),
 			)
 		);
@@ -2362,8 +2364,13 @@ final class Form_Editor {
 			wp_die( esc_html__( 'No file uploaded.', 'we-formkit' ) );
 		}
 
-		$tmp  = (string) $_FILES['wek_import_file']['tmp_name']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$json = file_get_contents( $tmp ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$tmp = (string) $_FILES['wek_import_file']['tmp_name']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( ! is_uploaded_file( $tmp ) ) {
+			wp_die( esc_html__( 'Invalid upload.', 'we-formkit' ) );
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading verified PHP upload tmp.
+		$json = file_get_contents( $tmp );
 		$data = json_decode( (string) $json, true );
 		if ( ! is_array( $data ) ) {
 			wp_die( esc_html__( 'Invalid JSON file.', 'we-formkit' ) );

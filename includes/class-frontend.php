@@ -19,7 +19,7 @@ final class Frontend {
 	/**
 	 * Active appearance while rendering a form.
 	 *
-	 * @var array{label_weight:string,required_mark:string,help_placement:string,help_style:string}|null
+	 * @var array{label_weight:string,required_mark:string,help_placement:string,help_style:string,font_family:string}|null
 	 */
 	private static $appearance = null;
 

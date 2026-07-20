@@ -65,6 +65,7 @@ function flattenSettings( payload ) {
 		required_mark: payload.required_mark || 'asterisk',
 		help_placement: payload.help_placement || 'below_label',
 		help_style: payload.help_style || 'muted',
+		font_family: payload.font_family || 'inherit',
 		...colorsFromMap( colors ),
 	};
 }
@@ -84,6 +85,7 @@ function toApiPayload( data ) {
 		required_mark: data.required_mark || 'asterisk',
 		help_placement: data.help_placement || 'below_label',
 		help_style: data.help_style || 'muted',
+		font_family: data.font_family || 'inherit',
 		style: {
 			preset: data.style_preset || 'theme',
 			colors,
@@ -193,6 +195,27 @@ function FormSettingsApp() {
 				],
 			},
 			{
+				id: 'font_family',
+				label: __( 'Form font', 'we-formkit' ),
+				type: 'text',
+				description: __(
+					'Default inherits the theme / Site Editor typography. Optional choices come from theme.json and installed fonts.',
+					'we-formkit'
+				),
+				elements: [
+					{
+						value: 'inherit',
+						label: __( 'Theme default (inherit)', 'we-formkit' ),
+					},
+					...( Array.isArray( boot.fontFamilies )
+						? boot.fontFamilies.map( ( font ) => ( {
+								value: font.slug,
+								label: font.name || font.slug,
+						  } ) )
+						: [] ),
+				],
+			},
+			{
 				id: 'style_preset',
 				label: __( 'Color preset', 'we-formkit' ),
 				type: 'text',
@@ -251,6 +274,12 @@ function FormSettingsApp() {
 						'help_placement',
 						'help_style',
 					],
+				},
+				{
+					id: 'typography',
+					label: __( 'Typography', 'we-formkit' ),
+					layout: { type: 'card', isOpened: true },
+					children: [ 'font_family' ],
 				},
 				{
 					id: 'colors',

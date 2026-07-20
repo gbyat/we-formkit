@@ -397,7 +397,7 @@ final class Form_Schema {
 	 * Form-wide label / help appearance presets.
 	 *
 	 * @param int $form_id Form ID.
-	 * @return array{label_weight:string,required_mark:string,help_placement:string,help_style:string}
+	 * @return array{label_weight:string,required_mark:string,help_placement:string,help_style:string,font_family:string}
 	 */
 	public static function get_appearance( $form_id ) {
 		$form_id = (int) $form_id;
@@ -421,7 +421,7 @@ final class Form_Schema {
 
 	/**
 	 * @param array<string, mixed> $data Raw.
-	 * @return array{label_weight:string,required_mark:string,help_placement:string,help_style:string}
+	 * @return array{label_weight:string,required_mark:string,help_placement:string,help_style:string,font_family:string}
 	 */
 	public static function normalize_appearance( array $data ) {
 		$weight = isset( $data['label_weight'] ) ? sanitize_key( (string) $data['label_weight'] ) : 'bold';
@@ -444,11 +444,23 @@ final class Form_Schema {
 			$style = 'muted';
 		}
 
+		$font = isset( $data['font_family'] ) ? (string) $data['font_family'] : 'inherit';
+		if ( 'inherit' !== $font ) {
+			$allowed = array();
+			foreach ( Form_Style::theme_font_families() as $item ) {
+				$allowed[] = (string) $item['slug'];
+			}
+			if ( ! in_array( $font, $allowed, true ) ) {
+				$font = 'inherit';
+			}
+		}
+
 		return array(
 			'label_weight'   => $weight,
 			'required_mark'  => $mark,
 			'help_placement' => $placement,
 			'help_style'     => $style,
+			'font_family'    => $font,
 		);
 	}
 

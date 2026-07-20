@@ -301,12 +301,6 @@ final class Settings_Page {
 					<tr class="wek-mail-smtp-only">
 						<th><label for="wek_smtp_password"><?php esc_html_e( 'SMTP password / app password', 'we-formkit' ); ?></label></th>
 						<td>
-							<?php if ( $has_smtp_pw ) : ?>
-								<p class="wek-smtp-password-status" role="status">
-									<span class="wek-smtp-password-status__badge" aria-hidden="true">●●●●●●●●</span>
-									<strong><?php esc_html_e( 'Password saved', 'we-formkit' ); ?></strong>
-								</p>
-							<?php endif; ?>
 							<input
 								class="regular-text"
 								type="password"
@@ -317,15 +311,7 @@ final class Settings_Page {
 								autocomplete="new-password"
 								data-lpignore="true"
 								data-1p-ignore="true"
-								<?php echo $has_smtp_pw ? ' aria-describedby="wek-smtp-password-hint"' : ''; ?>
 							/>
-							<p class="description" id="wek-smtp-password-hint">
-								<?php
-								echo $has_smtp_pw
-									? esc_html__( 'Leave blank to keep the saved password, or type a new one to replace it.', 'we-formkit' )
-									: esc_html__( 'Leave blank if authentication is off.', 'we-formkit' );
-								?>
-							</p>
 						</td>
 					</tr>
 					<tr>
