@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.16] - 2026-07-20
+
+- Fix print/PDF export to show option labels and allow safe HTML in answers.
+- Refactor submission export and answer formatting functions to improve HTML escaping and field handling. Update format_value and format_answer_value methods to accept field configuration, ensuring proper display of values and enhanced security against XSS vulnerabilities.
 ## [0.2.15] - 2026-07-20
 
 - Enhance form appearance settings by adding font family options in the admin panel. Update related CSS for improved styling consistency across admin and frontend interfaces. Refactor JavaScript to support new typography settings and ensure proper handling of font family selections. Update translations for new font-related strings.

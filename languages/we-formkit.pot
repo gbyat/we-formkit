@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WE Formkit 0.2.15\n"
+"Project-Id-Version: WE Formkit 0.2.16\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/we-formkit\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-20T21:04:38+00:00\n"
+"POT-Creation-Date: 2026-07-20T21:46:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: we-formkit\n"
@@ -64,7 +64,7 @@ msgstr ""
 
 #: includes/admin/class-admin.php:87
 #: includes/admin/class-admin.php:88
-#: includes/admin/class-submissions.php:300
+#: includes/admin/class-submissions.php:301
 #: includes/class-post-types.php:67
 msgid "Submissions"
 msgstr ""
@@ -80,10 +80,10 @@ msgstr ""
 #: includes/admin/class-form-editor.php:2360
 #: includes/admin/class-settings-page.php:45
 #: includes/admin/class-settings-page.php:64
-#: includes/admin/class-submissions.php:86
-#: includes/admin/class-submissions.php:125
-#: includes/admin/class-submissions.php:193
-#: includes/admin/class-submissions.php:1027
+#: includes/admin/class-submissions.php:87
+#: includes/admin/class-submissions.php:126
+#: includes/admin/class-submissions.php:194
+#: includes/admin/class-submissions.php:1046
 #: includes/class-submission-list-export.php:37
 msgid "Invalid nonce."
 msgstr ""
@@ -103,7 +103,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:218
 #: includes/admin/class-form-editor.php:528
 #: includes/admin/class-settings-page.php:87
-#: includes/admin/class-submissions.php:236
+#: includes/admin/class-submissions.php:237
 msgid "You do not have permission to access this page."
 msgstr ""
 
@@ -139,8 +139,8 @@ msgid "Shortcode-free usage"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:255
-#: includes/admin/class-submissions.php:392
-#: includes/admin/class-submissions.php:839
+#: includes/admin/class-submissions.php:393
+#: includes/admin/class-submissions.php:841
 msgid "Actions"
 msgstr ""
 
@@ -179,7 +179,7 @@ msgid "Duplicate"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:283
-#: includes/admin/class-submissions.php:321
+#: includes/admin/class-submissions.php:322
 msgid "Export JSON"
 msgstr ""
 
@@ -777,7 +777,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:688
 #: includes/admin/class-form-editor.php:1020
-#: includes/admin/class-submissions.php:391
+#: includes/admin/class-submissions.php:392
 msgid "Notifications"
 msgstr ""
 
@@ -787,7 +787,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:690
 #: includes/admin/class-form-editor.php:816
-#: includes/admin/class-submissions.php:303
+#: includes/admin/class-submissions.php:304
 msgid "Entries"
 msgstr ""
 
@@ -796,7 +796,7 @@ msgid "Form editor sections"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:709
-#: includes/admin/class-submissions.php:263
+#: includes/admin/class-submissions.php:264
 msgid "Save the form first to view entries."
 msgstr ""
 
@@ -871,8 +871,8 @@ msgstr ""
 #: includes/admin/class-form-editor.php:1035
 #: includes/admin/class-form-editor.php:1102
 #: includes/admin/class-form-editor.php:1452
-#: includes/admin/class-submissions.php:838
-#: includes/admin/class-submissions.php:948
+#: includes/admin/class-submissions.php:840
+#: includes/admin/class-submissions.php:950
 msgid "Status"
 msgstr ""
 
@@ -908,7 +908,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:1067
 #: includes/admin/class-form-editor.php:1488
 #: includes/admin/class-form-editor.php:1493
-#: includes/admin/class-submissions.php:873
+#: includes/admin/class-submissions.php:875
 msgid "Active"
 msgstr ""
 
@@ -916,7 +916,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:1067
 #: includes/admin/class-form-editor.php:1488
 #: includes/admin/class-form-editor.php:1493
-#: includes/admin/class-submissions.php:873
+#: includes/admin/class-submissions.php:875
 msgid "Inactive"
 msgstr ""
 
@@ -1146,7 +1146,7 @@ msgid "Select from Media Library"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:1584
-#: includes/admin/class-submissions.php:365
+#: includes/admin/class-submissions.php:366
 #: includes/class-frontend.php:744
 msgid "Clear"
 msgstr ""
@@ -1524,152 +1524,152 @@ msgstr ""
 msgid "Embed forms with the Formkit Form block. Optional secret-link tokens limit casual discovery."
 msgstr ""
 
-#: includes/admin/class-submissions.php:91
-#: includes/admin/class-submissions.php:722
-#: includes/admin/class-submissions.php:1033
+#: includes/admin/class-submissions.php:92
+#: includes/admin/class-submissions.php:723
+#: includes/admin/class-submissions.php:1052
 #: includes/class-notifications.php:68
 #: includes/class-submission-export.php:28
 msgid "Submission not found."
 msgstr ""
 
-#: includes/admin/class-submissions.php:304
+#: includes/admin/class-submissions.php:305
 msgid "Submissions for this form only."
 msgstr ""
 
-#: includes/admin/class-submissions.php:320
+#: includes/admin/class-submissions.php:321
 msgid "Export CSV"
 msgstr ""
 
-#: includes/admin/class-submissions.php:327
+#: includes/admin/class-submissions.php:328
 msgid "All"
 msgstr ""
 
-#: includes/admin/class-submissions.php:328
-#: includes/admin/class-submissions.php:427
+#: includes/admin/class-submissions.php:329
+#: includes/admin/class-submissions.php:428
 msgid "Unread"
 msgstr ""
 
-#: includes/admin/class-submissions.php:329
-#: includes/admin/class-submissions.php:526
-#: includes/admin/class-submissions.php:954
+#: includes/admin/class-submissions.php:330
+#: includes/admin/class-submissions.php:527
+#: includes/admin/class-submissions.php:956
 msgid "Spam"
 msgstr ""
 
-#: includes/admin/class-submissions.php:330
-#: includes/admin/class-submissions.php:522
-#: includes/admin/class-submissions.php:527
-#: includes/admin/class-submissions.php:952
+#: includes/admin/class-submissions.php:331
+#: includes/admin/class-submissions.php:523
+#: includes/admin/class-submissions.php:528
+#: includes/admin/class-submissions.php:954
 msgid "Trash"
 msgstr ""
 
-#: includes/admin/class-submissions.php:361
+#: includes/admin/class-submissions.php:362
 msgid "Search entries"
 msgstr ""
 
-#: includes/admin/class-submissions.php:362
+#: includes/admin/class-submissions.php:363
 msgid "Search by ID, title, answers, or source URL…"
 msgstr ""
 
-#: includes/admin/class-submissions.php:363
+#: includes/admin/class-submissions.php:364
 msgid "Search"
 msgstr ""
 
 #. translators: %d: number of entries shown
-#: includes/admin/class-submissions.php:374
+#: includes/admin/class-submissions.php:375
 #, php-format
 msgid "%d item"
 msgid_plural "%d items"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/class-submissions.php:384
-#: includes/admin/class-submissions.php:926
+#: includes/admin/class-submissions.php:385
+#: includes/admin/class-submissions.php:928
 msgid "Entry ID"
 msgstr ""
 
-#: includes/admin/class-submissions.php:385
+#: includes/admin/class-submissions.php:386
 msgid "Summary"
 msgstr ""
 
-#: includes/admin/class-submissions.php:387
-#: includes/admin/class-submissions.php:934
+#: includes/admin/class-submissions.php:388
+#: includes/admin/class-submissions.php:936
 #: includes/class-frontend.php:136
 #: includes/class-post-types.php:42
 msgid "Form"
 msgstr ""
 
-#: includes/admin/class-submissions.php:389
-#: includes/admin/class-submissions.php:938
+#: includes/admin/class-submissions.php:390
+#: includes/admin/class-submissions.php:940
 msgid "Source URL"
 msgstr ""
 
-#: includes/admin/class-submissions.php:390
-#: includes/admin/class-submissions.php:930
+#: includes/admin/class-submissions.php:391
+#: includes/admin/class-submissions.php:932
 msgid "Submitted"
 msgstr ""
 
-#: includes/admin/class-submissions.php:399
+#: includes/admin/class-submissions.php:400
 msgid "No submissions yet."
 msgstr ""
 
-#: includes/admin/class-submissions.php:447
+#: includes/admin/class-submissions.php:448
 msgid "View"
 msgstr ""
 
-#: includes/admin/class-submissions.php:449
+#: includes/admin/class-submissions.php:450
 msgid "PDF"
 msgstr ""
 
-#: includes/admin/class-submissions.php:466
+#: includes/admin/class-submissions.php:467
 msgid "Entry moved to Trash."
 msgstr ""
 
-#: includes/admin/class-submissions.php:467
+#: includes/admin/class-submissions.php:468
 msgid "Entry restored."
 msgstr ""
 
-#: includes/admin/class-submissions.php:468
+#: includes/admin/class-submissions.php:469
 msgid "Entry permanently deleted."
 msgstr ""
 
-#: includes/admin/class-submissions.php:469
+#: includes/admin/class-submissions.php:470
 msgid "Entry marked as spam."
 msgstr ""
 
-#: includes/admin/class-submissions.php:470
+#: includes/admin/class-submissions.php:471
 msgid "Entry removed from spam."
 msgstr ""
 
-#: includes/admin/class-submissions.php:471
+#: includes/admin/class-submissions.php:472
 msgid "Entry marked as read."
 msgstr ""
 
-#: includes/admin/class-submissions.php:472
+#: includes/admin/class-submissions.php:473
 msgid "Entry marked as unread."
 msgstr ""
 
-#: includes/admin/class-submissions.php:515
+#: includes/admin/class-submissions.php:516
 msgid "Restore"
 msgstr ""
 
-#: includes/admin/class-submissions.php:516
+#: includes/admin/class-submissions.php:517
 msgid "Delete permanently"
 msgstr ""
 
-#: includes/admin/class-submissions.php:516
+#: includes/admin/class-submissions.php:517
 msgid "Delete this entry permanently?"
 msgstr ""
 
-#: includes/admin/class-submissions.php:521
+#: includes/admin/class-submissions.php:522
 msgid "Not spam"
 msgstr ""
 
-#: includes/admin/class-submissions.php:676
+#: includes/admin/class-submissions.php:677
 msgid "None sent"
 msgstr ""
 
 #. translators: 1: success count, 2: recipient preview
-#: includes/admin/class-submissions.php:685
+#: includes/admin/class-submissions.php:686
 #, php-format
 msgid "%1$d sent (%2$s)"
 msgid_plural "%1$d sent (%2$s)"
@@ -1677,101 +1677,101 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: entry ID
-#: includes/admin/class-submissions.php:753
+#: includes/admin/class-submissions.php:754
 #, php-format
 msgid "Entry #%d"
 msgstr ""
 
-#: includes/admin/class-submissions.php:761
+#: includes/admin/class-submissions.php:762
 msgid "Notes saved."
 msgstr ""
 
 #. translators: 1: sent count, 2: failed count
-#: includes/admin/class-submissions.php:776
+#: includes/admin/class-submissions.php:777
 #, php-format
 msgid "Notification resend finished. Sent: %1$d, failed: %2$d."
 msgstr ""
 
-#: includes/admin/class-submissions.php:791
+#: includes/admin/class-submissions.php:792
 msgid "Back to form entries"
 msgstr ""
 
-#: includes/admin/class-submissions.php:793
+#: includes/admin/class-submissions.php:794
 msgid "Back to submissions"
 msgstr ""
 
-#: includes/admin/class-submissions.php:796
+#: includes/admin/class-submissions.php:797
 msgid "Export PDF"
 msgstr ""
 
-#: includes/admin/class-submissions.php:809
+#: includes/admin/class-submissions.php:810
 msgid "Answers"
 msgstr ""
 
-#: includes/admin/class-submissions.php:813
+#: includes/admin/class-submissions.php:814
 msgid "No answers stored."
 msgstr ""
 
-#: includes/admin/class-submissions.php:832
+#: includes/admin/class-submissions.php:834
 msgid "Resend notifications"
 msgstr ""
 
-#: includes/admin/class-submissions.php:833
+#: includes/admin/class-submissions.php:835
 msgid "Resend uses the current notification templates and this entry’s answers — handy to check HTML layout. “To me” sends only to your WordPress account email."
 msgstr ""
 
-#: includes/admin/class-submissions.php:837
-#: includes/admin/class-submissions.php:979
+#: includes/admin/class-submissions.php:839
+#: includes/admin/class-submissions.php:981
 #: includes/class-form-notifications.php:326
 msgid "Notification"
 msgstr ""
 
-#: includes/admin/class-submissions.php:877
+#: includes/admin/class-submissions.php:879
 msgid "Resend"
 msgstr ""
 
-#: includes/admin/class-submissions.php:878
+#: includes/admin/class-submissions.php:880
 msgid "Send to me"
 msgstr ""
 
-#: includes/admin/class-submissions.php:901
+#: includes/admin/class-submissions.php:903
 msgid "Resend all active"
 msgstr ""
 
-#: includes/admin/class-submissions.php:913
-#: includes/class-submission-export.php:153
+#: includes/admin/class-submissions.php:915
+#: includes/class-submission-export.php:154
 msgid "Internal notes"
 msgstr ""
 
-#: includes/admin/class-submissions.php:914
+#: includes/admin/class-submissions.php:916
 msgid "Answers cannot be edited. Notes are for your team only."
 msgstr ""
 
-#: includes/admin/class-submissions.php:916
+#: includes/admin/class-submissions.php:918
 msgid "Save notes"
 msgstr ""
 
-#: includes/admin/class-submissions.php:923
+#: includes/admin/class-submissions.php:925
 msgid "Entry details"
 msgstr ""
 
-#: includes/admin/class-submissions.php:956
+#: includes/admin/class-submissions.php:958
 msgid "Inbox"
 msgstr ""
 
-#: includes/admin/class-submissions.php:965
+#: includes/admin/class-submissions.php:967
 msgid "Notifications sent"
 msgstr ""
 
-#: includes/admin/class-submissions.php:967
+#: includes/admin/class-submissions.php:969
 msgid "No notification delivery has been recorded for this entry yet."
 msgstr ""
 
-#: includes/admin/class-submissions.php:987
+#: includes/admin/class-submissions.php:989
 msgid "Sent"
 msgstr ""
 
-#: includes/admin/class-submissions.php:987
+#: includes/admin/class-submissions.php:989
 msgid "Failed"
 msgstr ""
 
@@ -2254,7 +2254,7 @@ msgid "Entry: %1$s · %2$s"
 msgstr ""
 
 #. translators: %s: site name
-#: includes/class-submission-export.php:159
+#: includes/class-submission-export.php:160
 #, php-format
 msgid "Generated by %s"
 msgstr ""
