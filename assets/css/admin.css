@@ -10,6 +10,53 @@
 	box-sizing: border-box;
 }
 
+/*
+ * WP admin often mixes content-box on inputs/selects.
+ * Force border-box + max-width so padding stays inside the grid cell.
+ */
+.wek-admin input,
+.wek-admin select,
+.wek-admin textarea,
+.wek-admin button,
+.wek-admin .button,
+.wek-admin .page-title-action,
+.wek-admin .regular-text,
+.wek-admin .large-text,
+.wek-admin .small-text {
+	box-sizing: border-box;
+	max-width: 100%;
+}
+
+.wek-admin .form-table input[type="text"],
+.wek-admin .form-table input[type="email"],
+.wek-admin .form-table input[type="url"],
+.wek-admin .form-table input[type="number"],
+.wek-admin .form-table input[type="search"],
+.wek-admin .form-table input[type="tel"],
+.wek-admin .form-table input[type="password"],
+.wek-admin .form-table select,
+.wek-admin .form-table textarea,
+.wek-admin .form-table .regular-text,
+.wek-admin .form-table .large-text {
+	width: 100%;
+	max-width: 100%;
+}
+
+.wek-admin .wek-builder__option-row input,
+.wek-admin .wek-builder__option-row select,
+.wek-admin .wek-doc-rule select,
+.wek-admin .wek-doc-rule input,
+.wek-admin .wek-doc-rule__value select,
+.wek-admin .wek-doc-rule__value input {
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+}
+
+.wek-admin .wek-reveal[hidden] {
+	display: none !important;
+}
+
 .wek-admin {
 	--wek-accent: #8b3a3a;
 	--wek-accent-soft: #f6ebeb;
@@ -1607,6 +1654,21 @@ body.wek-scheme-violet .wek-admin {
 	margin: 0.2rem 0;
 }
 
-.wek-admin .wek-reveal[hidden] {
-	display: none !important;
+.wek-admin .wek-doc-rule {
+	display: grid;
+	grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 1fr);
+	gap: 0.4rem;
+	align-items: center;
+	margin: 0.4rem 0;
+}
+
+.wek-admin .wek-doc-rule__value[hidden] {
+	visibility: hidden;
+}
+
+.wek-admin .wek-doc-rule__value select,
+.wek-admin .wek-doc-rule__value input {
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
 }

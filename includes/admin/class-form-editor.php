@@ -1490,8 +1490,29 @@ final class Form_Editor {
 									<?php esc_html_e( 'Match any of the following (OR)', 'we-formkit' ); ?>
 								</label>
 							</p>
-							<p class="description"><?php esc_html_e( 'For checkboxes / multi-select, use “contains” with the option value (e.g. progressive).', 'we-formkit' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Pick a field and value. For checkboxes / multi-select, use “contains”.', 'we-formkit' ); ?></p>
 							<?php
+							$field_options_map = array();
+							foreach ( $fields as $fid => $field ) {
+								$opts = array();
+								if ( ! empty( $field['options'] ) && is_array( $field['options'] ) ) {
+									foreach ( $field['options'] as $opt ) {
+										if ( ! is_array( $opt ) ) {
+											continue;
+										}
+										$ov = isset( $opt['value'] ) ? (string) $opt['value'] : '';
+										$ol = isset( $opt['label'] ) ? (string) $opt['label'] : $ov;
+										if ( '' === $ov && '' === $ol ) {
+											continue;
+										}
+										$opts[] = array(
+											'value' => $ov,
+											'label' => '' !== $ol ? $ol : $ov,
+										);
+									}
+								}
+								$field_options_map[ $fid ] = $opts;
+							}
 							$rule_rows = $rules ? $rules : array(
 								array(
 									'field' => '',
@@ -1500,9 +1521,15 @@ final class Form_Editor {
 								),
 							);
 							foreach ( $rule_rows as $r_index => $rule ) :
+								$rule_field = (string) ( $rule['field'] ?? '' );
+								$rule_op    = (string) ( $rule['op'] ?? 'equals' );
+								$rule_val   = (string) ( $rule['value'] ?? '' );
+								$rule_opts  = isset( $field_options_map[ $rule_field ] ) ? $field_options_map[ $rule_field ] : array();
+								$use_select = ! empty( $rule_opts ) && in_array( $rule_op, array( 'equals', 'not_equals', 'contains' ), true );
+								$hide_value = in_array( $rule_op, array( 'is_checked', 'is_not_empty' ), true );
 								?>
-								<div class="wek-doc-rule" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.4rem;margin:0.4rem 0;">
-									<select name="<?php echo esc_attr( $prefix ); ?>[when][rules][<?php echo (int) $r_index; ?>][field]">
+								<div class="wek-doc-rule" data-wek-doc-rule>
+									<select class="wek-doc-rule__field" name="<?php echo esc_attr( $prefix ); ?>[when][rules][<?php echo (int) $r_index; ?>][field]" aria-label="<?php esc_attr_e( 'Depends on field', 'we-formkit' ); ?>">
 										<option value=""><?php esc_html_e( '— Select field —', 'we-formkit' ); ?></option>
 										<?php foreach ( $fields as $fid => $field ) : ?>
 											<?php
@@ -1512,19 +1539,31 @@ final class Form_Editor {
 											}
 											$label = isset( $field['label'] ) ? (string) $field['label'] : $fid;
 											?>
-											<option value="<?php echo esc_attr( $fid ); ?>" <?php selected( (string) ( $rule['field'] ?? '' ), $fid ); ?>><?php echo esc_html( $label . ' (' . $type . ')' ); ?></option>
+											<option value="<?php echo esc_attr( $fid ); ?>" <?php selected( $rule_field, $fid ); ?>><?php echo esc_html( $label . ' (' . $type . ')' ); ?></option>
 										<?php endforeach; ?>
 									</select>
-									<select name="<?php echo esc_attr( $prefix ); ?>[when][rules][<?php echo (int) $r_index; ?>][op]">
-										<option value="equals" <?php selected( (string) ( $rule['op'] ?? '' ), 'equals' ); ?>><?php esc_html_e( 'equals', 'we-formkit' ); ?></option>
-										<option value="not_equals" <?php selected( (string) ( $rule['op'] ?? '' ), 'not_equals' ); ?>><?php esc_html_e( 'not equals', 'we-formkit' ); ?></option>
-										<option value="contains" <?php selected( (string) ( $rule['op'] ?? '' ), 'contains' ); ?>><?php esc_html_e( 'contains', 'we-formkit' ); ?></option>
-										<option value="is_checked" <?php selected( (string) ( $rule['op'] ?? '' ), 'is_checked' ); ?>><?php esc_html_e( 'is checked', 'we-formkit' ); ?></option>
-										<option value="is_not_empty" <?php selected( (string) ( $rule['op'] ?? '' ), 'is_not_empty' ); ?>><?php esc_html_e( 'is not empty', 'we-formkit' ); ?></option>
+									<select class="wek-doc-rule__op" name="<?php echo esc_attr( $prefix ); ?>[when][rules][<?php echo (int) $r_index; ?>][op]" aria-label="<?php esc_attr_e( 'Operator', 'we-formkit' ); ?>">
+										<option value="equals" <?php selected( $rule_op, 'equals' ); ?>><?php esc_html_e( 'equals', 'we-formkit' ); ?></option>
+										<option value="not_equals" <?php selected( $rule_op, 'not_equals' ); ?>><?php esc_html_e( 'not equals', 'we-formkit' ); ?></option>
+										<option value="contains" <?php selected( $rule_op, 'contains' ); ?>><?php esc_html_e( 'contains', 'we-formkit' ); ?></option>
+										<option value="is_checked" <?php selected( $rule_op, 'is_checked' ); ?>><?php esc_html_e( 'is checked', 'we-formkit' ); ?></option>
+										<option value="is_not_empty" <?php selected( $rule_op, 'is_not_empty' ); ?>><?php esc_html_e( 'is not empty', 'we-formkit' ); ?></option>
 									</select>
-									<input type="text" name="<?php echo esc_attr( $prefix ); ?>[when][rules][<?php echo (int) $r_index; ?>][value]" value="<?php echo esc_attr( (string) ( $rule['value'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Value', 'we-formkit' ); ?>" />
+									<div class="wek-doc-rule__value" <?php echo $hide_value ? 'hidden' : ''; ?>>
+										<?php if ( $use_select ) : ?>
+											<select name="<?php echo esc_attr( $prefix ); ?>[when][rules][<?php echo (int) $r_index; ?>][value]" aria-label="<?php esc_attr_e( 'Value', 'we-formkit' ); ?>">
+												<option value=""><?php esc_html_e( '— Select value —', 'we-formkit' ); ?></option>
+												<?php foreach ( $rule_opts as $opt ) : ?>
+													<option value="<?php echo esc_attr( $opt['value'] ); ?>" <?php selected( $rule_val, $opt['value'] ); ?>><?php echo esc_html( $opt['label'] ); ?></option>
+												<?php endforeach; ?>
+											</select>
+										<?php else : ?>
+											<input type="text" name="<?php echo esc_attr( $prefix ); ?>[when][rules][<?php echo (int) $r_index; ?>][value]" value="<?php echo esc_attr( $rule_val ); ?>" placeholder="<?php esc_attr_e( 'Value', 'we-formkit' ); ?>" aria-label="<?php esc_attr_e( 'Value', 'we-formkit' ); ?>" />
+										<?php endif; ?>
+									</div>
 								</div>
 							<?php endforeach; ?>
+							<script type="application/json" id="wek-doc-field-options"><?php echo wp_json_encode( $field_options_map, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON blob for admin JS. ?></script>
 						</div>
 					</td>
 				</tr>
@@ -1558,6 +1597,87 @@ final class Form_Editor {
 				el.addEventListener('change', syncReveal);
 			});
 			syncReveal();
+
+			var fieldOptions = {};
+			var optionsNode = document.getElementById('wek-doc-field-options');
+			if (optionsNode && optionsNode.textContent) {
+				try {
+					fieldOptions = JSON.parse(optionsNode.textContent) || {};
+				} catch (e) {
+					fieldOptions = {};
+				}
+			}
+			var i18nSelectValue = <?php echo wp_json_encode( __( '— Select value —', 'we-formkit' ) ); ?>;
+			var i18nValue = <?php echo wp_json_encode( __( 'Value', 'we-formkit' ) ); ?>;
+
+			function paintDocRuleValue(rule) {
+				var fieldSel = rule.querySelector('.wek-doc-rule__field');
+				var opSel = rule.querySelector('.wek-doc-rule__op');
+				var valueWrap = rule.querySelector('.wek-doc-rule__value');
+				if (!fieldSel || !opSel || !valueWrap) return;
+
+				var op = opSel.value || 'equals';
+				var fieldId = fieldSel.value || '';
+				var nameAttr = fieldSel.getAttribute('name') || '';
+				var valueName = nameAttr.replace('[field]', '[value]');
+				var previous = '';
+				var existing = valueWrap.querySelector('select, input');
+				if (existing) {
+					previous = existing.value || '';
+				}
+
+				if (op === 'is_checked' || op === 'is_not_empty') {
+					valueWrap.hidden = true;
+					valueWrap.innerHTML = '';
+					var hidden = document.createElement('input');
+					hidden.type = 'hidden';
+					hidden.name = valueName;
+					hidden.value = '';
+					valueWrap.appendChild(hidden);
+					return;
+				}
+
+				valueWrap.hidden = false;
+				valueWrap.innerHTML = '';
+				var options = fieldOptions[fieldId] || [];
+				if (options.length && (op === 'equals' || op === 'not_equals' || op === 'contains')) {
+					var sel = document.createElement('select');
+					sel.name = valueName;
+					sel.setAttribute('aria-label', i18nValue);
+					var placeholder = document.createElement('option');
+					placeholder.value = '';
+					placeholder.textContent = i18nSelectValue;
+					sel.appendChild(placeholder);
+					options.forEach(function (opt) {
+						var o = document.createElement('option');
+						o.value = opt.value != null ? String(opt.value) : '';
+						o.textContent = opt.label != null ? String(opt.label) : o.value;
+						if (previous && previous === o.value) {
+							o.selected = true;
+						}
+						sel.appendChild(o);
+					});
+					valueWrap.appendChild(sel);
+					return;
+				}
+
+				var input = document.createElement('input');
+				input.type = 'text';
+				input.name = valueName;
+				input.value = previous;
+				input.placeholder = i18nValue;
+				input.setAttribute('aria-label', i18nValue);
+				valueWrap.appendChild(input);
+			}
+
+			form.querySelectorAll('[data-wek-doc-rule]').forEach(function (rule) {
+				paintDocRuleValue(rule);
+				rule.querySelectorAll('.wek-doc-rule__field, .wek-doc-rule__op').forEach(function (el) {
+					el.addEventListener('change', function () {
+						paintDocRuleValue(rule);
+					});
+				});
+			});
 
 			var pick = document.getElementById('wek_doc_pick');
 			var clear = document.getElementById('wek_doc_clear');
