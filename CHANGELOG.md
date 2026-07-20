@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.15] - 2026-07-20
+
+- Refactor admin UI components and enhance form editor functionality. Update CSS for improved layout and visual consistency, including a new toggle input for field settings. Introduce a delete button for fields and streamline the form navigation. Add viewport meta tag for better responsiveness in exported submissions.
 ## [0.1.14] - 2026-07-20
 
 - Enhance admin form editor UI with a new search feature for fields, allowing users to filter available fields. Update CSS styles for improved visual consistency and accessibility, including new color tokens and layout adjustments. Introduce a sticky action bar for better usability when editing forms.
