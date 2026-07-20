@@ -34,15 +34,16 @@ final class Notifications {
 			return;
 		}
 
-		$data   = isset( $context['data'] ) && is_array( $context['data'] ) ? $context['data'] : array();
-		$schema = Form_Schema::get( $form_id );
-		$list   = Form_Notifications::get( $form_id );
+		$data         = isset( $context['data'] ) && is_array( $context['data'] ) ? $context['data'] : array();
+		$schema       = Form_Schema::get( $form_id );
+		$list         = Form_Notifications::get( $form_id );
+		$matched_docs = Form_Info_Documents::resolve_matching( $form_id, $data );
 
 		foreach ( $list as $notification ) {
 			if ( empty( $notification['enabled'] ) ) {
 				continue;
 			}
-			self::send_one( (int) $submission_id, $form_id, $schema, $data, $notification );
+			self::send_one( (int) $submission_id, $form_id, $schema, $data, $notification, $matched_docs );
 		}
 	}
 
@@ -51,16 +52,17 @@ final class Notifications {
 	 * @param int                  $form_id       Form ID.
 	 * @param array<string, mixed> $schema        Schema.
 	 * @param array<string, mixed> $data          Sanitized values.
-	 * @param array<string, mixed> $notification  Notification config.
+	 * @param array<string, mixed>       $notification  Notification config.
+	 * @param list<array<string, mixed>> $matched_docs  Resolved info documents.
 	 * @return void
 	 */
-	private static function send_one( $submission_id, $form_id, array $schema, array $data, array $notification ) {
+	private static function send_one( $submission_id, $form_id, array $schema, array $data, array $notification, array $matched_docs = array() ) {
 		$to = self::resolve_recipients( $notification, $data, $schema );
 		if ( empty( $to ) ) {
 			return;
 		}
 
-		$vars    = self::merge_vars( $submission_id, $form_id, $schema, $data, $notification );
+		$vars    = self::merge_vars( $submission_id, $form_id, $schema, $data, $notification, $matched_docs );
 		$subject = self::replace_tags( (string) $notification['subject'], $vars );
 		$body    = self::replace_tags( (string) $notification['message'], $vars );
 
@@ -97,6 +99,11 @@ final class Notifications {
 		$attachments = array();
 		if ( ! empty( $notification['attach_uploads'] ) ) {
 			$attachments = self::collect_attachment_paths( $schema, $data );
+		}
+
+		$info_paths = Form_Info_Documents::attachment_paths_for_notification( $matched_docs, (string) $notification['id'] );
+		if ( ! empty( $info_paths ) ) {
+			$attachments = array_values( array_unique( array_merge( $attachments, $info_paths ) ) );
 		}
 
 		/**
@@ -226,10 +233,11 @@ final class Notifications {
 	 * @param int                  $form_id       Form ID.
 	 * @param array<string, mixed> $schema        Schema.
 	 * @param array<string, mixed> $data          Values.
-	 * @param array<string, mixed> $notification  Notification.
+	 * @param array<string, mixed>       $notification  Notification.
+	 * @param list<array<string, mixed>> $matched_docs  Resolved info documents.
 	 * @return array<string, string>
 	 */
-	private static function merge_vars( $submission_id, $form_id, array $schema, array $data, array $notification ) {
+	private static function merge_vars( $submission_id, $form_id, array $schema, array $data, array $notification, array $matched_docs = array() ) {
 		$form_title = get_the_title( $form_id );
 		$edit_link  = admin_url( 'admin.php?page=we-formkit-submissions&action=edit&submission_id=' . (int) $submission_id );
 
@@ -243,6 +251,7 @@ final class Notifications {
 			'date'           => wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ),
 			'all_fields'     => self::format_fields_block( $schema, $data, $notification ),
 			'footer'         => (string) $notification['footer'],
+			'info_links'     => Form_Info_Documents::links_as_text( $matched_docs ),
 		);
 
 		foreach ( Form_Schema::fields_by_id( $schema ) as $field_id => $field ) {

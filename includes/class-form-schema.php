@@ -145,6 +145,16 @@ final class Form_Schema {
 	}
 
 	/**
+	 * Public wrapper for show_when / document condition normalization.
+	 *
+	 * @param mixed $rule Rule.
+	 * @return array{relation:string,rules:array<int,array<string,mixed>>}|null
+	 */
+	public static function normalize_condition( $rule ) {
+		return self::normalize_rule( $rule );
+	}
+
+	/**
 	 * Normalize show_when: legacy single rule or `{ relation, rules[] }`.
 	 *
 	 * @param mixed $rule Rule.

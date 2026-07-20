@@ -214,11 +214,15 @@ final class Rest_Api {
 			$page_url  = is_string( $permalink ) ? $permalink : '';
 		}
 
+		$matched_docs = Form_Info_Documents::resolve_matching( $form_id, $result['data'] );
+		$info_links   = Form_Info_Documents::download_links( $matched_docs );
+
 		return rest_ensure_response(
 			array(
-				'success'      => true,
-				'message'      => $confirmation['message'],
-				'confirmation' => array(
+				'success'        => true,
+				'message'        => $confirmation['message'],
+				'info_documents' => $info_links,
+				'confirmation'   => array(
 					'mode'         => $confirmation['mode'],
 					'message'      => $confirmation['message'],
 					'redirect_url' => $confirmation['redirect_url'],

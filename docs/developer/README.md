@@ -51,7 +51,11 @@ add_action(
 
 ### Notification merge tags
 
-Usable in subject, message, and footer: `{all_fields}`, `{form_title}`, `{submission_url}`, `{submission_id}`, `{form_id}`, `{date}`, `{site_name}`, `{admin_email}`, `{field:FIELD_ID}`, `{footer}`.
+Usable in subject, message, and footer: `{all_fields}`, `{form_title}`, `{submission_url}`, `{submission_id}`, `{form_id}`, `{date}`, `{site_name}`, `{admin_email}`, `{field:FIELD_ID}`, `{footer}`, `{info_links}` (matched info documents with download enabled).
+
+### Info documents
+
+Form meta `_wek_form_info_documents`: Media Library files with optional conditionals (`when` uses the same rule shape as field `show_when`). Delivery flags: `show_download` (confirmation + `{info_links}`), `attach_to_email` (+ optional `notification_ids`). Matching is deduped by attachment ID / filesystem path.
 
 ## REST
 

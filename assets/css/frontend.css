@@ -399,6 +399,32 @@
 	color: var(--wek-accent);
 }
 
+.we-formkit__info-docs {
+	margin: 0 0 1rem;
+	padding: 0.75rem 1rem;
+	border: 1px solid var(--wek-line, #d4d4d4);
+	border-radius: 6px;
+	background: #fff;
+}
+
+.we-formkit__info-docs[hidden] {
+	display: none !important;
+}
+
+.we-formkit__info-docs-title {
+	margin: 0 0 0.35rem;
+	font-weight: 600;
+}
+
+.we-formkit__info-docs-list {
+	margin: 0;
+	padding-left: 1.2rem;
+}
+
+.we-formkit__info-docs-list a {
+	color: var(--wek-accent);
+}
+
 .we-formkit__label--repeater {
 	display: block;
 	font-weight: 600;

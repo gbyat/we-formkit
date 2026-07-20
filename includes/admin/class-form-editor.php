@@ -10,6 +10,7 @@ namespace Webentwicklerin\WeFormkit\Admin;
 use Webentwicklerin\WeFormkit\Capabilities;
 use Webentwicklerin\WeFormkit\Drafts;
 use Webentwicklerin\WeFormkit\Fields\Repeater_Field;
+use Webentwicklerin\WeFormkit\Form_Info_Documents;
 use Webentwicklerin\WeFormkit\Form_Notifications;
 use Webentwicklerin\WeFormkit\Form_Schema;
 use Webentwicklerin\WeFormkit\Form_Style;
@@ -89,6 +90,10 @@ final class Form_Editor {
 		if ( isset( $_GET['wek_notify_action'] ) && isset( $_GET['form_id'] ) && isset( $_GET['notification_id'] ) && isset( $_GET['_wpnonce'] ) ) {
 			self::handle_notification_action();
 		}
+
+		if ( isset( $_GET['wek_doc_action'] ) && isset( $_GET['form_id'] ) && isset( $_GET['document_id'] ) && isset( $_GET['_wpnonce'] ) ) {
+			self::handle_document_action();
+		}
 	}
 
 	/**
@@ -153,6 +158,52 @@ final class Form_Editor {
 			$list = Form_Notifications::remove_by_id( $list, $notify_id );
 			Form_Notifications::save( $form_id, $list );
 			wp_safe_redirect( add_query_arg( 'notify_deleted', '1', $base ) );
+			exit;
+		}
+	}
+
+	/**
+	 * Toggle or delete an info document from the list view.
+	 *
+	 * @return void
+	 */
+	private static function handle_document_action() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$form_id = absint( $_GET['form_id'] );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$doc_id = sanitize_key( wp_unslash( (string) $_GET['document_id'] ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$action = sanitize_key( wp_unslash( (string) $_GET['wek_doc_action'] ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$nonce = sanitize_text_field( wp_unslash( (string) $_GET['_wpnonce'] ) );
+
+		if ( ! in_array( $action, array( 'toggle', 'delete' ), true ) || '' === $doc_id ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( $nonce, 'wek_doc_' . $action . '_' . $form_id . '_' . $doc_id ) ) {
+			wp_die( esc_html__( 'Invalid nonce.', 'we-formkit' ) );
+		}
+
+		$post = $form_id ? get_post( $form_id ) : null;
+		if ( ! $post || Post_Types::FORM !== $post->post_type ) {
+			wp_die( esc_html__( 'Form not found.', 'we-formkit' ) );
+		}
+
+		$list = Form_Info_Documents::get( $form_id );
+		$base = admin_url( 'admin.php?page=we-formkit-form&form_id=' . $form_id . '&view=documents' );
+
+		if ( 'toggle' === $action ) {
+			$list = Form_Info_Documents::toggle_enabled( $list, $doc_id );
+			Form_Info_Documents::save( $form_id, $list );
+			wp_safe_redirect( add_query_arg( 'doc_toggled', '1', $base ) );
+			exit;
+		}
+
+		if ( 'delete' === $action ) {
+			$list = Form_Info_Documents::remove_by_id( $list, $doc_id );
+			Form_Info_Documents::save( $form_id, $list );
+			wp_safe_redirect( add_query_arg( 'doc_deleted', '1', $base ) );
 			exit;
 		}
 	}
@@ -426,7 +477,7 @@ final class Form_Editor {
 		$form_id = isset( $_GET['form_id'] ) ? absint( $_GET['form_id'] ) : 0;
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$view          = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( (string) $_GET['view'] ) ) : 'fields';
-		$allowed_views = array( 'fields', 'settings', 'notifications', 'confirmations', 'entries' );
+		$allowed_views = array( 'fields', 'settings', 'notifications', 'documents', 'confirmations', 'entries' );
 		if ( ! in_array( $view, $allowed_views, true ) ) {
 			$view = 'fields';
 		}
@@ -462,6 +513,7 @@ final class Form_Editor {
 		$notifications = $form_id > 0
 			? Form_Notifications::get( $form_id )
 			: Form_Notifications::defaults( is_array( $schema ) ? $schema : array() );
+		$documents     = $form_id > 0 ? Form_Info_Documents::get( $form_id ) : array();
 
 		$schema_json = wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 		if ( false === $schema_json ) {
@@ -519,6 +571,12 @@ final class Form_Editor {
 		<?php if ( ! empty( $_GET['notify_duplicated'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Notification duplicated. Review the copy, then save.', 'we-formkit' ); ?></p></div>
 		<?php endif; ?>
+		<?php if ( ! empty( $_GET['doc_toggled'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Document status updated.', 'we-formkit' ); ?></p></div>
+		<?php endif; ?>
+		<?php if ( ! empty( $_GET['doc_deleted'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Document deleted.', 'we-formkit' ); ?></p></div>
+		<?php endif; ?>
 
 		<?php if ( 'fields' !== $view ) : ?>
 			<?php self::render_form_nav( $form_id, $view, $is_new ); ?>
@@ -531,6 +589,9 @@ final class Form_Editor {
 				break;
 			case 'notifications':
 				self::render_view_notifications( $form_id, $notifications, is_array( $schema ) ? $schema : array(), $is_new );
+				break;
+			case 'documents':
+				self::render_view_documents( $form_id, $documents, $notifications, is_array( $schema ) ? $schema : array(), $is_new );
 				break;
 			case 'confirmations':
 				self::render_view_confirmations( $form_id, $confirm, $is_new );
@@ -566,6 +627,7 @@ final class Form_Editor {
 			'fields'        => __( 'Fields', 'we-formkit' ),
 			'settings'      => __( 'Form Settings', 'we-formkit' ),
 			'notifications' => __( 'Notifications', 'we-formkit' ),
+			'documents'     => __( 'Documents', 'we-formkit' ),
 			'confirmations' => __( 'Confirmations', 'we-formkit' ),
 			'entries'       => __( 'Entries', 'we-formkit' ),
 		);
@@ -881,7 +943,7 @@ final class Form_Editor {
 			</div>
 
 			<p class="description">
-				<?php esc_html_e( 'Configure who receives emails after a submission. Use {all_fields}, {form_title}, {submission_url}, {date}, {site_name}, or {field:field_id} in subject and message.', 'we-formkit' ); ?>
+				<?php esc_html_e( 'Configure who receives emails after a submission. Use {all_fields}, {form_title}, {submission_url}, {date}, {site_name}, {info_links}, or {field:field_id} in subject and message.', 'we-formkit' ); ?>
 			</p>
 
 			<?php if ( $is_new ) : ?>
@@ -1191,6 +1253,385 @@ final class Form_Editor {
 	}
 
 	/**
+	 * @param int                        $form_id        Form ID.
+	 * @param list<array<string, mixed>> $documents      Documents.
+	 * @param list<array<string, mixed>> $notifications  Notifications (for attach targets).
+	 * @param array<string, mixed>       $schema         Schema.
+	 * @param bool                       $is_new         Whether new.
+	 * @return void
+	 */
+	private static function render_view_documents( $form_id, array $documents, array $notifications, array $schema, $is_new ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$edit_id = isset( $_GET['document'] ) ? sanitize_key( wp_unslash( (string) $_GET['document'] ) ) : '';
+
+		if ( 'new' === $edit_id ) {
+			self::render_document_edit( $form_id, Form_Info_Documents::blank(), $notifications, $schema, true );
+			return;
+		}
+		if ( '' !== $edit_id ) {
+			$current = Form_Info_Documents::find_by_id( $documents, $edit_id );
+			if ( null === $current ) {
+				echo '<div class="notice notice-error"><p>';
+				esc_html_e( 'Document not found.', 'we-formkit' );
+				echo '</p></div>';
+				self::render_documents_list( $form_id, $documents, $is_new );
+				return;
+			}
+			self::render_document_edit( $form_id, $current, $notifications, $schema, false );
+			return;
+		}
+
+		self::render_documents_list( $form_id, $documents, $is_new );
+	}
+
+	/**
+	 * @param int                        $form_id   Form ID.
+	 * @param list<array<string, mixed>> $documents Documents.
+	 * @param bool                       $is_new    Whether new.
+	 * @return void
+	 */
+	private static function render_documents_list( $form_id, array $documents, $is_new ) {
+		$list_url = admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $form_id . '&view=documents' );
+		$add_url  = add_query_arg( 'document', 'new', $list_url );
+		?>
+		<div class="wek-admin__settings-panel wek-admin__documents">
+			<div class="wek-notify-list__header">
+				<h2><?php esc_html_e( 'Info documents', 'we-formkit' ); ?></h2>
+				<a href="<?php echo esc_url( $add_url ); ?>" class="page-title-action"><?php esc_html_e( 'Add New', 'we-formkit' ); ?></a>
+			</div>
+
+			<p class="description">
+				<?php esc_html_e( 'Offer download links and/or email attachments when conditions match (for example a selected radio or checkbox option). The same file is only delivered once even if multiple rules match.', 'we-formkit' ); ?>
+			</p>
+
+			<?php if ( $is_new ) : ?>
+				<div class="notice notice-info inline"><p><?php esc_html_e( 'Save a document to create the form first.', 'we-formkit' ); ?></p></div>
+			<?php endif; ?>
+
+			<table class="wp-list-table widefat fixed striped table-view-list wek-notify-table">
+				<thead>
+					<tr>
+						<th scope="col" class="wek-notify-table__status"><?php esc_html_e( 'Status', 'we-formkit' ); ?></th>
+						<th scope="col" class="column-primary"><?php esc_html_e( 'Name', 'we-formkit' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'When', 'we-formkit' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'Delivery', 'we-formkit' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php if ( empty( $documents ) ) : ?>
+						<tr>
+							<td colspan="4"><?php esc_html_e( 'No documents yet. Add one to attach info PDFs to options or always.', 'we-formkit' ); ?></td>
+						</tr>
+					<?php else : ?>
+						<?php foreach ( $documents as $doc ) : ?>
+							<?php
+							$did       = (string) $doc['id'];
+							$edit_url  = add_query_arg( 'document', $did, $list_url );
+							$active    = ! empty( $doc['enabled'] );
+							$can_quick = $form_id > 0 && ! $is_new;
+							$when_lbl  = empty( $doc['when'] ) ? __( 'Always', 'we-formkit' ) : __( 'When conditions match', 'we-formkit' );
+							$delivery  = array();
+							if ( ! empty( $doc['show_download'] ) ) {
+								$delivery[] = __( 'Download link', 'we-formkit' );
+							}
+							if ( ! empty( $doc['attach_to_email'] ) ) {
+								$delivery[] = __( 'Email attachment', 'we-formkit' );
+							}
+							?>
+							<tr>
+								<td class="wek-notify-table__status">
+									<?php if ( $can_quick ) : ?>
+										<a
+											href="<?php echo esc_url( self::document_action_url( $form_id, $did, 'toggle' ) ); ?>"
+											class="wek-notify-status <?php echo $active ? 'wek-notify-status--active' : 'wek-notify-status--inactive'; ?>"
+											title="<?php echo esc_attr( $active ? __( 'Click to deactivate', 'we-formkit' ) : __( 'Click to activate', 'we-formkit' ) ); ?>"
+										>
+											<span class="wek-notify-status__dot" aria-hidden="true"></span>
+											<?php echo $active ? esc_html__( 'Active', 'we-formkit' ) : esc_html__( 'Inactive', 'we-formkit' ); ?>
+										</a>
+									<?php else : ?>
+										<span class="wek-notify-status <?php echo $active ? 'wek-notify-status--active' : 'wek-notify-status--inactive'; ?>">
+											<span class="wek-notify-status__dot" aria-hidden="true"></span>
+											<?php echo $active ? esc_html__( 'Active', 'we-formkit' ) : esc_html__( 'Inactive', 'we-formkit' ); ?>
+										</span>
+									<?php endif; ?>
+								</td>
+								<td class="column-primary">
+									<strong><a class="row-title" href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( (string) $doc['name'] ); ?></a></strong>
+									<div class="row-actions">
+										<span class="edit"><a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Edit', 'we-formkit' ); ?></a><?php echo $can_quick ? ' |' : ''; ?></span>
+										<?php if ( $can_quick ) : ?>
+											<span class="delete">
+												<a
+													class="submitdelete"
+													href="<?php echo esc_url( self::document_action_url( $form_id, $did, 'delete' ) ); ?>"
+													onclick="return confirm('<?php echo esc_js( __( 'Delete this document?', 'we-formkit' ) ); ?>');"
+												><?php esc_html_e( 'Delete', 'we-formkit' ); ?></a>
+											</span>
+										<?php endif; ?>
+									</div>
+								</td>
+								<td><?php echo esc_html( $when_lbl ); ?></td>
+								<td><?php echo esc_html( $delivery ? implode( ' · ', $delivery ) : '—' ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					<?php endif; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
+	}
+
+	/**
+	 * @param int                        $form_id       Form ID.
+	 * @param array<string, mixed>       $doc           Document.
+	 * @param list<array<string, mixed>> $notifications Notifications.
+	 * @param array<string, mixed>       $schema        Schema.
+	 * @param bool                       $is_new        Whether new document.
+	 * @return void
+	 */
+	private static function render_document_edit( $form_id, array $doc, array $notifications, array $schema, $is_new ) {
+		wp_enqueue_media();
+
+		$list_url  = admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $form_id . '&view=documents' );
+		$did       = (string) $doc['id'];
+		$prefix    = 'wek_document';
+		$aid       = (int) $doc['attachment_id'];
+		$file_url  = $aid > 0 ? wp_get_attachment_url( $aid ) : '';
+		$file_url  = is_string( $file_url ) ? $file_url : '';
+		$when      = isset( $doc['when'] ) && is_array( $doc['when'] ) ? $doc['when'] : null;
+		$rules     = $when && ! empty( $when['rules'] ) && is_array( $when['rules'] ) ? $when['rules'] : array();
+		$relation  = $when && isset( $when['relation'] ) && 'OR' === $when['relation'] ? 'OR' : 'AND';
+		$when_mode = empty( $rules ) ? 'always' : 'conditional';
+
+		$fields = Form_Schema::fields_by_id( $schema );
+		?>
+		<form method="post" class="wek-admin__settings-panel wek-admin__documents" id="wek-documents-form">
+			<?php wp_nonce_field( 'we_formkit_save_form', 'we_formkit_save_nonce' ); ?>
+			<input type="hidden" name="form_id" value="<?php echo esc_attr( (string) $form_id ); ?>" />
+			<input type="hidden" name="wek_save_view" value="documents" />
+			<input type="hidden" name="<?php echo esc_attr( $prefix ); ?>[id]" value="<?php echo esc_attr( $did ); ?>" />
+
+			<p><a href="<?php echo esc_url( $list_url ); ?>">&larr; <?php esc_html_e( 'Back to documents', 'we-formkit' ); ?></a></p>
+			<h2><?php echo $is_new ? esc_html__( 'Add document', 'we-formkit' ) : esc_html( (string) $doc['name'] ); ?></h2>
+
+			<table class="form-table" role="presentation">
+				<tr>
+					<th><?php esc_html_e( 'Enabled', 'we-formkit' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[enabled]" value="1" <?php checked( ! empty( $doc['enabled'] ) ); ?> />
+							<?php esc_html_e( 'Use this document when conditions match', 'we-formkit' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th><label for="wek_d_<?php echo esc_attr( $did ); ?>_name"><?php esc_html_e( 'Name', 'we-formkit' ); ?></label></th>
+					<td><input class="regular-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[name]" id="wek_d_<?php echo esc_attr( $did ); ?>_name" value="<?php echo esc_attr( (string) $doc['name'] ); ?>" /></td>
+				</tr>
+				<tr>
+					<th><?php esc_html_e( 'File', 'we-formkit' ); ?></th>
+					<td>
+						<input type="hidden" name="<?php echo esc_attr( $prefix ); ?>[attachment_id]" id="wek_doc_attachment_id" value="<?php echo esc_attr( (string) $aid ); ?>" />
+						<p id="wek_doc_file_label" class="description">
+							<?php
+							if ( $aid > 0 && '' !== $file_url ) {
+								echo esc_html( basename( $file_url ) ) . ' ';
+								echo '<a href="' . esc_url( $file_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Open', 'we-formkit' ) . '</a>';
+							} else {
+								esc_html_e( 'No file selected.', 'we-formkit' );
+							}
+							?>
+						</p>
+						<p>
+							<button type="button" class="button" id="wek_doc_pick"><?php esc_html_e( 'Select from Media Library', 'we-formkit' ); ?></button>
+							<button type="button" class="button" id="wek_doc_clear" <?php disabled( $aid <= 0 ); ?>><?php esc_html_e( 'Clear', 'we-formkit' ); ?></button>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th><?php esc_html_e( 'Delivery', 'we-formkit' ); ?></th>
+					<td>
+						<label style="display:block;margin:0.2rem 0;">
+							<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[show_download]" value="1" <?php checked( ! empty( $doc['show_download'] ) ); ?> />
+							<?php esc_html_e( 'Show download link after submit (and via {info_links} in emails)', 'we-formkit' ); ?>
+						</label>
+						<label style="display:block;margin:0.2rem 0;">
+							<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[attach_to_email]" value="1" <?php checked( ! empty( $doc['attach_to_email'] ) ); ?> data-wek-reveal="attach" />
+							<?php esc_html_e( 'Attach file to email notification(s)', 'we-formkit' ); ?>
+						</label>
+						<div class="wek-reveal" data-wek-when="attach:1" style="margin-top:0.5rem;padding:0.5rem;border:1px solid #c3c4c7;background:#fff;">
+							<p class="description"><?php esc_html_e( 'Leave all unchecked to attach to every enabled notification. Prefer the submitter confirmation.', 'we-formkit' ); ?></p>
+							<?php foreach ( $notifications as $n ) : ?>
+								<label style="display:block;margin:0.2rem 0;">
+									<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[notification_ids][]" value="<?php echo esc_attr( (string) $n['id'] ); ?>" <?php checked( in_array( (string) $n['id'], $doc['notification_ids'], true ) ); ?> />
+									<?php echo esc_html( (string) $n['name'] ); ?>
+								</label>
+							<?php endforeach; ?>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<th><?php esc_html_e( 'When', 'we-formkit' ); ?></th>
+					<td>
+						<select name="<?php echo esc_attr( $prefix ); ?>[when_mode]" id="wek_doc_when_mode" data-wek-reveal="when">
+							<option value="always" <?php selected( $when_mode, 'always' ); ?>><?php esc_html_e( 'Always', 'we-formkit' ); ?></option>
+							<option value="conditional" <?php selected( $when_mode, 'conditional' ); ?>><?php esc_html_e( 'When conditions match', 'we-formkit' ); ?></option>
+						</select>
+						<div class="wek-reveal" data-wek-when="when:conditional" style="margin-top:0.75rem;">
+							<p>
+								<label>
+									<input type="radio" name="<?php echo esc_attr( $prefix ); ?>[when][relation]" value="AND" <?php checked( $relation, 'AND' ); ?> />
+									<?php esc_html_e( 'Match all of the following (AND)', 'we-formkit' ); ?>
+								</label>
+								<br />
+								<label>
+									<input type="radio" name="<?php echo esc_attr( $prefix ); ?>[when][relation]" value="OR" <?php checked( $relation, 'OR' ); ?> />
+									<?php esc_html_e( 'Match any of the following (OR)', 'we-formkit' ); ?>
+								</label>
+							</p>
+							<p class="description"><?php esc_html_e( 'For checkboxes / multi-select, use “contains” with the option value (e.g. progressive).', 'we-formkit' ); ?></p>
+							<?php
+							$rule_rows = $rules ? $rules : array(
+								array(
+									'field' => '',
+									'op'    => 'equals',
+									'value' => '',
+								),
+							);
+							foreach ( $rule_rows as $r_index => $rule ) :
+								?>
+								<div class="wek-doc-rule" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.4rem;margin:0.4rem 0;">
+									<select name="<?php echo esc_attr( $prefix ); ?>[when][rules][<?php echo (int) $r_index; ?>][field]">
+										<option value=""><?php esc_html_e( '— Select field —', 'we-formkit' ); ?></option>
+										<?php foreach ( $fields as $fid => $field ) : ?>
+											<?php
+											$type = isset( $field['type'] ) ? (string) $field['type'] : '';
+											if ( in_array( $type, array( 'html', 'hidden' ), true ) ) {
+												continue;
+											}
+											$label = isset( $field['label'] ) ? (string) $field['label'] : $fid;
+											?>
+											<option value="<?php echo esc_attr( $fid ); ?>" <?php selected( (string) ( $rule['field'] ?? '' ), $fid ); ?>><?php echo esc_html( $label . ' (' . $type . ')' ); ?></option>
+										<?php endforeach; ?>
+									</select>
+									<select name="<?php echo esc_attr( $prefix ); ?>[when][rules][<?php echo (int) $r_index; ?>][op]">
+										<option value="equals" <?php selected( (string) ( $rule['op'] ?? '' ), 'equals' ); ?>><?php esc_html_e( 'equals', 'we-formkit' ); ?></option>
+										<option value="not_equals" <?php selected( (string) ( $rule['op'] ?? '' ), 'not_equals' ); ?>><?php esc_html_e( 'not equals', 'we-formkit' ); ?></option>
+										<option value="contains" <?php selected( (string) ( $rule['op'] ?? '' ), 'contains' ); ?>><?php esc_html_e( 'contains', 'we-formkit' ); ?></option>
+										<option value="is_checked" <?php selected( (string) ( $rule['op'] ?? '' ), 'is_checked' ); ?>><?php esc_html_e( 'is checked', 'we-formkit' ); ?></option>
+										<option value="is_not_empty" <?php selected( (string) ( $rule['op'] ?? '' ), 'is_not_empty' ); ?>><?php esc_html_e( 'is not empty', 'we-formkit' ); ?></option>
+									</select>
+									<input type="text" name="<?php echo esc_attr( $prefix ); ?>[when][rules][<?php echo (int) $r_index; ?>][value]" value="<?php echo esc_attr( (string) ( $rule['value'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Value', 'we-formkit' ); ?>" />
+								</div>
+							<?php endforeach; ?>
+						</div>
+					</td>
+				</tr>
+			</table>
+
+			<?php submit_button( $is_new ? __( 'Add document', 'we-formkit' ) : __( 'Update document', 'we-formkit' ), 'primary', 'we_formkit_save_form' ); ?>
+		</form>
+		<script>
+		(function () {
+			var form = document.getElementById('wek-documents-form');
+			if (!form) return;
+
+			function syncReveal() {
+				var whenMode = form.querySelector('#wek_doc_when_mode');
+				form.querySelectorAll('[data-wek-when]').forEach(function (el) {
+					var when = el.getAttribute('data-wek-when') || '';
+					var parts = when.split(':');
+					var key = parts[0];
+					var val = parts[1];
+					var ok = false;
+					if (key === 'when' && whenMode) {
+						ok = whenMode.value === val;
+					} else if (key === 'attach') {
+						var cb = form.querySelector('[data-wek-reveal="attach"]');
+						ok = cb && cb.checked;
+					}
+					el.hidden = !ok;
+				});
+			}
+			form.querySelectorAll('[data-wek-reveal], #wek_doc_when_mode').forEach(function (el) {
+				el.addEventListener('change', syncReveal);
+			});
+			syncReveal();
+
+			var pick = document.getElementById('wek_doc_pick');
+			var clear = document.getElementById('wek_doc_clear');
+			var idInput = document.getElementById('wek_doc_attachment_id');
+			var label = document.getElementById('wek_doc_file_label');
+			if (pick && typeof wp !== 'undefined' && wp.media) {
+				var frame;
+				pick.addEventListener('click', function (e) {
+					e.preventDefault();
+					if (frame) {
+						frame.open();
+						return;
+					}
+					frame = wp.media({
+						title: <?php echo wp_json_encode( __( 'Select document', 'we-formkit' ) ); ?>,
+						button: { text: <?php echo wp_json_encode( __( 'Use this file', 'we-formkit' ) ); ?> },
+						multiple: false
+					});
+					frame.on('select', function () {
+						var file = frame.state().get('selection').first().toJSON();
+						idInput.value = String(file.id || 0);
+						var name = file.filename || file.title || ('#' + file.id);
+						label.innerHTML = '';
+						label.appendChild(document.createTextNode(name + ' '));
+						if (file.url) {
+							var a = document.createElement('a');
+							a.href = file.url;
+							a.target = '_blank';
+							a.rel = 'noopener noreferrer';
+							a.textContent = <?php echo wp_json_encode( __( 'Open', 'we-formkit' ) ); ?>;
+							label.appendChild(a);
+						}
+						if (clear) clear.disabled = false;
+					});
+					frame.open();
+				});
+			}
+			if (clear) {
+				clear.addEventListener('click', function (e) {
+					e.preventDefault();
+					idInput.value = '0';
+					label.textContent = <?php echo wp_json_encode( __( 'No file selected.', 'we-formkit' ) ); ?>;
+					clear.disabled = true;
+				});
+			}
+		})();
+		</script>
+		<?php
+	}
+
+	/**
+	 * @param int    $form_id Form ID.
+	 * @param string $doc_id  Document ID.
+	 * @param string $action  Action slug.
+	 * @return string
+	 */
+	private static function document_action_url( $form_id, $doc_id, $action ) {
+		return wp_nonce_url(
+			add_query_arg(
+				array(
+					'page'           => 'we-formkit-form',
+					'form_id'        => (int) $form_id,
+					'view'           => 'documents',
+					'wek_doc_action' => sanitize_key( $action ),
+					'document_id'    => sanitize_key( $doc_id ),
+				),
+				admin_url( 'admin.php' )
+			),
+			'wek_doc_' . sanitize_key( $action ) . '_' . (int) $form_id . '_' . sanitize_key( $doc_id ),
+			'_wpnonce'
+		);
+	}
+
+	/**
 	 * @param int                  $form_id Form ID.
 	 * @param array<string, mixed> $confirm Confirmation settings.
 	 * @param bool                 $is_new  Whether new.
@@ -1294,7 +1735,7 @@ final class Form_Editor {
 
 		$form_id = isset( $_POST['form_id'] ) ? absint( $_POST['form_id'] ) : 0;
 		$view    = isset( $_POST['wek_save_view'] ) ? sanitize_key( wp_unslash( (string) $_POST['wek_save_view'] ) ) : 'fields';
-		if ( ! in_array( $view, array( 'fields', 'settings', 'notifications', 'confirmations' ), true ) ) {
+		if ( ! in_array( $view, array( 'fields', 'settings', 'notifications', 'documents', 'confirmations' ), true ) ) {
 			$view = 'fields';
 		}
 
@@ -1313,6 +1754,10 @@ final class Form_Editor {
 		}
 		if ( 'notifications' === $view ) {
 			self::save_view_notifications( $form_id );
+			return;
+		}
+		if ( 'documents' === $view ) {
+			self::save_view_documents( $form_id );
 			return;
 		}
 		self::save_view_confirmations( $form_id );
@@ -1486,6 +1931,61 @@ final class Form_Editor {
 					'view'         => 'notifications',
 					'notification' => (string) $normalized['id'],
 					'saved'        => '1',
+				),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
+	 * @param int $form_id Form ID.
+	 * @return void
+	 */
+	private static function save_view_documents( $form_id ) {
+		$form_id = self::ensure_form_exists( $form_id );
+		// Nonce verified in save_form().
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$posted = isset( $_POST['wek_document'] ) && is_array( $_POST['wek_document'] ) ? wp_unslash( $_POST['wek_document'] ) : array();
+		if ( ! is_array( $posted ) ) {
+			$posted = array();
+		}
+
+		$posted['enabled']         = ! empty( $posted['enabled'] );
+		$posted['show_download']   = ! empty( $posted['show_download'] );
+		$posted['attach_to_email'] = ! empty( $posted['attach_to_email'] );
+		$posted['attachment_id']   = isset( $posted['attachment_id'] ) ? absint( $posted['attachment_id'] ) : 0;
+
+		if ( isset( $posted['notification_ids'] ) && ! is_array( $posted['notification_ids'] ) ) {
+			$posted['notification_ids'] = array_filter( array_map( 'strval', (array) $posted['notification_ids'] ) );
+		}
+		if ( empty( $posted['attach_to_email'] ) ) {
+			$posted['notification_ids'] = array();
+		}
+
+		$when_mode = isset( $posted['when_mode'] ) ? sanitize_key( (string) $posted['when_mode'] ) : 'always';
+		if ( 'conditional' !== $when_mode ) {
+			$posted['when'] = null;
+		} elseif ( isset( $posted['when'] ) && is_array( $posted['when'] ) ) {
+			$posted['when'] = Form_Schema::normalize_condition( $posted['when'] );
+		} else {
+			$posted['when'] = null;
+		}
+		unset( $posted['when_mode'] );
+
+		$list       = Form_Info_Documents::get( $form_id );
+		$normalized = Form_Info_Documents::normalize_one( $posted );
+		$list       = Form_Info_Documents::upsert( $list, $normalized );
+		Form_Info_Documents::save( $form_id, $list );
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => 'we-formkit-form',
+					'form_id'  => $form_id,
+					'view'     => 'documents',
+					'document' => (string) $normalized['id'],
+					'saved'    => '1',
 				),
 				admin_url( 'admin.php' )
 			)
@@ -1702,6 +2202,7 @@ final class Form_Editor {
 		Form_Schema::save( $new_id, $schema );
 		update_post_meta( $new_id, Form_Schema::META_SLUG, $new_slug );
 		Form_Notifications::save( $new_id, Form_Notifications::get( $form_id ) );
+		Form_Info_Documents::save( $new_id, Form_Info_Documents::get( $form_id ) );
 		update_post_meta( $new_id, Form_Schema::META_PRIVACY_URL, (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true ) );
 		update_post_meta( $new_id, Form_Schema::META_CONFIRMATION_MESSAGE, (string) get_post_meta( $form_id, Form_Schema::META_CONFIRMATION_MESSAGE, true ) );
 		Form_Style::save( $new_id, Form_Style::get( $form_id ) );

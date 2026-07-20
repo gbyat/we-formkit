@@ -273,6 +273,46 @@
 		status.classList.toggle( 'is-success', ! isError && !! message );
 	}
 
+	function setInfoDocuments( root, docs ) {
+		const box = qs( root, '[data-wek-info-docs]' );
+		if ( ! box ) {
+			return;
+		}
+		box.textContent = '';
+		const list = Array.isArray( docs ) ? docs : [];
+		if ( ! list.length ) {
+			box.hidden = true;
+			return;
+		}
+		const heading = document.createElement( 'p' );
+		heading.className = 'we-formkit__info-docs-title';
+		heading.textContent =
+			( window.weFormkit && window.weFormkit.i18n && window.weFormkit.i18n.infoDocuments ) ||
+			'Downloads';
+		box.appendChild( heading );
+		const ul = document.createElement( 'ul' );
+		ul.className = 'we-formkit__info-docs-list';
+		list.forEach( function ( doc ) {
+			if ( ! doc || ! doc.url ) {
+				return;
+			}
+			const li = document.createElement( 'li' );
+			const a = document.createElement( 'a' );
+			a.href = doc.url;
+			a.target = '_blank';
+			a.rel = 'noopener noreferrer';
+			a.textContent = doc.title || doc.url;
+			li.appendChild( a );
+			ul.appendChild( li );
+		} );
+		if ( ! ul.children.length ) {
+			box.hidden = true;
+			return;
+		}
+		box.appendChild( ul );
+		box.hidden = false;
+	}
+
 	function rowLabelText( index ) {
 		const cfg = window.weFormkit || {};
 		const base = ( cfg.i18n && cfg.i18n.rowLabel ) || 'Row %d';
@@ -1030,6 +1070,7 @@
 								  result.data.message
 								: result.data.message || 'OK';
 						setStatus( root, okMsg, false );
+						setInfoDocuments( root, result.data.info_documents || [] );
 						form.reset();
 						applyConditionals( root );
 						form.setAttribute( 'hidden', 'hidden' );
@@ -1042,6 +1083,7 @@
 						( liveCfg.i18n && liveCfg.i18n.error ) ||
 						'Something went wrong.';
 					setStatus( root, message, true );
+					setInfoDocuments( root, [] );
 
 					const fieldErrors =
 						( errData.data && errData.data.errors ) ||

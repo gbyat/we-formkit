@@ -726,14 +726,20 @@
 				row.appendChild(
 					el( 'button', {
 						type: 'button',
-						className: 'button-link-delete',
-						text: i18n.remove || 'Remove',
+						className: 'button-link-delete wek-builder__option-remove',
+						title: i18n.remove || 'Remove',
+						'aria-label': i18n.remove || 'Remove',
 						onClick: function () {
 							field.options.splice( oIndex, 1 );
 							syncHidden();
 							render();
 						},
-					} )
+					}, [
+						el( 'span', {
+							className: 'dashicons dashicons-trash',
+							'aria-hidden': 'true',
+						} ),
+					] )
 				);
 				wrap.appendChild( row );
 			} );

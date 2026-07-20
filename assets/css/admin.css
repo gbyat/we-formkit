@@ -884,9 +884,41 @@ body.wek-scheme-violet .wek-admin {
 
 .wek-admin .wek-builder__option-row {
 	display: grid;
-	grid-template-columns: 1fr 1fr auto;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
 	gap: 0.4rem;
 	align-items: center;
+}
+
+.wek-admin .wek-builder__option-row .regular-text {
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+}
+
+.wek-admin .wek-builder__option-remove {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	margin: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	color: var(--wek-danger);
+	line-height: 1;
+}
+
+.wek-admin .wek-builder__option-remove .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+.wek-admin .wek-builder__option-remove:hover,
+.wek-admin .wek-builder__option-remove:focus {
+	color: #8a0f0f;
 }
 
 .wek-admin .wek-builder__constraint {

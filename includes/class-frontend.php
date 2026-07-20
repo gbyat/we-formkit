@@ -302,6 +302,7 @@ final class Frontend {
 					'autofillReady'  => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
 					'autofillManual' => __( 'Test fill applied. Click Submit form when ready.', 'we-formkit' ),
 					'autofillDone'   => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
+					'infoDocuments'  => __( 'Downloads', 'we-formkit' ),
 					'next'           => __( 'Next', 'we-formkit' ),
 					'previous'       => __( 'Previous', 'we-formkit' ),
 					/* translators: 1: current page, 2: total pages. */
@@ -343,6 +344,7 @@ final class Frontend {
 			</header>
 
 			<div class="we-formkit__status" data-wek-status role="status" aria-live="polite"></div>
+			<div class="we-formkit__info-docs" data-wek-info-docs hidden></div>
 			<p class="we-formkit__progress" data-wek-progress hidden></p>
 
 			<form class="we-formkit__form" data-wek-form novalidate>
