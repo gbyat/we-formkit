@@ -133,15 +133,16 @@ final class Submission_Export {
 				<dl>
 					<?php foreach ( $data as $key => $value ) : ?>
 						<?php
-						$label   = isset( $fields[ $key ]['label'] ) ? (string) $fields[ $key ]['label'] : (string) $key;
-						$display = self::format_value( $value );
-						if ( '' === $display ) {
+						$field   = isset( $fields[ $key ] ) && is_array( $fields[ $key ] ) ? $fields[ $key ] : array();
+						$label   = isset( $field['label'] ) ? (string) $field['label'] : (string) $key;
+						$display = self::format_value( $value, $field );
+						if ( '' === wp_strip_all_tags( $display ) ) {
 							continue;
 						}
 						?>
 						<div class="wek-export-doc__row">
 							<dt><?php echo esc_html( $label ); ?></dt>
-							<dd><?php echo esc_html( $display ); ?></dd>
+							<dd><?php echo wp_kses_post( $display ); ?></dd>
 						</div>
 					<?php endforeach; ?>
 				</dl>
