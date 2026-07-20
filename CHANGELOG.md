@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.11] - 2026-07-20
+
+- Enhance admin form editor with MIME type management features. Introduce multi-select for allowed MIME types, allowing users to specify file types for uploads. Update CSS for improved UI consistency in the admin interface, including adjustments to button styles and section visibility. Refactor JavaScript to support new MIME type functionalities and improve validation message handling.
 ## [0.2.10] - 2026-07-20
 
 - Refactor admin CSS and JavaScript for improved layout and responsiveness. Adjust button dimensions, positioning, and opacity for better UI consistency. Update width settings for collapsed states in the admin form editor to enhance user experience.
