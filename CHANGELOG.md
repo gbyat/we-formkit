@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-07-20
+
+- Implement form appearance customization features. Introduce methods to get and set form-wide appearance settings, including label weight, required mark, help placement, and help style. Update frontend rendering to apply these settings, enhancing the visual consistency of forms. Refactor related JavaScript and CSS for improved layout and user experience. Update translations for new appearance-related strings.
 ## [0.2.8] - 2026-07-20
 
 - Implement customizable submit button functionality in the form schema. Introduce methods to get and set submit button properties, including label, icon SVG, and icon position. Update frontend rendering to utilize the new submit button configuration, enhancing user experience with customizable form submissions. Update related validation messages for checkboxes to improve user guidance on selection limits.
