@@ -432,6 +432,12 @@
 				typeOptions.add_button_label = '';
 				typeOptions.fields = [];
 			}
+			if ( typeId === 'upload' ) {
+				typeOptions.max_files = 1;
+				typeOptions.max_file_size_mb = 5;
+				typeOptions.allowed_mime_types = 'image/jpeg, image/png, application/pdf';
+				typeOptions.storage_mode = 'uploads_only';
+			}
 			return {
 				id: ( typeId || 'field' ) + '_' + Date.now().toString( 36 ),
 				type: typeId || 'text',
@@ -1017,15 +1023,20 @@
 		function renderValidationMessagesEditor( field ) {
 			const msgs = ensureMessages( field );
 			const body = el( 'div', { className: 'wek-builder__validation-body' } );
-			body.appendChild(
-				fieldRow(
-					i18n.msgRequired || 'Required message',
-					textInput( msgs.required || '', function ( v ) {
-						ensureMessages( field ).required = v;
-						syncHidden();
-					} )
-				)
-			);
+			const isRequired = !! field.required;
+
+			if ( isRequired ) {
+				body.appendChild(
+					fieldRow(
+						i18n.msgRequired || 'Required message',
+						textInput( msgs.required || '', function ( v ) {
+							ensureMessages( field ).required = v;
+							syncHidden();
+						} )
+					)
+				);
+			}
+
 			body.appendChild(
 				fieldRow(
 					i18n.msgInvalid || 'Invalid message',
@@ -1045,7 +1056,10 @@
 			);
 
 			const details = el( 'details', { className: 'wek-builder__validation' } );
-			const hasCustom = !!( String( msgs.required || '' ).trim() || String( msgs.invalid || '' ).trim() );
+			const hasCustom = !!(
+				( isRequired && String( msgs.required || '' ).trim() ) ||
+				String( msgs.invalid || '' ).trim()
+			);
 			if ( hasCustom ) {
 				details.open = true;
 			}
@@ -1071,10 +1085,14 @@
 		}
 
 		function selectInput( value, choices, onChange ) {
-			const select = el( 'select' );
+			const select = document.createElement( 'select' );
 			choices.forEach( function ( choice ) {
-				const opt = el( 'option', { value: choice.value, text: choice.label } );
-				if ( String( value || '' ) === String( choice.value ) ) {
+				const opt = document.createElement( 'option' );
+				opt.value = String( choice.value != null ? choice.value : '' );
+				opt.textContent = String(
+					choice.label != null && choice.label !== '' ? choice.label : choice.value
+				);
+				if ( String( value || '' ) === opt.value ) {
 					opt.selected = true;
 				}
 				select.appendChild( opt );
@@ -1158,6 +1176,188 @@
 			return wrap;
 		}
 
+		function parseMimeList( raw ) {
+			return String( raw || '' )
+				.split( ',' )
+				.map( function ( part ) {
+					return part.trim();
+				} )
+				.filter( Boolean );
+		}
+
+		function mimeLabelFor( value, choices ) {
+			for ( let i = 0; i < choices.length; i++ ) {
+				if ( choices[ i ].value === value ) {
+					return choices[ i ].label || value;
+				}
+			}
+			return value;
+		}
+
+		function renderMimeMultiSelect( opts ) {
+			const choices =
+				( window.weFormkitAdmin && Array.isArray( window.weFormkitAdmin.mimeChoices )
+					? window.weFormkitAdmin.mimeChoices
+					: [] ) || [];
+			const wrap = el( 'div', { className: 'wek-builder__mime-select' } );
+			const chips = el( 'div', {
+				className: 'wek-builder__mime-chips',
+				role: 'list',
+			} );
+			const footer = el( 'div', { className: 'wek-builder__mime-footer' } );
+			const picker = el( 'select', {
+				className: 'wek-builder__mime-picker',
+				'aria-label': i18n.addMimeType || 'Add type…',
+			} );
+			const clearBtn = el( 'button', {
+				type: 'button',
+				className: 'wek-builder__mime-clear',
+				text: i18n.clearMimeTypes || 'Clear all',
+			} );
+
+			function getSelected() {
+				return parseMimeList( opts.allowed_mime_types );
+			}
+
+			function setSelected( list ) {
+				opts.allowed_mime_types = list.join( ', ' );
+				syncHidden();
+				refresh();
+			}
+
+			function refreshPicker( selected ) {
+				picker.innerHTML = '';
+				picker.appendChild(
+					el( 'option', {
+						value: '',
+						text: i18n.addMimeType || 'Add type…',
+					} )
+				);
+				choices.forEach( function ( choice ) {
+					if ( ! choice || ! choice.value || selected.indexOf( choice.value ) !== -1 ) {
+						return;
+					}
+					picker.appendChild(
+						el( 'option', {
+							value: choice.value,
+							text: choice.label || choice.value,
+						} )
+					);
+				} );
+				picker.disabled = picker.options.length <= 1;
+			}
+
+			function refresh() {
+				const selected = getSelected();
+				chips.innerHTML = '';
+				if ( ! selected.length ) {
+					chips.appendChild(
+						el( 'span', {
+							className: 'wek-builder__mime-empty',
+							text: i18n.allowedMimeHint || 'Leave empty to use the WordPress default whitelist.',
+						} )
+					);
+				} else {
+					selected.forEach( function ( mime ) {
+						const remove = el( 'button', {
+							type: 'button',
+							className: 'wek-builder__mime-chip-remove',
+							title: i18n.removeMimeType || 'Remove',
+							'aria-label':
+								( i18n.removeMimeType || 'Remove' ) +
+								': ' +
+								mimeLabelFor( mime, choices ),
+							text: '×',
+						} );
+						remove.addEventListener( 'click', function ( event ) {
+							event.preventDefault();
+							setSelected(
+								getSelected().filter( function ( item ) {
+									return item !== mime;
+								} )
+							);
+						} );
+						chips.appendChild(
+							el(
+								'span',
+								{
+									className: 'wek-builder__mime-chip',
+									role: 'listitem',
+									title: mime,
+								},
+								[
+									el( 'span', {
+										className: 'wek-builder__mime-chip-label',
+										text: mimeLabelFor( mime, choices ),
+									} ),
+									remove,
+								]
+							)
+						);
+					} );
+				}
+				refreshPicker( selected );
+				clearBtn.hidden = selected.length === 0;
+			}
+
+			picker.addEventListener( 'change', function () {
+				const value = picker.value;
+				if ( ! value ) {
+					return;
+				}
+				const next = getSelected();
+				if ( next.indexOf( value ) === -1 ) {
+					next.push( value );
+					setSelected( next );
+				}
+				picker.value = '';
+			} );
+
+			clearBtn.addEventListener( 'click', function ( event ) {
+				event.preventDefault();
+				setSelected( [] );
+			} );
+
+			footer.appendChild( picker );
+			footer.appendChild( clearBtn );
+			wrap.appendChild( chips );
+			wrap.appendChild( footer );
+			refresh();
+			return wrap;
+		}
+
+		function getUploadStorageChoices() {
+			const uploadMeta = fieldTypes.find( function ( item ) {
+				return item.type === 'upload';
+			} );
+			const schema =
+				uploadMeta &&
+				uploadMeta.adminSchema &&
+				uploadMeta.adminSchema.storage_mode
+					? uploadMeta.adminSchema.storage_mode
+					: null;
+			if ( schema && Array.isArray( schema.options ) && schema.options.length ) {
+				return schema.options.map( function ( item ) {
+					return {
+						value: item.value,
+						label: item.label || item.value,
+					};
+				} );
+			}
+			return [
+				{
+					value: 'uploads_only',
+					label: i18n.storagePrivate || 'Private Formkit folder (recommended)',
+				},
+				{
+					value: 'media_library',
+					label:
+						i18n.storageMedia ||
+						'Media Library (not recommended for personal data)',
+				},
+			];
+		}
+
 		function renderUploadOptionsEditor( field ) {
 			const opts = ensureTypeOptions( field );
 			if ( opts.max_files == null ) {
@@ -1167,7 +1367,7 @@
 				opts.max_file_size_mb = 5;
 			}
 			if ( opts.allowed_mime_types == null ) {
-				opts.allowed_mime_types = '';
+				opts.allowed_mime_types = 'image/jpeg, image/png, application/pdf';
 			}
 			if ( ! opts.storage_mode ) {
 				opts.storage_mode = 'uploads_only';
@@ -1190,26 +1390,25 @@
 						syncHidden();
 					}, { min: '1' } )
 				),
-				fieldRow(
-					i18n.allowedMime || 'Allowed MIME types',
-					textInput( opts.allowed_mime_types || '', function ( v ) {
-						opts.allowed_mime_types = v;
-						syncHidden();
-					} )
-				),
+				( function () {
+					const row = el( 'div', {
+						className: 'wek-builder__row wek-builder__row--stack',
+					} );
+					row.appendChild(
+						el( 'span', {
+							className: 'wek-builder__row-heading',
+							text: i18n.allowedMime || 'Allowed MIME types',
+						} )
+					);
+					row.appendChild( renderMimeMultiSelect( opts ) );
+					return row;
+				} )(),
 				fieldRow(
 					i18n.storageMode || 'Storage mode',
-					selectInput(
-						opts.storage_mode,
-						[
-							{ value: 'uploads_only', label: 'uploads_only' },
-							{ value: 'media_library', label: 'media_library' },
-						],
-						function ( v ) {
-							opts.storage_mode = v;
-							syncHidden();
-						}
-					)
+					selectInput( opts.storage_mode, getUploadStorageChoices(), function ( v ) {
+						opts.storage_mode = v;
+						syncHidden();
+					} )
 				),
 			] );
 		}
@@ -1643,6 +1842,7 @@
 				req.addEventListener( 'change', function () {
 					field.required = !! req.checked;
 					syncHidden();
+					render();
 				} );
 				panel.appendChild( toggleRow( i18n.required || 'Required', req ) );
 
@@ -1723,6 +1923,9 @@
 				panel.appendChild( renderConditional( selected.field, selected.field.id ) );
 			} else if ( selected.kind === 'section' && activeTab === 'general' ) {
 				const section = selected.section;
+				if ( typeof section.show_title === 'undefined' ) {
+					section.show_title = true;
+				}
 				panel.appendChild(
 					fieldRow(
 						i18n.sectionTitle || 'Title',
@@ -1737,6 +1940,24 @@
 							}
 						} )
 					)
+				);
+				const showTitle = el( 'input', { type: 'checkbox' } );
+				showTitle.checked = section.show_title !== false;
+				showTitle.addEventListener( 'change', function () {
+					section.show_title = !! showTitle.checked;
+					syncHidden();
+					render();
+				} );
+				panel.appendChild(
+					toggleRow( i18n.showSectionTitle || 'Show title on form', showTitle )
+				);
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.showSectionTitleHint ||
+							'When off, the title stays in the builder for reference but is hidden on the front end.',
+					} )
 				);
 				panel.appendChild(
 					fieldRow(
@@ -2712,10 +2933,20 @@
 			const head = el( 'div', { className: 'wek-builder__section-head' }, [
 				handle,
 				el( 'strong', {
-					className: 'wek-builder__section-title',
+					className:
+						'wek-builder__section-title' +
+						( section.show_title === false ? ' is-title-hidden' : '' ),
 					text: section.title || section.id || ( i18n.section || 'Section' ) + ' ' + ( sIndex + 1 ),
 				} ),
 			] );
+			if ( section.show_title === false ) {
+				head.appendChild(
+					el( 'span', {
+						className: 'wek-builder__section-title-badge',
+						text: i18n.titleHiddenBadge || 'Hidden on form',
+					} )
+				);
+			}
 			head.addEventListener( 'click', function ( e ) {
 				if ( e.target.closest( '.wek-builder__handle' ) ) {
 					return;
@@ -2863,6 +3094,7 @@
 				schema.sections.push( {
 					id: 'section_' + Date.now(),
 					title: i18n.section || 'Section',
+					show_title: true,
 					intro: '',
 					show_when: null,
 					fields: [],
@@ -3012,6 +3244,7 @@
 							schema.sections.push( {
 								id: 'section_' + Date.now(),
 								title: i18n.section || 'Section',
+								show_title: true,
 								intro: '',
 								show_when: null,
 								fields: [],
@@ -3093,18 +3326,18 @@
 						? i18n.expandLibrary || 'Expand fields library'
 						: i18n.collapseLibrary || 'Collapse fields library';
 					libToggle.setAttribute( 'aria-label', libToggle.title );
-					const icon = libToggle.querySelector( '.dashicons' );
-					if ( icon ) {
-						icon.className =
-							'dashicons ' +
-							( chrome.libCollapsed ? 'dashicons-arrow-right-alt2' : 'dashicons-arrow-left-alt2' );
+					const caret = libToggle.querySelector( '.wek-builder-col__caret' );
+					if ( caret ) {
+						caret.className =
+							'wek-builder-col__caret wek-builder-col__caret--' +
+							( chrome.libCollapsed ? 'right' : 'left' );
 					}
 				},
 			}, [
 				el( 'span', {
 					className:
-						'dashicons ' +
-						( chrome.libCollapsed ? 'dashicons-arrow-right-alt2' : 'dashicons-arrow-left-alt2' ),
+						'wek-builder-col__caret wek-builder-col__caret--' +
+						( chrome.libCollapsed ? 'right' : 'left' ),
 					'aria-hidden': 'true',
 				} ),
 			] );
@@ -3139,18 +3372,18 @@
 						? i18n.expandSettings || 'Expand field settings'
 						: i18n.collapseSettings || 'Collapse field settings';
 					sideToggle.setAttribute( 'aria-label', sideToggle.title );
-					const icon = sideToggle.querySelector( '.dashicons' );
-					if ( icon ) {
-						icon.className =
-							'dashicons ' +
-							( chrome.sideCollapsed ? 'dashicons-arrow-left-alt2' : 'dashicons-arrow-right-alt2' );
+					const caret = sideToggle.querySelector( '.wek-builder-col__caret' );
+					if ( caret ) {
+						caret.className =
+							'wek-builder-col__caret wek-builder-col__caret--' +
+							( chrome.sideCollapsed ? 'left' : 'right' );
 					}
 				},
 			}, [
 				el( 'span', {
 					className:
-						'dashicons ' +
-						( chrome.sideCollapsed ? 'dashicons-arrow-left-alt2' : 'dashicons-arrow-right-alt2' ),
+						'wek-builder-col__caret wek-builder-col__caret--' +
+						( chrome.sideCollapsed ? 'left' : 'right' ),
 					'aria-hidden': 'true',
 				} ),
 			] );

@@ -10,6 +10,7 @@ namespace Webentwicklerin\WeFormkit\Admin;
 use Webentwicklerin\WeFormkit\Capabilities;
 use Webentwicklerin\WeFormkit\Drafts;
 use Webentwicklerin\WeFormkit\Fields\Repeater_Field;
+use Webentwicklerin\WeFormkit\Fields\Upload_Field;
 use Webentwicklerin\WeFormkit\Form_Info_Documents;
 use Webentwicklerin\WeFormkit\Form_Notifications;
 use Webentwicklerin\WeFormkit\Form_Schema;
@@ -449,6 +450,9 @@ final class Form_Editor {
 					'resizeHandle'        => __( 'Drag to resize', 'we-formkit' ),
 					'resizeHint'          => __( 'You can also drag the right edge of a field on the canvas to change its width.', 'we-formkit' ),
 					'sectionTitle'        => __( 'Title', 'we-formkit' ),
+					'showSectionTitle'    => __( 'Show title on form', 'we-formkit' ),
+					'showSectionTitleHint' => __( 'When off, the title stays in the builder for reference but is hidden on the front end.', 'we-formkit' ),
+					'titleHiddenBadge'    => __( 'Hidden on form', 'we-formkit' ),
 					'sectionId'           => __( 'Section ID', 'we-formkit' ),
 					'moved'               => __( 'Item moved.', 'we-formkit' ),
 					'placeholder'         => __( 'Placeholder', 'we-formkit' ),
@@ -459,7 +463,13 @@ final class Form_Editor {
 					'maxFiles'            => __( 'Max files', 'we-formkit' ),
 					'maxFileSize'         => __( 'Max file size (MB)', 'we-formkit' ),
 					'allowedMime'         => __( 'Allowed MIME types', 'we-formkit' ),
+					'allowedMimeHint'     => __( 'Leave empty to use the WordPress default whitelist.', 'we-formkit' ),
+					'addMimeType'         => __( 'Add type…', 'we-formkit' ),
+					'clearMimeTypes'      => __( 'Clear all', 'we-formkit' ),
+					'removeMimeType'      => __( 'Remove', 'we-formkit' ),
 					'storageMode'         => __( 'Storage mode', 'we-formkit' ),
+					'storagePrivate'      => __( 'Private Formkit folder (recommended)', 'we-formkit' ),
+					'storageMedia'        => __( 'Media Library (not recommended for personal data)', 'we-formkit' ),
 					'htmlContent'         => __( 'HTML content', 'we-formkit' ),
 					'defaultValue'        => __( 'Default value', 'we-formkit' ),
 					'constraints'         => __( 'Date constraints', 'we-formkit' ),
@@ -480,6 +490,7 @@ final class Form_Editor {
 					'repeaterTypeBlocked' => __( 'This field type cannot be used inside a repeater.', 'we-formkit' ),
 				),
 				'repeaterItemTypes' => Repeater_Field::allowed_item_types(),
+				'mimeChoices'       => Upload_Field::common_mime_choices(),
 			)
 		);
 	}

@@ -376,7 +376,10 @@ final class Frontend {
 						<?php echo $section_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped helpers. ?>
 						aria-hidden="<?php echo $section_hidden ? 'true' : 'false'; ?>"
 					>
-						<?php if ( ! empty( $section['title'] ) ) : ?>
+						<?php
+						$show_section_title = ! array_key_exists( 'show_title', $section ) || ! empty( $section['show_title'] );
+						if ( ! empty( $section['title'] ) && $show_section_title ) :
+							?>
 							<h3 class="we-formkit__section-title"><?php echo esc_html( $section['title'] ); ?></h3>
 						<?php endif; ?>
 						<?php if ( ! empty( $section['intro'] ) ) : ?>

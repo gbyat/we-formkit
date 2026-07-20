@@ -94,11 +94,12 @@ final class Form_Schema {
 					}
 				}
 				$sections[] = array(
-					'id'        => sanitize_key( (string) ( $section['id'] ?? uniqid( 'section_', false ) ) ),
-					'title'     => sanitize_text_field( (string) ( $section['title'] ?? '' ) ),
-					'intro'     => sanitize_textarea_field( (string) ( $section['intro'] ?? '' ) ),
-					'show_when' => self::normalize_rule( $section['show_when'] ?? null ),
-					'fields'    => $fields,
+					'id'         => sanitize_key( (string) ( $section['id'] ?? uniqid( 'section_', false ) ) ),
+					'title'      => sanitize_text_field( (string) ( $section['title'] ?? '' ) ),
+					'show_title' => ! array_key_exists( 'show_title', $section ) || ! empty( $section['show_title'] ),
+					'intro'      => sanitize_textarea_field( (string) ( $section['intro'] ?? '' ) ),
+					'show_when'  => self::normalize_rule( $section['show_when'] ?? null ),
+					'fields'     => $fields,
 				);
 			}
 		}

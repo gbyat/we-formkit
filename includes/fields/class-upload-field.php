@@ -43,7 +43,7 @@ class Upload_Field extends Abstract_Field_Type {
 				'label'       => __( 'Allowed MIME types', 'we-formkit' ),
 				'type'        => 'text',
 				'default'     => 'image/jpeg, image/png, application/pdf',
-				'description' => __( 'Comma-separated list. Leave empty for the WordPress default whitelist.', 'we-formkit' ),
+				'description' => __( 'Select one or more types. Leave empty to use the WordPress default whitelist.', 'we-formkit' ),
 			),
 			'storage_mode'       => array(
 				'label'       => __( 'Storage mode', 'we-formkit' ),
@@ -195,6 +195,72 @@ class Upload_Field extends Abstract_Field_Type {
 		}
 
 		return $attrs;
+	}
+
+	/**
+	 * Curated MIME choices for the form builder multi-select.
+	 *
+	 * @return array<int, array{value:string,label:string}>
+	 */
+	public static function common_mime_choices(): array {
+		return array(
+			array(
+				'value' => 'image/jpeg',
+				'label' => 'JPEG',
+			),
+			array(
+				'value' => 'image/png',
+				'label' => 'PNG',
+			),
+			array(
+				'value' => 'image/webp',
+				'label' => 'WebP',
+			),
+			array(
+				'value' => 'image/gif',
+				'label' => 'GIF',
+			),
+			array(
+				'value' => 'application/pdf',
+				'label' => 'PDF',
+			),
+			array(
+				'value' => 'text/plain',
+				'label' => __( 'Text', 'we-formkit' ),
+			),
+			array(
+				'value' => 'text/csv',
+				'label' => 'CSV',
+			),
+			array(
+				'value' => 'application/msword',
+				'label' => 'DOC',
+			),
+			array(
+				'value' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+				'label' => 'DOCX',
+			),
+			array(
+				'value' => 'application/vnd.ms-excel',
+				'label' => 'XLS',
+			),
+			array(
+				'value' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+				'label' => 'XLSX',
+			),
+			array(
+				'value' => 'application/zip',
+				'label' => 'ZIP',
+			),
+			array(
+				'value' => 'audio/mpeg',
+				'label' => 'MP3',
+			),
+			array(
+				'value' => 'video/mp4',
+				'label' => 'MP4',
+			),
+		);
 	}
 
 	/**
