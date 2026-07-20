@@ -145,6 +145,49 @@
 		}
 	}
 
+	function matchOneRule( rule, values ) {
+		if ( ! rule || typeof rule !== 'object' ) {
+			return true;
+		}
+		return matchesRule( rule.field || '', rule.op || 'equals', rule.value || '', values );
+	}
+
+	function evaluateShowWhen( raw, values ) {
+		if ( ! raw ) {
+			return true;
+		}
+		let container = raw;
+		if ( typeof raw === 'string' ) {
+			try {
+				container = JSON.parse( raw );
+			} catch ( e ) {
+				return true;
+			}
+		}
+		if ( ! container || typeof container !== 'object' ) {
+			return true;
+		}
+		// Legacy single rule.
+		if ( container.field && ! container.rules ) {
+			return matchOneRule( container, values );
+		}
+		const rules = Array.isArray( container.rules ) ? container.rules : [];
+		if ( ! rules.length ) {
+			return true;
+		}
+		const relation = String( container.relation || 'AND' ).toUpperCase() === 'OR' ? 'OR' : 'AND';
+		for ( let i = 0; i < rules.length; i++ ) {
+			const ok = matchOneRule( rules[ i ], values );
+			if ( relation === 'OR' && ok ) {
+				return true;
+			}
+			if ( relation === 'AND' && ! ok ) {
+				return false;
+			}
+		}
+		return relation === 'AND';
+	}
+
 	function applyConditionals( root ) {
 		const form = qs( root, '[data-wek-form]' );
 		if ( ! form ) {
@@ -153,13 +196,19 @@
 		const values = collectValues( form );
 
 		qsa( root, '[data-wek-section], [data-wek-field]' ).forEach( function ( el ) {
-			const field = el.getAttribute( 'data-show-field' );
-			if ( ! field ) {
-				return;
+			const json = el.getAttribute( 'data-show-when' );
+			let visible = true;
+			if ( json ) {
+				visible = evaluateShowWhen( json, values );
+			} else {
+				const field = el.getAttribute( 'data-show-field' );
+				if ( ! field ) {
+					return;
+				}
+				const op = el.getAttribute( 'data-show-op' ) || 'equals';
+				const value = el.getAttribute( 'data-show-value' ) || '';
+				visible = matchesRule( field, op, value, values );
 			}
-			const op = el.getAttribute( 'data-show-op' ) || 'equals';
-			const value = el.getAttribute( 'data-show-value' ) || '';
-			const visible = matchesRule( field, op, value, values );
 			el.classList.toggle( 'is-hidden', ! visible );
 			el.setAttribute( 'aria-hidden', visible ? 'false' : 'true' );
 

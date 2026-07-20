@@ -13,13 +13,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Evaluates show_when rules.
+ *
+ * Supports legacy single rule `{ field, op, value }` and the CPO-style
+ * container `{ relation: AND|OR, rules: [ { field, op, value }, ... ] }`.
  */
 final class Conditional {
 
 	/**
 	 * Whether a section or field should be visible given current values.
 	 *
-	 * @param array<string, mixed>|null $rule   Rule definition.
+	 * @param array<string, mixed>|null $rule   Rule definition or conditions container.
 	 * @param array<string, mixed>      $values Submitted or current values.
 	 * @return bool
 	 */
@@ -28,6 +31,42 @@ final class Conditional {
 			return true;
 		}
 
+		// Legacy single rule.
+		if ( isset( $rule['field'] ) && ! isset( $rule['rules'] ) ) {
+			return self::match_one( $rule, $values );
+		}
+
+		$rules = isset( $rule['rules'] ) && is_array( $rule['rules'] ) ? $rule['rules'] : array();
+		if ( empty( $rules ) ) {
+			return true;
+		}
+
+		$relation = isset( $rule['relation'] ) && 'OR' === strtoupper( (string) $rule['relation'] ) ? 'OR' : 'AND';
+
+		foreach ( $rules as $one ) {
+			if ( ! is_array( $one ) ) {
+				continue;
+			}
+			$ok = self::match_one( $one, $values );
+			if ( 'OR' === $relation && $ok ) {
+				return true;
+			}
+			if ( 'AND' === $relation && ! $ok ) {
+				return false;
+			}
+		}
+
+		return 'AND' === $relation;
+	}
+
+	/**
+	 * Evaluate one rule.
+	 *
+	 * @param array<string, mixed> $rule   Single rule.
+	 * @param array<string, mixed> $values Values.
+	 * @return bool
+	 */
+	private static function match_one( array $rule, array $values ) {
 		$field = isset( $rule['field'] ) ? (string) $rule['field'] : '';
 		$op    = isset( $rule['op'] ) ? (string) $rule['op'] : 'equals';
 		$value = array_key_exists( 'value', $rule ) ? $rule['value'] : null;

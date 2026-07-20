@@ -120,13 +120,14 @@
 		const live = { node: null };
 
 		const ops = [
-			{ value: '', label: i18n.none || 'Always visible' },
-			{ value: 'equals', label: 'equals' },
-			{ value: 'not_equals', label: 'not_equals' },
-			{ value: 'contains', label: 'contains' },
-			{ value: 'is_checked', label: 'is_checked' },
-			{ value: 'is_not_empty', label: 'is_not_empty' },
+			{ value: 'equals', label: i18n.opEquals || 'equals' },
+			{ value: 'not_equals', label: i18n.opNotEquals || 'not equals' },
+			{ value: 'contains', label: i18n.opContains || 'contains' },
+			{ value: 'is_checked', label: i18n.opIsChecked || 'is checked' },
+			{ value: 'is_not_empty', label: i18n.opIsNotEmpty || 'is not empty' },
 		];
+
+		const opsNoValue = { is_checked: true, is_not_empty: true };
 
 		function el( tag, attrs, children ) {
 			const node = document.createElement( tag );
@@ -365,59 +366,280 @@
 			] );
 		}
 
+		function listConditionFields( excludeId ) {
+			const list = [];
+			( schema.sections || [] ).forEach( function ( section ) {
+				( section.fields || [] ).forEach( function ( field ) {
+					if ( ! field || ! field.id || field.id === excludeId ) {
+						return;
+					}
+					if ( field.type === 'html' || field.type === 'hidden' ) {
+						return;
+					}
+					list.push( {
+						id: String( field.id ),
+						label: String( field.label || field.id ),
+						type: String( field.type || 'text' ),
+						options: Array.isArray( field.options ) ? field.options : [],
+					} );
+				} );
+			} );
+			return list;
+		}
+
+		function normalizeShowWhen( raw ) {
+			if ( ! raw ) {
+				return { relation: 'AND', rules: [] };
+			}
+			if ( raw.field && ! raw.rules ) {
+				return {
+					relation: 'AND',
+					rules: [
+						{
+							field: raw.field || '',
+							op: raw.op || 'equals',
+							value: raw.value != null ? String( raw.value ) : '',
+						},
+					],
+				};
+			}
+			return {
+				relation: String( raw.relation || 'AND' ).toUpperCase() === 'OR' ? 'OR' : 'AND',
+				rules: Array.isArray( raw.rules )
+					? raw.rules.map( function ( r ) {
+							return {
+								field: ( r && r.field ) || '',
+								op: ( r && r.op ) || 'equals',
+								value: r && r.value != null ? String( r.value ) : '',
+							};
+					  } )
+					: [],
+			};
+		}
+
+		function commitShowWhen( target, container ) {
+			const rules = ( container.rules || [] ).filter( function ( r ) {
+				return r && r.field;
+			} );
+			if ( ! rules.length ) {
+				target.show_when = null;
+			} else {
+				target.show_when = {
+					relation: container.relation === 'OR' ? 'OR' : 'AND',
+					rules: rules,
+				};
+			}
+			syncHidden();
+		}
+
+		function renderConditional( target, excludeFieldId ) {
+			const container = normalizeShowWhen( target.show_when );
+			const fields = listConditionFields( excludeFieldId );
+			const panel = el( 'div', { className: 'wek-builder__conditions' } );
+
+			const relationSelect = el( 'select', { className: 'wek-builder__conditions-relation' } );
+			[
+				{ value: 'AND', label: i18n.matchAll || 'Match all of the following (AND)' },
+				{ value: 'OR', label: i18n.matchAny || 'Match any of the following (OR)' },
+			].forEach( function ( item ) {
+				const opt = el( 'option', { value: item.value, text: item.label } );
+				if ( container.relation === item.value ) {
+					opt.selected = true;
+				}
+				relationSelect.appendChild( opt );
+			} );
+			relationSelect.addEventListener( 'change', function () {
+				container.relation = relationSelect.value === 'OR' ? 'OR' : 'AND';
+				commitShowWhen( target, container );
+			} );
+			panel.appendChild(
+				el( 'div', { className: 'wek-builder__conditions-header' }, [ relationSelect ] )
+			);
+
+			if ( ! fields.length ) {
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.conditionsNoFields ||
+							'Add other fields first — conditions depend on another field’s value.',
+					} )
+				);
+				return panel;
+			}
+
+			const list = el( 'div', { className: 'wek-builder__conditions-list' } );
+
+			function redrawRules() {
+				list.innerHTML = '';
+				if ( ! container.rules.length ) {
+					list.appendChild(
+						el( 'p', {
+							className: 'wek-builder__conditions-empty description',
+							text:
+								i18n.conditionsEmpty ||
+								'No conditions — this item is always visible. Add a rule to show it only when…',
+						} )
+					);
+					return;
+				}
+
+				container.rules.forEach( function ( rule, index ) {
+					const card = el( 'div', { className: 'wek-builder__condition-rule' } );
+					card.appendChild(
+						el( 'span', {
+							className: 'wek-builder__condition-badge',
+							text: ( i18n.ruleLabel || 'Rule' ) + ' #' + ( index + 1 ),
+						} )
+					);
+
+					const fieldSelect = el( 'select', { className: 'wek-builder__condition-field' } );
+					fieldSelect.appendChild(
+						el( 'option', {
+							value: '',
+							text: i18n.selectField || '— Select field —',
+						} )
+					);
+					fields.forEach( function ( f ) {
+						const opt = el( 'option', {
+							value: f.id,
+							text: f.label + ' (' + f.id + ')',
+						} );
+						if ( rule.field === f.id ) {
+							opt.selected = true;
+						}
+						fieldSelect.appendChild( opt );
+					} );
+					if ( rule.field && ! fields.some( function ( f ) {
+						return f.id === rule.field;
+					} ) ) {
+						fieldSelect.appendChild(
+							el( 'option', {
+								value: rule.field,
+								text: rule.field,
+							} )
+						);
+						fieldSelect.value = rule.field;
+					}
+
+					const opSelect = el( 'select', { className: 'wek-builder__condition-op' } );
+					ops.forEach( function ( op ) {
+						const opt = el( 'option', { value: op.value, text: op.label } );
+						if ( ( rule.op || 'equals' ) === op.value ) {
+							opt.selected = true;
+						}
+						opSelect.appendChild( opt );
+					} );
+
+					const valueWrap = el( 'div', { className: 'wek-builder__condition-value' } );
+
+					function paintValue() {
+						valueWrap.innerHTML = '';
+						const op = opSelect.value || 'equals';
+						if ( opsNoValue[ op ] ) {
+							valueWrap.hidden = true;
+							return;
+						}
+						valueWrap.hidden = false;
+						const meta = fields.find( function ( f ) {
+							return f.id === fieldSelect.value;
+						} );
+						const options = meta && Array.isArray( meta.options ) ? meta.options : [];
+						if ( options.length && ( op === 'equals' || op === 'not_equals' ) ) {
+							const sel = el( 'select' );
+							sel.appendChild( el( 'option', { value: '', text: i18n.selectValue || '— Select value —' } ) );
+							options.forEach( function ( o ) {
+								const v = o.value != null ? String( o.value ) : '';
+								const lab = o.label != null ? String( o.label ) : v;
+								const opt = el( 'option', { value: v, text: lab } );
+								if ( String( rule.value || '' ) === v ) {
+									opt.selected = true;
+								}
+								sel.appendChild( opt );
+							} );
+							sel.addEventListener( 'change', function () {
+								rule.value = sel.value;
+								commitShowWhen( target, container );
+							} );
+							valueWrap.appendChild( sel );
+							return;
+						}
+						const input = el( 'input', {
+							type: 'text',
+							className: 'regular-text',
+							placeholder: i18n.showValue || 'Value',
+							value: rule.value || '',
+						} );
+						input.addEventListener( 'input', function () {
+							rule.value = input.value;
+							commitShowWhen( target, container );
+						} );
+						valueWrap.appendChild( input );
+					}
+
+					fieldSelect.addEventListener( 'change', function () {
+						rule.field = fieldSelect.value;
+						paintValue();
+						commitShowWhen( target, container );
+					} );
+					opSelect.addEventListener( 'change', function () {
+						rule.op = opSelect.value;
+						if ( opsNoValue[ rule.op ] ) {
+							rule.value = '';
+						}
+						paintValue();
+						commitShowWhen( target, container );
+					} );
+
+					card.appendChild( fieldSelect );
+					card.appendChild( opSelect );
+					card.appendChild( valueWrap );
+					card.appendChild(
+						el( 'button', {
+							type: 'button',
+							className: 'button-link-delete wek-builder__condition-remove',
+							text: i18n.remove || 'Remove',
+							onClick: function () {
+								container.rules.splice( index, 1 );
+								commitShowWhen( target, container );
+								redrawRules();
+							},
+						} )
+					);
+					paintValue();
+					list.appendChild( card );
+				} );
+			}
+
+			redrawRules();
+			panel.appendChild( list );
+
+			panel.appendChild(
+				el( 'button', {
+					type: 'button',
+					className: 'button button-secondary',
+					text: i18n.addCondition || 'Add condition',
+					onClick: function () {
+						container.rules.push( {
+							field: fields[ 0 ] ? fields[ 0 ].id : '',
+							op: 'equals',
+							value: '',
+						} );
+						commitShowWhen( target, container );
+						redrawRules();
+					},
+				} )
+			);
+
+			return panel;
+		}
+
 		function textInput( value, onChange ) {
 			const input = el( 'input', { type: 'text', className: 'regular-text', value: value || '' } );
 			input.addEventListener( 'input', function () {
 				onChange( input.value );
 			} );
 			return input;
-		}
-
-		function renderConditional( target ) {
-			const rule = target.show_when || { field: '', op: '', value: '' };
-			const fieldInput = el( 'input', {
-				type: 'text',
-				className: 'regular-text',
-				placeholder: i18n.showField || 'field id',
-				value: rule.field || '',
-			} );
-			const opSelect = el( 'select' );
-			ops.forEach( function ( op ) {
-				const opt = el( 'option', { value: op.value, text: op.label } );
-				if ( ( rule.op || '' ) === op.value || ( ! rule.op && op.value === '' ) ) {
-					opt.selected = true;
-				}
-				opSelect.appendChild( opt );
-			} );
-			const valueInput = el( 'input', {
-				type: 'text',
-				className: 'regular-text',
-				placeholder: i18n.showValue || 'value',
-				value: rule.value || '',
-			} );
-
-			function updateRule() {
-				if ( ! opSelect.value ) {
-					target.show_when = null;
-				} else {
-					target.show_when = {
-						field: fieldInput.value,
-						op: opSelect.value,
-						value: valueInput.value,
-					};
-				}
-				syncHidden();
-			}
-
-			fieldInput.addEventListener( 'input', updateRule );
-			opSelect.addEventListener( 'change', updateRule );
-			valueInput.addEventListener( 'input', updateRule );
-
-			return el( 'div', { className: 'wek-builder__rule-panel' }, [
-				fieldRow( i18n.showField || 'Depends on field ID', fieldInput ),
-				fieldRow( i18n.showOp || 'Operator', opSelect ),
-				fieldRow( i18n.showValue || 'Value', valueInput ),
-			] );
 		}
 
 		function renderOptionsEditor( field ) {
@@ -1042,7 +1264,7 @@
 					} )
 				);
 			} else if ( selected.kind === 'field' && activeTab === 'conditional' ) {
-				panel.appendChild( renderConditional( selected.field ) );
+				panel.appendChild( renderConditional( selected.field, selected.field.id ) );
 			} else if ( selected.kind === 'section' && activeTab === 'general' ) {
 				const section = selected.section;
 				panel.appendChild(
@@ -1070,7 +1292,7 @@
 					)
 				);
 			} else if ( selected.kind === 'section' && activeTab === 'conditional' ) {
-				panel.appendChild( renderConditional( selected.section ) );
+				panel.appendChild( renderConditional( selected.section, null ) );
 			}
 
 			aside.appendChild( panel );

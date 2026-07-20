@@ -143,11 +143,56 @@ final class Form_Schema {
 	}
 
 	/**
+	 * Normalize show_when: legacy single rule or `{ relation, rules[] }`.
+	 *
 	 * @param mixed $rule Rule.
-	 * @return array<string, mixed>|null
+	 * @return array{relation:string,rules:array<int,array<string,mixed>>}|null
 	 */
 	private static function normalize_rule( $rule ) {
-		if ( ! is_array( $rule ) || empty( $rule['field'] ) ) {
+		if ( ! is_array( $rule ) || empty( $rule ) ) {
+			return null;
+		}
+
+		// Legacy single rule { field, op, value }.
+		if ( isset( $rule['field'] ) && ! isset( $rule['rules'] ) ) {
+			$one = self::normalize_one_rule( $rule );
+			return null === $one ? null : array(
+				'relation' => 'AND',
+				'rules'    => array( $one ),
+			);
+		}
+
+		$relation = isset( $rule['relation'] ) && 'OR' === strtoupper( (string) $rule['relation'] ) ? 'OR' : 'AND';
+		$rules    = array();
+		if ( ! empty( $rule['rules'] ) && is_array( $rule['rules'] ) ) {
+			foreach ( $rule['rules'] as $row ) {
+				if ( ! is_array( $row ) ) {
+					continue;
+				}
+				$one = self::normalize_one_rule( $row );
+				if ( null !== $one ) {
+					$rules[] = $one;
+				}
+			}
+		}
+
+		if ( empty( $rules ) ) {
+			return null;
+		}
+
+		return array(
+			'relation' => $relation,
+			'rules'    => $rules,
+		);
+	}
+
+	/**
+	 * @param array<string, mixed> $rule Single rule.
+	 * @return array{field:string,op:string,value:string}|null
+	 */
+	private static function normalize_one_rule( array $rule ) {
+		$field = sanitize_key( (string) ( $rule['field'] ?? '' ) );
+		if ( '' === $field ) {
 			return null;
 		}
 		$op      = sanitize_key( (string) ( $rule['op'] ?? 'equals' ) );
@@ -156,7 +201,7 @@ final class Form_Schema {
 			$op = 'equals';
 		}
 		return array(
-			'field' => sanitize_key( (string) $rule['field'] ),
+			'field' => $field,
 			'op'    => $op,
 			'value' => isset( $rule['value'] ) ? sanitize_text_field( (string) $rule['value'] ) : '',
 		);

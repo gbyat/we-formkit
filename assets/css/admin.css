@@ -804,6 +804,84 @@ body.wek-scheme-violet .wek-admin {
 	gap: 0.5rem;
 }
 
+/* CPO-style visibility conditions */
+.wek-admin .wek-builder__conditions {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.wek-admin .wek-builder__conditions-header select {
+	width: 100%;
+	max-width: 100%;
+	min-height: 36px;
+}
+
+.wek-admin .wek-builder__conditions-list {
+	display: grid;
+	gap: 0.55rem;
+}
+
+.wek-admin .wek-builder__conditions-empty {
+	margin: 0;
+	padding: 0.75rem;
+	border: 1px dashed var(--wek-line);
+	border-radius: var(--wek-radius-sm);
+	background: var(--wek-panel);
+}
+
+.wek-admin .wek-builder__condition-rule {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.45rem;
+	padding: 0.65rem 0.75rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-sm);
+	background: var(--wek-surface);
+}
+
+.wek-admin .wek-builder__condition-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.15rem 0.45rem;
+	border-radius: 999px;
+	background: var(--wek-panel);
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--wek-muted);
+}
+
+.wek-admin .wek-builder__condition-rule select,
+.wek-admin .wek-builder__condition-rule input[type="text"] {
+	min-height: 32px;
+	margin: 0;
+	max-width: 100%;
+}
+
+.wek-admin .wek-builder__condition-field {
+	flex: 1 1 8rem;
+	min-width: 7rem;
+}
+
+.wek-admin .wek-builder__condition-op {
+	flex: 0 1 7rem;
+	min-width: 6rem;
+}
+
+.wek-admin .wek-builder__condition-value {
+	flex: 1 1 7rem;
+	min-width: 6rem;
+}
+
+.wek-admin .wek-builder__condition-value select,
+.wek-admin .wek-builder__condition-value input {
+	width: 100%;
+}
+
+.wek-admin .wek-builder__condition-remove {
+	margin-left: auto;
+}
+
 .wek-admin .wek-builder__option-row {
 	display: grid;
 	grid-template-columns: 1fr 1fr auto;

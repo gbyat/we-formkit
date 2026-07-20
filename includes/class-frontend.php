@@ -748,18 +748,39 @@ final class Frontend {
 	}
 
 	/**
-	 * @param array<string, mixed>|null $rule Rule.
+	 * @param array<string, mixed>|null $rule Rule or conditions container.
 	 * @return string HTML attributes.
 	 */
 	private static function rule_attrs( $rule ) {
-		if ( empty( $rule ) || empty( $rule['field'] ) ) {
+		if ( empty( $rule ) || ! is_array( $rule ) ) {
 			return '';
 		}
-		return sprintf(
-			' data-show-field="%s" data-show-op="%s" data-show-value="%s"',
-			esc_attr( (string) $rule['field'] ),
-			esc_attr( (string) $rule['op'] ),
-			esc_attr( (string) ( $rule['value'] ?? '' ) )
-		);
+
+		// Prefer JSON container (multi-rule). Keep legacy attrs when single rule for older caches.
+		$json = wp_json_encode( $rule );
+		if ( false === $json ) {
+			return '';
+		}
+
+		$attrs = ' data-show-when="' . esc_attr( $json ) . '"';
+
+		$rules = array();
+		if ( isset( $rule['field'] ) && ! isset( $rule['rules'] ) ) {
+			$rules = array( $rule );
+		} elseif ( ! empty( $rule['rules'] ) && is_array( $rule['rules'] ) ) {
+			$rules = $rule['rules'];
+		}
+
+		if ( 1 === count( $rules ) && ! empty( $rules[0]['field'] ) ) {
+			$one    = $rules[0];
+			$attrs .= sprintf(
+				' data-show-field="%s" data-show-op="%s" data-show-value="%s"',
+				esc_attr( (string) $one['field'] ),
+				esc_attr( (string) ( $one['op'] ?? 'equals' ) ),
+				esc_attr( (string) ( $one['value'] ?? '' ) )
+			);
+		}
+
+		return $attrs;
 	}
 }
