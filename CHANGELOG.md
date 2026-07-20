@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.8] - 2026-07-20
+
+- Implement customizable submit button functionality in the form schema. Introduce methods to get and set submit button properties, including label, icon SVG, and icon position. Update frontend rendering to utilize the new submit button configuration, enhancing user experience with customizable form submissions. Update related validation messages for checkboxes to improve user guidance on selection limits.
 ## [0.2.7] - 2026-07-20
 
 - Enhance validation message handling in the form editor and frontend. Introduce customizable required and invalid messages for form fields, allowing users to define default messages in settings. Update CSS for improved error display and layout. Refactor JavaScript to ensure proper rendering of validation messages and error handling. Update German translations for new validation message strings.
