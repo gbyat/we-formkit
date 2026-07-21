@@ -550,7 +550,7 @@ msgstr "PDF"
 #: includes/admin/class-submissions.php:92
 #: includes/admin/class-submissions.php:723
 #: includes/admin/class-submissions.php:1052
-#: includes/class-notifications.php:68
+#: includes/class-notifications.php:93
 #: includes/class-submission-export.php:28
 msgid "Submission not found."
 msgstr "Eintrag nicht gefunden."
@@ -1633,6 +1633,7 @@ msgstr "Violett"
 msgid "You cannot export entries."
 msgstr "Du kannst Einträge nicht exportieren."
 
+#: includes/class-notifications.php:500
 #: includes/fields/class-signature-field.php:26
 #: includes/fields/class-signature-field.php:129
 msgid "Signature"
@@ -1727,7 +1728,7 @@ msgid "Notification duplicated. Review the copy, then save."
 msgstr "Benachrichtigung dupliziert. Kopie prüfen, dann speichern."
 
 #: includes/admin/class-form-editor.php:1081
-#: includes/class-notifications.php:123
+#: includes/class-notifications.php:148
 msgid "Notification not found."
 msgstr "Benachrichtigung nicht gefunden."
 
@@ -2006,33 +2007,33 @@ msgstr "An mich senden"
 msgid "Resend all active"
 msgstr "Alle aktiven erneut senden"
 
-#: includes/class-notifications.php:77
+#: includes/class-notifications.php:102
 msgid "Form not found for this submission."
 msgstr "Formular für diesen Eintrag nicht gefunden."
 
 #. translators: %s: notification name
-#: includes/class-notifications.php:112
+#: includes/class-notifications.php:137
 #, php-format
 msgid "Sent: %s"
 msgstr "Gesendet: %s"
 
-#: includes/class-notifications.php:115
+#: includes/class-notifications.php:140
 msgid "Could not send."
 msgstr "Konnte nicht gesendet werden."
 
 #. translators: 1: notification name, 2: error
-#: includes/class-notifications.php:117
+#: includes/class-notifications.php:142
 #, php-format
 msgid "Failed (%1$s): %2$s"
 msgstr "Fehlgeschlagen (%1$s): %2$s"
 
-#: includes/class-notifications.php:150
-#: includes/class-notifications.php:218
+#: includes/class-notifications.php:175
+#: includes/class-notifications.php:245
 msgid "No valid recipient email."
 msgstr "Keine gültige Empfänger-E-Mail."
 
-#: includes/class-notifications.php:234
-#: includes/class-notifications.php:237
+#: includes/class-notifications.php:271
+#: includes/class-notifications.php:274
 msgid "wp_mail failed."
 msgstr "wp_mail fehlgeschlagen."
 

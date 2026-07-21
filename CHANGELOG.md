@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5] - 2026-07-21
+
+- Add inline image support for email notifications. Implement functionality to embed images using CID in outgoing emails, enhancing the display of signatures. Update email formatting methods to accommodate inline images and ensure proper handling of allowed protocols.
 ## [0.4.4] - 2026-07-21
 
 - Refactor draft email content and update translations for improved clarity. Simplify the message format for saved progress notifications and adjust related German translations. Update calendar event properties for better compatibility with email clients.
