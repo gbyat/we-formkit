@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-07-21
+
+- Refactor and enhance form functionality and UI. Update AGENTS.md to reflect the current product status and features, including sidebar scope tabs for field, form, and integrations. Improve CSS for admin and frontend, adding styles for new sidebar elements and ensuring responsive design. Modify JavaScript to manage sidebar interactions and improve form validation logic. Update notifications handling to allow HTML in emails for better formatting. Ensure all changes are documented and consistent with previous updates.
 ## [0.4.1] - 2026-07-21
 
 - Enhance email footer settings in admin panel by integrating a rich text editor for better formatting options. Update CSS to ensure proper styling of the email footer editor. Adjust translations for improved clarity and consistency in the German language files.
