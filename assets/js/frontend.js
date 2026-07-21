@@ -628,38 +628,51 @@
 	function prepareInlineControlRows( form ) {
 		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
 			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
-			if ( type === 'html' || type === 'hidden' || type === 'checkbox' || type === 'consent' ) {
+			if ( type === 'html' || type === 'hidden' ) {
 				return;
 			}
 			const icon = qs( fieldEl, '[data-wek-validity]' );
 			if ( ! icon ) {
 				return;
 			}
-			const control = ( function () {
+			if ( icon.parentElement && icon.parentElement.classList.contains( 'we-formkit__control-row' ) ) {
+				return;
+			}
+
+			let control = null;
+			let rowMod = '';
+
+			if ( type === 'radio' || type === 'checkboxes' || type === 'radio_image' ) {
+				control = qs( fieldEl, '.we-formkit__fieldset' );
+				rowMod = ' we-formkit__control-row--choices';
+			} else if ( type === 'checkbox' || type === 'consent' ) {
+				control = qs( fieldEl, '.we-formkit__control--choice' );
+				rowMod = ' we-formkit__control-row--choices';
+			} else {
 				const kids = fieldEl.children;
 				for ( let i = 0; i < kids.length; i++ ) {
 					const el = kids[ i ];
 					const tag = el.tagName;
 					if ( tag === 'TEXTAREA' || tag === 'SELECT' ) {
-						return el;
+						control = el;
+						break;
 					}
 					if ( tag === 'INPUT' ) {
 						const t = ( el.type || '' ).toLowerCase();
 						if ( t !== 'checkbox' && t !== 'radio' && t !== 'hidden' ) {
-							return el;
+							control = el;
+							break;
 						}
 					}
 				}
-				return null;
-			} )();
-			if ( ! control ) {
+			}
+
+			if ( ! control || control.parentElement !== fieldEl ) {
 				return;
 			}
-			if ( control.parentElement && control.parentElement.classList.contains( 'we-formkit__control-row' ) ) {
-				return;
-			}
+
 			const wrap = document.createElement( 'div' );
-			wrap.className = 'we-formkit__control-row';
+			wrap.className = 'we-formkit__control-row' + rowMod;
 			fieldEl.insertBefore( wrap, control );
 			wrap.appendChild( control );
 			wrap.appendChild( icon );

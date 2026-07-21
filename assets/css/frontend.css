@@ -359,8 +359,15 @@
 	flex: 1;
 	min-width: 0;
 	line-height: 1.4;
-	font-weight: 500;
+	font-size: var(--wek-font-label);
+	font-weight: 600;
+	color: inherit;
 	cursor: pointer;
+}
+
+.we-formkit--label-normal .we-formkit__choice span,
+.we-formkit--label-normal .we-formkit__control--choice label {
+	font-weight: 500;
 }
 
 /* Custom radio / checkbox — native input kept for a11y */
@@ -560,12 +567,22 @@
 	gap: 0.55rem;
 }
 
+.we-formkit__control-row--choices {
+	align-items: flex-start;
+}
+
 .we-formkit__control-row > input,
 .we-formkit__control-row > textarea,
-.we-formkit__control-row > select {
+.we-formkit__control-row > select,
+.we-formkit__control-row > .we-formkit__fieldset,
+.we-formkit__control-row > .we-formkit__control--choice {
 	flex: 1 1 auto;
 	min-width: 0;
 	width: 100%;
+}
+
+.we-formkit__control-row--choices > .we-formkit__validity {
+	margin-top: 0.55rem;
 }
 
 .we-formkit__validity {
