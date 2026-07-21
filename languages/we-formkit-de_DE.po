@@ -424,7 +424,7 @@ msgstr "Bestätigung speichern"
 #: includes/admin/class-submissions.php:87
 #: includes/admin/class-submissions.php:135
 #: includes/admin/class-submissions.php:199
-#: includes/admin/class-submissions.php:1051
+#: includes/admin/class-submissions.php:1054
 #: includes/class-submission-list-export.php:37
 msgid "Invalid nonce."
 msgstr "Ungültiger Sicherheitstoken."
@@ -550,7 +550,7 @@ msgstr "PDF"
 
 #: includes/admin/class-submissions.php:92
 #: includes/admin/class-submissions.php:728
-#: includes/admin/class-submissions.php:1057
+#: includes/admin/class-submissions.php:1060
 #: includes/class-notifications.php:93
 #: includes/class-submission-export.php:28
 msgid "Submission not found."
@@ -673,44 +673,44 @@ msgstr "Dieses Formular erfordert einen gültigen Zugangslink."
 #: includes/class-frontend.php:303
 #: includes/class-rest-api.php:136
 #: includes/class-rest-api.php:157
-#: includes/class-rest-api.php:362
-#: includes/class-rest-api.php:505
+#: includes/class-rest-api.php:422
+#: includes/class-rest-api.php:565
 msgid "Please correct the highlighted fields."
 msgstr "Bitte die hervorgehobenen Felder korrigieren."
 
-#: includes/class-rest-api.php:203
+#: includes/class-rest-api.php:215
 msgid "Could not save the submission."
 msgstr "Eintrag konnte nicht gespeichert werden."
 
 #. translators: 1: field label, 2: max number of files.
-#: includes/class-rest-api.php:411
+#: includes/class-rest-api.php:471
 #: includes/fields/class-upload-field.php:133
 #, php-format
 msgid "%1$s allows at most %2$d file(s)."
 msgstr "%1$s erlaubt höchstens %2$d Datei(en)."
 
-#: includes/class-rest-api.php:424
+#: includes/class-rest-api.php:484
 msgid "File upload failed. Please try again."
 msgstr "Datei-Upload fehlgeschlagen. Bitte erneut versuchen."
 
 #. translators: 1: field label, 2: max size in MB.
-#: includes/class-rest-api.php:432
+#: includes/class-rest-api.php:492
 #, php-format
 msgid "%1$s exceeds the maximum file size of %2$d MB."
 msgstr "%1$s überschreitet die maximale Dateigröße von %2$d MB."
 
 #. translators: %s: field label.
-#: includes/class-rest-api.php:444
+#: includes/class-rest-api.php:504
 #, php-format
 msgid "%s has an invalid file type."
 msgstr "%s hat einen ungültigen Dateityp."
 
-#: includes/class-rest-api.php:469
+#: includes/class-rest-api.php:529
 msgid "Could not save the uploaded file."
 msgstr "Hochgeladene Datei konnte nicht gespeichert werden."
 
 #. translators: %s: date
-#: includes/class-rest-api.php:631
+#: includes/class-rest-api.php:691
 #, php-format
 msgid "Submission %s"
 msgstr "Eintrag %s"
@@ -1563,40 +1563,40 @@ msgid "Clear"
 msgstr "Löschen"
 
 #: includes/admin/class-form-editor.php:2612
-#: includes/class-private-files.php:53
+#: includes/class-private-files.php:72
 msgid "Invalid upload."
 msgstr "Ungültiger Upload."
 
-#: includes/class-private-files.php:61
+#: includes/class-private-files.php:80
 msgid "File type not allowed."
 msgstr "Dateityp nicht erlaubt."
 
-#: includes/class-private-files.php:66
-#: includes/class-private-files.php:72
+#: includes/class-private-files.php:85
+#: includes/class-private-files.php:91
 msgid "Could not prepare upload storage."
 msgstr "Upload-Speicher konnte nicht vorbereitet werden."
 
-#: includes/class-private-files.php:81
+#: includes/class-private-files.php:100
 msgid "Failed to store the uploaded file."
 msgstr "Hochgeladene Datei konnte nicht gespeichert werden."
 
-#: includes/class-private-files.php:110
+#: includes/class-private-files.php:129
 msgid "Signature is empty."
 msgstr "Unterschrift ist leer."
 
-#: includes/class-private-files.php:115
+#: includes/class-private-files.php:134
 msgid "Could not prepare signature storage."
 msgstr "Unterschriften-Speicher konnte nicht vorbereitet werden."
 
-#: includes/class-private-files.php:133
+#: includes/class-private-files.php:152
 msgid "Failed to store the signature."
 msgstr "Unterschrift konnte nicht gespeichert werden."
 
-#: includes/class-private-files.php:236
+#: includes/class-private-files.php:255
 msgid "You cannot download this file."
 msgstr "Du kannst diese Datei nicht herunterladen."
 
-#: includes/class-private-files.php:246
+#: includes/class-private-files.php:265
 msgid "File not found."
 msgstr "Datei nicht gefunden."
 

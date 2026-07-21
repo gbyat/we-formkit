@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-21
+
+- Enhance Formkit with smart tag picker for email and confirmation messages, allowing users to insert dynamic content easily. Update package.json to include new PHP script for internationalization. Add filters for managing MIME types and submission data, improving extensibility and customization options. Update translations for consistency.
 ## [0.5.1] - 2026-07-21
 
 - Update email notification templates and validation messages to use sprintf for better localization support. Adjust admin menu items for modules and settings, and update translations accordingly. Add AGENTS.md to .gitignore.
