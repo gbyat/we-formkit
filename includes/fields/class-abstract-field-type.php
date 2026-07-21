@@ -71,9 +71,79 @@ abstract class Abstract_Field_Type {
 			$field['type_options'] = array();
 		}
 
+		if ( isset( $field['type_options']['block_links'] ) ) {
+			$field['type_options']['block_links'] = ! empty( $field['type_options']['block_links'] );
+		}
+		if ( isset( $field['type_options']['block_emails'] ) ) {
+			$field['type_options']['block_emails'] = ! empty( $field['type_options']['block_emails'] );
+		}
+
 		$field['messages'] = Validation_Messages::normalize_field_messages( $field['messages'] ?? null );
 
 		return $field;
+	}
+
+	/**
+	 * Reject links / email addresses in free-text fields when enabled per field.
+	 *
+	 * @param mixed                $value Sanitized value.
+	 * @param array<string, mixed> $field Field configuration.
+	 * @return true|\WP_Error
+	 */
+	protected function content_guard( $value, array $field ) {
+		if ( ! is_string( $value ) || '' === trim( $value ) ) {
+			return true;
+		}
+
+		$opts  = isset( $field['type_options'] ) && is_array( $field['type_options'] ) ? $field['type_options'] : array();
+		$label = (string) ( $field['label'] ?? '' );
+
+		if ( ! empty( $opts['block_links'] ) && self::contains_link( $value ) ) {
+			return new \WP_Error(
+				'we_formkit_links_not_allowed',
+				sprintf(
+					/* translators: %s: field label. */
+					__( '%s may not contain links.', 'we-formkit' ),
+					$label
+				)
+			);
+		}
+
+		if ( ! empty( $opts['block_emails'] ) && self::contains_email( $value ) ) {
+			return new \WP_Error(
+				'we_formkit_email_not_allowed',
+				sprintf(
+					/* translators: %s: field label. */
+					__( '%s may not contain an email address.', 'we-formkit' ),
+					$label
+				)
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Heuristic link detection (URLs, anchors, bbcode).
+	 *
+	 * @param string $value Text to scan.
+	 * @return bool
+	 */
+	protected static function contains_link( $value ) {
+		$value = (string) $value;
+		return (bool) preg_match( '#(?:https?://|www\.)\S+#i', $value )
+			|| (bool) preg_match( '#<a\b#i', $value )
+			|| false !== stripos( $value, '[url' );
+	}
+
+	/**
+	 * Heuristic email-address detection.
+	 *
+	 * @param string $value Text to scan.
+	 * @return bool
+	 */
+	protected static function contains_email( $value ) {
+		return (bool) preg_match( '#[^\s@]+@[^\s@]+\.[^\s@]{2,}#', (string) $value );
 	}
 
 	/**

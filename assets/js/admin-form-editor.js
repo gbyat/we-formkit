@@ -1859,6 +1859,41 @@
 			return wrap;
 		}
 
+		function renderContentGuardEditor( field ) {
+			const opts = ensureTypeOptions( field );
+			const wrap = el( 'div', { className: 'wek-builder__content-guard' } );
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.contentGuardHint ||
+						'Reject submissions where this field contains links or an email address (helps against bots).',
+				} )
+			);
+
+			const linksBox = el( 'input', { type: 'checkbox' } );
+			linksBox.checked = !! opts.block_links;
+			linksBox.addEventListener( 'change', function () {
+				opts.block_links = linksBox.checked;
+				syncHidden();
+			} );
+			wrap.appendChild(
+				toggleRow( i18n.blockLinks || 'Reject links (URLs)', linksBox )
+			);
+
+			const emailBox = el( 'input', { type: 'checkbox' } );
+			emailBox.checked = !! opts.block_emails;
+			emailBox.addEventListener( 'change', function () {
+				opts.block_emails = emailBox.checked;
+				syncHidden();
+			} );
+			wrap.appendChild(
+				toggleRow( i18n.blockEmails || 'Reject email addresses', emailBox )
+			);
+
+			return wrap;
+		}
+
 		function shouldShowPlaceholder( type ) {
 			return (
 				[
@@ -2384,6 +2419,10 @@
 
 				if ( field.type === 'repeater' && ! isNested ) {
 					panel.appendChild( renderRepeaterSettings( field ) );
+				}
+
+				if ( field.type === 'text' || field.type === 'textarea' ) {
+					panel.appendChild( renderContentGuardEditor( field ) );
 				}
 			} else if ( selected.kind === 'field' && activeTab === 'appearance' ) {
 				const field = selected.field;

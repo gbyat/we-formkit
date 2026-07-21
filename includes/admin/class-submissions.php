@@ -100,6 +100,15 @@ final class Submissions {
 				break;
 			case 'restore':
 				wp_untrash_post( $id );
+				// wp_untrash_post may restore to 'draft' depending on WP version /
+				// filters; the entries list only queries 'publish', so force it back
+				// to publish to guarantee the restored entry reappears in the inbox.
+				wp_update_post(
+					array(
+						'ID'          => $id,
+						'post_status' => 'publish',
+					)
+				);
 				$notice = 'restored';
 				break;
 			case 'delete':
@@ -126,14 +135,10 @@ final class Submissions {
 				wp_die( esc_html__( 'Invalid nonce.', 'we-formkit' ) );
 		}
 
-		$tab = 'all';
-		if ( 'spam' === $action || 'spammed' === $notice ) {
-			$tab = 'spam';
-		} elseif ( 'trash' === $action || 'trashed' === $notice ) {
-			$tab = 'trash';
-		} elseif ( in_array( $action, array( 'unspam', 'restore', 'unread' ), true ) ) {
-			$tab = 'all';
-		}
+		// Stay in the main inbox for inbox-originated actions (trash, spam, mark
+		// read/unread). Only "delete permanently" is done from the trash view, so
+		// keep the user there to continue cleaning up.
+		$tab = 'delete' === $action ? 'trash' : 'all';
 
 		wp_safe_redirect(
 			self::list_redirect_url(

@@ -40,6 +40,11 @@ class Text_Field extends Abstract_Field_Type {
 	}
 
 	public function validate( $value, array $field ) {
+		$guard = $this->content_guard( $value, $field );
+		if ( is_wp_error( $guard ) ) {
+			return $guard;
+		}
+
 		$max = isset( $field['type_options']['max_length'] ) ? (int) $field['type_options']['max_length'] : 0;
 		if ( $max > 0 && is_string( $value ) && mb_strlen( $value ) > $max ) {
 			return new \WP_Error(

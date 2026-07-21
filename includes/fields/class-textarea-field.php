@@ -38,6 +38,10 @@ class Textarea_Field extends Abstract_Field_Type {
 		return is_string( $value ) ? sanitize_textarea_field( $value ) : '';
 	}
 
+	public function validate( $value, array $field ) {
+		return $this->content_guard( $value, $field );
+	}
+
 	public function render_attributes( array $field ): array {
 		$attrs = parent::render_attributes( $field );
 		unset( $attrs['type'] );
