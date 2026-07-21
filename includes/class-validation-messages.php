@@ -17,23 +17,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Validation_Messages {
 
 	/**
-	 * Built-in required template (contains {label}).
+	 * Built-in required template (contains {label} after assembly).
 	 *
 	 * @return string
 	 */
 	public static function builtin_required_template() {
-		/* translators: Keep {label} as a literal placeholder for the field label. */
-		return __( '{label} is required.', 'we-formkit' );
+		return sprintf(
+			/* translators: %s: literal merge tag {label} for the field label (do not translate the tag). */
+			__( '%s is required.', 'we-formkit' ),
+			'{label}'
+		);
 	}
 
 	/**
-	 * Built-in invalid template (contains {label}).
+	 * Built-in invalid template (contains {label} after assembly).
 	 *
 	 * @return string
 	 */
 	public static function builtin_invalid_template() {
-		/* translators: Keep {label} as a literal placeholder for the field label. */
-		return __( 'Please enter a valid value for {label}.', 'we-formkit' );
+		return sprintf(
+			/* translators: %s: literal merge tag {label} for the field label (do not translate the tag). */
+			__( 'Please enter a valid value for %s.', 'we-formkit' ),
+			'{label}'
+		);
 	}
 
 	/**

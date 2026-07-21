@@ -229,9 +229,17 @@ final class Form_Notifications {
 				'reply_to_field' => '',
 				'cc'             => '',
 				'bcc'            => '',
-				'subject'        => __( '[Formkit] New submission: {form_title}', 'we-formkit' ),
+				'subject'        => sprintf(
+					/* translators: %s: merge tag {form_title} (do not translate the tag). */
+					__( '[Formkit] New submission: %s', 'we-formkit' ),
+					'{form_title}'
+				),
 				'header'         => '',
-				'message'        => __( "<p>A new form was submitted.</p>\n<p>{all_fields}</p>\n<p>Open submission: <a href=\"{submission_url}\">{submission_url}</a></p>", 'we-formkit' ),
+				'message'        => sprintf(
+					'<p>%1$s</p>' . "\n" . '<p>{all_fields}</p>' . "\n" . '<p>%2$s <a href="{submission_url}">{submission_url}</a></p>',
+					__( 'A new form was submitted.', 'we-formkit' ),
+					__( 'Open submission:', 'we-formkit' )
+				),
 				'include_fields' => 'all',
 				'field_ids'      => array(),
 				'footer'         => '',
@@ -251,9 +259,16 @@ final class Form_Notifications {
 				'reply_to_field' => '',
 				'cc'             => '',
 				'bcc'            => '',
-				'subject'        => __( 'We received your submission: {form_title}', 'we-formkit' ),
+				'subject'        => sprintf(
+					/* translators: %s: merge tag {form_title} (do not translate the tag). */
+					__( 'We received your submission: %s', 'we-formkit' ),
+					'{form_title}'
+				),
 				'header'         => '',
-				'message'        => __( "<p>Thank you. We have received your submission.</p>\n<p>{all_fields}</p>", 'we-formkit' ),
+				'message'        => sprintf(
+					'<p>%s</p>' . "\n" . '<p>{all_fields}</p>',
+					__( 'Thank you. We have received your submission.', 'we-formkit' )
+				),
 				'include_fields' => 'all',
 				'field_ids'      => array(),
 				'footer'         => '',

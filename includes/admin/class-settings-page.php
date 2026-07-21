@@ -476,7 +476,17 @@ final class Settings_Page {
 								id="wek_validation_required"
 								value="<?php echo esc_attr( '' !== (string) $settings['validation_required'] ? (string) $settings['validation_required'] : Validation_Messages::builtin_required_template() ); ?>"
 							/>
-							<p class="description"><?php esc_html_e( 'Used when a field has no own required message. Include {label} for the field label.', 'we-formkit' ); ?></p>
+							<p class="description">
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: %s: literal merge tag {label} (do not translate the tag). */
+										__( 'Used when a field has no own required message. Include %s for the field label.', 'we-formkit' ),
+										'{label}'
+									)
+								);
+								?>
+							</p>
 						</td>
 					</tr>
 					<tr>
@@ -489,7 +499,17 @@ final class Settings_Page {
 								id="wek_validation_invalid"
 								value="<?php echo esc_attr( '' !== (string) $settings['validation_invalid'] ? (string) $settings['validation_invalid'] : Validation_Messages::builtin_invalid_template() ); ?>"
 							/>
-							<p class="description"><?php esc_html_e( 'Used when a field has no own invalid message. Include {label} for the field label.', 'we-formkit' ); ?></p>
+							<p class="description">
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: %s: literal merge tag {label} (do not translate the tag). */
+										__( 'Used when a field has no own invalid message. Include %s for the field label.', 'we-formkit' ),
+										'{label}'
+									)
+								);
+								?>
+							</p>
 							<p class="description"><?php esc_html_e( 'Errors appear under each field with an icon; color is never the only cue.', 'we-formkit' ); ?></p>
 						</td>
 					</tr>

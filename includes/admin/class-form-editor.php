@@ -501,7 +501,11 @@ final class Form_Editor {
 					'validationMessages'      => __( 'Validation messages', 'we-formkit' ),
 					'msgRequired'             => __( 'Required message', 'we-formkit' ),
 					'msgInvalid'              => __( 'Invalid message', 'we-formkit' ),
-					'msgHint'                 => __( 'Leave empty to use Formkit Settings defaults. Use {label} for the field label.', 'we-formkit' ),
+					'msgHint'                 => sprintf(
+						/* translators: %s: literal merge tag {label} (do not translate the tag). */
+						__( 'Leave empty to use Formkit Settings defaults. Use %s for the field label.', 'we-formkit' ),
+						'{label}'
+					),
 					'maxFiles'                => __( 'Max files', 'we-formkit' ),
 					'maxFileSize'             => __( 'Max file size (MB)', 'we-formkit' ),
 					'allowedMime'             => __( 'Allowed MIME types', 'we-formkit' ),
@@ -1111,7 +1115,21 @@ final class Form_Editor {
 			</div>
 
 			<p class="description">
-				<?php esc_html_e( 'Configure who receives emails after a submission. Use {all_fields}, {form_title}, {submission_url}, {date}, {site_name}, {info_links}, or {field:field_id} in subject and message.', 'we-formkit' ); ?>
+				<?php
+				echo esc_html(
+					sprintf(
+						/* translators: 1–7: merge tags (do not translate the tags). */
+						__( 'Configure who receives emails after a submission. Use %1$s, %2$s, %3$s, %4$s, %5$s, %6$s, or %7$s in subject and message.', 'we-formkit' ),
+						'{all_fields}',
+						'{form_title}',
+						'{submission_url}',
+						'{date}',
+						'{site_name}',
+						'{info_links}',
+						'{field:field_id}'
+					)
+				);
+				?>
 			</p>
 
 			<?php if ( $is_new ) : ?>
@@ -1404,11 +1422,34 @@ final class Form_Editor {
 						14
 					);
 					?>
-					<p class="description"><?php esc_html_e( 'HTML email body. Use {all_fields}, {info_links}, {form_title}, {submission_url}, {field:field_id}, and other merge tags.', 'we-formkit' ); ?></p>
+					<p class="description">
+						<?php
+						echo esc_html(
+							sprintf(
+								/* translators: 1–4: merge tags (do not translate the tags). */
+								__( 'HTML email body. Use %1$s, %2$s, %3$s, %4$s, and other merge tags.', 'we-formkit' ),
+								'{all_fields}',
+								'{info_links}',
+								'{form_title}',
+								'{submission_url}'
+							)
+						);
+						?>
+					</p>
 				</td>
 			</tr>
 			<tr>
-				<th><?php esc_html_e( 'Fields in {all_fields}', 'we-formkit' ); ?></th>
+				<th>
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: %s: merge tag {all_fields} (do not translate the tag). */
+							__( 'Fields in %s', 'we-formkit' ),
+							'{all_fields}'
+						)
+					);
+					?>
+				</th>
 				<td>
 					<select name="<?php echo esc_attr( $prefix ); ?>[include_fields]" data-wek-reveal="fields">
 						<option value="all" <?php selected( $n['include_fields'], 'all' ); ?>><?php esc_html_e( 'All fields', 'we-formkit' ); ?></option>
@@ -1679,7 +1720,15 @@ final class Form_Editor {
 					<td>
 						<label style="display:block;margin:0.2rem 0;">
 							<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[show_download]" value="1" <?php checked( ! empty( $doc['show_download'] ) ); ?> />
-							<?php esc_html_e( 'Show download link after submit (and via {info_links} in emails)', 'we-formkit' ); ?>
+							<?php
+							echo esc_html(
+								sprintf(
+									/* translators: %s: merge tag {info_links} (do not translate the tag). */
+									__( 'Show download link after submit (and via %s in emails)', 'we-formkit' ),
+									'{info_links}'
+								)
+							);
+							?>
 						</label>
 						<label style="display:block;margin:0.2rem 0;">
 							<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[attach_to_email]" value="1" <?php checked( ! empty( $doc['attach_to_email'] ) ); ?> data-wek-reveal="attach" />

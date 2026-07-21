@@ -94,20 +94,20 @@ final class Admin {
 
 		add_submenu_page(
 			'we-formkit',
-			__( 'Modules', 'we-formkit' ),
-			__( 'Modules', 'we-formkit' ),
-			'manage_options',
-			'we-formkit-modules',
-			array( Modules_Page::class, 'render' )
-		);
-
-		add_submenu_page(
-			'we-formkit',
 			__( 'Settings', 'we-formkit' ),
 			__( 'Settings', 'we-formkit' ),
 			'manage_options',
 			'we-formkit-settings',
 			array( Settings_Page::class, 'render' )
+		);
+
+		add_submenu_page(
+			'we-formkit',
+			__( 'Modules', 'we-formkit' ),
+			__( 'Modules', 'we-formkit' ),
+			'manage_options',
+			'we-formkit-modules',
+			array( Modules_Page::class, 'render' )
 		);
 	}
 

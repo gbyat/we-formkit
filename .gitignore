@@ -7,6 +7,7 @@ wp-cli.phar
 .vscode/
 .cursor/
 TASK-LOG.md
+AGENTS.md
 
 # OS / logs
 Thumbs.db
