@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-07-21
+
+- Add hidden attribute to page progress element on form reset
 ## [0.4.2] - 2026-07-21
 
 - Refactor and enhance form functionality and UI. Update AGENTS.md to reflect the current product status and features, including sidebar scope tabs for field, form, and integrations. Improve CSS for admin and frontend, adding styles for new sidebar elements and ensuring responsive design. Modify JavaScript to manage sidebar interactions and improve form validation logic. Update notifications handling to allow HTML in emails for better formatting. Ensure all changes are documented and consistent with previous updates.
