@@ -205,13 +205,30 @@ final class Settings_Page {
 					<tr>
 						<th><label for="wek_email_footer"><?php esc_html_e( 'Email footer', 'we-formkit' ); ?></label></th>
 						<td>
-							<textarea
-								class="large-text"
-								rows="4"
-								name="wek_settings[email_footer]"
-								id="wek_email_footer"
-							><?php echo esc_textarea( (string) ( $settings['email_footer'] ?? '' ) ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'HTML allowed. Appended to Save & Resume emails, and used as the default notification footer when a notification leaves Footer empty (including admin notifications).', 'we-formkit' ); ?></p>
+							<div class="wek-email-footer-editor">
+								<?php
+								wp_editor(
+									(string) ( $settings['email_footer'] ?? '' ),
+									'wek_email_footer',
+									array(
+										'textarea_name' => 'wek_settings[email_footer]',
+										'textarea_rows' => 6,
+										'media_buttons' => false,
+										'teeny'         => false,
+										'quicktags'     => true,
+										'editor_height' => 160,
+										'editor_class'  => 'wek-email-footer-editor__field',
+										'tinymce'       => array(
+											'toolbar1'    => 'formatselect,bold,italic,underline,bullist,numlist,link,unlink,undo,redo,removeformat',
+											'toolbar2'    => '',
+											'content_css' => false,
+											'block_formats' => 'Paragraph=p;Heading 3=h3',
+										),
+									)
+								);
+								?>
+							</div>
+							<p class="description"><?php esc_html_e( 'Appended to Save & Resume emails, and used as the default notification footer when a notification leaves Footer empty (including admin notifications).', 'we-formkit' ); ?></p>
 						</td>
 					</tr>
 					<tr>

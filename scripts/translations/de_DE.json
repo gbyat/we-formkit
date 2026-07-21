@@ -289,7 +289,7 @@
   "Used when a notification leaves From name empty. Prefilled with the site title (%s).": "Wird verwendet, wenn eine Benachrichtigung den Absendernamen leer lässt. Vorausgefüllt mit dem Seitentitel (%s).",
   "Used when a notification leaves From email empty. Prefilled with the WordPress admin email (%s). For SMTP, use an address your provider allows.": "Wird verwendet, wenn eine Benachrichtigung die Absender-E-Mail leer lässt. Vorausgefüllt mit der WordPress-Admin-E-Mail (%s). Bei SMTP eine Adresse verwenden, die der Anbieter erlaubt.",
   "Email footer": "E-Mail-Fußzeile",
-  "HTML allowed. Appended to Save & Resume emails, and used as the default notification footer when a notification leaves Footer empty (including admin notifications).": "HTML erlaubt. Wird an Speichern-&-Fortsetzen-Mails angehängt und als Standard-Fußzeile für Benachrichtigungen genutzt, wenn dort keine eigene Fußzeile gesetzt ist (auch Admin-Benachrichtigungen).",
+  "Appended to Save & Resume emails, and used as the default notification footer when a notification leaves Footer empty (including admin notifications).": "Wird an Speichern-&-Fortsetzen-Mails angehängt und als Standard-Fußzeile für Benachrichtigungen genutzt, wenn dort keine eigene Fußzeile gesetzt ist (auch Admin-Benachrichtigungen).",
   "Transport": "Transport",
   "WordPress default (wp_mail)": "WordPress-Standard (wp_mail)",
   "WE Subscribe to Posts (shared SMTP)": "WE Subscribe to Posts (gemeinsames SMTP)",

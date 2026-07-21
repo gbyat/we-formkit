@@ -391,7 +391,7 @@ msgstr "Optional. Fallback: Plugin-Standard, dann Datenschutzerklärung der Webs
 msgid "Intro text"
 msgstr "Einleitungstext"
 
-#: includes/admin/class-settings-page.php:496
+#: includes/admin/class-settings-page.php:513
 #: src/admin-form-settings/index.jsx:1040
 msgid "Save settings"
 msgstr "Einstellungen speichern"
@@ -491,31 +491,31 @@ msgstr "Einstellungen gespeichert."
 msgid "Default notification email"
 msgstr "Standard-Benachrichtigungs-E-Mail"
 
-#: includes/admin/class-settings-page.php:480
+#: includes/admin/class-settings-page.php:497
 msgid "Retention (days)"
 msgstr "Aufbewahrung (Tage)"
 
-#: includes/admin/class-settings-page.php:483
+#: includes/admin/class-settings-page.php:500
 msgid "Submissions older than this are deleted automatically. Set 0 to disable automatic deletion."
 msgstr "Ältere Einträge werden automatisch gelöscht. 0 deaktiviert die automatische Löschung."
 
-#: includes/admin/class-settings-page.php:487
+#: includes/admin/class-settings-page.php:504
 msgid "Uninstall"
 msgstr "Deinstallation"
 
-#: includes/admin/class-settings-page.php:491
+#: includes/admin/class-settings-page.php:508
 msgid "Delete all forms and submissions when the plugin is uninstalled"
 msgstr "Alle Formulare und Einträge beim Deinstallieren des Plugins löschen"
 
-#: includes/admin/class-settings-page.php:515
+#: includes/admin/class-settings-page.php:532
 msgid "Privacy notes"
 msgstr "Hinweise zum Datenschutz"
 
-#: includes/admin/class-settings-page.php:517
+#: includes/admin/class-settings-page.php:534
 msgid "Form submissions are stored in this WordPress site only (no third-party form SaaS)."
 msgstr "Formulareinträge werden nur auf dieser WordPress-Website gespeichert (kein externes Formular-SaaS)."
 
-#: includes/admin/class-settings-page.php:519
+#: includes/admin/class-settings-page.php:536
 msgid "Embed forms with the Formkit Form block. Optional secret-link tokens limit casual discovery."
 msgstr "Formulare mit dem Formkit-Formular-Block einbinden. Optionale Geheim-Link-Token erschweren zufälliges Auffinden."
 
@@ -1336,7 +1336,7 @@ msgid "Reply-To"
 msgstr "Antwort an"
 
 #: includes/admin/class-form-editor.php:1274
-#: includes/admin/class-settings-page.php:292
+#: includes/admin/class-settings-page.php:309
 #: src/admin-form-settings/index.jsx:155
 #: src/admin-form-settings/index.jsx:163
 #: src/admin-form-settings/index.jsx:602
@@ -2207,26 +2207,26 @@ msgstr "Eintrag anzeigen"
 msgid "Prefilled with the WordPress admin email (%s). Change it to use a different default; leave as the admin email to follow that address."
 msgstr "Vorausgefüllt mit der WordPress-Admin-E-Mail (%s). Ändern für eine andere Standardadresse; Admin-E-Mail belassen, um dieser Adresse zu folgen."
 
-#: includes/admin/class-settings-page.php:330
+#: includes/admin/class-settings-page.php:347
 msgid "Default privacy policy"
 msgstr "Standard-Datenschutzerklärung"
 
 #. translators: %s: privacy page title
-#: includes/admin/class-settings-page.php:339
+#: includes/admin/class-settings-page.php:356
 #, php-format
 msgid "WordPress privacy page: %s"
 msgstr "WordPress-Datenschutzseite: %s"
 
-#: includes/admin/class-settings-page.php:347
+#: includes/admin/class-settings-page.php:364
 msgid "WordPress privacy page (not set yet)"
 msgstr "WordPress-Datenschutzseite (noch nicht gesetzt)"
 
-#: includes/admin/class-settings-page.php:350
+#: includes/admin/class-settings-page.php:367
 msgid "Custom URL"
 msgstr "Benutzerdefinierte URL"
 
 #. translators: %s: link to WP privacy settings
-#: includes/admin/class-settings-page.php:358
+#: includes/admin/class-settings-page.php:375
 #, php-format
 msgid "No privacy policy page is set in WordPress. Configure one under %s, or choose a custom URL."
 msgstr "In WordPress ist keine Datenschutzseite gesetzt. Unter %s festlegen oder eine benutzerdefinierte URL wählen."
@@ -2236,12 +2236,12 @@ msgid "Settings → Privacy"
 msgstr "Einstellungen → Datenschutz"
 
 #. translators: 1: privacy page title (linked when URL exists), 2: link to WP privacy settings
-#: includes/admin/class-settings-page.php:379
+#: includes/admin/class-settings-page.php:396
 #, php-format
 msgid "Uses the page from WordPress Privacy settings (%1$s). Change it under %2$s."
 msgstr "Nutzt die Seite aus den WordPress-Datenschutz-Einstellungen (%1$s). Ändern unter %2$s."
 
-#: includes/admin/class-settings-page.php:395
+#: includes/admin/class-settings-page.php:412
 msgid "Custom privacy policy URL"
 msgstr "Benutzerdefinierte Datenschutz-URL"
 
@@ -2261,27 +2261,27 @@ msgstr "Ungültig-Meldung"
 msgid "Leave empty to use Formkit Settings defaults. Use {label} for the field label."
 msgstr "Leer lassen für die Formkit-Einstellungen. {label} für die Feldbeschriftung verwenden."
 
-#: includes/admin/class-settings-page.php:450
+#: includes/admin/class-settings-page.php:467
 msgid "Validation"
 msgstr "Validierung"
 
-#: includes/admin/class-settings-page.php:453
+#: includes/admin/class-settings-page.php:470
 msgid "Default required message"
 msgstr "Standard-Pflichtfeld-Meldung"
 
-#: includes/admin/class-settings-page.php:462
+#: includes/admin/class-settings-page.php:479
 msgid "Used when a field has no own required message. Include {label} for the field label."
 msgstr "Wird verwendet, wenn ein Feld keine eigene Pflichtfeld-Meldung hat. {label} für die Feldbeschriftung einsetzen."
 
-#: includes/admin/class-settings-page.php:466
+#: includes/admin/class-settings-page.php:483
 msgid "Default invalid message"
 msgstr "Standard-Ungültig-Meldung"
 
-#: includes/admin/class-settings-page.php:475
+#: includes/admin/class-settings-page.php:492
 msgid "Used when a field has no own invalid message. Include {label} for the field label."
 msgstr "Wird verwendet, wenn ein Feld keine eigene Ungültig-Meldung hat. {label} für die Feldbeschriftung einsetzen."
 
-#: includes/admin/class-settings-page.php:476
+#: includes/admin/class-settings-page.php:493
 msgid "Errors appear under each field with an icon; color is never the only cue."
 msgstr "Fehler erscheinen unter jedem Feld mit einem Icon; Farbe ist nie das einzige Signal."
 
@@ -2544,59 +2544,59 @@ msgstr "Eine gültige Empfänger-E-Mail für den Transport-Test eingeben."
 msgid "Mail transport"
 msgstr "Mail-Transport"
 
-#: includes/admin/class-settings-page.php:218
+#: includes/admin/class-settings-page.php:235
 msgid "Transport"
 msgstr "Transport"
 
-#: includes/admin/class-settings-page.php:227
+#: includes/admin/class-settings-page.php:244
 msgid "WordPress default (wp_mail)"
 msgstr "WordPress-Standard (wp_mail)"
 
-#: includes/admin/class-settings-page.php:231
+#: includes/admin/class-settings-page.php:248
 msgid "Custom SMTP"
 msgstr "Benutzerdefiniertes SMTP"
 
-#: includes/admin/class-settings-page.php:232
+#: includes/admin/class-settings-page.php:249
 msgid "Gmail (SMTP preset)"
 msgstr "Gmail (SMTP-Voreinstellung)"
 
-#: includes/admin/class-settings-page.php:277
+#: includes/admin/class-settings-page.php:294
 msgid "SMTP host"
 msgstr "SMTP-Host"
 
-#: includes/admin/class-settings-page.php:283
+#: includes/admin/class-settings-page.php:300
 msgid "SMTP port"
 msgstr "SMTP-Port"
 
-#: includes/admin/class-settings-page.php:289
+#: includes/admin/class-settings-page.php:306
 msgid "SMTP encryption"
 msgstr "SMTP-Verschlüsselung"
 
-#: includes/admin/class-settings-page.php:299
+#: includes/admin/class-settings-page.php:316
 msgid "SMTP authentication"
 msgstr "SMTP-Authentifizierung"
 
-#: includes/admin/class-settings-page.php:303
+#: includes/admin/class-settings-page.php:320
 msgid "Use username and password"
 msgstr "Benutzername und Passwort verwenden"
 
-#: includes/admin/class-settings-page.php:308
+#: includes/admin/class-settings-page.php:325
 msgid "SMTP username"
 msgstr "SMTP-Benutzername"
 
-#: includes/admin/class-settings-page.php:314
+#: includes/admin/class-settings-page.php:331
 msgid "SMTP password / app password"
 msgstr "SMTP-Passwort / App-Passwort"
 
-#: includes/admin/class-settings-page.php:501
+#: includes/admin/class-settings-page.php:518
 msgid "Test mail transport"
 msgstr "Mail-Transport testen"
 
-#: includes/admin/class-settings-page.php:505
+#: includes/admin/class-settings-page.php:522
 msgid "Recipient"
 msgstr "Empfänger"
 
-#: includes/admin/class-settings-page.php:508
+#: includes/admin/class-settings-page.php:525
 msgid "Send test email"
 msgstr "Test-E-Mail senden"
 
@@ -2608,36 +2608,36 @@ msgstr "[Test] Formkit-Mail-Transport"
 msgid "This is a test email from WE Formkit mail transport settings."
 msgstr "Dies ist eine Test-E-Mail aus den WE-Formkit-Mail-Transport-Einstellungen."
 
-#: includes/admin/class-settings-page.php:229
+#: includes/admin/class-settings-page.php:246
 msgid "WE Subscribe to Posts (shared SMTP)"
 msgstr "WE Subscribe to Posts (gemeinsames SMTP)"
 
-#: includes/admin/class-settings-page.php:234
+#: includes/admin/class-settings-page.php:251
 msgid "Applies only to Formkit notification and test emails — not to other plugins (unless Subscribe to Posts is set to apply globally)."
 msgstr "Gilt nur für Formkit-Benachrichtigungen und Test-Mails — nicht für andere Plugins (außer Subscribe to Posts ist global aktiv)."
 
 #. translators: %s: link to WSTP mail settings
-#: includes/admin/class-settings-page.php:242
+#: includes/admin/class-settings-page.php:259
 #, php-format
 msgid "Uses the SMTP settings from %s. Change host, credentials, or Gmail preset there."
 msgstr "Verwendet die SMTP-Einstellungen von %s. Host, Zugangsdaten oder Gmail-Preset dort ändern."
 
-#: includes/admin/class-settings-page.php:243
-#: includes/admin/class-settings-page.php:258
+#: includes/admin/class-settings-page.php:260
+#: includes/admin/class-settings-page.php:275
 msgid "Post Subscriptions → Mail Transport"
 msgstr "Beitrags-Abos → Mail-Transport"
 
 #. translators: %s: link to WSTP mail settings
-#: includes/admin/class-settings-page.php:257
+#: includes/admin/class-settings-page.php:274
 #, php-format
 msgid "Subscribe to Posts is active, but SMTP is not configured yet. Set Custom SMTP or Gmail under %s."
 msgstr "Subscribe to Posts ist aktiv, aber SMTP ist noch nicht konfiguriert. Unter %s Custom SMTP oder Gmail einstellen."
 
-#: includes/admin/class-settings-page.php:270
+#: includes/admin/class-settings-page.php:287
 msgid "Note: Subscribe to Posts already applies its transport to all WordPress emails — Formkit can stay on WordPress default in that case."
 msgstr "Hinweis: Subscribe to Posts wendet den Transport bereits auf alle WordPress-E-Mails an — Formkit kann dann beim WordPress-Standard bleiben."
 
-#: includes/admin/class-settings-page.php:502
+#: includes/admin/class-settings-page.php:519
 msgid "Saves nothing — uses the currently stored transport settings. Save transport changes first."
 msgstr "Speichert nichts — verwendet die aktuell gespeicherten Transport-Einstellungen. Transport-Änderungen zuerst speichern."
 
@@ -2996,6 +2996,7 @@ msgid "Continue “%1$s” before your saved progress link expires.\\n%2$s"
 msgstr "Setze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n%2$s"
 "Setze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
 "%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
+"%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
 "%2$s"
 
 #. translators: %s: expiry datetime (UTC).
@@ -3025,10 +3026,6 @@ msgstr[1] "%d Tage vor Ablauf"
 msgid "Email footer"
 msgstr "E-Mail-Fußzeile"
 
-#: includes/admin/class-settings-page.php:214
-msgid "HTML allowed. Appended to Save & Resume emails, and used as the default notification footer when a notification leaves Footer empty (including admin notifications)."
-msgstr "HTML erlaubt. Wird an Speichern-&-Fortsetzen-Mails angehängt und als Standard-Fußzeile für Benachrichtigungen genutzt, wenn dort keine eigene Fußzeile gesetzt ist (auch Admin-Benachrichtigungen)."
-
 #: src/admin-form-settings/index.jsx:539
 msgid "Enable Save & Resume"
 msgstr "Speichern & Fortsetzen aktivieren"
@@ -3057,58 +3054,62 @@ msgstr "Besucher können optional einen .ics-Kalendertermin an die Fortsetzungs-
 msgid "Progress updated. Use the resume link from your earlier email."
 msgstr "Fortschritt aktualisiert. Nutze den Fortsetzungs-Link aus der früheren E-Mail."
 
-#: includes/admin/class-settings-page.php:401
+#: includes/admin/class-settings-page.php:418
 msgid "Spam protection"
 msgstr "Spamschutz"
 
-#: includes/admin/class-settings-page.php:404
+#: includes/admin/class-settings-page.php:421
 msgid "Honeypot"
 msgstr "Honeypot"
 
-#: includes/admin/class-settings-page.php:408
+#: includes/admin/class-settings-page.php:425
 msgid "Reject submissions that fill a hidden decoy field"
 msgstr "Einsendungen ablehnen, die ein verstecktes Köderfeld ausfüllen"
 
-#: includes/admin/class-settings-page.php:410
+#: includes/admin/class-settings-page.php:427
 msgid "No captcha and no third-party scripts."
 msgstr "Kein Captcha und keine Fremd-Scripts."
 
-#: includes/admin/class-settings-page.php:414
+#: includes/admin/class-settings-page.php:431
 msgid "Timing check"
 msgstr "Zeitprüfung"
 
-#: includes/admin/class-settings-page.php:418
+#: includes/admin/class-settings-page.php:435
 msgid "Reject submissions that are sent too quickly after the page loads"
 msgstr "Einsendungen ablehnen, die zu schnell nach dem Seitenaufruf gesendet werden"
 
-#: includes/admin/class-settings-page.php:421
+#: includes/admin/class-settings-page.php:438
 msgid "Minimum seconds"
 msgstr "Mindestsekunden"
 
-#: includes/admin/class-settings-page.php:427
+#: includes/admin/class-settings-page.php:444
 msgid "Rate limit"
 msgstr "Ratenlimit"
 
-#: includes/admin/class-settings-page.php:431
+#: includes/admin/class-settings-page.php:448
 msgid "Limit how many submissions one IP can send per hour"
 msgstr "Begrenzen, wie viele Einsendungen eine IP pro Stunde senden darf"
 
-#: includes/admin/class-settings-page.php:434
+#: includes/admin/class-settings-page.php:451
 msgid "Max submissions per IP / hour"
 msgstr "Max. Einsendungen pro IP / Stunde"
 
-#: includes/admin/class-settings-page.php:440
+#: includes/admin/class-settings-page.php:457
 msgid "IP hash"
 msgstr "IP-Hash"
 
-#: includes/admin/class-settings-page.php:444
+#: includes/admin/class-settings-page.php:461
 msgid "Store a salted IP hash on each entry (not the plain IP)"
 msgstr "Gesalzenen IP-Hash an jedem Eintrag speichern (nicht die Klartext-IP)"
 
-#: includes/admin/class-settings-page.php:446
+#: includes/admin/class-settings-page.php:463
 msgid "Useful for abuse handling. Turn off if you prefer not to keep any IP-derived data."
 msgstr "Nützlich gegen Missbrauch. Ausschalten, wenn keine IP-abgeleiteten Daten gespeichert werden sollen."
 
-#: includes/admin/class-settings-page.php:518
+#: includes/admin/class-settings-page.php:535
 msgid "Spam protection (honeypot, timing, rate limit) and IP hashing are optional — configure them under Spam protection above. No reCAPTCHA."
 msgstr "Spamschutz (Honeypot, Zeitprüfung, Ratenlimit) und IP-Hash sind optional — oben unter Spamschutz einstellen. Kein reCAPTCHA."
+
+#: includes/admin/class-settings-page.php:231
+msgid "Appended to Save & Resume emails, and used as the default notification footer when a notification leaves Footer empty (including admin notifications)."
+msgstr "Wird an Speichern-&-Fortsetzen-Mails angehängt und als Standard-Fußzeile für Benachrichtigungen genutzt, wenn dort keine eigene Fußzeile gesetzt ist (auch Admin-Benachrichtigungen)."

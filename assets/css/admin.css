@@ -2265,3 +2265,12 @@ body.wek-builder-is-resizing iframe {
 .wek-admin .form-table .wp-editor-wrap {
 	width: 100%;
 }
+
+.wek-admin--plugin-settings .wek-email-footer-editor {
+	max-width: 36rem;
+}
+
+.wek-admin--plugin-settings .wek-email-footer-editor .wp-editor-wrap {
+	width: 100%;
+	max-width: 100%;
+}
