@@ -39,15 +39,66 @@ add_action(
 
 ## Useful hooks
 
+### Extension points
+
+| Hook | Type | When |
+|------|------|------|
+| `we_formkit_register_field_types` | action | After core field types are registered `( $registry )` |
+| `we_formkit_register_modules` | action | During module bootstrap `( $modules )` |
+| `we_formkit_module_registered` | action | After each module is added `( $id, $definition )` |
+| `we_formkit_submission_created` | action | After a submission is stored `( $submission_id, $context )` |
+
+### Filters
+
 | Hook | When |
 |------|------|
-| `we_formkit_register_field_types` | After core field types are registered |
-| `we_formkit_repeater_item_types` | Filter allowed nested types inside a repeater group |
-| `we_formkit_form_style_colors` | Filter resolved form CSS colors `( $colors, $form_id, $stored )` |
-| `we_formkit_register_modules` | During module bootstrap |
-| `we_formkit_module_registered` | After each module is added |
-| `we_formkit_submission_created` | After a submission is stored `( $submission_id, $context )` |
-| `we_formkit_notification_mail` | Filter mail args before `wp_mail` `( $mail, $notification, $submission_id, $form_id )` |
+| `we_formkit_draft_ttl_days` | Allowed Save & Resume TTL options (days) for builder UI + validation `( $days )` — default `7,14,30,60,90`; clamped 1–365 |
+| `we_formkit_form_draft_ttl_days` | Effective TTL for one form after stored meta `( $days, $form_id )` |
+| `we_formkit_form_save_min_filled` | Minimum filled fields before Save unlocks `( $min, $form_id )` — `0` = always |
+| `we_formkit_draft_reminder_lead_days` | Default days before expiry for opt-in calendar reminder `( $lead, $ttl_days )` |
+| `we_formkit_draft_reminder_lead_options` | Dropdown choices for days before expiry `( $days, $ttl_days )` |
+| `we_formkit_form_reminders_allowed` | Whether calendar (.ics) opt-in is allowed `( $allowed, $form_id )` |
+| `we_formkit_resume_mail` | Resume email before send `( $mail, … )` — keys include optional `attachments` for .ics |
+| `we_formkit_color_schemes` | Add/replace named color schemes `( $schemes )` — slug => `{ label, colors }`; reserved: `theme`, `custom` |
+| `we_formkit_form_style_colors` | Resolved form CSS colors `( $colors, $form_id, $stored )` |
+| `we_formkit_repeater_item_types` | Allowed nested types inside a repeater group |
+| `we_formkit_repeater_item_required` | Required message for a repeater item |
+| `we_formkit_repeater_item_invalid` | Invalid message for a repeater item |
+| `we_formkit_notification_mail` | Notification mail args before `wp_mail` `( $mail, $notification, $submission_id, $form_id )` |
+
+### Examples
+
+```php
+// Extra TTL choices in the builder (and validation).
+add_filter( 'we_formkit_draft_ttl_days', static function () {
+	return array( 14, 30, 60, 180 );
+} );
+
+// Force 30 days for one form regardless of UI.
+add_filter( 'we_formkit_form_draft_ttl_days', static function ( $days, $form_id ) {
+	return 123 === (int) $form_id ? 30 : $days;
+}, 10, 2 );
+
+// Add a named scheme (shows next to Formkit Teal, etc.).
+add_filter( 'we_formkit_color_schemes', static function ( $schemes ) {
+	$schemes['brand-x'] = array(
+		'label'  => 'Brand X',
+		'colors' => array(
+			'accent'      => '#1a4d8c',
+			'accent_soft' => '#e8f0fa',
+			'surface'     => '#ffffff',
+			'bg'          => '#f5f7fa',
+			'ink'         => '#1a1a1a',
+			'muted'       => '#5a6570',
+			'line'        => '#c8d0d8',
+			'input'       => '#ffffff',
+			'on_accent'   => '#ffffff',
+			'danger'      => '#9b2c2c',
+		),
+	);
+	return $schemes;
+} );
+```
 
 ### Notification merge tags
 

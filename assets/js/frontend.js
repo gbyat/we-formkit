@@ -1192,7 +1192,93 @@
 		const form = qs( root, '[data-wek-form]' );
 		const btn = qs( form, '[data-wek-save-progress]' );
 		const emailInput = qs( form, '[data-wek-save-email]' );
+		const remindInput = qs( form, '[data-wek-save-remind]' );
+		const remindLead = qs( form, '[data-wek-save-remind-lead]' );
+		const remindLeadWrap = qs( form, '[data-wek-save-remind-lead-wrap]' );
+		const saveUi = qsa( form, '[data-wek-save-ui]' );
 		const i18n = cfg.i18n || {};
+		const minFilled = Math.max( 0, parseInt( cfg.saveMinFilled, 10 ) || 0 );
+		const SKIP_TYPES = { html: true, hidden: true };
+
+		function fieldIsFilled( fieldEl ) {
+			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+			if ( SKIP_TYPES[ type ] ) {
+				return false;
+			}
+			if ( type === 'checkbox' || type === 'consent' ) {
+				const box = qs( fieldEl, 'input[type="checkbox"]' );
+				return !!( box && box.checked );
+			}
+			if ( type === 'checkboxes' ) {
+				return qsa( fieldEl, 'input[type="checkbox"]:checked' ).length > 0;
+			}
+			if ( type === 'radio' || type === 'radio_image' ) {
+				return !!qs( fieldEl, 'input[type="radio"]:checked' );
+			}
+			if ( type === 'upload' ) {
+				const input = qs( fieldEl, 'input[type="file"]' );
+				return !!( input && input.files && input.files.length > 0 );
+			}
+			if ( type === 'signature' ) {
+				const sig = qs( fieldEl, '[data-wek-signature-input]' );
+				return !!( sig && String( sig.value || '' ).trim() );
+			}
+			if ( type === 'repeater' ) {
+				return qsa( fieldEl, '[data-wek-repeater-input]' ).some( function ( input ) {
+					return String( input.value || '' ).trim() !== '';
+				} );
+			}
+			const input = qs( fieldEl, 'input, textarea, select' );
+			if ( ! input || input.type === 'file' ) {
+				return false;
+			}
+			return String( input.value || '' ).trim() !== '';
+		}
+
+		function countFilledFields() {
+			let count = 0;
+			qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
+				if ( fieldEl.classList.contains( 'is-hidden' ) ) {
+					return;
+				}
+				const section = fieldEl.closest( '[data-wek-section]' );
+				if ( section && section.classList.contains( 'is-hidden' ) ) {
+					return;
+				}
+				if ( fieldIsFilled( fieldEl ) ) {
+					count += 1;
+				}
+			} );
+			return count;
+		}
+
+		function syncSaveUnlock() {
+			if ( ! saveUi.length ) {
+				return;
+			}
+			const unlocked = minFilled <= 0 || countFilledFields() >= minFilled;
+			saveUi.forEach( function ( el ) {
+				if ( unlocked ) {
+					el.removeAttribute( 'hidden' );
+				} else {
+					el.setAttribute( 'hidden', '' );
+				}
+			} );
+		}
+
+		function syncRemindLead() {
+			const on = !!( remindInput && remindInput.checked );
+			if ( remindLeadWrap ) {
+				if ( on ) {
+					remindLeadWrap.removeAttribute( 'hidden' );
+				} else {
+					remindLeadWrap.setAttribute( 'hidden', '' );
+				}
+			}
+			if ( remindLead ) {
+				remindLead.disabled = ! on;
+			}
+		}
 
 		function firstFormEmail() {
 			const fields = qsa( form, '[data-field-type="email"]' );
@@ -1259,6 +1345,16 @@
 			} );
 			applyConditionals( root );
 			syncSaveEmailPrefill();
+			syncSaveUnlock();
+		}
+
+		form.addEventListener( 'input', syncSaveUnlock );
+		form.addEventListener( 'change', syncSaveUnlock );
+		syncSaveUnlock();
+
+		if ( remindInput ) {
+			remindInput.addEventListener( 'change', syncRemindLead );
+			syncRemindLead();
 		}
 
 		if ( emailInput ) {
@@ -1273,6 +1369,15 @@
 
 		if ( btn ) {
 			btn.addEventListener( 'click', function () {
+				syncSaveUnlock();
+				if ( minFilled > 0 && countFilledFields() < minFilled ) {
+					setStatus(
+						root,
+						i18n.saveTooEarly || 'Fill in a few fields before saving your progress.',
+						true
+					);
+					return;
+				}
 				syncSaveEmailPrefill();
 				const email = emailInput ? String( emailInput.value || '' ).trim() : firstFormEmail();
 				if ( ! email || email.indexOf( '@' ) === -1 ) {
@@ -1314,6 +1419,10 @@
 						values: values,
 						page_index: pageIndex,
 						page_url: window.location.href.split( '#' )[ 0 ],
+						remind: !!( remindInput && remindInput.checked ),
+						remind_lead: remindLead
+							? parseInt( remindLead.value, 10 ) || 0
+							: 0,
 					} ),
 				} )
 					.then( function ( response ) {

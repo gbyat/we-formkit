@@ -725,16 +725,18 @@ final class Form_Editor {
 	 * @return void
 	 */
 	private static function render_view_fields( $form_id, $schema_json, $title, $is_new ) {
-		$forms_url   = admin_url( 'admin.php?page=we-formkit' );
-		$entries_url = '';
-		$preview_url = '';
-		$clone_url   = '';
-		$pagination  = 'single';
-		$shortcode   = '';
-		$save_resume = false;
-		$save_ttl    = Drafts::TTL_DAYS;
+		$forms_url      = admin_url( 'admin.php?page=we-formkit' );
+		$entries_url    = '';
+		$preview_url    = '';
+		$clone_url      = '';
+		$pagination     = 'single';
+		$shortcode      = '';
+		$save_resume    = false;
+		$save_ttl       = Drafts::TTL_DAYS;
+		$save_min       = Drafts::MIN_FILLED;
+		$save_reminders = false;
 		if ( ! $is_new && $form_id > 0 ) {
-			$entries_url = add_query_arg(
+			$entries_url    = add_query_arg(
 				array(
 					'page'    => 'we-formkit-form',
 					'form_id' => $form_id,
@@ -742,19 +744,21 @@ final class Form_Editor {
 				),
 				admin_url( 'admin.php' )
 			);
-			$preview_url = add_query_arg(
+			$preview_url    = add_query_arg(
 				array(
 					'wek_preview' => '1',
 					'form_id'     => $form_id,
 				),
 				home_url( '/' )
 			);
-			$clone_url   = wp_nonce_url( admin_url( 'admin.php?page=we-formkit&wek_clone_form=1&form_id=' . $form_id ), 'wek_clone_form_' . $form_id );
-			$pagination  = Form_Schema::get_pagination( $form_id );
-			$save_resume = Drafts::is_enabled( $form_id );
-			$save_ttl    = Drafts::get_ttl_days( $form_id );
-			$slug        = (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true );
-			$shortcode   = $slug
+			$clone_url      = wp_nonce_url( admin_url( 'admin.php?page=we-formkit&wek_clone_form=1&form_id=' . $form_id ), 'wek_clone_form_' . $form_id );
+			$pagination     = Form_Schema::get_pagination( $form_id );
+			$save_resume    = Drafts::is_enabled( $form_id );
+			$save_ttl       = Drafts::get_ttl_days( $form_id );
+			$save_min       = Drafts::get_min_filled( $form_id );
+			$save_reminders = (bool) get_post_meta( $form_id, Drafts::META_REMINDERS, true );
+			$slug           = (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true );
+			$shortcode      = $slug
 				? sprintf( '[we_formkit slug="%s"]', $slug )
 				: sprintf( '[we_formkit id="%d"]', $form_id );
 		}
@@ -824,6 +828,28 @@ final class Form_Editor {
 						</option>
 					<?php endforeach; ?>
 				</select>
+			</label>
+			<label class="wek-fields-bar__save-resume-min" for="wek-save-resume-min">
+				<span><?php esc_html_e( 'Show save after', 'we-formkit' ); ?></span>
+				<input
+					type="number"
+					name="wek_save_resume_min"
+					id="wek-save-resume-min"
+					min="0"
+					max="100"
+					step="1"
+					value="<?php echo esc_attr( (string) $save_min ); ?>"
+					title="<?php esc_attr_e( 'Minimum filled fields before Save progress appears (0 = always)', 'we-formkit' ); ?>"
+					<?php disabled( ! $save_resume ); ?>
+				/>
+				<span class="wek-fields-bar__save-resume-min-unit"><?php esc_html_e( 'fields', 'we-formkit' ); ?></span>
+			</label>
+			<label
+				class="wek-fields-bar__save-resume-remind"
+				title="<?php esc_attr_e( 'Lets visitors attach an .ics calendar file to the resume email (opt-in). No further reminder emails are sent.', 'we-formkit' ); ?>"
+			>
+				<input type="checkbox" name="wek_save_resume_reminders" value="1" id="wek-save-resume-reminders" <?php checked( $save_reminders ); ?> <?php disabled( ! $save_resume ); ?> />
+				<?php esc_html_e( 'Allow calendar reminder', 'we-formkit' ); ?>
 			</label>
 			<div class="wek-fields-bar__actions">
 				<?php if ( $preview_url ) : ?>
@@ -2133,11 +2159,17 @@ final class Form_Editor {
 		Form_Schema::set_pagination( $form_id, $pagination );
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		Drafts::set_enabled( $form_id, ! empty( $_POST['wek_save_resume'] ) );
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		Drafts::set_ttl_days(
 			$form_id,
 			isset( $_POST['wek_save_resume_ttl'] ) ? absint( wp_unslash( $_POST['wek_save_resume_ttl'] ) ) : Drafts::TTL_DAYS
 		);
+		Drafts::set_min_filled(
+			$form_id,
+			isset( $_POST['wek_save_resume_min'] ) ? absint( wp_unslash( $_POST['wek_save_resume_min'] ) ) : Drafts::MIN_FILLED
+		);
+		Drafts::set_reminders_allowed( $form_id, ! empty( $_POST['wek_save_resume_reminders'] ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		Form_Schema::set_submit_button(

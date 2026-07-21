@@ -849,6 +849,61 @@
 
 .we-formkit__actions--save-email {
 	margin-bottom: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+}
+
+.we-formkit__save-remind {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.45rem;
+	margin: 0;
+	font-size: var(--wek-font-label, 0.95rem);
+	color: var(--wek-muted);
+	line-height: 1.35;
+	cursor: pointer;
+}
+
+.we-formkit__save-remind input {
+	margin: 0.2rem 0 0;
+	flex: 0 0 auto;
+}
+
+.we-formkit__save-remind span {
+	flex: 1 1 auto;
+}
+
+.we-formkit__save-remind-lead {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.45rem 0.65rem;
+	margin: 0;
+	font-size: var(--wek-font-label, 0.95rem);
+	color: var(--wek-muted);
+}
+
+.we-formkit__save-remind-lead[hidden] {
+	display: none !important;
+}
+
+.we-formkit__save-remind-lead-label {
+	flex: 0 0 auto;
+}
+
+.we-formkit__save-remind-lead select {
+	flex: 1 1 12rem;
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input);
+	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
+	font: inherit;
+	font-size: var(--wek-font-input);
+	background: var(--wek-input);
+	color: inherit;
 }
 
 .we-formkit__actions--buttons {

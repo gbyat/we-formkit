@@ -285,16 +285,17 @@ final class Frontend {
 			'we-formkit-form',
 			'weFormkit',
 			array(
-				'restUrl'    => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/submit' ) ),
-				'nonce'      => wp_create_nonce( 'wp_rest' ),
-				'formId'     => $form_id,
-				'token'      => $token,
-				'started'    => time(),
-				'autofill'   => Capabilities::can_manage(),
-				'pagination' => Form_Schema::get_pagination( $form_id ),
-				'saveResume' => Drafts::is_enabled( $form_id ),
-				'draftUrl'   => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/drafts' ) ),
-				'i18n'       => array(
+				'restUrl'       => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/submit' ) ),
+				'nonce'         => wp_create_nonce( 'wp_rest' ),
+				'formId'        => $form_id,
+				'token'         => $token,
+				'started'       => time(),
+				'autofill'      => Capabilities::can_manage(),
+				'pagination'    => Form_Schema::get_pagination( $form_id ),
+				'saveResume'    => Drafts::is_enabled( $form_id ),
+				'saveMinFilled' => Drafts::get_min_filled( $form_id ),
+				'draftUrl'      => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/drafts' ) ),
+				'i18n'          => array(
 					'submitting'      => __( 'Submitting…', 'we-formkit' ),
 					'submit'          => __( 'Submit form', 'we-formkit' ),
 					'error'           => __( 'Something went wrong. Please try again.', 'we-formkit' ),
@@ -318,14 +319,16 @@ final class Frontend {
 					/* translators: %s: email address. */
 					'savedProgress'   => __( 'Progress saved. We sent a resume link to %s.', 'we-formkit' ),
 					'saveMailFailed'  => __( 'Progress was saved, but the resume email could not be sent. Please try again or contact the site owner.', 'we-formkit' ),
+					'saveTooEarly'    => __( 'Fill in a few fields before saving your progress.', 'we-formkit' ),
 					'resumeLoaded'    => __( 'Your saved progress was restored.', 'we-formkit' ),
 					'saveEmailPh'     => __( 'Email for resume link', 'we-formkit' ),
+					'saveRemind'      => __( 'Add a calendar reminder (.ics) before this link expires', 'we-formkit' ),
 					/* translators: 1: field label, 2: minimum number of selections. */
 					'checkboxesMin'   => __( 'Please select at least %2$d option(s) for %1$s.', 'we-formkit' ),
 					/* translators: 1: field label, 2: maximum number of selections. */
 					'checkboxesMax'   => __( 'Please select at most %2$d option(s) for %1$s.', 'we-formkit' ),
 				),
-				'validation' => Validation_Messages::global_templates_for_js(),
+				'validation'    => Validation_Messages::global_templates_for_js(),
 			)
 		);
 
@@ -407,8 +410,21 @@ final class Frontend {
 					</p>
 				<?php endif; ?>
 
-				<?php if ( Drafts::is_enabled( $form_id ) ) : ?>
-					<p class="we-formkit__actions we-formkit__actions--save-email" data-wek-save-wrap>
+				<?php
+				$save_enabled = Drafts::is_enabled( $form_id );
+				$save_hidden  = '';
+				if ( $save_enabled && Drafts::get_min_filled( $form_id ) > 0 ) {
+					$save_hidden = ' hidden';
+				}
+				?>
+				<?php if ( $save_enabled ) : ?>
+					<?php
+					$save_ttl       = Drafts::get_ttl_days( $form_id );
+					$remind_allowed = Drafts::reminders_allowed( $form_id );
+					$remind_leads   = Drafts::allowed_reminder_lead_days( $save_ttl );
+					$remind_default = Drafts::reminder_lead_days( $save_ttl );
+					?>
+					<div class="we-formkit__actions we-formkit__actions--save-email" data-wek-save-wrap data-wek-save-ui<?php echo $save_hidden; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- literal " hidden" or empty. ?>>
 						<label class="we-formkit__save-email-label">
 							<span class="screen-reader-text"><?php esc_html_e( 'Email for resume link', 'we-formkit' ); ?></span>
 							<input
@@ -421,15 +437,39 @@ final class Frontend {
 								placeholder="<?php esc_attr_e( 'Email for resume link', 'we-formkit' ); ?>"
 							/>
 						</label>
-					</p>
+						<?php if ( $remind_allowed ) : ?>
+							<label class="we-formkit__save-remind">
+								<input type="checkbox" name="wek_save_remind" value="1" data-wek-save-remind />
+								<span><?php esc_html_e( 'Add a calendar reminder (.ics) before this link expires', 'we-formkit' ); ?></span>
+							</label>
+							<label class="we-formkit__save-remind-lead" data-wek-save-remind-lead-wrap hidden>
+								<span class="we-formkit__save-remind-lead-label"><?php esc_html_e( 'Remind me', 'we-formkit' ); ?></span>
+								<select name="wek_save_remind_lead" data-wek-save-remind-lead disabled>
+									<?php foreach ( $remind_leads as $lead_days ) : ?>
+										<option value="<?php echo esc_attr( (string) $lead_days ); ?>" <?php selected( $remind_default, $lead_days ); ?>>
+											<?php
+											echo esc_html(
+												sprintf(
+													/* translators: %d: number of days before the resume link expires. */
+													_n( '%d day before expiry', '%d days before expiry', $lead_days, 'we-formkit' ),
+													$lead_days
+												)
+											);
+											?>
+										</option>
+									<?php endforeach; ?>
+								</select>
+							</label>
+						<?php endif; ?>
+					</div>
 				<?php endif; ?>
 
 				<p class="we-formkit__actions we-formkit__actions--buttons">
 					<span class="we-formkit__submit-slot" data-wek-submit-wrap>
 						<?php self::render_submit_button( $form_id ); ?>
 					</span>
-					<?php if ( Drafts::is_enabled( $form_id ) ) : ?>
-						<button type="button" class="we-formkit__save-progress" data-wek-save-progress><?php esc_html_e( 'Save progress', 'we-formkit' ); ?></button>
+					<?php if ( $save_enabled ) : ?>
+						<button type="button" class="we-formkit__save-progress" data-wek-save-progress data-wek-save-ui<?php echo $save_hidden; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- literal " hidden" or empty. ?>><?php esc_html_e( 'Save progress', 'we-formkit' ); ?></button>
 					<?php endif; ?>
 				</p>
 			</form>

@@ -48,6 +48,28 @@ final class Form_Style {
 	 * @return array<string, array{label:string,colors:array<string,string>}>
 	 */
 	public static function named_schemes(): array {
+		$schemes = self::builtin_named_schemes();
+
+		/**
+		 * Filter named color schemes available in Form Settings.
+		 *
+		 * Return an associative array of scheme_id => [ 'label' => string, 'colors' => role => hex ].
+		 * Color roles: accent, accent_soft, surface, bg, ink, muted, line, input, on_accent, danger.
+		 * Slugs `theme` and `custom` are reserved.
+		 *
+		 * @param array<string, array{label:string,colors:array<string,string>}> $schemes Schemes.
+		 */
+		$schemes = apply_filters( 'we_formkit_color_schemes', $schemes );
+
+		return self::normalize_named_schemes( $schemes );
+	}
+
+	/**
+	 * Built-in schemes before the `we_formkit_color_schemes` filter.
+	 *
+	 * @return array<string, array{label:string,colors:array<string,string>}>
+	 */
+	private static function builtin_named_schemes(): array {
 		return array(
 			'formkit'       => array(
 				'label'  => __( 'Formkit Teal', 'we-formkit' ),
@@ -173,6 +195,54 @@ final class Form_Style {
 	}
 
 	/**
+	 * @param mixed $schemes Raw schemes from filter.
+	 * @return array<string, array{label:string,colors:array<string,string>}>
+	 */
+	private static function normalize_named_schemes( $schemes ): array {
+		if ( ! is_array( $schemes ) ) {
+			return self::builtin_named_schemes();
+		}
+
+		$roles = array_keys( self::color_labels() );
+		$out   = array();
+
+		foreach ( $schemes as $id => $scheme ) {
+			$id = sanitize_key( (string) $id );
+			if ( '' === $id || self::PRESET_THEME === $id || self::PRESET_CUSTOM === $id ) {
+				continue;
+			}
+			if ( ! is_array( $scheme ) ) {
+				continue;
+			}
+
+			$label     = isset( $scheme['label'] ) ? sanitize_text_field( (string) $scheme['label'] ) : $id;
+			$colors_in = isset( $scheme['colors'] ) && is_array( $scheme['colors'] ) ? $scheme['colors'] : array();
+			$colors    = array();
+			$complete  = true;
+
+			foreach ( $roles as $role ) {
+				$hex = self::sanitize_hex( $colors_in[ $role ] ?? '' );
+				if ( '' === $hex ) {
+					$complete = false;
+					break;
+				}
+				$colors[ $role ] = $hex;
+			}
+
+			if ( ! $complete || '' === $label ) {
+				continue;
+			}
+
+			$out[ $id ] = array(
+				'label'  => $label,
+				'colors' => $colors,
+			);
+		}
+
+		return ! empty( $out ) ? $out : self::builtin_named_schemes();
+	}
+
+	/**
 	 * Preset keys allowed in storage (theme, named schemes, custom).
 	 *
 	 * @return list<string>
@@ -192,7 +262,15 @@ final class Form_Style {
 	 */
 	public static function formkit_defaults(): array {
 		$schemes = self::named_schemes();
-		return $schemes['formkit']['colors'];
+		if ( isset( $schemes['formkit']['colors'] ) && is_array( $schemes['formkit']['colors'] ) ) {
+			return $schemes['formkit']['colors'];
+		}
+		$first = reset( $schemes );
+		if ( is_array( $first ) && isset( $first['colors'] ) && is_array( $first['colors'] ) ) {
+			return $first['colors'];
+		}
+		$builtin = self::builtin_named_schemes();
+		return $builtin['formkit']['colors'];
 	}
 
 	/**
@@ -1023,9 +1101,9 @@ final class Form_Style {
 	 * @return string
 	 */
 	private static function nudge_duplicate_role( $role, array $colors, array $used ): string {
-		$accent = $colors['accent'] ?? '#0f5c4c';
-		$ink    = $colors['ink'] ?? '#1c1b19';
-		$bg     = $colors['bg'] ?? '#f7f5f2';
+		$accent  = $colors['accent'] ?? '#0f5c4c';
+		$ink     = $colors['ink'] ?? '#1c1b19';
+		$bg      = $colors['bg'] ?? '#f7f5f2';
 		$surface = $colors['surface'] ?? '#ffffff';
 
 		switch ( $role ) {

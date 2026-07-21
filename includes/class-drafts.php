@@ -16,11 +16,126 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Drafts {
 
-	public const META_ENABLED = '_wek_form_save_resume';
-	public const META_TTL     = '_wek_form_save_resume_ttl';
-	public const OPTION_KEY   = 'wek_form_drafts';
-	public const CRON_HOOK    = 'we_formkit_drafts_cleanup';
-	public const TTL_DAYS     = 14;
+	public const META_ENABLED    = '_wek_form_save_resume';
+	public const META_TTL        = '_wek_form_save_resume_ttl';
+	public const META_MIN_FILLED = '_wek_form_save_resume_min_filled';
+	public const META_REMINDERS  = '_wek_form_save_resume_reminders';
+	public const OPTION_KEY      = 'wek_form_drafts';
+	public const CRON_HOOK       = 'we_formkit_drafts_cleanup';
+	public const TTL_DAYS        = 14;
+	public const MIN_FILLED      = 1;
+
+	/**
+	 * Days before expiry to send an opt-in reminder (default when user does not pick).
+	 *
+	 * @param int $ttl_days Draft lifetime in days.
+	 * @return int
+	 */
+	public static function reminder_lead_days( $ttl_days ) {
+		$ttl_days = max( 1, (int) $ttl_days );
+		$allowed  = self::allowed_reminder_lead_days( $ttl_days );
+		if ( $ttl_days <= 7 ) {
+			$prefer = 2;
+		} elseif ( $ttl_days <= 14 ) {
+			$prefer = 3;
+		} else {
+			$prefer = 7;
+		}
+		$lead = in_array( $prefer, $allowed, true ) ? $prefer : (int) $allowed[0];
+
+		/**
+		 * Filter default days before draft expiry for the reminder.
+		 *
+		 * @param int $lead     Days before expiry.
+		 * @param int $ttl_days Draft TTL in days.
+		 */
+		$lead = (int) apply_filters( 'we_formkit_draft_reminder_lead_days', $lead, $ttl_days );
+
+		return in_array( $lead, $allowed, true ) ? $lead : (int) $allowed[0];
+	}
+
+	/**
+	 * Lead-day choices for the frontend dropdown (days before expiry).
+	 *
+	 * @param int $ttl_days Draft lifetime in days.
+	 * @return list<int>
+	 */
+	public static function allowed_reminder_lead_days( $ttl_days ) {
+		$ttl_days   = max( 1, (int) $ttl_days );
+		$max        = max( 1, $ttl_days - 1 );
+		$candidates = array( 1, 2, 3, 7, 14, 30 );
+		$out        = array();
+		foreach ( $candidates as $day ) {
+			if ( $day <= $max ) {
+				$out[] = $day;
+			}
+		}
+		if ( empty( $out ) ) {
+			$out[] = 1;
+		}
+
+		/**
+		 * Filter reminder lead options (days before expiry).
+		 *
+		 * @param list<int> $days     Allowed lead days.
+		 * @param int       $ttl_days Draft TTL in days.
+		 */
+		$filtered = apply_filters( 'we_formkit_draft_reminder_lead_options', $out, $ttl_days );
+		$clean    = array();
+		foreach ( (array) $filtered as $day ) {
+			$day = (int) $day;
+			if ( $day >= 1 && $day <= $max ) {
+				$clean[] = $day;
+			}
+		}
+		$clean = array_values( array_unique( $clean ) );
+		sort( $clean, SORT_NUMERIC );
+
+		return ! empty( $clean ) ? $clean : array( 1 );
+	}
+
+	/**
+	 * Sanitize a user-picked lead; fall back to default.
+	 *
+	 * @param int $lead     Requested days before expiry.
+	 * @param int $ttl_days TTL days.
+	 * @return int
+	 */
+	public static function sanitize_reminder_lead( $lead, $ttl_days ) {
+		$allowed = self::allowed_reminder_lead_days( $ttl_days );
+		$lead    = (int) $lead;
+		if ( in_array( $lead, $allowed, true ) ) {
+			return $lead;
+		}
+		return self::reminder_lead_days( $ttl_days );
+	}
+
+	/**
+	 * Unix timestamp when a reminder should fire (or 0 if not applicable).
+	 *
+	 * @param int      $expires  Expiry unix time.
+	 * @param int      $updated  Save unix time.
+	 * @param int      $ttl_days TTL days.
+	 * @param int|null $lead     Days before expiry (null = default).
+	 * @return int
+	 */
+	public static function compute_remind_at( $expires, $updated, $ttl_days, $lead = null ) {
+		$expires   = (int) $expires;
+		$updated   = (int) $updated;
+		$lead      = null === $lead
+			? self::reminder_lead_days( $ttl_days )
+			: self::sanitize_reminder_lead( $lead, $ttl_days );
+		$remind_at = $expires - ( $lead * DAY_IN_SECONDS );
+		// Not immediately after save; leave at least ~1 day gap when possible.
+		$earliest = $updated + DAY_IN_SECONDS;
+		if ( $remind_at < $earliest ) {
+			$remind_at = $earliest;
+		}
+		if ( $remind_at >= $expires ) {
+			return 0;
+		}
+		return $remind_at;
+	}
 
 	/**
 	 * Allowed draft lifetimes in days.
@@ -28,7 +143,25 @@ final class Drafts {
 	 * @return list<int>
 	 */
 	public static function allowed_ttl_days() {
-		return array( 7, 14, 30, 60, 90 );
+		$days = array( 7, 14, 30, 60, 90 );
+
+		/**
+		 * Filter allowed Save & Resume draft lifetimes (days) for the builder UI and validation.
+		 *
+		 * @param list<int> $days Day counts (clamped to 1–365 after filter).
+		 */
+		$filtered = apply_filters( 'we_formkit_draft_ttl_days', $days );
+		$out      = array();
+		foreach ( (array) $filtered as $day ) {
+			$day = (int) $day;
+			if ( $day >= 1 && $day <= 365 ) {
+				$out[] = $day;
+			}
+		}
+		$out = array_values( array_unique( $out ) );
+		sort( $out, SORT_NUMERIC );
+
+		return ! empty( $out ) ? $out : array( self::TTL_DAYS );
 	}
 
 	/**
@@ -36,11 +169,21 @@ final class Drafts {
 	 * @return int
 	 */
 	public static function get_ttl_days( $form_id ) {
-		$raw = (int) get_post_meta( (int) $form_id, self::META_TTL, true );
-		if ( in_array( $raw, self::allowed_ttl_days(), true ) ) {
-			return $raw;
-		}
-		return self::TTL_DAYS;
+		$form_id  = (int) $form_id;
+		$allowed  = self::allowed_ttl_days();
+		$fallback = in_array( self::TTL_DAYS, $allowed, true ) ? self::TTL_DAYS : (int) $allowed[0];
+		$raw      = (int) get_post_meta( $form_id, self::META_TTL, true );
+		$days     = in_array( $raw, $allowed, true ) ? $raw : $fallback;
+
+		/**
+		 * Filter the effective draft TTL in days for a form (after stored meta / defaults).
+		 *
+		 * @param int $days    Lifetime in days.
+		 * @param int $form_id Form ID.
+		 */
+		$days = (int) apply_filters( 'we_formkit_form_draft_ttl_days', $days, $form_id );
+
+		return max( 1, min( 365, $days ) );
 	}
 
 	/**
@@ -57,11 +200,101 @@ final class Drafts {
 	}
 
 	/**
+	 * Minimum filled fields before Save & Resume UI unlocks (0 = always).
+	 *
+	 * @param int $form_id Form ID.
+	 * @return int
+	 */
+	public static function get_min_filled( $form_id ) {
+		$form_id = (int) $form_id;
+		$raw     = get_post_meta( $form_id, self::META_MIN_FILLED, true );
+		if ( '' === $raw || false === $raw ) {
+			$min = self::MIN_FILLED;
+		} else {
+			$min = (int) $raw;
+		}
+
+		/**
+		 * Filter minimum filled fields required before Save & Resume unlocks.
+		 *
+		 * @param int $min     Minimum count (0 = always show).
+		 * @param int $form_id Form ID.
+		 */
+		$min = (int) apply_filters( 'we_formkit_form_save_min_filled', $min, $form_id );
+
+		return max( 0, min( 100, $min ) );
+	}
+
+	/**
+	 * @param int $form_id Form ID.
+	 * @param int $min     Minimum filled fields (0–100).
+	 * @return void
+	 */
+	public static function set_min_filled( $form_id, $min ) {
+		update_post_meta( (int) $form_id, self::META_MIN_FILLED, max( 0, min( 100, (int) $min ) ) );
+	}
+
+	/**
+	 * Count meaningfully filled values in a draft payload.
+	 *
+	 * @param array<string, mixed> $values Field id => value.
+	 * @return int
+	 */
+	public static function count_filled_values( array $values ) {
+		$count = 0;
+		foreach ( $values as $val ) {
+			if ( self::value_is_filled( $val ) ) {
+				++$count;
+			}
+		}
+		return $count;
+	}
+
+	/**
+	 * @param mixed $val Field value.
+	 * @return bool
+	 */
+	private static function value_is_filled( $val ) {
+		if ( is_array( $val ) ) {
+			if ( empty( $val ) ) {
+				return false;
+			}
+			foreach ( $val as $item ) {
+				if ( is_array( $item ) ) {
+					foreach ( $item as $sub ) {
+						if ( self::value_is_filled( $sub ) ) {
+							return true;
+						}
+					}
+					continue;
+				}
+				if ( is_string( $item ) && '' !== trim( $item ) ) {
+					return true;
+				}
+				if ( ! is_string( $item ) && null !== $item && false !== $item && '' !== $item ) {
+					return true;
+				}
+			}
+			return false;
+		}
+		if ( is_string( $val ) ) {
+			return '' !== trim( $val );
+		}
+		if ( is_bool( $val ) ) {
+			return $val;
+		}
+		if ( is_numeric( $val ) ) {
+			return true;
+		}
+		return null !== $val && false !== $val;
+	}
+
+	/**
 	 * @return void
 	 */
 	public static function register() {
 		add_action( 'rest_api_init', array( __CLASS__, 'routes' ) );
-		add_action( self::CRON_HOOK, array( __CLASS__, 'cleanup' ) );
+		add_action( self::CRON_HOOK, array( __CLASS__, 'cron_tick' ) );
 		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
 			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', self::CRON_HOOK );
 		}
@@ -92,6 +325,38 @@ final class Drafts {
 	 */
 	public static function set_enabled( $form_id, $enabled ) {
 		update_post_meta( (int) $form_id, self::META_ENABLED, $enabled ? 1 : 0 );
+	}
+
+	/**
+	 * Whether visitors may opt in to a calendar (.ics) reminder with the resume email.
+	 * No further reminder emails are sent (GDPR-friendly).
+	 *
+	 * @param int $form_id Form ID.
+	 * @return bool
+	 */
+	public static function reminders_allowed( $form_id ) {
+		$form_id = (int) $form_id;
+		if ( ! self::is_enabled( $form_id ) ) {
+			return false;
+		}
+		$allowed = (bool) get_post_meta( $form_id, self::META_REMINDERS, true );
+
+		/**
+		 * Filter whether Save & Resume expiry reminders are allowed for a form.
+		 *
+		 * @param bool $allowed Whether reminders are allowed.
+		 * @param int  $form_id Form ID.
+		 */
+		return (bool) apply_filters( 'we_formkit_form_reminders_allowed', $allowed, $form_id );
+	}
+
+	/**
+	 * @param int  $form_id Form ID.
+	 * @param bool $allowed Allowed.
+	 * @return void
+	 */
+	public static function set_reminders_allowed( $form_id, $allowed ) {
+		update_post_meta( (int) $form_id, self::META_REMINDERS, $allowed ? 1 : 0 );
 	}
 
 	/**
@@ -146,6 +411,16 @@ final class Drafts {
 			);
 		}
 
+		$values     = isset( $params['values'] ) && is_array( $params['values'] ) ? $params['values'] : array();
+		$min_filled = self::get_min_filled( $form_id );
+		if ( $min_filled > 0 && self::count_filled_values( $values ) < $min_filled ) {
+			return new \WP_Error(
+				'we_formkit_draft_too_early',
+				__( 'Fill in a few fields before saving your progress.', 'we-formkit' ),
+				array( 'status' => 400 )
+			);
+		}
+
 		$rate_key = 'wek_draft_mail_' . md5( strtolower( $email ) . '|' . (string) $form_id . '|' . self::client_ip() );
 		if ( get_transient( $rate_key ) ) {
 			return new \WP_Error(
@@ -162,24 +437,33 @@ final class Drafts {
 
 		$ttl_days = self::get_ttl_days( $form_id );
 		$expires  = time() + ( $ttl_days * DAY_IN_SECONDS );
+		$updated  = time();
+		$remind   = ! empty( $params['remind'] ) && self::reminders_allowed( $form_id );
+		$lead     = isset( $params['remind_lead'] ) ? (int) $params['remind_lead'] : self::reminder_lead_days( $ttl_days );
+		$lead     = self::sanitize_reminder_lead( $lead, $ttl_days );
+
+		$page_url = isset( $params['page_url'] ) ? esc_url_raw( (string) $params['page_url'] ) : home_url( '/' );
+		if ( '' === $page_url ) {
+			$page_url = home_url( '/' );
+		}
 
 		$payload = array(
-			'form_id'    => $form_id,
-			'email'      => $email,
-			'values'     => isset( $params['values'] ) && is_array( $params['values'] ) ? $params['values'] : array(),
-			'page_index' => isset( $params['page_index'] ) ? max( 0, (int) $params['page_index'] ) : 0,
-			'updated'    => time(),
-			'expires'    => $expires,
+			'form_id'     => $form_id,
+			'email'       => $email,
+			'values'      => $values,
+			'page_index'  => isset( $params['page_index'] ) ? max( 0, (int) $params['page_index'] ) : 0,
+			'page_url'    => $page_url,
+			'updated'     => $updated,
+			'expires'     => $expires,
+			'remind'      => $remind,
+			'remind_lead' => $remind ? $lead : 0,
+			'remind_at'   => $remind ? self::compute_remind_at( $expires, $updated, $ttl_days, $lead ) : 0,
 		);
 
 		$all           = self::all();
 		$all[ $token ] = $payload;
 		update_option( self::OPTION_KEY, $all, false );
 
-		$page_url = isset( $params['page_url'] ) ? esc_url_raw( (string) $params['page_url'] ) : home_url( '/' );
-		if ( '' === $page_url ) {
-			$page_url = home_url( '/' );
-		}
 		$resume_url = add_query_arg(
 			array(
 				'wek_resume' => $token,
@@ -187,32 +471,42 @@ final class Drafts {
 			$page_url
 		);
 
-		$sent = self::send_resume_email( $form_id, $email, $resume_url, $expires, $ttl_days );
+		$sent = self::send_resume_email(
+			$form_id,
+			$email,
+			$resume_url,
+			$expires,
+			$ttl_days,
+			$remind ? $lead : 0
+		);
 		if ( $sent ) {
 			set_transient( $rate_key, 1, MINUTE_IN_SECONDS );
 		}
 
 		return rest_ensure_response(
 			array(
-				'success'    => true,
-				'email'      => $email,
-				'email_sent' => $sent,
-				'expires'    => $expires,
-				'ttl_days'   => $ttl_days,
+				'success'     => true,
+				'email'       => $email,
+				'email_sent'  => $sent,
+				'expires'     => $expires,
+				'ttl_days'    => $ttl_days,
+				'remind'      => $remind,
+				'remind_lead' => $remind ? $lead : 0,
 				// Intentionally omit resume_url — the link is only delivered by email.
 			)
 		);
 	}
 
 	/**
-	 * @param int    $form_id    Form ID.
-	 * @param string $email      Recipient.
-	 * @param string $resume_url Resume URL.
-	 * @param int    $expires    Unix expiry.
-	 * @param int    $ttl_days   Lifetime in days.
+	 * @param int    $form_id     Form ID.
+	 * @param string $email       Recipient.
+	 * @param string $resume_url  Resume URL.
+	 * @param int    $expires     Unix expiry.
+	 * @param int    $ttl_days    Lifetime in days.
+	 * @param int    $remind_lead Days before expiry for optional calendar invite (0 = none).
 	 * @return bool
 	 */
-	private static function send_resume_email( $form_id, $email, $resume_url, $expires, $ttl_days ) {
+	private static function send_resume_email( $form_id, $email, $resume_url, $expires, $ttl_days, $remind_lead = 0 ) {
 		$title = get_the_title( $form_id );
 		if ( ! is_string( $title ) || '' === $title ) {
 			$title = __( 'your form', 'we-formkit' );
@@ -229,10 +523,11 @@ final class Drafts {
 			$title
 		);
 
-		$safe_title = esc_html( $title );
-		$safe_url   = esc_url( $resume_url );
-		$safe_date  = esc_html( $date );
-		$safe_days  = (int) $ttl_days;
+		$safe_title  = esc_html( $title );
+		$safe_url    = esc_url( $resume_url );
+		$safe_date   = esc_html( $date );
+		$safe_days   = (int) $ttl_days;
+		$remind_lead = max( 0, (int) $remind_lead );
 
 		$body  = '<html><body style="font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#1c1b19;">';
 		$body .= '<p>' . esc_html__( 'Hello,', 'we-formkit' ) . '</p>';
@@ -251,6 +546,16 @@ final class Drafts {
 			$safe_date,
 			$safe_days
 		) . '</p>';
+		if ( $remind_lead > 0 ) {
+			/* translators: %d: number of days before expiry. */
+			$cal_note = _n(
+				'We attached a calendar file so you can set a reminder %d day before this link expires. No further emails will be sent.',
+				'We attached a calendar file so you can set a reminder %d days before this link expires. No further emails will be sent.',
+				$remind_lead,
+				'we-formkit'
+			);
+			$body    .= '<p>' . esc_html( sprintf( $cal_note, $remind_lead ) ) . '</p>';
+		}
 		$body .= '<p>' . esc_html__( 'If you did not request this, you can ignore this email.', 'we-formkit' ) . '</p>';
 		$body .= '</body></html>';
 
@@ -261,7 +566,135 @@ final class Drafts {
 			$headers[] = 'From: ' . ( '' !== $from_name ? sprintf( '%s <%s>', $from_name, $from_email ) : $from_email );
 		}
 
-		return Mailer::wp_mail( $email, $subject, $body, $headers );
+		$attachments = array();
+		$ics_path    = '';
+		if ( $remind_lead > 0 ) {
+			$event_at = self::compute_remind_at( $expires, time(), $ttl_days, $remind_lead );
+			if ( $event_at > 0 ) {
+				$ics_path = self::write_reminder_ics( $form_id, $title, $resume_url, $event_at, $expires );
+				if ( is_string( $ics_path ) && '' !== $ics_path && is_readable( $ics_path ) ) {
+					$attachments[] = $ics_path;
+				}
+			}
+		}
+
+		/**
+		 * Filter Save & Resume email before wp_mail.
+		 *
+		 * @param array{to:string,subject:string,body:string,headers:list<string>,attachments:list<string>} $mail Mail args.
+		 * @param int                                                                                      $form_id Form ID.
+		 * @param string                                                                                   $resume_url Resume URL.
+		 * @param int                                                                                      $expires Unix expiry.
+		 */
+		$mail = apply_filters(
+			'we_formkit_resume_mail',
+			array(
+				'to'          => $email,
+				'subject'     => $subject,
+				'body'        => $body,
+				'headers'     => $headers,
+				'attachments' => $attachments,
+			),
+			(int) $form_id,
+			$resume_url,
+			(int) $expires
+		);
+
+		$sent = false;
+		if ( ! empty( $mail['to'] ) && is_email( (string) $mail['to'] ) ) {
+			$atts = isset( $mail['attachments'] ) && is_array( $mail['attachments'] ) ? $mail['attachments'] : $attachments;
+			$sent = Mailer::wp_mail(
+				(string) $mail['to'],
+				(string) ( $mail['subject'] ?? $subject ),
+				(string) ( $mail['body'] ?? $body ),
+				isset( $mail['headers'] ) && is_array( $mail['headers'] ) ? $mail['headers'] : $headers,
+				$atts
+			);
+		}
+
+		if ( '' !== $ics_path && is_string( $ics_path ) && file_exists( $ics_path ) ) {
+			wp_delete_file( $ics_path );
+		}
+
+		return $sent;
+	}
+
+	/**
+	 * Build a temporary .ics file for an opt-in calendar reminder (no further emails).
+	 *
+	 * @param int    $form_id    Form ID.
+	 * @param string $title      Form title.
+	 * @param string $resume_url Resume URL.
+	 * @param int    $event_at   Event start unix time.
+	 * @param int    $expires    Link expiry unix time.
+	 * @return string Absolute path or empty string.
+	 */
+	private static function write_reminder_ics( $form_id, $title, $resume_url, $event_at, $expires ) {
+		$event_at = (int) $event_at;
+		$expires  = (int) $expires;
+		if ( $event_at <= 0 ) {
+			return '';
+		}
+
+		$summary = sprintf(
+			/* translators: %s: form title. */
+			__( 'Finish form: %s', 'we-formkit' ),
+			$title
+		);
+		$desc = sprintf(
+			/* translators: 1: form title, 2: resume URL. */
+			__( 'Continue “%1$s” before your saved progress link expires.\n%2$s', 'we-formkit' ),
+			$title,
+			$resume_url
+		);
+
+		$uid     = sprintf( 'wek-resume-%d-%s@%s', (int) $form_id, wp_generate_password( 12, false, false ), wp_parse_url( home_url(), PHP_URL_HOST ) );
+		$stamp   = gmdate( 'Ymd\THis\Z' );
+		$start   = gmdate( 'Ymd\THis\Z', $event_at );
+		$end     = gmdate( 'Ymd\THis\Z', $event_at + ( 30 * MINUTE_IN_SECONDS ) );
+		$exp_txt = gmdate( 'Y-m-d H:i', $expires ) . ' UTC';
+
+		$lines = array(
+			'BEGIN:VCALENDAR',
+			'VERSION:2.0',
+			'PRODID:-//WE Formkit//EN',
+			'CALSCALE:GREGORIAN',
+			'METHOD:PUBLISH',
+			'BEGIN:VEVENT',
+			'UID:' . self::ics_escape_text( (string) $uid ),
+			'DTSTAMP:' . $stamp,
+			'DTSTART:' . $start,
+			'DTEND:' . $end,
+			'SUMMARY:' . self::ics_escape_text( $summary ),
+			'DESCRIPTION:' . self::ics_escape_text(
+				$desc . "\n" . sprintf(
+				/* translators: %s: expiry datetime (UTC). */
+					__( 'Link expires: %s', 'we-formkit' ),
+					$exp_txt
+				)
+			),
+			'URL:' . self::ics_escape_text( $resume_url ),
+			'END:VEVENT',
+			'END:VCALENDAR',
+		);
+
+		$content = implode( "\r\n", $lines ) . "\r\n";
+		$ics     = trailingslashit( get_temp_dir() ) . 'wek-resume-' . wp_generate_password( 12, false, false ) . '.ics';
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- temp attachment for wp_mail.
+		if ( false === file_put_contents( $ics, $content ) ) {
+			return '';
+		}
+
+		return $ics;
+	}
+
+	/**
+	 * @param string $text Raw text.
+	 * @return string
+	 */
+	private static function ics_escape_text( $text ) {
+		$text = str_replace( array( '\\', ';', ',', "\r\n", "\n", "\r" ), array( '\\\\', '\\;', '\\,', '\\n', '\\n', '\\n' ), (string) $text );
+		return $text;
 	}
 
 	/**
@@ -304,6 +737,15 @@ final class Drafts {
 	private static function all() {
 		$raw = get_option( self::OPTION_KEY, array() );
 		return is_array( $raw ) ? $raw : array();
+	}
+
+	/**
+	 * Daily cron: remove expired drafts.
+	 *
+	 * @return void
+	 */
+	public static function cron_tick() {
+		self::cleanup();
 	}
 
 	/**
