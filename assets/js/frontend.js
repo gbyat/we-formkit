@@ -1796,6 +1796,13 @@
 						form.reset();
 						applyConditionals( root );
 						form.setAttribute( 'hidden', 'hidden' );
+						const pageProgress = qs(
+							root,
+							'[data-wek-progress]'
+						);
+						if ( pageProgress ) {
+							pageProgress.setAttribute( 'hidden', 'hidden' );
+						}
 						return;
 					}
 
