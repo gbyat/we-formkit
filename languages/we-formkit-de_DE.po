@@ -2995,6 +2995,7 @@ msgstr "Formular fertig ausfüllen: %s"
 msgid "Continue “%1$s” before your saved progress link expires.\\n%2$s"
 msgstr "Setze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n%2$s"
 "Setze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
+"%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
 "%2$s"
 
 #. translators: %s: expiry datetime (UTC).
