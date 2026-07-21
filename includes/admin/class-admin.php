@@ -28,6 +28,7 @@ final class Admin {
 		add_action( 'admin_init', array( Form_Editor::class, 'handle_actions' ) );
 		add_action( 'admin_init', array( Submissions::class, 'handle_actions' ) );
 		add_action( 'admin_init', array( Settings_Page::class, 'handle_actions' ) );
+		add_action( 'admin_init', array( Modules_Page::class, 'handle_actions' ) );
 	}
 
 	/**
@@ -89,6 +90,15 @@ final class Admin {
 			'manage_options',
 			'we-formkit-submissions',
 			array( Submissions::class, 'render' )
+		);
+
+		add_submenu_page(
+			'we-formkit',
+			__( 'Modules', 'we-formkit' ),
+			__( 'Modules', 'we-formkit' ),
+			'manage_options',
+			'we-formkit-modules',
+			array( Modules_Page::class, 'render' )
 		);
 
 		add_submenu_page(

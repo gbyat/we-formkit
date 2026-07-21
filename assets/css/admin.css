@@ -2331,3 +2331,74 @@ body.wek-builder-is-resizing iframe {
 	width: 100%;
 	max-width: 100%;
 }
+
+/* Modules screen */
+.wek-admin--modules .wek-modules-table {
+	max-width: 960px;
+	margin-top: 1rem;
+}
+
+.wek-admin--modules .wek-modules-table__toggle {
+	width: 6rem;
+	white-space: nowrap;
+	vertical-align: top;
+}
+
+.wek-admin--modules .wek-modules-table td {
+	vertical-align: top;
+}
+
+.wek-admin--modules .wek-module-version {
+	color: var(--wek-muted, #6b7280);
+	font-size: 0.85em;
+	margin-left: 0.35rem;
+}
+
+.wek-admin--modules .wek-module-badge {
+	display: inline-block;
+	margin-top: 0.35rem;
+	padding: 0.05rem 0.45rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 600;
+	line-height: 1.6;
+}
+
+.wek-admin--modules .wek-module-badge--on {
+	background: #dcfce7;
+	color: #166534;
+}
+
+.wek-admin--modules .wek-module-badge--paused {
+	background: #fef3c7;
+	color: #92400e;
+}
+
+.wek-admin--modules .wek-module-deps {
+	margin: 0;
+	list-style: none;
+}
+
+.wek-admin--modules .wek-module-dep {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	margin: 0.15rem 0;
+}
+
+.wek-admin--modules .wek-module-dep__icon {
+	font-size: 1.1rem;
+	line-height: 1;
+}
+
+.wek-admin--modules .wek-module-dep--met .wek-module-dep__icon {
+	color: #16a34a;
+}
+
+.wek-admin--modules .wek-module-dep--missing .wek-module-dep__icon {
+	color: #dc2626;
+}
+
+.wek-admin--modules .wek-module-dep--missing .wek-module-dep__label {
+	color: #b91c1c;
+}

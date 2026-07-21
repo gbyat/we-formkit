@@ -21,8 +21,9 @@ Use this file to continue development without re-deriving decisions from chat hi
 | Design (labels, type, density, colors + preview) | Done — own editor tab |
 | Sidebar scope tabs (Field / Form / Integrations) | Done (Integrations = module stub) |
 | Spam (honeypot / timing / rate / IP hash) | Done — Formkit Settings toggles + limits |
+| Per-field link/email block (text/textarea) | Done — type_options `block_links` / `block_emails` |
 | Global email footer | Done — TinyMCE in Formkit Settings |
-| Module registry | Empty; modules later |
+| Modules submenu | Done — activate + dependency check; first module: Akismet spam adapter |
 | Live WP smoke | **Done** (manual) |
 
 ## Locked product decisions
@@ -51,9 +52,10 @@ Use this file to continue development without re-deriving decisions from chat hi
 
 ## Next implementation order (resume here)
 
-1. **Modules:** Spamfighter adapter, Subscribe-to-Posts, smart-tag picker, server PDF.
+1. More modules as needed (Spamfighter adapter if distinct from Akismet, Subscribe-to-Posts deeper hooks, smart-tag picker, server PDF).
 2. Keep PHPCS / i18n clean on further changes.
 3. Re-smoke after larger changes (checklist below).
+4. Optional: wire Integrations sidebar tab to the Modules screen.
 
 ## Live smoke checklist
 
@@ -81,4 +83,4 @@ Run on a real WP install (not only the builder UI):
 
 ## Quick continue prompt
 
-> Continue WE Formkit from AGENTS.md. Live smoke and sidebar scope tabs done. Next: modules (Spamfighter adapter, etc.) when ready. Leave fro-anamnese untouched.
+> Continue WE Formkit from AGENTS.md. Modules submenu + Akismet adapter done. Next: more modules / smart-tag picker / server PDF when ready. Leave fro-anamnese untouched.

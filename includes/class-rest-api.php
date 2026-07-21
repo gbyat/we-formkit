@@ -162,6 +162,23 @@ final class Rest_Api {
 			);
 		}
 
+		/**
+		 * Extra spam check for validated submissions.
+		 *
+		 * Modules (e.g. the Akismet adapter) can return a WP_Error to reject the
+		 * submission. Return null / a non-error value to accept it. Runs after all
+		 * field validation, so $data holds sanitized, labeled values.
+		 *
+		 * @param mixed                $result  Null by default; WP_Error to reject.
+		 * @param array<string, mixed> $data    Validated submission values.
+		 * @param array<string, mixed> $schema  Form schema.
+		 * @param int                  $form_id Form ID.
+		 */
+		$spam_check = apply_filters( 'we_formkit_spam_check', null, $result['data'], $schema, $form_id );
+		if ( is_wp_error( $spam_check ) ) {
+			return $spam_check;
+		}
+
 		$persisted = self::persist_signatures( $schema, $result['data'] );
 		if ( is_wp_error( $persisted ) ) {
 			return $persisted;

@@ -50,6 +50,7 @@ final class Plugin {
 
 		$this->field_registry  = new Field_Type_Registry();
 		$this->module_registry = new Module_Registry();
+		Modules\Akismet_Spam_Module::register();
 		$this->module_registry->register();
 
 		Post_Types::register();

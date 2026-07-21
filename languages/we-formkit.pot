@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-21T15:26:17+00:00\n"
+"POT-Creation-Date: 2026-07-21T15:34:35+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: we-formkit\n"
@@ -39,38 +39,43 @@ msgstr ""
 msgid "https://webentwicklerin.at"
 msgstr ""
 
-#: includes/admin/class-admin.php:58
 #: includes/admin/class-admin.php:59
+#: includes/admin/class-admin.php:60
 msgid "Formkit"
 msgstr ""
 
-#: includes/admin/class-admin.php:69
 #: includes/admin/class-admin.php:70
+#: includes/admin/class-admin.php:71
 #: includes/admin/class-form-editor.php:232
 #: includes/class-post-types.php:41
 msgid "Forms"
 msgstr ""
 
-#: includes/admin/class-admin.php:78
+#: includes/admin/class-admin.php:79
 #: includes/class-post-types.php:44
 msgid "Edit Form"
 msgstr ""
 
-#: includes/admin/class-admin.php:79
+#: includes/admin/class-admin.php:80
 #: includes/admin/class-form-editor.php:233
 #: includes/admin/class-form-editor.php:649
 msgid "Add Form"
 msgstr ""
 
-#: includes/admin/class-admin.php:87
 #: includes/admin/class-admin.php:88
+#: includes/admin/class-admin.php:89
 #: includes/admin/class-submissions.php:306
 #: includes/class-post-types.php:67
 msgid "Submissions"
 msgstr ""
 
-#: includes/admin/class-admin.php:96
 #: includes/admin/class-admin.php:97
+#: includes/admin/class-admin.php:98
+msgid "Modules"
+msgstr ""
+
+#: includes/admin/class-admin.php:106
+#: includes/admin/class-admin.php:107
 msgid "Settings"
 msgstr ""
 
@@ -78,6 +83,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:187
 #: includes/admin/class-form-editor.php:2095
 #: includes/admin/class-form-editor.php:2447
+#: includes/admin/class-modules-page.php:37
 #: includes/admin/class-settings-page.php:45
 #: includes/admin/class-settings-page.php:64
 #: includes/admin/class-submissions.php:87
@@ -102,6 +108,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:218
 #: includes/admin/class-form-editor.php:570
+#: includes/admin/class-modules-page.php:65
 #: includes/admin/class-settings-page.php:87
 #: includes/admin/class-submissions.php:242
 msgid "You do not have permission to access this page."
@@ -986,6 +993,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:1156
 #: includes/admin/class-form-editor.php:1577
 #: includes/admin/class-form-editor.php:1582
+#: includes/admin/class-modules-page.php:92
 #: includes/admin/class-submissions.php:880
 msgid "Active"
 msgstr ""
@@ -1355,6 +1363,55 @@ msgstr ""
 #: includes/admin/class-form-editor.php:2575
 #, php-format
 msgid "%s (Copy)"
+msgstr ""
+
+#: includes/admin/class-modules-page.php:73
+msgid "Formkit Modules"
+msgstr ""
+
+#: includes/admin/class-modules-page.php:75
+msgid "Modules updated."
+msgstr ""
+
+#: includes/admin/class-modules-page.php:79
+msgid "Optional extensions for Formkit. Core spam protection (honeypot, timing, rate limit, per-field link/email blocking) always runs — modules add integrations that rely on other plugins or services."
+msgstr ""
+
+#: includes/admin/class-modules-page.php:83
+msgid "No modules are registered yet."
+msgstr ""
+
+#: includes/admin/class-modules-page.php:93
+msgid "Module"
+msgstr ""
+
+#: includes/admin/class-modules-page.php:94
+msgid "Requirements"
+msgstr ""
+
+#: includes/admin/class-modules-page.php:122
+msgid "Paused"
+msgstr ""
+
+#: includes/admin/class-modules-page.php:124
+#: src/admin-form-settings/index.jsx:631
+msgid "On"
+msgstr ""
+
+#: includes/admin/class-modules-page.php:137
+msgid "Documentation"
+msgstr ""
+
+#: includes/admin/class-modules-page.php:143
+msgid "No extra requirements"
+msgstr ""
+
+#: includes/admin/class-modules-page.php:154
+msgid "Install and configure the missing requirement to enable this module."
+msgstr ""
+
+#: includes/admin/class-modules-page.php:162
+msgid "Save modules"
 msgstr ""
 
 #: includes/admin/class-settings-page.php:108
@@ -2173,8 +2230,8 @@ msgstr ""
 #: includes/class-frontend.php:303
 #: includes/class-rest-api.php:136
 #: includes/class-rest-api.php:157
-#: includes/class-rest-api.php:324
-#: includes/class-rest-api.php:467
+#: includes/class-rest-api.php:341
+#: includes/class-rest-api.php:484
 msgid "Please correct the highlighted fields."
 msgstr ""
 
@@ -2451,39 +2508,39 @@ msgstr ""
 msgid "This form requires a valid access link."
 msgstr ""
 
-#: includes/class-rest-api.php:186
+#: includes/class-rest-api.php:203
 msgid "Could not save the submission."
 msgstr ""
 
 #. translators: 1: field label, 2: max number of files.
-#: includes/class-rest-api.php:373
+#: includes/class-rest-api.php:390
 #: includes/fields/class-upload-field.php:133
 #, php-format
 msgid "%1$s allows at most %2$d file(s)."
 msgstr ""
 
-#: includes/class-rest-api.php:386
+#: includes/class-rest-api.php:403
 msgid "File upload failed. Please try again."
 msgstr ""
 
 #. translators: 1: field label, 2: max size in MB.
-#: includes/class-rest-api.php:394
+#: includes/class-rest-api.php:411
 #, php-format
 msgid "%1$s exceeds the maximum file size of %2$d MB."
 msgstr ""
 
 #. translators: %s: field label.
-#: includes/class-rest-api.php:406
+#: includes/class-rest-api.php:423
 #, php-format
 msgid "%s has an invalid file type."
 msgstr ""
 
-#: includes/class-rest-api.php:431
+#: includes/class-rest-api.php:448
 msgid "Could not save the uploaded file."
 msgstr ""
 
 #. translators: %s: date
-#: includes/class-rest-api.php:593
+#: includes/class-rest-api.php:610
 #, php-format
 msgid "Submission %s"
 msgstr ""
@@ -2847,6 +2904,26 @@ msgstr ""
 msgid "URL"
 msgstr ""
 
+#: includes/modules/class-akismet-spam-module.php:53
+msgid "Akismet spam filter"
+msgstr ""
+
+#: includes/modules/class-akismet-spam-module.php:54
+msgid "Check submissions against Akismet and reject the ones it classifies as spam. Uses the API key from the Akismet plugin; fails open if Akismet cannot be reached."
+msgstr ""
+
+#: includes/modules/class-akismet-spam-module.php:58
+msgid "Akismet plugin active"
+msgstr ""
+
+#: includes/modules/class-akismet-spam-module.php:64
+msgid "Akismet API key configured"
+msgstr ""
+
+#: includes/modules/class-akismet-spam-module.php:126
+msgid "Your submission was flagged as spam. If this is a mistake, please try again or contact us directly."
+msgstr ""
+
 #. translators: %d: number of days.
 #: src/admin-form-settings/index.jsx:24
 #, js-format
@@ -3038,10 +3115,6 @@ msgstr ""
 
 #: src/admin-form-settings/index.jsx:626
 msgid "Show a check or error icon beside fields after the visitor leaves the field."
-msgstr ""
-
-#: src/admin-form-settings/index.jsx:631
-msgid "On"
 msgstr ""
 
 #: src/admin-form-settings/index.jsx:632
