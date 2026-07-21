@@ -1462,8 +1462,8 @@ msgstr "Ungültiger Sicherheitstoken."
 msgid "Save & Resume is not enabled for this form."
 msgstr "Speichern & Fortsetzen ist für dieses Formular nicht aktiviert."
 
-#: includes/class-drafts.php:774
-#: includes/class-drafts.php:780
+#: includes/class-drafts.php:771
+#: includes/class-drafts.php:777
 msgid "Draft not found or expired."
 msgstr "Entwurf nicht gefunden oder abgelaufen."
 
@@ -2996,24 +2996,8 @@ msgstr[1] "Im Anhang findest du eine Kalenderdatei für eine Erinnerung %d Tage 
 msgid "Finish form: %s"
 msgstr "Formular fertig ausfüllen: %s"
 
-#. translators: 1: form title, 2: resume URL.
-#: includes/class-drafts.php:692
-#, php-format
-msgid "Continue “%1$s” before your saved progress link expires.\\n%2$s"
-msgstr "Setze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n%2$s"
-"Setze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
-"%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
-"%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
-"%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
-"%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
-"%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
-"%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
-"%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
-"%2$sSetze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n"
-"%2$s"
-
 #. translators: %s: expiry datetime (UTC).
-#: includes/class-drafts.php:725
+#: includes/class-drafts.php:723
 #, php-format
 msgid "Link expires: %s"
 msgstr "Link läuft ab: %s"
@@ -3183,3 +3167,9 @@ msgstr "Design speichern"
 #: src/admin-form-settings/index.jsx:945
 msgid "Design saved."
 msgstr "Design gespeichert."
+
+#. translators: %s: form title.
+#: includes/class-drafts.php:692
+#, php-format
+msgid "Continue “%s” before your saved progress link expires."
+msgstr "Setze „%s“ fort, bevor dein Fortsetzungs-Link abläuft."

@@ -688,11 +688,10 @@ final class Drafts {
 			$title
 		);
 		$desc = sprintf(
-			/* translators: 1: form title, 2: resume URL. */
-			__( 'Continue “%1$s” before your saved progress link expires.\n%2$s', 'we-formkit' ),
-			$title,
-			$resume_url
-		);
+			/* translators: %s: form title. */
+			__( 'Continue “%s” before your saved progress link expires.', 'we-formkit' ),
+			$title
+		) . "\n" . $resume_url;
 
 		$host = wp_parse_url( home_url(), PHP_URL_HOST );
 		if ( ! is_string( $host ) || '' === $host ) {
@@ -703,11 +702,10 @@ final class Drafts {
 		$start   = gmdate( 'Ymd\THis\Z', $event_at );
 		$end     = gmdate( 'Ymd\THis\Z', $event_at + ( 30 * MINUTE_IN_SECONDS ) );
 		$exp_txt = gmdate( 'Y-m-d H:i', $expires ) . ' UTC';
-		$from    = Settings::default_from_email();
-		$org     = is_email( $from ) ? $from : ( 'noreply@' . $host );
 
-		// No METHOD:PUBLISH — Outlook treats that as “subscribe to internet calendar”.
-		// A plain VEVENT opens as a single appointment the user can save.
+		// No METHOD and no ORGANIZER/ATTENDEE: this is a personal appointment for
+		// the recipient only, so Outlook/clients let them save it instead of
+		// prompting to accept/decline a meeting invitation.
 		$lines = array(
 			'BEGIN:VCALENDAR',
 			'VERSION:2.0',
@@ -727,11 +725,10 @@ final class Drafts {
 				)
 			),
 			'URL:' . self::ics_escape_text( $resume_url ),
-			'ORGANIZER;CN=' . self::ics_escape_text( Settings::default_from_name() ) . ':mailto:' . self::ics_escape_text( $org ),
-			'STATUS:CONFIRMED',
-			'TRANSP:OPAQUE',
+			'TRANSP:TRANSPARENT',
 			'SEQUENCE:0',
-			'CLASS:PUBLIC',
+			'CLASS:PRIVATE',
+			'X-MICROSOFT-CDO-BUSYSTATUS:FREE',
 			'END:VEVENT',
 			'END:VCALENDAR',
 		);

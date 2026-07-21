@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-21T13:21:41+00:00\n"
+"POT-Creation-Date: 2026-07-21T13:25:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: we-formkit\n"
@@ -1953,20 +1953,20 @@ msgstr ""
 msgid "Finish form: %s"
 msgstr ""
 
-#. translators: 1: form title, 2: resume URL.
+#. translators: %s: form title.
 #: includes/class-drafts.php:692
 #, php-format
-msgid "Continue “%1$s” before your saved progress link expires.\\n%2$s"
+msgid "Continue “%s” before your saved progress link expires."
 msgstr ""
 
 #. translators: %s: expiry datetime (UTC).
-#: includes/class-drafts.php:725
+#: includes/class-drafts.php:723
 #, php-format
 msgid "Link expires: %s"
 msgstr ""
 
-#: includes/class-drafts.php:774
-#: includes/class-drafts.php:780
+#: includes/class-drafts.php:771
+#: includes/class-drafts.php:777
 msgid "Draft not found or expired."
 msgstr ""
 

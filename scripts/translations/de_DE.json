@@ -426,7 +426,7 @@
   "We attached a calendar file so you can set a reminder %d day before this link expires. No further emails will be sent.": "Im Anhang findest du eine Kalenderdatei für eine Erinnerung %d Tag vor Ablauf. Es werden keine weiteren E-Mails gesendet.",
   "If you did not request this, you can ignore this email.": "Falls du das nicht angefordert hast, kannst du diese E-Mail ignorieren.",
   "Finish form: %s": "Formular fertig ausfüllen: %s",
-  "Continue “%1$s” before your saved progress link expires.\\\n%2$s": "Setze „%1$s“ fort, bevor dein Fortsetzungs-Link abläuft.\\\n%2$s",
+  "Continue “%s” before your saved progress link expires.": "Setze „%s“ fort, bevor dein Fortsetzungs-Link abläuft.",
   "Link expires: %s": "Link läuft ab: %s",
   "Draft not found or expired.": "Entwurf nicht gefunden oder abgelaufen.",
   "New document": "Neues Dokument",
