@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6] - 2026-07-21
+
+- Enhance save and resume functionality for forms. Update CSS for admin and frontend to style new save progress options, including minimum filled fields and calendar reminder settings. Modify JavaScript to manage the new UI elements and validation logic for reminders. Add backend support for minimum filled fields and reminder options in draft settings. Update translations for new strings related to the save and resume feature.
 ## [0.3.5] - 2026-07-21
 
 - Implement save and resume feature for forms. Update CSS for admin and frontend to style save progress actions and email input. Enhance JavaScript to handle email prefill and validation for resume link requests. Add backend support for email sending and draft expiration settings. Update translations for new strings related to the save and resume functionality.
