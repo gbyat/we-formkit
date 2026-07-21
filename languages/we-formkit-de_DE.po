@@ -1462,8 +1462,8 @@ msgstr "Ungültiger Sicherheitstoken."
 msgid "Save & Resume is not enabled for this form."
 msgstr "Speichern & Fortsetzen ist für dieses Formular nicht aktiviert."
 
-#: includes/class-drafts.php:771
-#: includes/class-drafts.php:777
+#: includes/class-drafts.php:773
+#: includes/class-drafts.php:779
 msgid "Draft not found or expired."
 msgstr "Entwurf nicht gefunden oder abgelaufen."
 
@@ -2998,7 +2998,7 @@ msgid "Finish form: %s"
 msgstr "Formular fertig ausfüllen: %s"
 
 #. translators: %s: expiry datetime (UTC).
-#: includes/class-drafts.php:723
+#: includes/class-drafts.php:725
 #, php-format
 msgid "Link expires: %s"
 msgstr "Link läuft ab: %s"

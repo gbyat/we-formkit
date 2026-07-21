@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-07-21
+
+- Update calendar event properties to include METHOD:PUBLISH for improved compatibility with email clients. This change ensures that personal appointments are handled correctly, allowing recipients to save events without prompts to accept or decline.
 ## [0.4.5] - 2026-07-21
 
 - Add inline image support for email notifications. Implement functionality to embed images using CID in outgoing emails, enhancing the display of signatures. Update email formatting methods to accommodate inline images and ensure proper handling of allowed protocols.
