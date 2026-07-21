@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-21
+
+- Enhance form validation and styling features. Introduce new CSS variables for input, button, and section border radii. Implement inline validation feedback in JavaScript, allowing real-time user input validation. Update Form_Schema and Form_Style classes to support new appearance options, including optional markers and radius settings. Refactor related CSS and JavaScript for improved consistency and usability across the admin and frontend interfaces.
 ## [0.3.0] - 2026-07-21
 
 - Enhance form appearance settings by introducing new CSS variables for spacing, control padding, and font sizes. Update the Form_Schema class to include new appearance options and adjust the admin panel to support these settings. Refactor related CSS files for improved styling consistency across the admin and frontend interfaces. Update translations for new appearance-related strings.
