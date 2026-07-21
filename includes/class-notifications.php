@@ -17,10 +17,35 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Notifications {
 
 	/**
+	 * Inline images (CID => absolute file path) for the email currently sending.
+	 *
+	 * @var array<string, string>
+	 */
+	private static $inline_images = array();
+
+	/**
 	 * @return void
 	 */
 	public static function register() {
 		add_action( 'we_formkit_submission_created', array( __CLASS__, 'send' ), 10, 2 );
+	}
+
+	/**
+	 * Embed collected inline images into the outgoing PHPMailer message.
+	 *
+	 * Registered on phpmailer_init only while a notification with inline images
+	 * is being sent, so private signature files render inline (cid:) in clients
+	 * that cannot fetch the gated download URL.
+	 *
+	 * @param \PHPMailer\PHPMailer\PHPMailer $phpmailer PHPMailer instance.
+	 * @return void
+	 */
+	public static function attach_inline_images( $phpmailer ) {
+		foreach ( self::$inline_images as $cid => $path ) {
+			if ( is_string( $path ) && '' !== $path && is_readable( $path ) ) {
+				$phpmailer->addEmbeddedImage( $path, $cid, basename( $path ), 'base64', 'image/png' );
+			}
+		}
 	}
 
 	/**
@@ -152,6 +177,8 @@ final class Notifications {
 			return $err;
 		}
 
+		self::$inline_images = array();
+
 		$vars    = self::merge_vars( $submission_id, $form_id, $schema, $data, $notification, $matched_docs );
 		$subject = self::replace_tags( (string) $notification['subject'], $vars );
 		$body    = self::compose_html_body( $notification, $vars );
@@ -218,6 +245,11 @@ final class Notifications {
 			return __( 'No valid recipient email.', 'we-formkit' );
 		}
 
+		$has_inline = ! empty( self::$inline_images );
+		if ( $has_inline ) {
+			add_action( 'phpmailer_init', array( __CLASS__, 'attach_inline_images' ) );
+		}
+
 		$ok = Mailer::wp_mail(
 			(string) $mail['to'],
 			(string) $mail['subject'],
@@ -225,6 +257,11 @@ final class Notifications {
 			isset( $mail['headers'] ) && is_array( $mail['headers'] ) ? $mail['headers'] : array(),
 			isset( $mail['attachments'] ) && is_array( $mail['attachments'] ) ? $mail['attachments'] : array()
 		);
+
+		if ( $has_inline ) {
+			remove_action( 'phpmailer_init', array( __CLASS__, 'attach_inline_images' ) );
+			self::$inline_images = array();
+		}
 
 		self::append_notify_log(
 			$submission_id,
@@ -390,14 +427,78 @@ final class Notifications {
 		foreach ( Form_Schema::fields_by_id( $schema ) as $field_id => $field ) {
 			$vars[ 'field:' . $field_id ] = nl2br(
 				wp_kses(
-					self::format_field_value( $field, $data[ $field_id ] ?? null ),
-					self::email_value_allowed_html()
+					self::format_field_value_email( $field, $data[ $field_id ] ?? null ),
+					self::email_value_allowed_html(),
+					self::email_allowed_protocols()
 				),
 				false
 			);
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Allowed URL protocols for email field values (adds cid: for inline images).
+	 *
+	 * @return list<string>
+	 */
+	private static function email_allowed_protocols() {
+		return array_values( array_unique( array_merge( wp_allowed_protocols(), array( 'cid' ) ) ) );
+	}
+
+	/**
+	 * Field value for emails; signatures render as an inline (cid) image so they
+	 * display even when the gated download URL is unreachable by mail clients.
+	 *
+	 * @param array<string, mixed> $field Field config.
+	 * @param mixed                $value Value.
+	 * @return string
+	 */
+	private static function format_field_value_email( array $field, $value ) {
+		$type = isset( $field['type'] ) ? (string) $field['type'] : '';
+		if ( 'signature' === $type ) {
+			$img = self::signature_inline_img( $value );
+			if ( '' !== $img ) {
+				return $img;
+			}
+		}
+		return self::format_field_value( $field, $value );
+	}
+
+	/**
+	 * Build an inline (cid) <img> for a stored signature and register the file
+	 * for embedding. Returns '' when the signature file is missing.
+	 *
+	 * @param mixed $raw Stored signature value.
+	 * @return string
+	 */
+	private static function signature_inline_img( $raw ) {
+		if ( ! is_array( $raw ) || empty( $raw['token'] ) || empty( $raw['name'] ) ) {
+			return '';
+		}
+		$path = '';
+		if ( ! empty( $raw['path'] ) && is_string( $raw['path'] ) ) {
+			$path = $raw['path'];
+		} else {
+			$path = Private_Files::absolute_path(
+				Private_Files::SIGNATURES_SUBDIR,
+				(string) $raw['token'],
+				(string) $raw['name']
+			);
+		}
+		if ( '' === $path || ! is_readable( $path ) ) {
+			return '';
+		}
+
+		$cid                         = 'wek-sig-' . md5( $path . (string) wp_rand() );
+		self::$inline_images[ $cid ] = $path;
+
+		return sprintf(
+			'<img src="cid:%s" alt="%s" style="max-width:280px;height:auto;border:1px solid #ddd;" />',
+			esc_attr( $cid ),
+			esc_attr__( 'Signature', 'we-formkit' )
+		);
 	}
 
 	/**
@@ -514,8 +615,8 @@ final class Notifications {
 				continue;
 			}
 			$label  = isset( $field['label'] ) ? (string) $field['label'] : $field_id;
-			$value  = self::format_field_value( $field, $data[ $field_id ] ?? null );
-			$value  = nl2br( wp_kses( $value, self::email_value_allowed_html() ), false );
+			$value  = self::format_field_value_email( $field, $data[ $field_id ] ?? null );
+			$value  = nl2br( wp_kses( $value, self::email_value_allowed_html(), self::email_allowed_protocols() ), false );
 			$rows[] = '<tr>'
 				. '<td style="padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top;font-weight:600;width:35%;">' . esc_html( $label ) . '</td>'
 				. '<td style="padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top;">' . $value . '</td>'
