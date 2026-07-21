@@ -243,7 +243,7 @@
 	display: block;
 	width: 100%;
 	box-sizing: border-box;
-	background: var(--wek-input);
+	background-color: var(--wek-input);
 	border: 1px solid var(--wek-line);
 	border-radius: var(--wek-radius-input);
 	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
@@ -256,8 +256,13 @@
 	);
 }
 
-.wek-scheme-preview__select {
+.wek-scheme-preview select.wek-scheme-preview__select {
 	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	/* Native <select> in wp-admin often resets corners — keep in sync with inputs. */
+	border-radius: var(--wek-radius-input) !important;
+	background-color: var(--wek-input);
 	background-image: linear-gradient(45deg, transparent 50%, var(--wek-muted) 50%),
 		linear-gradient(135deg, var(--wek-muted) 50%, transparent 50%);
 	background-position:
@@ -268,6 +273,7 @@
 		5px 5px;
 	background-repeat: no-repeat;
 	padding-right: 1.75rem;
+	max-width: none;
 }
 
 .wek-scheme-preview__choices {
