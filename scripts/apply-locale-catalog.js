@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 /**
  * Apply translated msgstr values from scripts/translations/<locale>.json to PO files.
- * Supports single-line and multiline msgid/msgstr entries.
+ *
+ * Handles escaped quotes inside msgid/msgstr (e.g. HTML href=\"%s\").
  */
 
 const fs = require('fs');
 const path = require('path');
 const { loadConfig, rootDir } = require('./load-config');
+const { readLf, writeLf } = require('./process');
 
 const config = loadConfig();
 const slug = String(config.slug);
@@ -29,35 +31,11 @@ function poEscape(value) {
  * @param {string} value
  * @return {string}
  */
-function unescapePo(value) {
+function poUnescape(value) {
 	return value
 		.replace(/\\n/g, '\n')
 		.replace(/\\"/g, '"')
 		.replace(/\\\\/g, '\\');
-}
-
-/**
- * Format msgstr for PO output (single line, or "" + continuation lines for multiline).
- *
- * @param {string} value
- * @return {string}
- */
-function formatMsgstr(value) {
-	const escaped = poEscape(value);
-	if (!escaped.includes('\\n')) {
-		return `msgstr "${escaped}"`;
-	}
-
-	const parts = escaped.split('\\n');
-	const lines = ['msgstr ""'];
-	parts.forEach((part, index) => {
-		const isLast = index === parts.length - 1;
-		if (isLast && '' === part) {
-			return;
-		}
-		lines.push(`"${part}${isLast ? '' : '\\n'}"`);
-	});
-	return lines.join('\n');
 }
 
 /**
@@ -66,78 +44,37 @@ function formatMsgstr(value) {
  * @return {number}
  */
 function applyCatalog(poPath, catalog) {
-	const content = fs.readFileSync(poPath, 'utf8').replace(/^\uFEFF/, '');
-	const lines = content.split(/\r?\n/);
-	/** @type {string[]} */
-	const out = [];
+	let content = readLf(poPath);
 	let applied = 0;
 
-	let i = 0;
-	while (i < lines.length) {
-		const line = lines[i];
+	// Match single-line msgid + msgstr pairs; allow escaped quotes inside both.
+	content = content.replace(
+		/(^|\n)(msgid "((?:\\.|[^"\\])*)"\nmsgstr ")((?:\\.|[^"\\])*)(")/gm,
+		(match, prefix, head, msgidRaw, _msgstrRaw, tail) => {
+			const msgid = poUnescape(msgidRaw);
 
-		if (!line.startsWith('msgid ')) {
-			out.push(line);
-			i += 1;
-			continue;
-		}
-
-		/** @type {string[]} */
-		const msgidLines = [line];
-		i += 1;
-		while (i < lines.length && /^\s*"/.test(lines[i])) {
-			msgidLines.push(lines[i]);
-			i += 1;
-		}
-
-		/** @type {string[]} */
-		const msgstrLines = [];
-		if (i < lines.length && lines[i].startsWith('msgstr ')) {
-			msgstrLines.push(lines[i]);
-			i += 1;
-			while (i < lines.length && /^\s*"/.test(lines[i])) {
-				msgstrLines.push(lines[i]);
-				i += 1;
+			if (!Object.prototype.hasOwnProperty.call(catalog, msgid)) {
+				return match;
 			}
-		}
 
-		let msgidRaw = '';
-		msgidLines.forEach((l, idx) => {
-			if (0 === idx) {
-				msgidRaw += l.slice(6).trim().replace(/^"/, '').replace(/"$/, '');
-			} else {
-				msgidRaw += l.trim().slice(1, -1);
+			const translation = catalog[msgid];
+			if ('string' !== typeof translation || '' === translation) {
+				return match;
 			}
-		});
-		const msgid = unescapePo(msgidRaw);
 
-		const translation =
-			'' !== msgid && Object.prototype.hasOwnProperty.call(catalog, msgid)
-				? catalog[msgid]
-				: undefined;
-
-		out.push(...msgidLines);
-
-		if (
-			'string' === typeof translation &&
-			'' !== translation &&
-			msgstrLines.length > 0
-		) {
-			out.push(...formatMsgstr(translation).split('\n'));
 			applied += 1;
-		} else if (msgstrLines.length > 0) {
-			out.push(...msgstrLines);
+			return `${prefix}${head}${poEscape(translation)}${tail}`;
 		}
-	}
+	);
 
-	fs.writeFileSync(poPath, `${out.join('\n')}`, 'utf8');
+	writeLf(poPath, content);
 	return applied;
 }
 
 function main() {
 	if (!fs.existsSync(translationsDir)) {
-		console.error(`Missing translations directory: ${translationsDir}`);
-		process.exit(1);
+		console.log('No scripts/translations directory; skipping catalog apply.');
+		return;
 	}
 
 	const locales = Array.isArray(config.locales) ? config.locales : [];
@@ -156,9 +93,7 @@ function main() {
 			return;
 		}
 
-		const catalog = JSON.parse(
-			fs.readFileSync(catalogPath, 'utf8').replace(/^\uFEFF/, '')
-		);
+		const catalog = JSON.parse(readLf(catalogPath));
 		const applied = applyCatalog(poPath, catalog);
 		total += applied;
 		console.log(`Applied ${applied} translation(s) to ${path.basename(poPath)}`);

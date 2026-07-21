@@ -30,6 +30,7 @@ final class Settings {
 			'notify_email'             => '',
 			'from_name'                => '',
 			'from_email'               => '',
+			'email_footer'             => '',
 			'mail_transport'           => 'wp_default',
 			'smtp_host'                => '',
 			'smtp_port'                => 587,
@@ -44,6 +45,12 @@ final class Settings {
 			'retention_days'           => 365,
 			'delete_data_on_uninstall' => false,
 			'admin_scheme'             => 'brick',
+			'spam_honeypot'            => true,
+			'spam_timing'              => true,
+			'spam_timing_min'          => 3,
+			'spam_rate_limit'          => true,
+			'spam_rate_max'            => 8,
+			'spam_store_ip_hash'       => true,
 		);
 	}
 
@@ -138,6 +145,33 @@ final class Settings {
 		}
 		$admin = (string) get_option( 'admin_email' );
 		return is_email( $admin ) ? $admin : '';
+	}
+
+	/**
+	 * Global HTML email footer (Save & Resume + default for notifications).
+	 *
+	 * @return string Sanitized HTML or empty.
+	 */
+	public static function email_footer_html() {
+		$settings = self::get();
+		$html     = isset( $settings['email_footer'] ) ? trim( (string) $settings['email_footer'] ) : '';
+		if ( '' === $html ) {
+			return '';
+		}
+		return wp_kses_post( $html );
+	}
+
+	/**
+	 * Styled footer block for HTML emails, or empty string.
+	 *
+	 * @return string
+	 */
+	public static function email_footer_block() {
+		$html = self::email_footer_html();
+		if ( '' === $html ) {
+			return '';
+		}
+		return '<div style="margin:1.5rem 0 0;padding-top:1rem;border-top:1px solid #e5e5e5;color:#666;font-size:13px;">' . $html . '</div>';
 	}
 
 	/**
@@ -242,6 +276,9 @@ final class Settings {
 			$out['from_email'] = $from_email;
 		}
 
+		$footer              = isset( $input['email_footer'] ) ? (string) $input['email_footer'] : '';
+		$out['email_footer'] = wp_kses_post( $footer );
+
 		$current               = self::get();
 		$transport             = isset( $input['mail_transport'] ) ? sanitize_key( (string) $input['mail_transport'] ) : 'wp_default';
 		$allowed_tr            = array( 'wp_default', 'smtp', 'gmail', 'subscribe_to_posts' );
@@ -294,6 +331,15 @@ final class Settings {
 		$scheme              = isset( $input['admin_scheme'] ) ? sanitize_key( (string) $input['admin_scheme'] ) : 'brick';
 		$allowed             = self::admin_schemes();
 		$out['admin_scheme'] = isset( $allowed[ $scheme ] ) ? $scheme : 'brick';
+
+		$out['spam_honeypot']      = ! empty( $input['spam_honeypot'] );
+		$out['spam_timing']        = ! empty( $input['spam_timing'] );
+		$timing_min                = isset( $input['spam_timing_min'] ) ? (int) $input['spam_timing_min'] : 3;
+		$out['spam_timing_min']    = max( 1, min( 60, $timing_min ) );
+		$out['spam_rate_limit']    = ! empty( $input['spam_rate_limit'] );
+		$rate_max                  = isset( $input['spam_rate_max'] ) ? (int) $input['spam_rate_max'] : 8;
+		$out['spam_rate_max']      = max( 1, min( 100, $rate_max ) );
+		$out['spam_store_ip_hash'] = ! empty( $input['spam_store_ip_hash'] );
 
 		update_option( self::DELETE_DATA_OPTION, $out['delete_data_on_uninstall'] );
 

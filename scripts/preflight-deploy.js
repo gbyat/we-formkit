@@ -153,6 +153,16 @@ function runComposerAudit() {
 		return;
 	}
 
+	const combined = `${audit.stdout || ''}\n${audit.stderr || ''}`;
+	const missingComposer =
+		Boolean(audit.error) ||
+		/nicht gefunden|not found|not recognized|ENOENT|command not found/i.test(combined);
+
+	if (missingComposer && auditCommand.command === 'composer') {
+		note('warn', 'composer is not available on PATH — skipping composer audit.');
+		return;
+	}
+
 	if (audit.stdout) {
 		process.stdout.write(audit.stdout);
 	}

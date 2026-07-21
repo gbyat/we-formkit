@@ -854,6 +854,11 @@
 	gap: 0.55rem;
 }
 
+.we-formkit [data-wek-save-ui][hidden],
+.we-formkit .we-formkit__actions--save-email[hidden] {
+	display: none !important;
+}
+
 .we-formkit__save-remind {
 	display: flex;
 	align-items: flex-start;

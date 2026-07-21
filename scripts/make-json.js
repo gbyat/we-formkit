@@ -14,7 +14,7 @@ if (!fs.existsSync(languagesDir)) {
 }
 
 try {
-	runWp(['i18n', 'make-json', languagesDir, '--no-purge']);
+	runWp(['i18n', 'make-json', languagesDir, '--no-purge', '--extensions=js,jsx']);
 	console.log(`JSON translation files updated in: ${languagesDir}`);
 
 	const aliasScript = path.join(__dirname, 'json-handle-aliases.js');

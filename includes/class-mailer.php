@@ -124,9 +124,11 @@ final class Mailer {
 		$subject = __( '[Test] Formkit mail transport', 'we-formkit' );
 		$body    = '<html><body style="font-family:Arial,sans-serif;line-height:1.5;"><p>'
 			. esc_html__( 'This is a test email from WE Formkit mail transport settings.', 'we-formkit' )
-			. '</p></body></html>';
+			. '</p>'
+			. Settings::email_footer_block()
+			. '</body></html>';
 
-		$headers   = array( 'Content-Type: text/html; charset=UTF-8' );
+		$headers    = array( 'Content-Type: text/html; charset=UTF-8' );
 		$from_email = Settings::default_from_email();
 		$from_name  = Settings::default_from_name();
 		if ( is_email( $from_email ) ) {

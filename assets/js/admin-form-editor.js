@@ -77,27 +77,6 @@
 	}
 
 	function boot() {
-		const saveResume = document.getElementById( 'wek-save-resume' );
-		const saveResumeTtl = document.getElementById( 'wek-save-resume-ttl' );
-		const saveResumeMin = document.getElementById( 'wek-save-resume-min' );
-		const saveResumeRemind = document.getElementById( 'wek-save-resume-reminders' );
-		if ( saveResume ) {
-			const syncSaveResumeOpts = function () {
-				const on = !! saveResume.checked;
-				if ( saveResumeTtl ) {
-					saveResumeTtl.disabled = ! on;
-				}
-				if ( saveResumeMin ) {
-					saveResumeMin.disabled = ! on;
-				}
-				if ( saveResumeRemind ) {
-					saveResumeRemind.disabled = ! on;
-				}
-			};
-			saveResume.addEventListener( 'change', syncSaveResumeOpts );
-			syncSaveResumeOpts();
-		}
-
 		const i18n = ( window.weFormkitAdmin && window.weFormkitAdmin.i18n ) || {};
 		const fieldTypes = getFieldTypes();
 		const root = document.getElementById( 'wek-builder' );

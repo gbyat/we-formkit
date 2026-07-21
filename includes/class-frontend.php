@@ -318,6 +318,7 @@ final class Frontend {
 					'savingProgress'  => __( 'Saving…', 'we-formkit' ),
 					/* translators: %s: email address. */
 					'savedProgress'   => __( 'Progress saved. We sent a resume link to %s.', 'we-formkit' ),
+					'saveUpdated'     => __( 'Progress updated. Use the resume link from your earlier email.', 'we-formkit' ),
 					'saveMailFailed'  => __( 'Progress was saved, but the resume email could not be sent. Please try again or contact the site owner.', 'we-formkit' ),
 					'saveTooEarly'    => __( 'Fill in a few fields before saving your progress.', 'we-formkit' ),
 					'resumeLoaded'    => __( 'Your saved progress was restored.', 'we-formkit' ),
@@ -372,7 +373,9 @@ final class Frontend {
 
 			<form class="we-formkit__form" data-wek-form novalidate>
 				<input type="hidden" name="form_id" value="<?php echo esc_attr( (string) $form_id ); ?>" />
-				<input type="text" name="website_url" value="" class="we-formkit__honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
+				<?php if ( Spam::honeypot_enabled() ) : ?>
+					<input type="text" name="website_url" value="" class="we-formkit__honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
+				<?php endif; ?>
 
 				<?php foreach ( $schema['sections'] as $section ) : ?>
 					<?php

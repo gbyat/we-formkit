@@ -405,6 +405,9 @@ final class Notifications {
 		$header  = self::prepare_rich_part( (string) ( $notification['header'] ?? '' ), $vars );
 		$message = self::prepare_rich_part( (string) ( $notification['message'] ?? '' ), $vars );
 		$footer  = self::prepare_rich_part( (string) ( $notification['footer'] ?? '' ), $vars );
+		if ( '' === trim( wp_strip_all_tags( $footer ) ) ) {
+			$footer = Settings::email_footer_html();
+		}
 
 		$parts = array();
 		if ( '' !== trim( wp_strip_all_tags( $header ) ) ) {

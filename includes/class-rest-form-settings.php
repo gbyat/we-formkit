@@ -217,6 +217,17 @@ final class Rest_Form_Settings {
 			)
 		);
 
+		Drafts::set_enabled( $form_id, ! empty( $params['save_resume'] ) );
+		Drafts::set_ttl_days(
+			$form_id,
+			isset( $params['save_resume_ttl'] ) ? absint( $params['save_resume_ttl'] ) : Drafts::TTL_DAYS
+		);
+		Drafts::set_min_filled(
+			$form_id,
+			isset( $params['save_resume_min'] ) ? absint( $params['save_resume_min'] ) : Drafts::MIN_FILLED
+		);
+		Drafts::set_reminders_allowed( $form_id, ! empty( $params['save_resume_reminders'] ) );
+
 		return true;
 	}
 
@@ -250,29 +261,33 @@ final class Rest_Form_Settings {
 			'secret_url'   => $secret_url,
 			'secret_token' => (string) ( $secret['token'] ?? '' ),
 			'settings'     => array(
-				'title'             => (string) ( $schema['title'] ?? get_the_title( $form_id ) ),
-				'slug'              => (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true ),
-				'intro'             => (string) ( $schema['intro'] ?? '' ),
-				'privacy_url'       => (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true ),
-				'secret_enabled'    => ! empty( $secret['enabled'] ),
-				'style_preset'      => (string) $style['preset'],
-				'colors'            => $colors,
-				'label_weight'      => (string) $appear['label_weight'],
-				'required_mark'     => (string) $appear['required_mark'],
-				'optional_mark'     => (string) $appear['optional_mark'],
-				'inline_validation' => (string) $appear['inline_validation'],
-				'help_placement'    => (string) $appear['help_placement'],
-				'help_style'        => (string) $appear['help_style'],
-				'font_family'       => (string) $appear['font_family'],
-				'spacing'           => (string) $appear['spacing'],
-				'control_padding'   => (string) $appear['control_padding'],
-				'size_section'      => (string) $appear['size_section'],
-				'size_label'        => (string) $appear['size_label'],
-				'size_input'        => (string) $appear['size_input'],
-				'radius_input'      => (string) $appear['radius_input'],
-				'radius_button'     => (string) $appear['radius_button'],
-				'radius_section'    => (string) $appear['radius_section'],
-				'has_custom'        => ! empty( Form_Style::saved_custom_colors( $form_id ) ),
+				'title'                 => (string) ( $schema['title'] ?? get_the_title( $form_id ) ),
+				'slug'                  => (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true ),
+				'intro'                 => (string) ( $schema['intro'] ?? '' ),
+				'privacy_url'           => (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true ),
+				'secret_enabled'        => ! empty( $secret['enabled'] ),
+				'style_preset'          => (string) $style['preset'],
+				'colors'                => $colors,
+				'label_weight'          => (string) $appear['label_weight'],
+				'required_mark'         => (string) $appear['required_mark'],
+				'optional_mark'         => (string) $appear['optional_mark'],
+				'inline_validation'     => (string) $appear['inline_validation'],
+				'help_placement'        => (string) $appear['help_placement'],
+				'help_style'            => (string) $appear['help_style'],
+				'font_family'           => (string) $appear['font_family'],
+				'spacing'               => (string) $appear['spacing'],
+				'control_padding'       => (string) $appear['control_padding'],
+				'size_section'          => (string) $appear['size_section'],
+				'size_label'            => (string) $appear['size_label'],
+				'size_input'            => (string) $appear['size_input'],
+				'radius_input'          => (string) $appear['radius_input'],
+				'radius_button'         => (string) $appear['radius_button'],
+				'radius_section'        => (string) $appear['radius_section'],
+				'has_custom'            => ! empty( Form_Style::saved_custom_colors( $form_id ) ),
+				'save_resume'           => Drafts::is_enabled( $form_id ),
+				'save_resume_ttl'       => Drafts::get_ttl_days( $form_id ),
+				'save_resume_min'       => Drafts::get_min_filled( $form_id ),
+				'save_resume_reminders' => Drafts::reminders_allowed( $form_id ),
 			),
 		);
 	}

@@ -203,6 +203,18 @@ final class Settings_Page {
 						</td>
 					</tr>
 					<tr>
+						<th><label for="wek_email_footer"><?php esc_html_e( 'Email footer', 'we-formkit' ); ?></label></th>
+						<td>
+							<textarea
+								class="large-text"
+								rows="4"
+								name="wek_settings[email_footer]"
+								id="wek_email_footer"
+							><?php echo esc_textarea( (string) ( $settings['email_footer'] ?? '' ) ); ?></textarea>
+							<p class="description"><?php esc_html_e( 'HTML allowed. Appended to Save & Resume emails, and used as the default notification footer when a notification leaves Footer empty (including admin notifications).', 'we-formkit' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th><label for="wek_mail_transport"><?php esc_html_e( 'Transport', 'we-formkit' ); ?></label></th>
 						<td>
 							<?php
@@ -386,6 +398,55 @@ final class Settings_Page {
 						</td>
 					</tr>
 					<tr>
+						<th colspan="2"><h2 class="title" style="margin:1.5rem 0 0;"><?php esc_html_e( 'Spam protection', 'we-formkit' ); ?></h2></th>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Honeypot', 'we-formkit' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="wek_settings[spam_honeypot]" value="1" <?php checked( ! empty( $settings['spam_honeypot'] ) ); ?> />
+								<?php esc_html_e( 'Reject submissions that fill a hidden decoy field', 'we-formkit' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'No captcha and no third-party scripts.', 'we-formkit' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Timing check', 'we-formkit' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="wek_settings[spam_timing]" id="wek_spam_timing" value="1" <?php checked( ! empty( $settings['spam_timing'] ) ); ?> />
+								<?php esc_html_e( 'Reject submissions that are sent too quickly after the page loads', 'we-formkit' ); ?>
+							</label>
+							<p class="description wek-reveal" id="wek-spam-timing-wrap" <?php echo ! empty( $settings['spam_timing'] ) ? '' : 'hidden'; ?>>
+								<label for="wek_spam_timing_min"><?php esc_html_e( 'Minimum seconds', 'we-formkit' ); ?></label>
+								<input class="small-text" type="number" min="1" max="60" name="wek_settings[spam_timing_min]" id="wek_spam_timing_min" value="<?php echo esc_attr( (string) (int) $settings['spam_timing_min'] ); ?>" />
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Rate limit', 'we-formkit' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="wek_settings[spam_rate_limit]" id="wek_spam_rate_limit" value="1" <?php checked( ! empty( $settings['spam_rate_limit'] ) ); ?> />
+								<?php esc_html_e( 'Limit how many submissions one IP can send per hour', 'we-formkit' ); ?>
+							</label>
+							<p class="description wek-reveal" id="wek-spam-rate-wrap" <?php echo ! empty( $settings['spam_rate_limit'] ) ? '' : 'hidden'; ?>>
+								<label for="wek_spam_rate_max"><?php esc_html_e( 'Max submissions per IP / hour', 'we-formkit' ); ?></label>
+								<input class="small-text" type="number" min="1" max="100" name="wek_settings[spam_rate_max]" id="wek_spam_rate_max" value="<?php echo esc_attr( (string) (int) $settings['spam_rate_max'] ); ?>" />
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'IP hash', 'we-formkit' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="wek_settings[spam_store_ip_hash]" value="1" <?php checked( ! empty( $settings['spam_store_ip_hash'] ) ); ?> />
+								<?php esc_html_e( 'Store a salted IP hash on each entry (not the plain IP)', 'we-formkit' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'Useful for abuse handling. Turn off if you prefer not to keep any IP-derived data.', 'we-formkit' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th colspan="2"><h2 class="title" style="margin:1.5rem 0 0;"><?php esc_html_e( 'Validation', 'we-formkit' ); ?></h2></th>
 					</tr>
 					<tr>
@@ -454,8 +515,7 @@ final class Settings_Page {
 			<h2><?php esc_html_e( 'Privacy notes', 'we-formkit' ); ?></h2>
 			<ul class="ul-disc">
 				<li><?php esc_html_e( 'Form submissions are stored in this WordPress site only (no third-party form SaaS).', 'we-formkit' ); ?></li>
-				<li><?php esc_html_e( 'Spam protection uses a honeypot, timing check, and rate limiting — not reCAPTCHA.', 'we-formkit' ); ?></li>
-				<li><?php esc_html_e( 'IP addresses are not stored in plain text; only a salted hash may be kept for abuse handling.', 'we-formkit' ); ?></li>
+				<li><?php esc_html_e( 'Spam protection (honeypot, timing, rate limit) and IP hashing are optional — configure them under Spam protection above. No reCAPTCHA.', 'we-formkit' ); ?></li>
 				<li><?php esc_html_e( 'Embed forms with the Formkit Form block. Optional secret-link tokens limit casual discovery.', 'we-formkit' ); ?></li>
 			</ul>
 		</div>
@@ -470,6 +530,19 @@ final class Settings_Page {
 				mode.addEventListener('change', syncPrivacy);
 				syncPrivacy();
 			}
+
+			function syncReveal(toggleId, wrapId) {
+				var toggle = document.getElementById(toggleId);
+				var reveal = document.getElementById(wrapId);
+				if (!toggle || !reveal) return;
+				function sync() {
+					reveal.hidden = !toggle.checked;
+				}
+				toggle.addEventListener('change', sync);
+				sync();
+			}
+			syncReveal('wek_spam_timing', 'wek-spam-timing-wrap');
+			syncReveal('wek_spam_rate_limit', 'wek-spam-rate-wrap');
 
 			var transport = document.getElementById('wek_mail_transport');
 			var smtpRows = document.querySelectorAll('.wek-mail-smtp-only');

@@ -4,13 +4,27 @@
  * @see https://developer.wordpress.org/news/2026/01/how-to-use-dataform-to-create-plugin-settings-pages/
  */
 import { createRoot, render, useCallback, useMemo, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, Notice, Spinner } from '@wordpress/components';
 import { DataForm } from '@wordpress/dataviews/wp';
 import './style.css';
 
 const boot = window.weFormkitFormSettings || {};
+const DRAFT_TTL_DAYS = Array.isArray( boot.draftTtlDays ) && boot.draftTtlDays.length
+	? boot.draftTtlDays.map( ( day ) => Number( day ) ).filter( ( day ) => day > 0 )
+	: [ 7, 14, 30, 60, 90 ];
+
+function ttlDayElements() {
+	return DRAFT_TTL_DAYS.map( ( days ) => ( {
+		value: String( days ),
+		label: sprintf(
+			/* translators: %d: number of days. */
+			_n( '%d day', '%d days', days, 'we-formkit' ),
+			days
+		),
+	} ) );
+}
 
 const COLOR_ROLES = [
 	{ id: 'color_accent', key: 'accent', label: __( 'Accent', 'we-formkit' ) },
@@ -396,6 +410,15 @@ function flattenSettings( payload ) {
 		radius_input: payload.radius_input || 'md',
 		radius_button: payload.radius_button || 'pill',
 		radius_section: payload.radius_section || 'md',
+		save_resume: !! payload.save_resume,
+		save_resume_ttl: String(
+			payload.save_resume_ttl || DRAFT_TTL_DAYS[ 0 ] || 14
+		),
+		save_resume_min:
+			typeof payload.save_resume_min === 'number'
+				? payload.save_resume_min
+				: Number( payload.save_resume_min ) || 1,
+		save_resume_reminders: !! payload.save_resume_reminders,
 		...colorsFromMap( colors ),
 	};
 }
@@ -426,6 +449,10 @@ function toApiPayload( data ) {
 		radius_input: data.radius_input || 'md',
 		radius_button: data.radius_button || 'pill',
 		radius_section: data.radius_section || 'md',
+		save_resume: !! data.save_resume,
+		save_resume_ttl: Number( data.save_resume_ttl ) || 14,
+		save_resume_min: Math.max( 0, Math.min( 100, Number( data.save_resume_min ) || 0 ) ),
+		save_resume_reminders: !! data.save_resume_reminders,
 		style: {
 			preset: data.style_preset || 'theme',
 			colors,
@@ -506,6 +533,45 @@ function FormSettingsApp() {
 				label: __( 'Require secret token in URL', 'we-formkit' ),
 				type: 'boolean',
 				Edit: 'toggle',
+			},
+			{
+				id: 'save_resume',
+				label: __( 'Enable Save & Resume', 'we-formkit' ),
+				type: 'boolean',
+				Edit: 'toggle',
+				description: __(
+					'Visitors can save progress and continue later via email link.',
+					'we-formkit'
+				),
+			},
+			{
+				id: 'save_resume_ttl',
+				label: __( 'Keep drafts for', 'we-formkit' ),
+				type: 'text',
+				elements: ttlDayElements(),
+				description: __(
+					'How long a resume link stays valid.',
+					'we-formkit'
+				),
+			},
+			{
+				id: 'save_resume_min',
+				label: __( 'Show save after filled fields', 'we-formkit' ),
+				type: 'integer',
+				description: __(
+					'Minimum filled fields before Save progress appears. 0 = always show.',
+					'we-formkit'
+				),
+			},
+			{
+				id: 'save_resume_reminders',
+				label: __( 'Allow calendar reminder', 'we-formkit' ),
+				type: 'boolean',
+				Edit: 'toggle',
+				description: __(
+					'Lets visitors attach an .ics calendar appointment to the resume email. No further reminder emails are sent.',
+					'we-formkit'
+				),
 			},
 			{
 				id: 'label_weight',
@@ -732,9 +798,22 @@ function FormSettingsApp() {
 						'secret_enabled',
 					],
 				},
+				{
+					id: 'save_resume_card',
+					label: __( 'Save & Resume', 'we-formkit' ),
+					layout: { type: 'card', isOpened: true },
+					children: data.save_resume
+						? [
+								'save_resume',
+								'save_resume_ttl',
+								'save_resume_min',
+								'save_resume_reminders',
+						  ]
+						: [ 'save_resume' ],
+				},
 			],
 		} ),
-		[]
+		[ data.save_resume ]
 	);
 
 	const visualForm = useMemo(

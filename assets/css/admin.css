@@ -374,65 +374,10 @@ body.wek-scheme-violet .wek-admin {
 	flex-shrink: 0;
 }
 
-.wek-admin .wek-fields-bar__save-resume {
+.wek-admin .wek-fields-bar__pagination {
 	display: inline-flex;
-	align-items: center;
-	gap: 0.35rem;
-	margin: 0;
-	font-size: 13px;
-	white-space: nowrap;
-}
-
-.wek-admin .wek-fields-bar__save-resume-ttl {
-	display: none;
 	margin: 0;
 	align-items: center;
-}
-
-.wek-admin .wek-fields-bar:has(#wek-save-resume:checked) .wek-fields-bar__save-resume-ttl {
-	display: inline-flex;
-}
-
-.wek-admin .wek-fields-bar__save-resume-ttl select {
-	max-width: 7.5rem;
-}
-
-.wek-admin .wek-fields-bar__save-resume-min {
-	display: none;
-	margin: 0;
-	align-items: center;
-	gap: 0.35rem;
-	font-size: 13px;
-	white-space: nowrap;
-}
-
-.wek-admin .wek-fields-bar:has(#wek-save-resume:checked) .wek-fields-bar__save-resume-min {
-	display: inline-flex;
-}
-
-.wek-admin .wek-fields-bar__save-resume-min input[type='number'] {
-	width: 3.25rem;
-	margin: 0;
-	padding: 0 0.35rem;
-	height: 28px;
-	line-height: 1;
-}
-
-.wek-admin .wek-fields-bar__save-resume-min-unit {
-	color: var(--wek-muted, #646970);
-}
-
-.wek-admin .wek-fields-bar__save-resume-remind {
-	display: none;
-	margin: 0;
-	align-items: center;
-	gap: 0.35rem;
-	font-size: 13px;
-	white-space: nowrap;
-}
-
-.wek-admin .wek-fields-bar:has(#wek-save-resume:checked) .wek-fields-bar__save-resume-remind {
-	display: inline-flex;
 }
 
 .wek-admin .wek-fields-bar__actions .button {

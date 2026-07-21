@@ -725,18 +725,14 @@ final class Form_Editor {
 	 * @return void
 	 */
 	private static function render_view_fields( $form_id, $schema_json, $title, $is_new ) {
-		$forms_url      = admin_url( 'admin.php?page=we-formkit' );
-		$entries_url    = '';
-		$preview_url    = '';
-		$clone_url      = '';
-		$pagination     = 'single';
-		$shortcode      = '';
-		$save_resume    = false;
-		$save_ttl       = Drafts::TTL_DAYS;
-		$save_min       = Drafts::MIN_FILLED;
-		$save_reminders = false;
+		$forms_url   = admin_url( 'admin.php?page=we-formkit' );
+		$entries_url = '';
+		$preview_url = '';
+		$clone_url   = '';
+		$pagination  = 'single';
+		$shortcode   = '';
 		if ( ! $is_new && $form_id > 0 ) {
-			$entries_url    = add_query_arg(
+			$entries_url = add_query_arg(
 				array(
 					'page'    => 'we-formkit-form',
 					'form_id' => $form_id,
@@ -744,21 +740,17 @@ final class Form_Editor {
 				),
 				admin_url( 'admin.php' )
 			);
-			$preview_url    = add_query_arg(
+			$preview_url = add_query_arg(
 				array(
 					'wek_preview' => '1',
 					'form_id'     => $form_id,
 				),
 				home_url( '/' )
 			);
-			$clone_url      = wp_nonce_url( admin_url( 'admin.php?page=we-formkit&wek_clone_form=1&form_id=' . $form_id ), 'wek_clone_form_' . $form_id );
-			$pagination     = Form_Schema::get_pagination( $form_id );
-			$save_resume    = Drafts::is_enabled( $form_id );
-			$save_ttl       = Drafts::get_ttl_days( $form_id );
-			$save_min       = Drafts::get_min_filled( $form_id );
-			$save_reminders = (bool) get_post_meta( $form_id, Drafts::META_REMINDERS, true );
-			$slug           = (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true );
-			$shortcode      = $slug
+			$clone_url   = wp_nonce_url( admin_url( 'admin.php?page=we-formkit&wek_clone_form=1&form_id=' . $form_id ), 'wek_clone_form_' . $form_id );
+			$pagination  = Form_Schema::get_pagination( $form_id );
+			$slug        = (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true );
+			$shortcode   = $slug
 				? sprintf( '[we_formkit slug="%s"]', $slug )
 				: sprintf( '[we_formkit id="%d"]', $form_id );
 		}
@@ -806,50 +798,6 @@ final class Form_Editor {
 					<option value="single" <?php selected( $pagination, 'single' ); ?>><?php esc_html_e( 'Single page', 'we-formkit' ); ?></option>
 					<option value="per_section" <?php selected( $pagination, 'per_section' ); ?>><?php esc_html_e( 'One section per page', 'we-formkit' ); ?></option>
 				</select>
-			</label>
-			<label class="wek-fields-bar__save-resume">
-				<input type="checkbox" name="wek_save_resume" value="1" id="wek-save-resume" <?php checked( $save_resume ); ?> />
-				<?php esc_html_e( 'Save & Resume', 'we-formkit' ); ?>
-			</label>
-			<label class="wek-fields-bar__save-resume-ttl" for="wek-save-resume-ttl">
-				<span class="screen-reader-text"><?php esc_html_e( 'Keep drafts for', 'we-formkit' ); ?></span>
-				<select name="wek_save_resume_ttl" id="wek-save-resume-ttl" <?php disabled( ! $save_resume ); ?>>
-					<?php foreach ( Drafts::allowed_ttl_days() as $days ) : ?>
-						<option value="<?php echo esc_attr( (string) $days ); ?>" <?php selected( $save_ttl, $days ); ?>>
-							<?php
-							echo esc_html(
-								sprintf(
-									/* translators: %d: number of days. */
-									_n( '%d day', '%d days', $days, 'we-formkit' ),
-									$days
-								)
-							);
-							?>
-						</option>
-					<?php endforeach; ?>
-				</select>
-			</label>
-			<label class="wek-fields-bar__save-resume-min" for="wek-save-resume-min">
-				<span><?php esc_html_e( 'Show save after', 'we-formkit' ); ?></span>
-				<input
-					type="number"
-					name="wek_save_resume_min"
-					id="wek-save-resume-min"
-					min="0"
-					max="100"
-					step="1"
-					value="<?php echo esc_attr( (string) $save_min ); ?>"
-					title="<?php esc_attr_e( 'Minimum filled fields before Save progress appears (0 = always)', 'we-formkit' ); ?>"
-					<?php disabled( ! $save_resume ); ?>
-				/>
-				<span class="wek-fields-bar__save-resume-min-unit"><?php esc_html_e( 'fields', 'we-formkit' ); ?></span>
-			</label>
-			<label
-				class="wek-fields-bar__save-resume-remind"
-				title="<?php esc_attr_e( 'Lets visitors attach an .ics calendar file to the resume email (opt-in). No further reminder emails are sent.', 'we-formkit' ); ?>"
-			>
-				<input type="checkbox" name="wek_save_resume_reminders" value="1" id="wek-save-resume-reminders" <?php checked( $save_reminders ); ?> <?php disabled( ! $save_resume ); ?> />
-				<?php esc_html_e( 'Allow calendar reminder', 'we-formkit' ); ?>
 			</label>
 			<div class="wek-fields-bar__actions">
 				<?php if ( $preview_url ) : ?>
@@ -969,29 +917,34 @@ final class Form_Editor {
 				'schemes'       => Form_Style::schemes_for_admin(),
 				'customColors'  => Form_Style::saved_custom_colors( $form_id ),
 				'fontFamilies'  => Form_Style::theme_font_families(),
+				'draftTtlDays'  => Drafts::allowed_ttl_days(),
 				'settings'      => array(
-					'title'             => (string) $title,
-					'slug'              => (string) $slug,
-					'intro'             => (string) ( $schema['intro'] ?? '' ),
-					'privacy_url'       => (string) $privacy,
-					'secret_enabled'    => ! empty( $secret['enabled'] ),
-					'style_preset'      => (string) $style_stored['preset'],
-					'colors'            => $colors,
-					'label_weight'      => (string) $appear['label_weight'],
-					'required_mark'     => (string) $appear['required_mark'],
-					'optional_mark'     => (string) $appear['optional_mark'],
-					'inline_validation' => (string) $appear['inline_validation'],
-					'help_placement'    => (string) $appear['help_placement'],
-					'help_style'        => (string) $appear['help_style'],
-					'font_family'       => (string) $appear['font_family'],
-					'spacing'           => (string) $appear['spacing'],
-					'control_padding'   => (string) $appear['control_padding'],
-					'size_section'      => (string) $appear['size_section'],
-					'size_label'        => (string) $appear['size_label'],
-					'size_input'        => (string) $appear['size_input'],
-					'radius_input'      => (string) $appear['radius_input'],
-					'radius_button'     => (string) $appear['radius_button'],
-					'radius_section'    => (string) $appear['radius_section'],
+					'title'                 => (string) $title,
+					'slug'                  => (string) $slug,
+					'intro'                 => (string) ( $schema['intro'] ?? '' ),
+					'privacy_url'           => (string) $privacy,
+					'secret_enabled'        => ! empty( $secret['enabled'] ),
+					'style_preset'          => (string) $style_stored['preset'],
+					'colors'                => $colors,
+					'label_weight'          => (string) $appear['label_weight'],
+					'required_mark'         => (string) $appear['required_mark'],
+					'optional_mark'         => (string) $appear['optional_mark'],
+					'inline_validation'     => (string) $appear['inline_validation'],
+					'help_placement'        => (string) $appear['help_placement'],
+					'help_style'            => (string) $appear['help_style'],
+					'font_family'           => (string) $appear['font_family'],
+					'spacing'               => (string) $appear['spacing'],
+					'control_padding'       => (string) $appear['control_padding'],
+					'size_section'          => (string) $appear['size_section'],
+					'size_label'            => (string) $appear['size_label'],
+					'size_input'            => (string) $appear['size_input'],
+					'radius_input'          => (string) $appear['radius_input'],
+					'radius_button'         => (string) $appear['radius_button'],
+					'radius_section'        => (string) $appear['radius_section'],
+					'save_resume'           => $form_id > 0 && Drafts::is_enabled( $form_id ),
+					'save_resume_ttl'       => $form_id > 0 ? Drafts::get_ttl_days( $form_id ) : Drafts::TTL_DAYS,
+					'save_resume_min'       => $form_id > 0 ? Drafts::get_min_filled( $form_id ) : Drafts::MIN_FILLED,
+					'save_resume_reminders' => $form_id > 0 && Drafts::reminders_allowed( $form_id ),
 				),
 			)
 		);
@@ -2157,19 +2110,6 @@ final class Form_Editor {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$pagination = isset( $_POST['wek_pagination'] ) ? sanitize_key( wp_unslash( (string) $_POST['wek_pagination'] ) ) : 'single';
 		Form_Schema::set_pagination( $form_id, $pagination );
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		Drafts::set_enabled( $form_id, ! empty( $_POST['wek_save_resume'] ) );
-		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		Drafts::set_ttl_days(
-			$form_id,
-			isset( $_POST['wek_save_resume_ttl'] ) ? absint( wp_unslash( $_POST['wek_save_resume_ttl'] ) ) : Drafts::TTL_DAYS
-		);
-		Drafts::set_min_filled(
-			$form_id,
-			isset( $_POST['wek_save_resume_min'] ) ? absint( wp_unslash( $_POST['wek_save_resume_min'] ) ) : Drafts::MIN_FILLED
-		);
-		Drafts::set_reminders_allowed( $form_id, ! empty( $_POST['wek_save_resume_reminders'] ) );
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		Form_Schema::set_submit_button(

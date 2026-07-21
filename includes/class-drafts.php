@@ -24,6 +24,10 @@ final class Drafts {
 	public const CRON_HOOK       = 'we_formkit_drafts_cleanup';
 	public const TTL_DAYS        = 14;
 	public const MIN_FILLED      = 1;
+	/** Default seconds between resume emails (same email + form + IP). */
+	public const MAIL_COOLDOWN = 300;
+	/** Soft cap for drafts stored in the options table. */
+	public const MAX_STORE = 200;
 
 	/**
 	 * Days before expiry to send an opt-in reminder (default when user does not pick).
@@ -162,6 +166,36 @@ final class Drafts {
 		sort( $out, SORT_NUMERIC );
 
 		return ! empty( $out ) ? $out : array( self::TTL_DAYS );
+	}
+
+	/**
+	 * Seconds between resume emails for the same email + form + IP.
+	 *
+	 * @return int
+	 */
+	public static function mail_cooldown_seconds() {
+		/**
+		 * Filter resume-mail cooldown in seconds.
+		 *
+		 * @param int $seconds Cooldown length (clamped 30–3600).
+		 */
+		$seconds = (int) apply_filters( 'we_formkit_draft_mail_cooldown', self::MAIL_COOLDOWN );
+		return max( 30, min( HOUR_IN_SECONDS, $seconds ) );
+	}
+
+	/**
+	 * Maximum drafts kept in the option store.
+	 *
+	 * @return int
+	 */
+	public static function max_store() {
+		/**
+		 * Filter maximum number of Save & Resume drafts in storage.
+		 *
+		 * @param int $max Soft cap (clamped 20–5000).
+		 */
+		$max = (int) apply_filters( 'we_formkit_draft_max_store', self::MAX_STORE );
+		return max( 20, min( 5000, $max ) );
 	}
 
 	/**
@@ -421,16 +455,16 @@ final class Drafts {
 			);
 		}
 
-		$rate_key = 'wek_draft_mail_' . md5( strtolower( $email ) . '|' . (string) $form_id . '|' . self::client_ip() );
-		if ( get_transient( $rate_key ) ) {
-			return new \WP_Error(
-				'we_formkit_draft_rate',
-				__( 'Please wait a moment before requesting another resume email.', 'we-formkit' ),
-				array( 'status' => 429 )
-			);
-		}
+		$all = self::all();
+		self::prune_expired( $all );
 
 		$token = isset( $params['token'] ) ? preg_replace( '/[^a-zA-Z0-9]/', '', (string) $params['token'] ) : '';
+		if ( '' !== $token && ( empty( $all[ $token ] ) || ! is_array( $all[ $token ] ) || (int) ( $all[ $token ]['form_id'] ?? 0 ) !== $form_id ) ) {
+			$token = '';
+		}
+		if ( '' === $token ) {
+			$token = self::find_token_for_email( $all, $form_id, $email );
+		}
 		if ( '' === $token ) {
 			$token = wp_generate_password( 32, false, false );
 		}
@@ -460,38 +494,49 @@ final class Drafts {
 			'remind_at'   => $remind ? self::compute_remind_at( $expires, $updated, $ttl_days, $lead ) : 0,
 		);
 
-		$all           = self::all();
 		$all[ $token ] = $payload;
+		self::prune_siblings( $all, $form_id, $email, $token );
+		self::cap_store( $all, $token );
 		update_option( self::OPTION_KEY, $all, false );
 
-		$resume_url = add_query_arg(
-			array(
-				'wek_resume' => $token,
-			),
-			$page_url
-		);
+		$rate_key     = self::mail_rate_key( $email, $form_id );
+		$mail_blocked = (bool) get_transient( $rate_key );
+		$email_sent   = false;
+		$email_skip   = false;
 
-		$sent = self::send_resume_email(
-			$form_id,
-			$email,
-			$resume_url,
-			$expires,
-			$ttl_days,
-			$remind ? $lead : 0
-		);
-		if ( $sent ) {
-			set_transient( $rate_key, 1, MINUTE_IN_SECONDS );
+		if ( $mail_blocked ) {
+			$email_skip = true;
+		} else {
+			$resume_url = add_query_arg(
+				array(
+					'wek_resume' => $token,
+				),
+				$page_url
+			);
+			$email_sent = self::send_resume_email(
+				$form_id,
+				$email,
+				$resume_url,
+				$expires,
+				$ttl_days,
+				$remind ? $lead : 0
+			);
+			if ( $email_sent ) {
+				set_transient( $rate_key, 1, self::mail_cooldown_seconds() );
+			}
 		}
 
 		return rest_ensure_response(
 			array(
-				'success'     => true,
-				'email'       => $email,
-				'email_sent'  => $sent,
-				'expires'     => $expires,
-				'ttl_days'    => $ttl_days,
-				'remind'      => $remind,
-				'remind_lead' => $remind ? $lead : 0,
+				'success'       => true,
+				'token'         => $token,
+				'email'         => $email,
+				'email_sent'    => $email_sent,
+				'email_skipped' => $email_skip,
+				'expires'       => $expires,
+				'ttl_days'      => $ttl_days,
+				'remind'        => $remind,
+				'remind_lead'   => $remind ? $lead : 0,
 				// Intentionally omit resume_url — the link is only delivered by email.
 			)
 		);
@@ -557,6 +602,7 @@ final class Drafts {
 			$body    .= '<p>' . esc_html( sprintf( $cal_note, $remind_lead ) ) . '</p>';
 		}
 		$body .= '<p>' . esc_html__( 'If you did not request this, you can ignore this email.', 'we-formkit' ) . '</p>';
+		$body .= Settings::email_footer_block();
 		$body .= '</body></html>';
 
 		$headers    = array( 'Content-Type: text/html; charset=UTF-8' );
@@ -648,18 +694,25 @@ final class Drafts {
 			$resume_url
 		);
 
-		$uid     = sprintf( 'wek-resume-%d-%s@%s', (int) $form_id, wp_generate_password( 12, false, false ), wp_parse_url( home_url(), PHP_URL_HOST ) );
+		$host = wp_parse_url( home_url(), PHP_URL_HOST );
+		if ( ! is_string( $host ) || '' === $host ) {
+			$host = 'localhost';
+		}
+		$uid     = sprintf( 'wek-resume-%d-%s@%s', (int) $form_id, wp_generate_password( 12, false, false ), $host );
 		$stamp   = gmdate( 'Ymd\THis\Z' );
 		$start   = gmdate( 'Ymd\THis\Z', $event_at );
 		$end     = gmdate( 'Ymd\THis\Z', $event_at + ( 30 * MINUTE_IN_SECONDS ) );
 		$exp_txt = gmdate( 'Y-m-d H:i', $expires ) . ' UTC';
+		$from    = Settings::default_from_email();
+		$org     = is_email( $from ) ? $from : ( 'noreply@' . $host );
 
+		// No METHOD:PUBLISH — Outlook treats that as “subscribe to internet calendar”.
+		// A plain VEVENT opens as a single appointment the user can save.
 		$lines = array(
 			'BEGIN:VCALENDAR',
 			'VERSION:2.0',
 			'PRODID:-//WE Formkit//EN',
 			'CALSCALE:GREGORIAN',
-			'METHOD:PUBLISH',
 			'BEGIN:VEVENT',
 			'UID:' . self::ics_escape_text( (string) $uid ),
 			'DTSTAMP:' . $stamp,
@@ -674,12 +727,17 @@ final class Drafts {
 				)
 			),
 			'URL:' . self::ics_escape_text( $resume_url ),
+			'ORGANIZER;CN=' . self::ics_escape_text( Settings::default_from_name() ) . ':mailto:' . self::ics_escape_text( $org ),
+			'STATUS:CONFIRMED',
+			'TRANSP:OPAQUE',
+			'SEQUENCE:0',
+			'CLASS:PUBLIC',
 			'END:VEVENT',
 			'END:VCALENDAR',
 		);
 
 		$content = implode( "\r\n", $lines ) . "\r\n";
-		$ics     = trailingslashit( get_temp_dir() ) . 'wek-resume-' . wp_generate_password( 12, false, false ) . '.ics';
+		$ics     = trailingslashit( get_temp_dir() ) . 'formkit-reminder-' . wp_generate_password( 8, false, false ) . '.ics';
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- temp attachment for wp_mail.
 		if ( false === file_put_contents( $ics, $content ) ) {
 			return '';
@@ -740,7 +798,151 @@ final class Drafts {
 	}
 
 	/**
-	 * Daily cron: remove expired drafts.
+	 * @param string $email   Email.
+	 * @param int    $form_id Form ID.
+	 * @return string
+	 */
+	private static function mail_rate_key( $email, $form_id ) {
+		return 'wek_draft_mail_' . md5( strtolower( (string) $email ) . '|' . (string) (int) $form_id . '|' . self::client_ip() );
+	}
+
+	/**
+	 * @param array<string, array<string, mixed>> $all     Drafts by token.
+	 * @param int                                 $form_id Form ID.
+	 * @param string                              $email   Email.
+	 * @return string Token or empty.
+	 */
+	private static function find_token_for_email( array $all, $form_id, $email ) {
+		$form_id = (int) $form_id;
+		$needle  = strtolower( (string) $email );
+		$best    = '';
+		$best_ts = 0;
+		foreach ( $all as $token => $draft ) {
+			if ( ! is_array( $draft ) ) {
+				continue;
+			}
+			if ( (int) ( $draft['form_id'] ?? 0 ) !== $form_id ) {
+				continue;
+			}
+			if ( strtolower( (string) ( $draft['email'] ?? '' ) ) !== $needle ) {
+				continue;
+			}
+			$ts = (int) ( $draft['updated'] ?? 0 );
+			if ( $ts >= $best_ts ) {
+				$best_ts = $ts;
+				$best    = (string) $token;
+			}
+		}
+		return $best;
+	}
+
+	/**
+	 * @param array<string, array<string, mixed>> $all Drafts by token (by ref).
+	 * @return void
+	 */
+	private static function prune_expired( array &$all ) {
+		$now = time();
+		foreach ( $all as $token => $draft ) {
+			if ( ! is_array( $draft ) || empty( $draft['expires'] ) || (int) $draft['expires'] < $now ) {
+				unset( $all[ $token ] );
+			}
+		}
+	}
+
+	/**
+	 * Keep a single active draft per form + email.
+	 *
+	 * @param array<string, array<string, mixed>> $all        Drafts by token (by ref).
+	 * @param int                                 $form_id    Form ID.
+	 * @param string                              $email      Email.
+	 * @param string                              $keep_token Token to keep.
+	 * @return void
+	 */
+	private static function prune_siblings( array &$all, $form_id, $email, $keep_token ) {
+		$form_id = (int) $form_id;
+		$needle  = strtolower( (string) $email );
+		foreach ( $all as $token => $draft ) {
+			if ( (string) $token === (string) $keep_token || ! is_array( $draft ) ) {
+				continue;
+			}
+			if ( (int) ( $draft['form_id'] ?? 0 ) !== $form_id ) {
+				continue;
+			}
+			if ( strtolower( (string) ( $draft['email'] ?? '' ) ) !== $needle ) {
+				continue;
+			}
+			unset( $all[ $token ] );
+		}
+	}
+
+	/**
+	 * Drop oldest drafts when over the soft cap.
+	 *
+	 * @param array<string, array<string, mixed>> $all        Drafts by token (by ref).
+	 * @param string                              $keep_token Token that must survive.
+	 * @return void
+	 */
+	private static function cap_store( array &$all, $keep_token = '' ) {
+		$max = self::max_store();
+		if ( count( $all ) <= $max ) {
+			return;
+		}
+
+		$ranked = array();
+		foreach ( $all as $token => $draft ) {
+			$ranked[ (string) $token ] = is_array( $draft ) ? (int) ( $draft['updated'] ?? 0 ) : 0;
+		}
+		asort( $ranked, SORT_NUMERIC );
+
+		foreach ( array_keys( $ranked ) as $token ) {
+			if ( count( $all ) <= $max ) {
+				break;
+			}
+			if ( '' !== $keep_token && (string) $token === (string) $keep_token ) {
+				continue;
+			}
+			unset( $all[ $token ] );
+		}
+	}
+
+	/**
+	 * Collapse duplicate form+email drafts to the newest token.
+	 *
+	 * @param array<string, array<string, mixed>> $all Drafts by token (by ref).
+	 * @return void
+	 */
+	private static function prune_duplicate_emails( array &$all ) {
+		/** @var array<string, array{token:string,updated:int}> $newest */
+		$newest = array();
+		foreach ( $all as $token => $draft ) {
+			if ( ! is_array( $draft ) ) {
+				continue;
+			}
+			$form_id = (int) ( $draft['form_id'] ?? 0 );
+			$email   = strtolower( (string) ( $draft['email'] ?? '' ) );
+			if ( $form_id <= 0 || '' === $email ) {
+				continue;
+			}
+			$key = $form_id . '|' . $email;
+			$ts  = (int) ( $draft['updated'] ?? 0 );
+			if ( empty( $newest[ $key ] ) || $ts >= (int) $newest[ $key ]['updated'] ) {
+				$newest[ $key ] = array(
+					'token'   => (string) $token,
+					'updated' => $ts,
+				);
+			}
+		}
+		foreach ( $newest as $key => $row ) {
+			$parts = explode( '|', $key, 2 );
+			if ( 2 !== count( $parts ) ) {
+				continue;
+			}
+			self::prune_siblings( $all, (int) $parts[0], $parts[1], $row['token'] );
+		}
+	}
+
+	/**
+	 * Daily cron: remove expired / duplicate / excess drafts.
 	 *
 	 * @return void
 	 */
@@ -752,16 +954,12 @@ final class Drafts {
 	 * @return void
 	 */
 	public static function cleanup() {
-		$all     = self::all();
-		$now     = time();
-		$changed = false;
-		foreach ( $all as $token => $draft ) {
-			if ( ! is_array( $draft ) || empty( $draft['expires'] ) || (int) $draft['expires'] < $now ) {
-				unset( $all[ $token ] );
-				$changed = true;
-			}
-		}
-		if ( $changed ) {
+		$all    = self::all();
+		$before = $all;
+		self::prune_expired( $all );
+		self::prune_duplicate_emails( $all );
+		self::cap_store( $all );
+		if ( $all !== $before ) {
 			update_option( self::OPTION_KEY, $all, false );
 		}
 	}

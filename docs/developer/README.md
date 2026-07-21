@@ -55,6 +55,8 @@ add_action(
 | `we_formkit_draft_ttl_days` | Allowed Save & Resume TTL options (days) for builder UI + validation `( $days )` — default `7,14,30,60,90`; clamped 1–365 |
 | `we_formkit_form_draft_ttl_days` | Effective TTL for one form after stored meta `( $days, $form_id )` |
 | `we_formkit_form_save_min_filled` | Minimum filled fields before Save unlocks `( $min, $form_id )` — `0` = always |
+| `we_formkit_draft_mail_cooldown` | Seconds between resume emails for same email+form+IP `( $seconds )` — default `300`; clamped 30–3600 |
+| `we_formkit_draft_max_store` | Soft cap for drafts in the options store `( $max )` — default `200`; clamped 20–5000 |
 | `we_formkit_draft_reminder_lead_days` | Default days before expiry for opt-in calendar reminder `( $lead, $ttl_days )` |
 | `we_formkit_draft_reminder_lead_options` | Dropdown choices for days before expiry `( $days, $ttl_days )` |
 | `we_formkit_form_reminders_allowed` | Whether calendar (.ics) opt-in is allowed `( $allowed, $form_id )` |

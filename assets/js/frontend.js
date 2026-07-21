@@ -1199,6 +1199,14 @@
 		const i18n = cfg.i18n || {};
 		const minFilled = Math.max( 0, parseInt( cfg.saveMinFilled, 10 ) || 0 );
 		const SKIP_TYPES = { html: true, hidden: true };
+		const formId = parseInt( root.getAttribute( 'data-form-id' ) || cfg.formId || 0, 10 ) || 0;
+		const draftStorageKey = 'wek_draft_token_' + String( formId );
+		let draftToken = '';
+		try {
+			draftToken = String( window.sessionStorage.getItem( draftStorageKey ) || '' );
+		} catch ( err ) {
+			draftToken = '';
+		}
 
 		function fieldIsFilled( fieldEl ) {
 			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
@@ -1414,8 +1422,9 @@
 					},
 					body: JSON.stringify( {
 						nonce: cfg.nonce,
-						form_id: cfg.formId,
+						form_id: formId || cfg.formId,
 						email: email,
+						token: draftToken || undefined,
 						values: values,
 						page_index: pageIndex,
 						page_url: window.location.href.split( '#' )[ 0 ],
@@ -1435,11 +1444,26 @@
 						btn.textContent = prevLabel;
 						const data = result.data || {};
 						if ( result.ok && data.success ) {
+							if ( data.token ) {
+								draftToken = String( data.token );
+								try {
+									window.sessionStorage.setItem( draftStorageKey, draftToken );
+								} catch ( err ) {
+									// Ignore quota / private mode.
+								}
+							}
 							if ( data.email_sent ) {
 								const tpl =
 									i18n.savedProgress ||
 									'Progress saved. We sent a resume link to %s.';
 								setStatus( root, tpl.replace( '%s', email ), false );
+							} else if ( data.email_skipped ) {
+								setStatus(
+									root,
+									i18n.saveUpdated ||
+										'Progress updated. Use the resume link from your earlier email.',
+									false
+								);
 							} else {
 								setStatus(
 									root,
@@ -1483,6 +1507,12 @@
 				.then( function ( result ) {
 					if ( ! result.ok || ! result.data ) {
 						return;
+					}
+					draftToken = String( resume );
+					try {
+						window.sessionStorage.setItem( draftStorageKey, draftToken );
+					} catch ( err ) {
+						// Ignore quota / private mode.
 					}
 					fillValues( result.data.values );
 					if ( typeof result.data.page_index === 'number' && result.data.page_index > 0 ) {
