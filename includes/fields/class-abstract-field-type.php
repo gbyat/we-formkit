@@ -206,6 +206,27 @@ abstract class Abstract_Field_Type {
 	}
 
 	/**
+	 * Run the shared format filter after a field type (or caller) produced display HTML/text.
+	 *
+	 * @param string               $display Formatted value.
+	 * @param mixed                $value   Raw stored value.
+	 * @param array<string, mixed> $field   Field config.
+	 * @param string               $context `display` | `email` | `export` | `admin`.
+	 * @return string
+	 */
+	public static function apply_format_filter( $display, $value, array $field, $context = 'display' ) {
+		/**
+		 * Filter a formatted field value for display, email, export, or admin.
+		 *
+		 * @param string               $display Formatted string (may contain safe HTML depending on context).
+		 * @param mixed                $value   Raw value.
+		 * @param array<string, mixed> $field   Field config.
+		 * @param string               $context Context key.
+		 */
+		return (string) apply_filters( 'we_formkit_format_field_value', (string) $display, $value, $field, (string) $context );
+	}
+
+	/**
 	 * HTML attributes for frontend rendering (type, min, max, etc.).
 	 *
 	 * @param array<string, mixed> $field Field configuration.

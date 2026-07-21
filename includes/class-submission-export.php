@@ -210,16 +210,20 @@ final class Submission_Export {
 			if ( $type_obj ) {
 				$display = $type_obj->format_for_display( $value, $field );
 				if ( is_string( $display ) && '' !== $display ) {
-					return $display;
+					return \Webentwicklerin\WeFormkit\Fields\Abstract_Field_Type::apply_format_filter( $display, $value, $field, 'display' );
 				}
 			}
 		}
 
+		$raw = $value;
 		if ( is_array( $value ) ) {
-			$value = array_filter( array_map( 'strval', $value ) );
-			return esc_html( implode( ', ', $value ) );
+			$value   = array_filter( array_map( 'strval', $value ) );
+			$display = esc_html( implode( ', ', $value ) );
+		} else {
+			$display = esc_html( trim( (string) $value ) );
 		}
-		return esc_html( trim( (string) $value ) );
+
+		return \Webentwicklerin\WeFormkit\Fields\Abstract_Field_Type::apply_format_filter( $display, $raw, $field, 'display' );
 	}
 
 	/**

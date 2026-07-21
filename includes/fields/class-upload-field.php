@@ -273,7 +273,15 @@ class Upload_Field extends Abstract_Field_Type {
 	public function get_allowed_mime_types( array $field ): array {
 		$raw = (string) ( $field['type_options']['allowed_mime_types'] ?? '' );
 		if ( '' === $raw ) {
-			return array_values( get_allowed_mime_types() );
+			$out = array_values( get_allowed_mime_types() );
+			/**
+			 * Filter allowed MIME types for an upload field.
+			 *
+			 * @param array<int, string>   $out   MIME list.
+			 * @param array<string, mixed> $field Field config.
+			 */
+			$filtered = apply_filters( 'we_formkit_upload_allowed_mimes', $out, $field );
+			return is_array( $filtered ) ? array_values( array_filter( array_map( 'strval', $filtered ) ) ) : $out;
 		}
 
 		$tokens = array_values(
@@ -311,8 +319,17 @@ class Upload_Field extends Abstract_Field_Type {
 		}
 
 		$resolved = array_values( array_unique( array_filter( $resolved ) ) );
+		$out      = ! empty( $resolved ) ? $resolved : array_values( get_allowed_mime_types() );
 
-		return ! empty( $resolved ) ? $resolved : array_values( get_allowed_mime_types() );
+		/**
+		 * Filter allowed MIME types for an upload field.
+		 *
+		 * @param array<int, string>   $out   MIME list.
+		 * @param array<string, mixed> $field Field config.
+		 */
+		$filtered = apply_filters( 'we_formkit_upload_allowed_mimes', $out, $field );
+
+		return is_array( $filtered ) ? array_values( array_filter( array_map( 'strval', $filtered ) ) ) : $out;
 	}
 
 	/**

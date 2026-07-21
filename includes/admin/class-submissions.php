@@ -1021,7 +1021,7 @@ final class Submissions {
 			if ( $type_obj ) {
 				$display = $type_obj->format_for_display( $value, $field );
 				if ( is_string( $display ) && '' !== $display ) {
-					return $display;
+					return \Webentwicklerin\WeFormkit\Fields\Abstract_Field_Type::apply_format_filter( $display, $value, $field, 'admin' );
 				}
 			}
 		}
@@ -1035,12 +1035,15 @@ final class Submissions {
 					$flat[] = (string) $item;
 				}
 			}
-			return esc_html( implode( ', ', $flat ) );
+			$display = esc_html( implode( ', ', $flat ) );
+		} elseif ( null === $value || '' === $value ) {
+			$display = '—';
+		} else {
+			$display = esc_html( (string) $value );
 		}
-		if ( null === $value || '' === $value ) {
-			return '—';
-		}
-		return esc_html( (string) $value );
+
+		$field_cfg = is_array( $field ) ? $field : array();
+		return \Webentwicklerin\WeFormkit\Fields\Abstract_Field_Type::apply_format_filter( $display, $value, $field_cfg, 'admin' );
 	}
 
 	/**

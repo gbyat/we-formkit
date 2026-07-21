@@ -15,6 +15,7 @@ use Webentwicklerin\WeFormkit\Form_Info_Documents;
 use Webentwicklerin\WeFormkit\Form_Notifications;
 use Webentwicklerin\WeFormkit\Form_Schema;
 use Webentwicklerin\WeFormkit\Form_Style;
+use Webentwicklerin\WeFormkit\Merge_Tags;
 use Webentwicklerin\WeFormkit\Plugin;
 use Webentwicklerin\WeFormkit\Post_Types;
 use Webentwicklerin\WeFormkit\Settings;
@@ -647,6 +648,13 @@ final class Form_Editor {
 				$schema,
 				$secret_url,
 				'design' === $view ? 'design' : 'general'
+			);
+		}
+
+		if ( in_array( $view, array( 'notifications', 'confirmations' ), true ) ) {
+			self::enqueue_smart_tags_assets(
+				is_array( $schema ) ? $schema : array(),
+				'confirmations' === $view ? 'confirmation' : 'email'
 			);
 		}
 
@@ -1296,6 +1304,92 @@ final class Form_Editor {
 	}
 
 	/**
+	 * Enqueue smart-tag picker assets.
+	 *
+	 * @param array<string, mixed> $schema  Schema.
+	 * @param string               $context `email` or `confirmation`.
+	 * @return void
+	 */
+	private static function enqueue_smart_tags_assets( array $schema, $context = 'email' ) {
+		wp_enqueue_script(
+			'we-formkit-admin-smart-tags',
+			WE_FORMKIT_URL . 'assets/js/admin-smart-tags.js',
+			array(),
+			WE_FORMKIT_VERSION,
+			true
+		);
+		wp_localize_script(
+			'we-formkit-admin-smart-tags',
+			'weFormkitSmartTags',
+			array(
+				'i18n' => array(
+					'insert' => __( 'Insert smart tag', 'we-formkit' ),
+				),
+			)
+		);
+		unset( $schema, $context );
+	}
+
+	/**
+	 * Render a smart-tag insert control for an input / textarea / TinyMCE id.
+	 *
+	 * @param string               $target_id Target field or editor id.
+	 * @param string               $mode      `input`, `textarea`, or `tinymce`.
+	 * @param array<string, mixed> $schema    Schema for field tags.
+	 * @param string               $context   `email` or `confirmation`.
+	 * @return void
+	 */
+	private static function render_smart_tag_picker( $target_id, $mode, array $schema, $context = 'email' ) {
+		$catalog = Merge_Tags::catalog( $schema, $context );
+		if ( empty( $catalog ) ) {
+			return;
+		}
+
+		$groups = array();
+		foreach ( $catalog as $item ) {
+			$group = isset( $item['group'] ) ? (string) $item['group'] : 'other';
+			if ( ! isset( $groups[ $group ] ) ) {
+				$groups[ $group ] = array(
+					'label' => isset( $item['group_label'] ) ? (string) $item['group_label'] : $group,
+					'items' => array(),
+				);
+			}
+			$groups[ $group ]['items'][] = $item;
+		}
+
+		$uid = 'wek-st-' . sanitize_html_class( (string) $target_id );
+		?>
+		<div
+			class="wek-smart-tags"
+			data-wek-smart-tags
+			data-target="<?php echo esc_attr( (string) $target_id ); ?>"
+			data-mode="<?php echo esc_attr( (string) $mode ); ?>"
+			id="<?php echo esc_attr( $uid ); ?>"
+		>
+			<button type="button" class="button button-small wek-smart-tags__toggle" aria-expanded="false" aria-controls="<?php echo esc_attr( $uid ); ?>-panel">
+				<?php esc_html_e( 'Insert smart tag', 'we-formkit' ); ?>
+			</button>
+			<div class="wek-smart-tags__panel" id="<?php echo esc_attr( $uid ); ?>-panel" hidden>
+				<?php foreach ( $groups as $group ) : ?>
+					<div class="wek-smart-tags__group">
+						<span class="wek-smart-tags__group-title"><?php echo esc_html( (string) $group['label'] ); ?></span>
+						<ul class="wek-smart-tags__list">
+							<?php foreach ( $group['items'] as $item ) : ?>
+								<li>
+									<button type="button" data-wek-tag="<?php echo esc_attr( (string) $item['tag'] ); ?>" title="<?php echo esc_attr( (string) $item['tag'] ); ?>">
+										<?php echo esc_html( (string) $item['label'] ); ?>
+									</button>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
 	 * @param array<string, mixed> $n       Notification.
 	 * @param array<string, mixed> $schema  Schema.
 	 * @param string               $prefix  Input name prefix.
@@ -1395,7 +1489,10 @@ final class Form_Editor {
 			</tr>
 			<tr>
 				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_subject"><?php esc_html_e( 'Subject', 'we-formkit' ); ?></label></th>
-				<td><input class="large-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[subject]" id="wek_n_<?php echo esc_attr( $nid ); ?>_subject" value="<?php echo esc_attr( (string) $n['subject'] ); ?>" /></td>
+				<td>
+					<input class="large-text" type="text" name="<?php echo esc_attr( $prefix ); ?>[subject]" id="wek_n_<?php echo esc_attr( $nid ); ?>_subject" value="<?php echo esc_attr( (string) $n['subject'] ); ?>" />
+					<?php self::render_smart_tag_picker( 'wek_n_' . $nid . '_subject', 'input', $schema, 'email' ); ?>
+				</td>
 			</tr>
 			<tr>
 				<th><label for="wek_n_<?php echo esc_attr( $nid ); ?>_header"><?php esc_html_e( 'Header', 'we-formkit' ); ?></label></th>
@@ -1407,6 +1504,7 @@ final class Form_Editor {
 						Form_Notifications::editor_content( (string) ( $n['header'] ?? '' ) ),
 						6
 					);
+					self::render_smart_tag_picker( 'wek_n_' . $nid . '_header', 'tinymce', $schema, 'email' );
 					?>
 					<p class="description"><?php esc_html_e( 'Shown above the message (logo text, greeting). Supports merge tags. Formatting is kept in the email.', 'we-formkit' ); ?></p>
 				</td>
@@ -1421,6 +1519,7 @@ final class Form_Editor {
 						Form_Notifications::editor_content( (string) $n['message'] ),
 						14
 					);
+					self::render_smart_tag_picker( 'wek_n_' . $nid . '_message', 'tinymce', $schema, 'email' );
 					?>
 					<p class="description">
 						<?php
@@ -1480,6 +1579,7 @@ final class Form_Editor {
 						Form_Notifications::editor_content( (string) $n['footer'] ),
 						8
 					);
+					self::render_smart_tag_picker( 'wek_n_' . $nid . '_footer', 'tinymce', $schema, 'email' );
 					?>
 					<p class="description"><?php esc_html_e( 'Shown below the message (signature, legal line, contact). Supports merge tags and formatting.', 'we-formkit' ); ?></p>
 				</td>
@@ -2058,6 +2158,10 @@ final class Form_Editor {
 		$redirect    = isset( $confirm['redirect_url'] ) ? (string) $confirm['redirect_url'] : '';
 		$page_id     = isset( $confirm['page_id'] ) ? (int) $confirm['page_id'] : 0;
 		$placeholder = __( 'Thank you. Your form was submitted successfully.', 'we-formkit' );
+		$schema      = $form_id > 0 ? Form_Schema::get( $form_id ) : self::blank_schema();
+		if ( ! is_array( $schema ) ) {
+			$schema = self::blank_schema();
+		}
 		?>
 	<form method="post" class="wek-admin__settings-panel" id="wek-confirmations-form">
 		<?php wp_nonce_field( 'we_formkit_save_form', 'we_formkit_save_nonce' ); ?>
@@ -2079,13 +2183,16 @@ final class Form_Editor {
 				<th><label for="wek_confirmation_message"><?php esc_html_e( 'Confirmation message', 'we-formkit' ); ?></label></th>
 				<td>
 					<textarea class="large-text" rows="4" name="wek_confirmation_message" id="wek_confirmation_message" placeholder="<?php echo esc_attr( $placeholder ); ?>"><?php echo esc_textarea( $message ); ?></textarea>
-					<p class="description"><?php esc_html_e( 'Shown on the page after a successful submission. Leave empty to use the default message.', 'we-formkit' ); ?></p>
+					<?php self::render_smart_tag_picker( 'wek_confirmation_message', 'textarea', $schema, 'confirmation' ); ?>
+					<p class="description"><?php esc_html_e( 'Shown on the page after a successful submission. Leave empty to use the default message. Smart tags are replaced on submit.', 'we-formkit' ); ?></p>
 				</td>
 			</tr>
 			<tr class="wek-confirm-row wek-confirm-row--redirect">
 				<th><label for="wek_confirmation_redirect"><?php esc_html_e( 'Redirect URL', 'we-formkit' ); ?></label></th>
 				<td>
-					<input type="url" class="large-text" name="wek_confirmation_redirect" id="wek_confirmation_redirect" value="<?php echo esc_attr( $redirect ); ?>" placeholder="https://" />
+					<input type="text" class="large-text" name="wek_confirmation_redirect" id="wek_confirmation_redirect" value="<?php echo esc_attr( $redirect ); ?>" placeholder="https://" autocomplete="off" />
+					<?php self::render_smart_tag_picker( 'wek_confirmation_redirect', 'input', $schema, 'confirmation' ); ?>
+					<p class="description"><?php esc_html_e( 'Smart tags in the URL are replaced on submit (use with care).', 'we-formkit' ); ?></p>
 				</td>
 			</tr>
 			<tr class="wek-confirm-row wek-confirm-row--page">

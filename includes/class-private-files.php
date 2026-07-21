@@ -31,7 +31,26 @@ final class Private_Files {
 			return '';
 		}
 
-		$base = trailingslashit( $upload['basedir'] ) . sanitize_file_name( (string) $subdir );
+		$safe_subdir = sanitize_file_name( (string) $subdir );
+
+		/**
+		 * Filter the absolute base directory for private Formkit file storage.
+		 *
+		 * Default: `{uploads}/{subdir}`. Return empty string to signal failure.
+		 *
+		 * @param string $path   Absolute path (no trailing slash required).
+		 * @param string $subdir Relative subdir (uploads or signatures).
+		 */
+		$base = apply_filters(
+			'we_formkit_private_storage_dir',
+			trailingslashit( $upload['basedir'] ) . $safe_subdir,
+			$safe_subdir
+		);
+		$base = is_string( $base ) ? untrailingslashit( $base ) : '';
+		if ( '' === $base ) {
+			return '';
+		}
+
 		if ( ! is_dir( $base ) && ! wp_mkdir_p( $base ) ) {
 			return '';
 		}

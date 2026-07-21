@@ -179,9 +179,10 @@ final class Notifications {
 
 		self::$inline_images = array();
 
-		$vars    = self::merge_vars( $submission_id, $form_id, $schema, $data, $notification, $matched_docs );
-		$subject = self::replace_tags( (string) $notification['subject'], $vars );
-		$body    = self::compose_html_body( $notification, $vars );
+		$vars         = self::merge_vars( $submission_id, $form_id, $schema, $data, $notification, $matched_docs );
+		$subject_vars = Merge_Tags::plain_vars( $vars );
+		$subject      = Merge_Tags::replace( (string) $notification['subject'], $subject_vars );
+		$body         = self::compose_html_body( $notification, $vars );
 
 		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
 
@@ -399,30 +400,35 @@ final class Notifications {
 	}
 
 	/**
-	 * @param int                  $submission_id Submission ID.
-	 * @param int                  $form_id       Form ID.
-	 * @param array<string, mixed> $schema        Schema.
-	 * @param array<string, mixed> $data          Values.
+	 * Public wrapper for confirmation / external merge contexts.
+	 *
+	 * @param int                        $submission_id Submission ID.
+	 * @param int                        $form_id       Form ID.
+	 * @param array<string, mixed>       $schema        Schema.
+	 * @param array<string, mixed>       $data          Values.
+	 * @param array<string, mixed>       $notification  Notification-like include_fields config.
+	 * @param list<array<string, mixed>> $matched_docs  Docs.
+	 * @return array<string, string>
+	 */
+	public static function merge_vars_public( $submission_id, $form_id, array $schema, array $data, array $notification, array $matched_docs = array() ) {
+		return self::merge_vars( $submission_id, $form_id, $schema, $data, $notification, $matched_docs );
+	}
+
+	/**
+	 * @param int                        $submission_id Submission ID.
+	 * @param int                        $form_id       Form ID.
+	 * @param array<string, mixed>       $schema        Schema.
+	 * @param array<string, mixed>       $data          Values.
 	 * @param array<string, mixed>       $notification  Notification.
 	 * @param list<array<string, mixed>> $matched_docs  Resolved info documents.
 	 * @return array<string, string>
 	 */
 	private static function merge_vars( $submission_id, $form_id, array $schema, array $data, array $notification, array $matched_docs = array() ) {
-		$form_title = get_the_title( $form_id );
-		$edit_link  = admin_url( 'admin.php?page=we-formkit-submissions&action=edit&submission_id=' . (int) $submission_id );
+		$vars = Merge_Tags::meta_vars( $submission_id, $form_id );
 
-		$vars = array(
-			'form_title'     => esc_html( is_string( $form_title ) ? $form_title : '' ),
-			'submission_url' => esc_url( $edit_link ),
-			'submission_id'  => (string) (int) $submission_id,
-			'form_id'        => (string) (int) $form_id,
-			'site_name'      => esc_html( wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) ),
-			'admin_email'    => esc_html( (string) get_option( 'admin_email' ) ),
-			'date'           => esc_html( (string) wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ) ),
-			'all_fields'     => self::format_fields_block_html( $schema, $data, $notification ),
-			'footer'         => (string) ( $notification['footer'] ?? '' ),
-			'info_links'     => Form_Info_Documents::links_as_html( $matched_docs ),
-		);
+		$vars['all_fields'] = self::format_fields_block_html( $schema, $data, $notification );
+		$vars['footer']     = (string) ( $notification['footer'] ?? '' );
+		$vars['info_links'] = Form_Info_Documents::links_as_html( $matched_docs );
 
 		foreach ( Form_Schema::fields_by_id( $schema ) as $field_id => $field ) {
 			$vars[ 'field:' . $field_id ] = nl2br(
@@ -435,7 +441,17 @@ final class Notifications {
 			);
 		}
 
-		return $vars;
+		/**
+		 * Filter merge variables before tag replacement.
+		 *
+		 * @param array<string, string> $vars          Vars.
+		 * @param int                   $submission_id Submission ID.
+		 * @param int                   $form_id       Form ID.
+		 * @param array<string, mixed>  $notification  Notification.
+		 */
+		$filtered = apply_filters( 'we_formkit_merge_vars', $vars, (int) $submission_id, (int) $form_id, $notification );
+
+		return is_array( $filtered ) ? $filtered : $vars;
 	}
 
 	/**
@@ -460,7 +476,7 @@ final class Notifications {
 		if ( 'signature' === $type ) {
 			$img = self::signature_inline_img( $value );
 			if ( '' !== $img ) {
-				return $img;
+				return \Webentwicklerin\WeFormkit\Fields\Abstract_Field_Type::apply_format_filter( $img, $value, $field, 'email' );
 			}
 		}
 		return self::format_field_value( $field, $value );
@@ -583,7 +599,7 @@ final class Notifications {
 			return '';
 		}
 		$raw = Settings::prepare_email_html( $raw );
-		return self::replace_tags( $raw, $vars );
+		return Merge_Tags::replace( $raw, $vars );
 	}
 
 	/**
@@ -652,46 +668,48 @@ final class Notifications {
 		$type     = isset( $field['type'] ) ? (string) $field['type'] : '';
 		$registry = Plugin::instance()->field_registry();
 		$type_obj = $registry ? $registry->get( $type ) : null;
+		$display  = '';
 		if ( $type_obj ) {
-			$display = $type_obj->format_for_display( $value, $field );
-			if ( is_string( $display ) ) {
-				return $display;
+			$formatted = $type_obj->format_for_display( $value, $field );
+			if ( is_string( $formatted ) ) {
+				$display = $formatted;
 			}
 		}
 
-		if ( null === $value || '' === $value ) {
-			return '—';
-		}
-		if ( is_bool( $value ) ) {
-			return $value ? '1' : '0';
-		}
-		if ( is_scalar( $value ) ) {
-			return (string) $value;
-		}
-		if ( is_array( $value ) ) {
-			// Uploads.
-			if ( isset( $value[0] ) && is_array( $value[0] ) && ( isset( $value[0]['url'] ) || isset( $value[0]['name'] ) ) ) {
-				$names = array();
-				foreach ( $value as $file ) {
-					if ( ! is_array( $file ) ) {
-						continue;
+		if ( '' === $display ) {
+			if ( null === $value || '' === $value ) {
+				$display = '—';
+			} elseif ( is_bool( $value ) ) {
+				$display = $value ? '1' : '0';
+			} elseif ( is_scalar( $value ) ) {
+				$display = (string) $value;
+			} elseif ( is_array( $value ) ) {
+				// Uploads.
+				if ( isset( $value[0] ) && is_array( $value[0] ) && ( isset( $value[0]['url'] ) || isset( $value[0]['name'] ) ) ) {
+					$names = array();
+					foreach ( $value as $file ) {
+						if ( ! is_array( $file ) ) {
+							continue;
+						}
+						$names[] = isset( $file['name'] ) ? (string) $file['name'] : ( isset( $file['url'] ) ? (string) $file['url'] : '' );
 					}
-					$names[] = isset( $file['name'] ) ? (string) $file['name'] : ( isset( $file['url'] ) ? (string) $file['url'] : '' );
+					$display = implode( ', ', array_filter( $names ) );
+				} else {
+					$flat = array();
+					array_walk_recursive(
+						$value,
+						static function ( $item ) use ( &$flat ) {
+							if ( is_scalar( $item ) ) {
+								$flat[] = (string) $item;
+							}
+						}
+					);
+					$display = implode( ', ', $flat );
 				}
-				return implode( ', ', array_filter( $names ) );
 			}
-			$flat = array();
-			array_walk_recursive(
-				$value,
-				static function ( $item ) use ( &$flat ) {
-					if ( is_scalar( $item ) ) {
-						$flat[] = (string) $item;
-					}
-				}
-			);
-			return implode( ', ', $flat );
 		}
-		return '';
+
+		return \Webentwicklerin\WeFormkit\Fields\Abstract_Field_Type::apply_format_filter( $display, $value, $field, 'email' );
 	}
 
 	/**
@@ -734,22 +752,6 @@ final class Notifications {
 			}
 		}
 		return array_values( array_unique( $paths ) );
-	}
-
-	/**
-	 * @param string                $text Text with {tags}.
-	 * @param array<string, string> $vars Vars.
-	 * @return string
-	 */
-	private static function replace_tags( $text, array $vars ) {
-		return (string) preg_replace_callback(
-			'/\{([a-z0-9_:\-]+)\}/i',
-			static function ( $m ) use ( $vars ) {
-				$key = $m[1];
-				return array_key_exists( $key, $vars ) ? $vars[ $key ] : $m[0];
-			},
-			(string) $text
-		);
 	}
 
 	/**

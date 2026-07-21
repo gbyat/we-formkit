@@ -28,15 +28,20 @@ final class Form_Schema {
 	public const META_SUBMIT_BUTTON        = '_wek_form_submit_button';
 	public const META_APPEARANCE           = '_wek_form_appearance';
 
-	public const SUB_FORM_ID    = '_wek_submission_form_id';
-	public const SUB_DATA       = '_wek_submission_data';
-	public const SUB_NOTES      = '_wek_submission_notes';
-	public const SUB_CONSENT    = '_wek_submission_consent';
-	public const SUB_IP_HASH    = '_wek_submission_ip_hash';
-	public const SUB_SOURCE_URL = '_wek_submission_source_url';
-	public const SUB_READ       = '_wek_submission_read';
-	public const SUB_SPAM       = '_wek_submission_spam';
-	public const SUB_NOTIFY_LOG = '_wek_submission_notify_log';
+	public const SUB_FORM_ID           = '_wek_submission_form_id';
+	public const SUB_DATA              = '_wek_submission_data';
+	public const SUB_NOTES             = '_wek_submission_notes';
+	public const SUB_CONSENT           = '_wek_submission_consent';
+	public const SUB_IP_HASH           = '_wek_submission_ip_hash';
+	public const SUB_SOURCE_URL        = '_wek_submission_source_url';
+	public const SUB_REFERRER          = '_wek_submission_referrer';
+	public const SUB_USER_AGENT        = '_wek_submission_user_agent';
+	public const SUB_USER_LOGIN        = '_wek_submission_user_login';
+	public const SUB_USER_EMAIL        = '_wek_submission_user_email';
+	public const SUB_USER_DISPLAY_NAME = '_wek_submission_user_display_name';
+	public const SUB_READ              = '_wek_submission_read';
+	public const SUB_SPAM              = '_wek_submission_spam';
+	public const SUB_NOTIFY_LOG        = '_wek_submission_notify_log';
 
 	/**
 	 * @param int $form_id Form post ID.

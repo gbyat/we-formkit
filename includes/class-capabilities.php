@@ -88,6 +88,14 @@ final class Capabilities {
 	 * @return bool
 	 */
 	public static function can_manage() {
-		return current_user_can( 'manage_we_formkit' ) || current_user_can( 'manage_options' );
+		$allowed = current_user_can( 'manage_we_formkit' ) || current_user_can( 'manage_options' );
+
+		/**
+		 * Whether the current user may manage Formkit (settings, modules, full admin UI).
+		 *
+		 * @param bool $allowed Whether allowed.
+		 * @param int  $user_id Current user ID.
+		 */
+		return (bool) apply_filters( 'we_formkit_can_manage', $allowed, get_current_user_id() );
 	}
 }

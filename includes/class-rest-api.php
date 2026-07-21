@@ -185,6 +185,18 @@ final class Rest_Api {
 		}
 		$result['data'] = $persisted;
 
+		/**
+		 * Filter validated submission values immediately before the entry is stored.
+		 *
+		 * @param array<string, mixed> $data    Values.
+		 * @param array<string, mixed> $schema  Form schema.
+		 * @param int                  $form_id Form ID.
+		 */
+		$pre = apply_filters( 'we_formkit_pre_submission_data', $result['data'], $schema, $form_id );
+		if ( is_array( $pre ) ) {
+			$result['data'] = $pre;
+		}
+
 		$ip = Spam::client_ip();
 		Spam::record_attempt( $ip );
 
@@ -212,6 +224,7 @@ final class Rest_Api {
 		update_post_meta( (int) $submission_id, Form_Schema::SUB_READ, 0 );
 		update_post_meta( (int) $submission_id, Form_Schema::SUB_SPAM, 0 );
 		update_post_meta( (int) $submission_id, Form_Schema::SUB_NOTIFY_LOG, '[]' );
+		Merge_Tags::persist_request_meta( (int) $submission_id );
 
 		/**
 		 * Fires after a submission is stored.
@@ -229,28 +242,96 @@ final class Rest_Api {
 		);
 
 		$confirmation = Form_Schema::get_confirmation( $form_id );
-		$page_url     = '';
+		$matched_docs = Form_Info_Documents::resolve_matching( $form_id, $result['data'] );
+		$info_links   = Form_Info_Documents::download_links( $matched_docs );
+
+		$confirm_message = Merge_Tags::apply_confirmation(
+			(string) $confirmation['message'],
+			(int) $submission_id,
+			$form_id,
+			$schema,
+			$result['data'],
+			$matched_docs
+		);
+		$redirect_url    = Merge_Tags::apply_confirmation(
+			(string) $confirmation['redirect_url'],
+			(int) $submission_id,
+			$form_id,
+			$schema,
+			$result['data'],
+			$matched_docs
+		);
+		if ( '' !== $redirect_url ) {
+			$redirect_url = esc_url_raw( $redirect_url );
+		}
+
+		$page_url = '';
 		if ( 'page' === $confirmation['mode'] && $confirmation['page_id'] > 0 ) {
 			$permalink = get_permalink( $confirmation['page_id'] );
 			$page_url  = is_string( $permalink ) ? $permalink : '';
 		}
 
-		$matched_docs = Form_Info_Documents::resolve_matching( $form_id, $result['data'] );
-		$info_links   = Form_Info_Documents::download_links( $matched_docs );
-
-		return rest_ensure_response(
-			array(
-				'success'        => true,
-				'message'        => $confirmation['message'],
-				'info_documents' => $info_links,
-				'confirmation'   => array(
-					'mode'         => $confirmation['mode'],
-					'message'      => $confirmation['message'],
-					'redirect_url' => $confirmation['redirect_url'],
-					'page_url'     => $page_url,
-				),
-			)
+		$confirmation_payload = array(
+			'mode'         => $confirmation['mode'],
+			'message'      => $confirm_message,
+			'redirect_url' => $redirect_url,
+			'page_url'     => $page_url,
 		);
+
+		/**
+		 * Filter confirmation payload after smart-tag merge (before REST response).
+		 *
+		 * @param array{mode:string,message:string,redirect_url:string,page_url:string} $confirmation_payload Confirmation.
+		 * @param int                                                                    $submission_id       Submission ID.
+		 * @param int                                                                    $form_id             Form ID.
+		 * @param array<string, mixed>                                                   $data                Submission values.
+		 */
+		$filtered_confirmation = apply_filters(
+			'we_formkit_confirmation',
+			$confirmation_payload,
+			(int) $submission_id,
+			$form_id,
+			$result['data']
+		);
+		if ( is_array( $filtered_confirmation ) ) {
+			$confirmation_payload = array_merge( $confirmation_payload, $filtered_confirmation );
+			if ( ! empty( $confirmation_payload['redirect_url'] ) ) {
+				$confirmation_payload['redirect_url'] = esc_url_raw( (string) $confirmation_payload['redirect_url'] );
+			}
+			if ( ! empty( $confirmation_payload['page_url'] ) ) {
+				$confirmation_payload['page_url'] = esc_url_raw( (string) $confirmation_payload['page_url'] );
+			}
+			$confirmation_payload['message'] = (string) ( $confirmation_payload['message'] ?? '' );
+			$confirmation_payload['mode']    = sanitize_key( (string) ( $confirmation_payload['mode'] ?? 'message' ) );
+		}
+
+		$response = array(
+			'success'        => true,
+			'message'        => (string) $confirmation_payload['message'],
+			'info_documents' => $info_links,
+			'confirmation'   => $confirmation_payload,
+		);
+
+		/**
+		 * Filter the successful submit REST payload (extra keys allowed for the frontend).
+		 *
+		 * @param array<string, mixed> $response      Response body.
+		 * @param int                  $submission_id Submission ID.
+		 * @param int                  $form_id       Form ID.
+		 * @param array<string, mixed> $data          Submission values.
+		 */
+		$filtered_response = apply_filters(
+			'we_formkit_submit_response',
+			$response,
+			(int) $submission_id,
+			$form_id,
+			$result['data']
+		);
+		if ( is_array( $filtered_response ) ) {
+			$response = $filtered_response;
+		}
+
+		return rest_ensure_response( $response );
 	}
 
 	/**

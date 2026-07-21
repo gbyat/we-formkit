@@ -73,10 +73,10 @@ final class Submission_List_Export {
 	private static function stream_json( $form_id, array $entries ) {
 		$out = array();
 		foreach ( $entries as $post ) {
-			$fid   = (int) get_post_meta( $post->ID, Form_Schema::SUB_FORM_ID, true );
-			$raw   = (string) get_post_meta( $post->ID, Form_Schema::SUB_DATA, true );
-			$data  = json_decode( $raw, true );
-			$out[] = array(
+			$fid  = (int) get_post_meta( $post->ID, Form_Schema::SUB_FORM_ID, true );
+			$raw  = (string) get_post_meta( $post->ID, Form_Schema::SUB_DATA, true );
+			$data = json_decode( $raw, true );
+			$row  = array(
 				'id'      => (int) $post->ID,
 				'form_id' => $fid,
 				'date'    => get_post_time( 'c', true, $post ),
@@ -84,6 +84,17 @@ final class Submission_List_Export {
 				'answers' => is_array( $data ) ? $data : array(),
 				'notes'   => (string) get_post_meta( $post->ID, Form_Schema::SUB_NOTES, true ),
 			);
+
+			/**
+			 * Filter a JSON list-export entry object.
+			 *
+			 * @param array<string, mixed> $row  Entry payload.
+			 * @param \WP_Post             $post Submission post.
+			 * @param array<string,mixed>  $data Submission data map.
+			 * @param array<int, string>   $header Unused for JSON (empty).
+			 */
+			$filtered = apply_filters( 'we_formkit_export_entry_row', $row, $post, is_array( $data ) ? $data : array(), array() );
+			$out[]    = is_array( $filtered ) ? $filtered : $row;
 		}
 
 		$filename = 'we-formkit-entries' . ( $form_id ? '-' . $form_id : '' ) . '.json';
@@ -158,9 +169,39 @@ final class Submission_List_Export {
 				get_the_title( $post ),
 			);
 			foreach ( $field_ids as $field_id ) {
-				$row[] = self::flatten_value( isset( $data[ $field_id ] ) ? $data[ $field_id ] : '' );
+				$cell = self::flatten_value( isset( $data[ $field_id ] ) ? $data[ $field_id ] : '' );
+				/**
+				 * Filter a single CSV cell during list export.
+				 *
+				 * @param string $cell     Flattened cell text.
+				 * @param mixed  $value    Raw field value.
+				 * @param string $field_id Field ID.
+				 * @param int    $entry_id Submission post ID.
+				 * @param string $context  Always `csv`.
+				 */
+				$row[] = (string) apply_filters(
+					'we_formkit_format_field_value',
+					$cell,
+					isset( $data[ $field_id ] ) ? $data[ $field_id ] : '',
+					array( 'id' => $field_id ),
+					'export'
+				);
 			}
 			$row[] = (string) get_post_meta( $post->ID, Form_Schema::SUB_NOTES, true );
+
+			/**
+			 * Filter a full CSV export row (indexed like the header: id, form_id, date, title, fields…, notes).
+			 *
+			 * @param array<int, string> $row     Row values.
+			 * @param \WP_Post           $post    Submission post.
+			 * @param array<string,mixed> $data   Submission data map.
+			 * @param array<int, string> $header Header columns.
+			 */
+			$filtered_row = apply_filters( 'we_formkit_export_entry_row', $row, $post, $data, $header );
+			if ( is_array( $filtered_row ) ) {
+				$row = $filtered_row;
+			}
+
 			fputcsv( $out, $row );
 		}
 

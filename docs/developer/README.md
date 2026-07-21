@@ -24,12 +24,21 @@ add_action(
 		$modules->add(
 			'example',
 			array(
-				'name'        => 'Example Module',
-				'description' => 'Demonstrates the module API.',
-				'version'     => '1.0.0',
-				'supports'    => array( 'importer' ),
-				'bootstrap'   => static function () {
-					// Hook REST routes, admin tabs, field types, etc.
+				'name'         => 'Example Module',
+				'description'  => 'Demonstrates the module API.',
+				'version'      => '1.0.0',
+				'supports'     => array( 'importer' ),
+				'dependencies' => array(
+					array(
+						'label' => 'Some plugin active',
+						'check' => static function () {
+							return defined( 'SOME_PLUGIN_VERSION' );
+						},
+					),
+				),
+				'bootstrap'    => static function () {
+					// Runs only when the module is activated in Formkit → Modules
+					// and all dependencies are met.
 				},
 			)
 		);
@@ -37,22 +46,83 @@ add_action(
 );
 ```
 
+Activate modules under **Formkit → Modules**. Core spam (honeypot, timing, rate limit, per-field link/email guards) always runs; modules add optional integrations.
+
 ## Useful hooks
+
+### Targeting a form or field
+
+Formkit uses **one global hook name** and passes `$form_id` / `$field` (and related context) as arguments. Scope inside the callback — there are no `we_formkit_*_{form_id}` / `_{field_id}` suffix hooks.
+
+```php
+// One form only.
+add_filter(
+	'we_formkit_pre_submission_data',
+	static function ( $data, $schema, $form_id ) {
+		if ( 12 !== (int) $form_id ) {
+			return $data;
+		}
+		// …
+		return $data;
+	},
+	10,
+	3
+);
+
+// One field only (field id from the builder).
+add_filter(
+	'we_formkit_format_field_value',
+	static function ( $display, $value, $field, $context ) {
+		if ( ( $field['id'] ?? '' ) !== 'phone' ) {
+			return $display;
+		}
+		// …
+		return $display;
+	},
+	10,
+	4
+);
+```
+
+Match on `$field['type']` when you care about all fields of a type; combine with `$form_id` when the hook provides it (or look up the form from `$submission_id` / export `$post` when needed).
 
 ### Extension points
 
 | Hook | Type | When |
 |------|------|------|
 | `we_formkit_register_field_types` | action | After core field types are registered `( $registry )` |
-| `we_formkit_register_modules` | action | During module bootstrap `( $modules )` |
-| `we_formkit_module_registered` | action | After each module is added `( $id, $definition )` |
-| `we_formkit_submission_created` | action | After a submission is stored `( $submission_id, $context )` |
+| `we_formkit_register_modules` | action | Collect module definitions `( $registry )` — call `$registry->add( $id, $definition )` |
+| `we_formkit_module_registered` | action | After an **active + dependency-satisfied** module has been bootstrapped `( $id, $definition )` |
+| `we_formkit_submission_created` | action | After a submission is stored `( $submission_id, $context )` — `$context` has `form_id`, `data`; notifications listen here |
 
-### Filters
+### Filters — submit / mail / smart tags
 
 | Hook | When |
 |------|------|
-| `we_formkit_draft_ttl_days` | Allowed Save & Resume TTL options (days) for builder UI + validation `( $days )` — default `7,14,30,60,90`; clamped 1–365 |
+| `we_formkit_spam_check` | After field validation, before save `( $result, $data, $schema, $form_id )` — return `WP_Error` to reject, otherwise leave `$result` / `null` |
+| `we_formkit_pre_submission_data` | After spam check + signature persist, before entry save `( $data, $schema, $form_id )` — return mutated values array |
+| `we_formkit_confirmation` | After smart-tag merge, before REST response `( $confirmation, $submission_id, $form_id, $data )` — keys `mode`, `message`, `redirect_url`, `page_url` |
+| `we_formkit_submit_response` | Full successful submit REST body `( $response, $submission_id, $form_id, $data )` — may add keys for the frontend |
+| `we_formkit_format_field_value` | Formatted field string `( $display, $value, $field, $context )` — `$context`: `email`, `admin`, `display`, `export` |
+| `we_formkit_export_entry_row` | CSV list-export row `( $row, $post, $data, $header )` |
+| `we_formkit_merge_tag_catalog` | Admin smart-tag picker catalog `( $items, $schema, $context )` — `$context` is `email` or `confirmation` |
+| `we_formkit_merge_vars` | Tag replacement map before merge `( $vars, $submission_id, $form_id, $notification )` |
+| `we_formkit_notification_mail` | Notification mail args before `wp_mail` `( $mail, $notification, $submission_id, $form_id )` |
+| `we_formkit_resume_mail` | Save & Resume email before send `( $mail, $form_id, $resume_url, $expires )` — keys include optional `attachments` for .ics |
+
+### Filters — capabilities / uploads
+
+| Hook | When |
+|------|------|
+| `we_formkit_can_manage` | Whether current user may manage Formkit `( $allowed, $user_id )` |
+| `we_formkit_upload_allowed_mimes` | Allowed MIME list for an upload field `( $mimes, $field )` |
+| `we_formkit_private_storage_dir` | Absolute private storage base dir `( $path, $subdir )` — `$subdir` like `we-formkit-uploads` |
+
+### Filters — Save & Resume
+
+| Hook | When |
+|------|------|
+| `we_formkit_draft_ttl_days` | Allowed TTL options (days) for builder UI + validation `( $days )` — default `7,14,30,60,90`; clamped 1–365 |
 | `we_formkit_form_draft_ttl_days` | Effective TTL for one form after stored meta `( $days, $form_id )` |
 | `we_formkit_form_save_min_filled` | Minimum filled fields before Save unlocks `( $min, $form_id )` — `0` = always |
 | `we_formkit_draft_mail_cooldown` | Seconds between resume emails for same email+form+IP `( $seconds )` — default `300`; clamped 30–3600 |
@@ -60,13 +130,16 @@ add_action(
 | `we_formkit_draft_reminder_lead_days` | Default days before expiry for opt-in calendar reminder `( $lead, $ttl_days )` |
 | `we_formkit_draft_reminder_lead_options` | Dropdown choices for days before expiry `( $days, $ttl_days )` |
 | `we_formkit_form_reminders_allowed` | Whether calendar (.ics) opt-in is allowed `( $allowed, $form_id )` |
-| `we_formkit_resume_mail` | Resume email before send `( $mail, … )` — keys include optional `attachments` for .ics |
+
+### Filters — design / fields
+
+| Hook | When |
+|------|------|
 | `we_formkit_color_schemes` | Add/replace named color schemes `( $schemes )` — slug => `{ label, colors }`; reserved: `theme`, `custom` |
 | `we_formkit_form_style_colors` | Resolved form CSS colors `( $colors, $form_id, $stored )` |
 | `we_formkit_repeater_item_types` | Allowed nested types inside a repeater group |
 | `we_formkit_repeater_item_required` | Required message for a repeater item |
 | `we_formkit_repeater_item_invalid` | Invalid message for a repeater item |
-| `we_formkit_notification_mail` | Notification mail args before `wp_mail` `( $mail, $notification, $submission_id, $form_id )` |
 
 ### Examples
 
@@ -80,6 +153,89 @@ add_filter( 'we_formkit_draft_ttl_days', static function () {
 add_filter( 'we_formkit_form_draft_ttl_days', static function ( $days, $form_id ) {
 	return 123 === (int) $form_id ? 30 : $days;
 }, 10, 2 );
+
+// Mutate values before the entry is stored.
+add_filter(
+	'we_formkit_pre_submission_data',
+	static function ( $data, $schema, $form_id ) {
+		$data['processed_at'] = gmdate( 'c' );
+		return $data;
+	},
+	10,
+	3
+);
+
+// Change confirmation message / redirect after merge.
+add_filter(
+	'we_formkit_confirmation',
+	static function ( $confirmation, $submission_id ) {
+		$confirmation['message'] .= "\n\n#" . (int) $submission_id;
+		return $confirmation;
+	},
+	10,
+	2
+);
+
+// Add payload keys the frontend can read.
+add_filter(
+	'we_formkit_submit_response',
+	static function ( $response, $submission_id ) {
+		$response['entry_id'] = (int) $submission_id;
+		return $response;
+	},
+	10,
+	2
+);
+
+// Format a field for email / admin / export.
+add_filter(
+	'we_formkit_format_field_value',
+	static function ( $display, $value, $field, $context ) {
+		if ( 'email' === $context && isset( $field['type'] ) && 'tel' === $field['type'] ) {
+			return esc_html( preg_replace( '/\s+/', '', (string) $value ) );
+		}
+		return $display;
+	},
+	10,
+	4
+);
+
+// Extra spam check (modules can do the same via we_formkit_spam_check).
+add_filter(
+	'we_formkit_spam_check',
+	static function ( $result, $data, $schema, $form_id ) {
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		// Return new WP_Error( 'we_formkit_spam', '…', array( 'status' => 422 ) ) to reject.
+		return $result;
+	},
+	10,
+	4
+);
+
+// Custom smart tag in the picker + values.
+add_filter(
+	'we_formkit_merge_tag_catalog',
+	static function ( $items ) {
+		$items[] = array(
+			'tag'         => '{custom_ref}',
+			'label'       => 'Custom reference',
+			'group'       => 'entry',
+			'group_label' => 'Entry',
+		);
+		return $items;
+	}
+);
+add_filter(
+	'we_formkit_merge_vars',
+	static function ( $vars, $submission_id ) {
+		$vars['custom_ref'] = 'REF-' . (int) $submission_id;
+		return $vars;
+	},
+	10,
+	2
+);
 
 // Add a named scheme (shows next to Formkit Teal, etc.).
 add_filter( 'we_formkit_color_schemes', static function ( $schemes ) {
@@ -102,9 +258,24 @@ add_filter( 'we_formkit_color_schemes', static function ( $schemes ) {
 } );
 ```
 
-### Notification merge tags
+### Smart / merge tags
 
-Usable in subject, header, message, and footer: `{all_fields}`, `{form_title}`, `{submission_url}`, `{submission_id}`, `{form_id}`, `{date}`, `{site_name}`, `{admin_email}`, `{field:FIELD_ID}`, `{footer}`, `{info_links}` (matched info documents with download enabled). Notification bodies are HTML (WYSIWYG); outbound mail is `text/html` with inline styles.
+Insert via the **Insert smart tag** picker (Notifications + Confirmations), or type `{tag}` manually.
+
+| Group | Tags |
+|-------|------|
+| Form | `{form_title}`, `{form_id}` |
+| Entry | `{submission_id}`, `{submission_url}`, `{date}`, `{all_fields}`, `{info_links}` (email) |
+| Source | `{source_url}`, `{referrer}`, `{user_agent}` |
+| Site | `{site_name}`, `{admin_email}` |
+| User | `{user_login}`, `{user_email}`, `{user_display_name}` (empty for guests; snapshotted at submit for resend) |
+| Fields | `{field:FIELD_ID}` |
+
+Also available in notification templates: `{footer}` (notification footer fragment). No plain-IP tag (privacy — optional IP hash only).
+
+- **Emails:** HTML body (WYSIWYG); subject uses plain-text values. Outbound mail is `text/html` with inline styles.
+- **Confirmations:** message + redirect URL are merged on submit (plain text).
+- Unknown `{…}` tags are left unchanged (whitelist replace).
 
 ### Info documents
 
