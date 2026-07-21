@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.18] - 2026-07-21
+
+- Implement theme color import functionality in the admin panel. Enhance the Form_Style class to support importing theme colors and managing color roles with contrast checks. Update the admin interface to include a new Theme Import panel, allowing users to map theme colors to form roles. Adjust translations for new strings related to theme color management.
 ## [0.2.17] - 2026-07-21
 
 - Enhance form styling and color scheme management. Introduce new CSS variables for input and button text colors, update existing styles for improved consistency, and refactor the Form_Style class to support named color schemes. Update admin panel to include scheme options and ensure proper handling of color roles in the frontend. Adjust translations for new color-related strings.
