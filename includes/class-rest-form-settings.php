@@ -199,11 +199,16 @@ final class Rest_Form_Settings {
 		Form_Schema::set_appearance(
 			$form_id,
 			array(
-				'label_weight'   => isset( $params['label_weight'] ) ? (string) $params['label_weight'] : 'bold',
-				'required_mark'  => isset( $params['required_mark'] ) ? (string) $params['required_mark'] : 'asterisk',
-				'help_placement' => isset( $params['help_placement'] ) ? (string) $params['help_placement'] : 'below_label',
-				'help_style'     => isset( $params['help_style'] ) ? (string) $params['help_style'] : 'muted',
-				'font_family'    => isset( $params['font_family'] ) ? (string) $params['font_family'] : 'inherit',
+				'label_weight'    => isset( $params['label_weight'] ) ? (string) $params['label_weight'] : 'bold',
+				'required_mark'   => isset( $params['required_mark'] ) ? (string) $params['required_mark'] : 'asterisk',
+				'help_placement'  => isset( $params['help_placement'] ) ? (string) $params['help_placement'] : 'below_label',
+				'help_style'      => isset( $params['help_style'] ) ? (string) $params['help_style'] : 'muted',
+				'font_family'     => isset( $params['font_family'] ) ? (string) $params['font_family'] : 'inherit',
+				'spacing'         => isset( $params['spacing'] ) ? (string) $params['spacing'] : 'cozy',
+				'control_padding' => isset( $params['control_padding'] ) ? (string) $params['control_padding'] : 'cozy',
+				'size_section'    => isset( $params['size_section'] ) ? (string) $params['size_section'] : 'md',
+				'size_label'      => isset( $params['size_label'] ) ? (string) $params['size_label'] : 'md',
+				'size_input'      => isset( $params['size_input'] ) ? (string) $params['size_input'] : 'md',
 			)
 		);
 
@@ -247,11 +252,16 @@ final class Rest_Form_Settings {
 				'secret_enabled' => ! empty( $secret['enabled'] ),
 				'style_preset'   => (string) $style['preset'],
 				'colors'         => $colors,
-				'label_weight'   => (string) $appear['label_weight'],
-				'required_mark'  => (string) $appear['required_mark'],
-				'help_placement' => (string) $appear['help_placement'],
-				'help_style'     => (string) $appear['help_style'],
-				'font_family'    => (string) $appear['font_family'],
+				'label_weight'    => (string) $appear['label_weight'],
+				'required_mark'   => (string) $appear['required_mark'],
+				'help_placement'  => (string) $appear['help_placement'],
+				'help_style'      => (string) $appear['help_style'],
+				'font_family'     => (string) $appear['font_family'],
+				'spacing'         => (string) $appear['spacing'],
+				'control_padding' => (string) $appear['control_padding'],
+				'size_section'    => (string) $appear['size_section'],
+				'size_label'      => (string) $appear['size_label'],
+				'size_input'      => (string) $appear['size_input'],
 			),
 		);
 	}

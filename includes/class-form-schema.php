@@ -394,10 +394,10 @@ final class Form_Schema {
 	}
 
 	/**
-	 * Form-wide label / help appearance presets.
+	 * Form-wide label / help / density appearance presets.
 	 *
 	 * @param int $form_id Form ID.
-	 * @return array{label_weight:string,required_mark:string,help_placement:string,help_style:string,font_family:string}
+	 * @return array{label_weight:string,required_mark:string,help_placement:string,help_style:string,font_family:string,spacing:string,control_padding:string,size_section:string,size_label:string,size_input:string}
 	 */
 	public static function get_appearance( $form_id ) {
 		$form_id = (int) $form_id;
@@ -421,7 +421,7 @@ final class Form_Schema {
 
 	/**
 	 * @param array<string, mixed> $data Raw.
-	 * @return array{label_weight:string,required_mark:string,help_placement:string,help_style:string,font_family:string}
+	 * @return array{label_weight:string,required_mark:string,help_placement:string,help_style:string,font_family:string,spacing:string,control_padding:string,size_section:string,size_label:string,size_input:string}
 	 */
 	public static function normalize_appearance( array $data ) {
 		$weight = isset( $data['label_weight'] ) ? sanitize_key( (string) $data['label_weight'] ) : 'bold';
@@ -455,13 +455,121 @@ final class Form_Schema {
 			}
 		}
 
+		$spacing = isset( $data['spacing'] ) ? sanitize_key( (string) $data['spacing'] ) : 'cozy';
+		if ( ! in_array( $spacing, array( 'compact', 'cozy', 'comfortable' ), true ) ) {
+			$spacing = 'cozy';
+		}
+
+		$control = isset( $data['control_padding'] ) ? sanitize_key( (string) $data['control_padding'] ) : 'cozy';
+		if ( ! in_array( $control, array( 'compact', 'cozy', 'comfortable' ), true ) ) {
+			$control = 'cozy';
+		}
+
+		$size_steps = array( 'sm', 'md', 'lg' );
+		$size_section = isset( $data['size_section'] ) ? sanitize_key( (string) $data['size_section'] ) : 'md';
+		if ( ! in_array( $size_section, $size_steps, true ) ) {
+			$size_section = 'md';
+		}
+		$size_label = isset( $data['size_label'] ) ? sanitize_key( (string) $data['size_label'] ) : 'md';
+		if ( ! in_array( $size_label, $size_steps, true ) ) {
+			$size_label = 'md';
+		}
+		$size_input = isset( $data['size_input'] ) ? sanitize_key( (string) $data['size_input'] ) : 'md';
+		if ( ! in_array( $size_input, $size_steps, true ) ) {
+			$size_input = 'md';
+		}
+
 		return array(
-			'label_weight'   => $weight,
-			'required_mark'  => $mark,
-			'help_placement' => $placement,
-			'help_style'     => $style,
-			'font_family'    => $font,
+			'label_weight'    => $weight,
+			'required_mark'   => $mark,
+			'help_placement'  => $placement,
+			'help_style'      => $style,
+			'font_family'     => $font,
+			'spacing'         => $spacing,
+			'control_padding' => $control,
+			'size_section'    => $size_section,
+			'size_label'      => $size_label,
+			'size_input'      => $size_input,
 		);
+	}
+
+	/**
+	 * CSS custom properties for density / type scale (no colors).
+	 *
+	 * @param int $form_id Form ID.
+	 * @return string Semicolon-separated declarations without trailing semicolon requirement.
+	 */
+	public static function appearance_css_variables( $form_id ): string {
+		$a = self::get_appearance( $form_id );
+
+		$spacing = array(
+			'compact'     => array(
+				'gap-y'  => '0.55rem',
+				'gap-x'  => '0.65rem',
+				'space'  => '0.85rem',
+				'shell'  => '1rem',
+			),
+			'cozy'        => array(
+				'gap-y'  => '0.85rem',
+				'gap-x'  => '1rem',
+				'space'  => '1.25rem',
+				'shell'  => 'clamp(1.25rem, 3vw, 2rem)',
+			),
+			'comfortable' => array(
+				'gap-y'  => '1.2rem',
+				'gap-x'  => '1.25rem',
+				'space'  => '1.6rem',
+				'shell'  => 'clamp(1.5rem, 3.5vw, 2.35rem)',
+			),
+		);
+
+		$controls = array(
+			'compact'     => array(
+				'pad-y' => '0.4rem',
+				'pad-x' => '0.55rem',
+			),
+			'cozy'        => array(
+				'pad-y' => '0.65rem',
+				'pad-x' => '0.75rem',
+			),
+			'comfortable' => array(
+				'pad-y' => '0.85rem',
+				'pad-x' => '0.95rem',
+			),
+		);
+
+		$sections = array(
+			'sm' => '1rem',
+			'md' => '1.15rem',
+			'lg' => '1.35rem',
+		);
+		$labels   = array(
+			'sm' => '0.85rem',
+			'md' => '0.95rem',
+			'lg' => '1.05rem',
+		);
+		$inputs   = array(
+			'sm' => '0.875rem',
+			'md' => '1rem',
+			'lg' => '1.0625rem',
+		);
+
+		$sp = $spacing[ $a['spacing'] ] ?? $spacing['cozy'];
+		$cp = $controls[ $a['control_padding'] ] ?? $controls['cozy'];
+
+		$parts = array(
+			'--wek-gap-y:' . $sp['gap-y'],
+			'--wek-gap-x:' . $sp['gap-x'],
+			'--wek-space:' . $sp['space'],
+			'--wek-shell-pad:' . $sp['shell'],
+			'--wek-control-pad-y:' . $cp['pad-y'],
+			'--wek-control-pad-x:' . $cp['pad-x'],
+			'--wek-font-section:' . ( $sections[ $a['size_section'] ] ?? $sections['md'] ),
+			'--wek-font-label:' . ( $labels[ $a['size_label'] ] ?? $labels['md'] ),
+			'--wek-font-input:' . ( $inputs[ $a['size_input'] ] ?? $inputs['md'] ),
+		);
+
+		return implode( ';', $parts );
 	}
 
 	/**

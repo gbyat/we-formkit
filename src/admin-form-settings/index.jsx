@@ -80,6 +80,80 @@ function colorsFromData( data ) {
 	return out;
 }
 
+function resolvePreviewFont( slug ) {
+	if ( ! slug || slug === 'inherit' ) {
+		return 'inherit';
+	}
+	const fonts = Array.isArray( boot.fontFamilies ) ? boot.fontFamilies : [];
+	const match = fonts.find( ( font ) => font.slug === slug );
+	if ( ! match || ! match.fontFamily ) {
+		return 'inherit';
+	}
+	return `var(--wp--preset--font-family--${ slug }, ${ match.fontFamily })`;
+}
+
+const SPACING_VARS = {
+	compact: {
+		gapY: '0.55rem',
+		gapX: '0.65rem',
+		space: '0.85rem',
+		shell: '1rem',
+	},
+	cozy: {
+		gapY: '0.85rem',
+		gapX: '1rem',
+		space: '1.25rem',
+		shell: '1.25rem',
+	},
+	comfortable: {
+		gapY: '1.2rem',
+		gapX: '1.25rem',
+		space: '1.6rem',
+		shell: '1.5rem',
+	},
+};
+
+const CONTROL_VARS = {
+	compact: { padY: '0.4rem', padX: '0.55rem' },
+	cozy: { padY: '0.65rem', padX: '0.75rem' },
+	comfortable: { padY: '0.85rem', padX: '0.95rem' },
+};
+
+const SIZE_SECTION = { sm: '1rem', md: '1.15rem', lg: '1.35rem' };
+const SIZE_LABEL = { sm: '0.85rem', md: '0.95rem', lg: '1.05rem' };
+const SIZE_INPUT = { sm: '0.875rem', md: '1rem', lg: '1.0625rem' };
+
+function PreviewField( { label, req, help, helpPlacement, helpStyle, children } ) {
+	const helpEl =
+		help && helpPlacement ? (
+			<div
+				className={
+					'wek-scheme-preview__help' +
+					( helpStyle === 'boxed' ? ' is-boxed' : '' )
+				}
+			>
+				{ help }
+			</div>
+		) : null;
+
+	return (
+		<div className="wek-scheme-preview__field">
+			<div className="wek-scheme-preview__label">
+				{ label }
+				{ req ? (
+					<span className="wek-scheme-preview__req">
+						{ ' ' }
+						{ req }
+					</span>
+				) : null }
+			</div>
+			{ helpPlacement === 'below_label' ? helpEl : null }
+			{ children }
+			{ helpPlacement === 'below_field' ? helpEl : null }
+		</div>
+	);
+}
+
 function ColorSchemePreview( { data } ) {
 	const c = colorsFromData( data );
 	const req =
@@ -88,6 +162,11 @@ function ColorSchemePreview( { data } ) {
 			: data.required_mark === 'none'
 				? ''
 				: '*';
+	const spacing = SPACING_VARS[ data.spacing ] || SPACING_VARS.cozy;
+	const control = CONTROL_VARS[ data.control_padding ] || CONTROL_VARS.cozy;
+	const labelClass =
+		'wek-scheme-preview__card' +
+		( data.label_weight === 'normal' ? ' is-label-normal' : '' );
 
 	return (
 		<div className="wek-scheme-preview" aria-live="polite">
@@ -107,9 +186,22 @@ function ColorSchemePreview( { data } ) {
 					'--wek-input': c.input,
 					'--wek-on-accent': c.on_accent,
 					'--wek-danger': c.danger,
+					'--wek-font-family': resolvePreviewFont( data.font_family ),
+					'--wek-gap-y': spacing.gapY,
+					'--wek-gap-x': spacing.gapX,
+					'--wek-space': spacing.space,
+					'--wek-shell-pad': spacing.shell,
+					'--wek-control-pad-y': control.padY,
+					'--wek-control-pad-x': control.padX,
+					'--wek-font-section':
+						SIZE_SECTION[ data.size_section ] || SIZE_SECTION.md,
+					'--wek-font-label':
+						SIZE_LABEL[ data.size_label ] || SIZE_LABEL.md,
+					'--wek-font-input':
+						SIZE_INPUT[ data.size_input ] || SIZE_INPUT.md,
 				} }
 			>
-				<div className="wek-scheme-preview__card">
+				<div className={ labelClass }>
 					<div className="wek-scheme-preview__title">
 						{ data.title || __( 'Contact request', 'we-formkit' ) }
 					</div>
@@ -120,55 +212,93 @@ function ColorSchemePreview( { data } ) {
 								'we-formkit'
 							) }
 					</div>
-					<div
-						className={
-							'wek-scheme-preview__label' +
-							( data.label_weight === 'normal'
-								? ' is-normal'
-								: '' )
-						}
-					>
-						{ __( 'Email', 'we-formkit' ) }
-						{ req ? (
-							<span className="wek-scheme-preview__req">
-								{ ' ' }
-								{ req }
-							</span>
-						) : null }
-					</div>
-					{ data.help_placement === 'below_label' ? (
-						<div
-							className={
-								'wek-scheme-preview__help' +
-								( data.help_style === 'boxed'
-									? ' is-boxed'
-									: '' )
-							}
-						>
-							{ __( 'Used only for this reply.', 'we-formkit' ) }
+
+					<div className="wek-scheme-preview__section">
+						<div className="wek-scheme-preview__section-title">
+							{ __( 'Details', 'we-formkit' ) }
 						</div>
-					) : null }
-					<div className="wek-scheme-preview__input">
-						you@example.com
-					</div>
-					{ data.help_placement === 'below_field' ? (
-						<div
-							className={
-								'wek-scheme-preview__help' +
-								( data.help_style === 'boxed'
-									? ' is-boxed'
-									: '' )
-							}
-						>
-							{ __( 'Used only for this reply.', 'we-formkit' ) }
+
+						<div className="wek-scheme-preview__fields">
+							<PreviewField
+								label={ __( 'Email', 'we-formkit' ) }
+								req={ req }
+								help={ __(
+									'Used only for this reply.',
+									'we-formkit'
+								) }
+								helpPlacement={ data.help_placement }
+								helpStyle={ data.help_style }
+							>
+								<div className="wek-scheme-preview__input">
+									you@example.com
+								</div>
+							</PreviewField>
+
+							<PreviewField
+								label={ __( 'Topic', 'we-formkit' ) }
+								helpPlacement={ data.help_placement }
+								helpStyle={ data.help_style }
+							>
+								<select
+									className="wek-scheme-preview__select"
+									defaultValue="general"
+									aria-label={ __( 'Topic', 'we-formkit' ) }
+								>
+									<option value="general">
+										{ __( 'General', 'we-formkit' ) }
+									</option>
+									<option value="billing">
+										{ __( 'Billing', 'we-formkit' ) }
+									</option>
+									<option value="support">
+										{ __( 'Support', 'we-formkit' ) }
+									</option>
+								</select>
+							</PreviewField>
+
+							<PreviewField
+								label={ __( 'Preferred contact', 'we-formkit' ) }
+								helpPlacement={ data.help_placement }
+								helpStyle={ data.help_style }
+							>
+								<div className="wek-scheme-preview__choices">
+									<label className="wek-scheme-preview__choice">
+										<span
+											className="wek-scheme-preview__radio is-checked"
+											aria-hidden="true"
+										/>
+										{ __( 'Email', 'we-formkit' ) }
+									</label>
+									<label className="wek-scheme-preview__choice">
+										<span
+											className="wek-scheme-preview__radio"
+											aria-hidden="true"
+										/>
+										{ __( 'Phone', 'we-formkit' ) }
+									</label>
+								</div>
+							</PreviewField>
+
+							<label className="wek-scheme-preview__choice wek-scheme-preview__choice--check">
+								<span
+									className="wek-scheme-preview__check is-checked"
+									aria-hidden="true"
+								/>
+								{ __(
+									'I agree to the privacy policy',
+									'we-formkit'
+								) }
+							</label>
+
+							<div className="wek-scheme-preview__error">
+								{ __(
+									'Please enter a valid email.',
+									'we-formkit'
+								) }
+							</div>
 						</div>
-					) : null }
-					<div className="wek-scheme-preview__choice">
-						{ __( 'Soft choice card / help box', 'we-formkit' ) }
 					</div>
-					<div className="wek-scheme-preview__error">
-						{ __( 'Please enter a valid email.', 'we-formkit' ) }
-					</div>
+
 					<span className="wek-scheme-preview__submit">
 						{ __( 'Submit', 'we-formkit' ) }
 					</span>
@@ -192,6 +322,11 @@ function flattenSettings( payload ) {
 		help_placement: payload.help_placement || 'below_label',
 		help_style: payload.help_style || 'muted',
 		font_family: payload.font_family || 'inherit',
+		spacing: payload.spacing || 'cozy',
+		control_padding: payload.control_padding || 'cozy',
+		size_section: payload.size_section || 'md',
+		size_label: payload.size_label || 'md',
+		size_input: payload.size_input || 'md',
 		...colorsFromMap( colors ),
 	};
 }
@@ -212,6 +347,11 @@ function toApiPayload( data ) {
 		help_placement: data.help_placement || 'below_label',
 		help_style: data.help_style || 'muted',
 		font_family: data.font_family || 'inherit',
+		spacing: data.spacing || 'cozy',
+		control_padding: data.control_padding || 'cozy',
+		size_section: data.size_section || 'md',
+		size_label: data.size_label || 'md',
+		size_input: data.size_input || 'md',
 		style: {
 			preset: data.style_preset || 'theme',
 			colors,
@@ -417,6 +557,70 @@ function FormSettingsApp() {
 				],
 			},
 			{
+				id: 'spacing',
+				label: __( 'Field spacing', 'we-formkit' ),
+				type: 'text',
+				description: __(
+					'Vertical and horizontal gaps between fields and section padding.',
+					'we-formkit'
+				),
+				elements: [
+					{ value: 'compact', label: __( 'Compact', 'we-formkit' ) },
+					{ value: 'cozy', label: __( 'Cozy', 'we-formkit' ) },
+					{
+						value: 'comfortable',
+						label: __( 'Comfortable', 'we-formkit' ),
+					},
+				],
+			},
+			{
+				id: 'control_padding',
+				label: __( 'Input padding', 'we-formkit' ),
+				type: 'text',
+				description: __(
+					'Inner padding for text inputs and selects (same height).',
+					'we-formkit'
+				),
+				elements: [
+					{ value: 'compact', label: __( 'Compact', 'we-formkit' ) },
+					{ value: 'cozy', label: __( 'Cozy', 'we-formkit' ) },
+					{
+						value: 'comfortable',
+						label: __( 'Comfortable', 'we-formkit' ),
+					},
+				],
+			},
+			{
+				id: 'size_section',
+				label: __( 'Section title size', 'we-formkit' ),
+				type: 'text',
+				elements: [
+					{ value: 'sm', label: __( 'Small', 'we-formkit' ) },
+					{ value: 'md', label: __( 'Medium', 'we-formkit' ) },
+					{ value: 'lg', label: __( 'Large', 'we-formkit' ) },
+				],
+			},
+			{
+				id: 'size_label',
+				label: __( 'Label size', 'we-formkit' ),
+				type: 'text',
+				elements: [
+					{ value: 'sm', label: __( 'Small', 'we-formkit' ) },
+					{ value: 'md', label: __( 'Medium', 'we-formkit' ) },
+					{ value: 'lg', label: __( 'Large', 'we-formkit' ) },
+				],
+			},
+			{
+				id: 'size_input',
+				label: __( 'Input text size', 'we-formkit' ),
+				type: 'text',
+				elements: [
+					{ value: 'sm', label: __( 'Small', 'we-formkit' ) },
+					{ value: 'md', label: __( 'Medium', 'we-formkit' ) },
+					{ value: 'lg', label: __( 'Large', 'we-formkit' ) },
+				],
+			},
+			{
 				id: 'style_preset',
 				label: __( 'Color scheme', 'we-formkit' ),
 				type: 'text',
@@ -436,7 +640,7 @@ function FormSettingsApp() {
 		[]
 	);
 
-	const form = useMemo(
+	const generalForm = useMemo(
 		() => ( {
 			layout: { type: 'regular', labelPosition: 'top' },
 			fields: [
@@ -452,6 +656,15 @@ function FormSettingsApp() {
 						'secret_enabled',
 					],
 				},
+			],
+		} ),
+		[]
+	);
+
+	const appearanceForm = useMemo(
+		() => ( {
+			layout: { type: 'regular', labelPosition: 'top' },
+			fields: [
 				{
 					id: 'labels',
 					label: __( 'Labels & help', 'we-formkit' ),
@@ -467,8 +680,28 @@ function FormSettingsApp() {
 					id: 'typography',
 					label: __( 'Typography', 'we-formkit' ),
 					layout: { type: 'card', isOpened: true },
-					children: [ 'font_family' ],
+					children: [
+						'font_family',
+						'size_section',
+						'size_label',
+						'size_input',
+					],
 				},
+				{
+					id: 'density',
+					label: __( 'Spacing & density', 'we-formkit' ),
+					layout: { type: 'card', isOpened: true },
+					children: [ 'spacing', 'control_padding' ],
+				},
+			],
+		} ),
+		[]
+	);
+
+	const colorsForm = useMemo(
+		() => ( {
+			layout: { type: 'regular', labelPosition: 'top' },
+			fields: [
 				{
 					id: 'colors',
 					label: __( 'Colors', 'we-formkit' ),
@@ -601,12 +834,27 @@ function FormSettingsApp() {
 				</Notice>
 			) }
 
+			<div className="wek-dataform-settings__wide">
+				<DataForm
+					data={ data }
+					fields={ fields }
+					form={ generalForm }
+					onChange={ onChange }
+				/>
+				<DataForm
+					data={ data }
+					fields={ fields }
+					form={ appearanceForm }
+					onChange={ onChange }
+				/>
+			</div>
+
 			<div className="wek-dataform-settings__layout">
 				<div className="wek-dataform-settings__form">
 					<DataForm
 						data={ data }
 						fields={ fields }
-						form={ form }
+						form={ colorsForm }
 						onChange={ onChange }
 					/>
 				</div>

@@ -11,11 +11,19 @@
 	--wek-danger: #8a1f1f;
 	--wek-radius: 12px;
 	--wek-space: 1.25rem;
+	--wek-shell-pad: clamp(1.25rem, 3vw, 2rem);
+	--wek-gap-y: 0.85rem;
+	--wek-gap-x: 1rem;
+	--wek-control-pad-y: 0.65rem;
+	--wek-control-pad-x: 0.75rem;
+	--wek-font-section: 1.15rem;
+	--wek-font-label: 0.95rem;
+	--wek-font-input: 1rem;
 	color: var(--wek-ink);
 	background: linear-gradient(180deg, var(--wek-bg) 0%, var(--wek-surface) 48%);
 	border: 1px solid var(--wek-line);
 	border-radius: calc(var(--wek-radius) + 4px);
-	padding: clamp(1.25rem, 3vw, 2rem);
+	padding: var(--wek-shell-pad);
 	max-width: 52rem;
 	margin: 0 auto;
 	font-family: var(--wek-font-family, inherit);
@@ -51,13 +59,13 @@
 
 .we-formkit__section-title {
 	margin: 0 0 1rem;
-	font-size: 1.15rem;
+	font-size: var(--wek-font-section);
 }
 
 .we-formkit__fields {
 	display: grid;
 	grid-template-columns: repeat(6, minmax(0, 1fr));
-	gap: 0.85rem 1rem;
+	gap: var(--wek-gap-y) var(--wek-gap-x);
 }
 
 .we-formkit__field {
@@ -112,6 +120,7 @@
 .we-formkit__fieldset legend {
 	display: block;
 	font-weight: 600;
+	font-size: var(--wek-font-label);
 	margin-bottom: 0.35rem;
 }
 
@@ -235,10 +244,22 @@
 	box-sizing: border-box;
 	border: 1px solid var(--wek-line);
 	border-radius: 8px;
-	padding: 0.65rem 0.75rem;
+	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
 	font: inherit;
+	font-size: var(--wek-font-input);
+	line-height: 1.4;
+	min-height: calc(
+		(var(--wek-font-input) * 1.4) + (2 * var(--wek-control-pad-y)) + 2px
+	);
 	background: var(--wek-input);
 	color: inherit;
+}
+
+.we-formkit textarea {
+	min-height: calc(
+		(var(--wek-font-input) * 1.4 * 3) + (2 * var(--wek-control-pad-y)) + 2px
+	);
+	resize: vertical;
 }
 
 .we-formkit input:focus,

@@ -350,6 +350,11 @@ final class Form_Style {
 			$parts[] = '--wek-font-family:' . $font_css;
 		}
 
+		$appear_css = Form_Schema::appearance_css_variables( $form_id );
+		if ( '' !== $appear_css ) {
+			$parts[] = $appear_css;
+		}
+
 		return implode( ';', $parts );
 	}
 
