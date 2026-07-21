@@ -18,9 +18,8 @@ final class Form_Style {
 
 	public const META = '_wek_form_style';
 
-	public const PRESET_THEME   = 'theme';
-	public const PRESET_FORMKIT = 'formkit';
-	public const PRESET_CUSTOM  = 'custom';
+	public const PRESET_THEME  = 'theme';
+	public const PRESET_CUSTOM = 'custom';
 
 	/**
 	 * Editable color roles (CSS variable suffix after --wek-).
@@ -36,26 +35,196 @@ final class Form_Style {
 			'ink'         => __( 'Text', 'we-formkit' ),
 			'muted'       => __( 'Muted text', 'we-formkit' ),
 			'line'        => __( 'Borders', 'we-formkit' ),
+			'input'       => __( 'Input fill', 'we-formkit' ),
+			'on_accent'   => __( 'Button text', 'we-formkit' ),
 			'danger'      => __( 'Errors', 'we-formkit' ),
 		);
 	}
 
 	/**
-	 * Built-in Formkit teal palette.
+	 * Named built-in schemes (preset slug => label + palette).
+	 * Theme and Custom are separate; Formkit Teal is the first named scheme.
+	 *
+	 * @return array<string, array{label:string,colors:array<string,string>}>
+	 */
+	public static function named_schemes(): array {
+		return array(
+			'formkit'       => array(
+				'label'  => __( 'Formkit Teal', 'we-formkit' ),
+				'colors' => array(
+					'accent'      => '#0f5c4c',
+					'accent_soft' => '#e4f2ee',
+					'surface'     => '#ffffff',
+					'bg'          => '#f7f5f2',
+					'ink'         => '#1c1b19',
+					'muted'       => '#5c574f',
+					'line'        => '#d9d3c8',
+					'input'       => '#ffffff',
+					'on_accent'   => '#ffffff',
+					'danger'      => '#8a1f1f',
+				),
+			),
+			'slate-harbor'  => array(
+				'label'  => __( 'Slate Harbor', 'we-formkit' ),
+				'colors' => array(
+					'accent'      => '#1e4a6e',
+					'accent_soft' => '#e6eef5',
+					'surface'     => '#ffffff',
+					'bg'          => '#f3f5f8',
+					'ink'         => '#152033',
+					'muted'       => '#5a6578',
+					'line'        => '#c9d2de',
+					'input'       => '#ffffff',
+					'on_accent'   => '#ffffff',
+					'danger'      => '#9b2c2c',
+				),
+			),
+			'forest-moss'   => array(
+				'label'  => __( 'Forest Moss', 'we-formkit' ),
+				'colors' => array(
+					'accent'      => '#355e3b',
+					'accent_soft' => '#e8f0e9',
+					'surface'     => '#ffffff',
+					'bg'          => '#f4f6f2',
+					'ink'         => '#1a2219',
+					'muted'       => '#5a6458',
+					'line'        => '#cfd6ca',
+					'input'       => '#ffffff',
+					'on_accent'   => '#ffffff',
+					'danger'      => '#8b2e2e',
+				),
+			),
+			'warm-brick'    => array(
+				'label'  => __( 'Warm Brick', 'we-formkit' ),
+				'colors' => array(
+					'accent'      => '#9a3412',
+					'accent_soft' => '#f6ebe6',
+					'surface'     => '#ffffff',
+					'bg'          => '#f6f3f0',
+					'ink'         => '#271c18',
+					'muted'       => '#6b5750',
+					'line'        => '#ddd2cb',
+					'input'       => '#ffffff',
+					'on_accent'   => '#ffffff',
+					'danger'      => '#7f1d1d',
+				),
+			),
+			'saffron-stone' => array(
+				'label'  => __( 'Saffron Stone', 'we-formkit' ),
+				'colors' => array(
+					'accent'      => '#92400e',
+					'accent_soft' => '#fef3e8',
+					'surface'     => '#ffffff',
+					'bg'          => '#f7f5f2',
+					'ink'         => '#1c1917',
+					'muted'       => '#6f6760',
+					'line'        => '#e0dbd4',
+					'input'       => '#ffffff',
+					'on_accent'   => '#ffffff',
+					'danger'      => '#b91c1c',
+				),
+			),
+			'graphite'      => array(
+				'label'  => __( 'Graphite', 'we-formkit' ),
+				'colors' => array(
+					'accent'      => '#2c3338',
+					'accent_soft' => '#eceeef',
+					'surface'     => '#ffffff',
+					'bg'          => '#f2f3f4',
+					'ink'         => '#16191b',
+					'muted'       => '#5f676c',
+					'line'        => '#d3d7da',
+					'input'       => '#ffffff',
+					'on_accent'   => '#ffffff',
+					'danger'      => '#b42318',
+				),
+			),
+			'plum-ink'      => array(
+				'label'  => __( 'Plum Ink', 'we-formkit' ),
+				'colors' => array(
+					'accent'      => '#5b3a6e',
+					'accent_soft' => '#f0e8f4',
+					'surface'     => '#ffffff',
+					'bg'          => '#f6f3f7',
+					'ink'         => '#1f1824',
+					'muted'       => '#6a5d73',
+					'line'        => '#d8d0df',
+					'input'       => '#ffffff',
+					'on_accent'   => '#ffffff',
+					'danger'      => '#8a1f3a',
+				),
+			),
+			'midnight'      => array(
+				'label'  => __( 'Midnight', 'we-formkit' ),
+				'colors' => array(
+					'accent'      => '#7dd3c0',
+					'accent_soft' => '#1e2c2a',
+					'surface'     => '#1a222c',
+					'bg'          => '#11161d',
+					'ink'         => '#e8ecf2',
+					'muted'       => '#9aa3b2',
+					'line'        => '#2e3848',
+					'input'       => '#141b24',
+					'on_accent'   => '#0d1a17',
+					'danger'      => '#f07178',
+				),
+			),
+		);
+	}
+
+	/**
+	 * Preset keys allowed in storage (theme, named schemes, custom).
+	 *
+	 * @return list<string>
+	 */
+	public static function allowed_presets(): array {
+		return array_merge(
+			array( self::PRESET_THEME ),
+			array_keys( self::named_schemes() ),
+			array( self::PRESET_CUSTOM )
+		);
+	}
+
+	/**
+	 * Built-in Formkit teal palette (alias for the formkit named scheme).
 	 *
 	 * @return array<string, string>
 	 */
 	public static function formkit_defaults(): array {
-		return array(
-			'accent'      => '#0f5c4c',
-			'accent_soft' => '#e4f2ee',
-			'surface'     => '#ffffff',
-			'bg'          => '#f7f5f2',
-			'ink'         => '#1c1b19',
-			'muted'       => '#5c574f',
-			'line'        => '#d9d3c8',
-			'danger'      => '#8a1f1f',
-		);
+		$schemes = self::named_schemes();
+		return $schemes['formkit']['colors'];
+	}
+
+	/**
+	 * Colors for a named scheme, or empty array if unknown.
+	 *
+	 * @param string $preset Preset slug.
+	 * @return array<string, string>
+	 */
+	public static function scheme_colors( $preset ): array {
+		$schemes = self::named_schemes();
+		$preset  = sanitize_key( (string) $preset );
+		if ( ! isset( $schemes[ $preset ] ) ) {
+			return array();
+		}
+		return $schemes[ $preset ]['colors'];
+	}
+
+	/**
+	 * Admin boot payload: schemes list for the picker.
+	 *
+	 * @return list<array{id:string,label:string,colors:array<string,string>}>
+	 */
+	public static function schemes_for_admin(): array {
+		$out = array();
+		foreach ( self::named_schemes() as $id => $scheme ) {
+			$out[] = array(
+				'id'     => $id,
+				'label'  => $scheme['label'],
+				'colors' => $scheme['colors'],
+			);
+		}
+		return $out;
 	}
 
 	/**
@@ -97,7 +266,7 @@ final class Form_Style {
 	 */
 	public static function normalize( array $style ) {
 		$preset = sanitize_key( (string) ( $style['preset'] ?? self::PRESET_THEME ) );
-		if ( ! in_array( $preset, array( self::PRESET_THEME, self::PRESET_FORMKIT, self::PRESET_CUSTOM ), true ) ) {
+		if ( ! in_array( $preset, self::allowed_presets(), true ) ) {
 			$preset = self::PRESET_THEME;
 		}
 
@@ -124,14 +293,18 @@ final class Form_Style {
 	 */
 	public static function resolve( $form_id ) {
 		$stored = self::get( $form_id );
-		$base   = self::PRESET_FORMKIT === $stored['preset']
-			? self::formkit_defaults()
-			: self::theme_defaults();
+		$preset = $stored['preset'];
 
-		if ( self::PRESET_CUSTOM === $stored['preset'] ) {
+		if ( self::PRESET_CUSTOM === $preset ) {
+			$base = self::theme_defaults();
 			foreach ( $stored['colors'] as $key => $hex ) {
 				$base[ $key ] = $hex;
 			}
+		} elseif ( self::PRESET_THEME === $preset ) {
+			$base = self::theme_defaults();
+		} else {
+			$scheme = self::scheme_colors( $preset );
+			$base   = ! empty( $scheme ) ? $scheme : self::theme_defaults();
 		}
 
 		/**
@@ -160,6 +333,8 @@ final class Form_Style {
 			'ink'         => '--wek-ink',
 			'muted'       => '--wek-muted',
 			'line'        => '--wek-line',
+			'input'       => '--wek-input',
+			'on_accent'   => '--wek-on-accent',
 			'danger'      => '--wek-danger',
 		);
 		$parts  = array();
@@ -288,6 +463,8 @@ final class Form_Style {
 		$accent              = self::pick_accent_color( self::theme_color_palette() );
 		$base['accent']      = $accent;
 		$base['accent_soft'] = self::soft_tint( $accent );
+		$base['on_accent']   = '#ffffff';
+		$base['input']       = '#ffffff';
 		return $base;
 	}
 

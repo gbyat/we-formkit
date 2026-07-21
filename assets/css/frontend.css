@@ -6,11 +6,13 @@
 	--wek-line: #d9d3c8;
 	--wek-accent: #0f5c4c;
 	--wek-accent-soft: #e4f2ee;
+	--wek-input: #ffffff;
+	--wek-on-accent: #ffffff;
 	--wek-danger: #8a1f1f;
 	--wek-radius: 12px;
 	--wek-space: 1.25rem;
 	color: var(--wek-ink);
-	background: linear-gradient(180deg, var(--wek-bg) 0%, #fff 48%);
+	background: linear-gradient(180deg, var(--wek-bg) 0%, var(--wek-surface) 48%);
 	border: 1px solid var(--wek-line);
 	border-radius: calc(var(--wek-radius) + 4px);
 	padding: clamp(1.25rem, 3vw, 2rem);
@@ -235,7 +237,7 @@
 	border-radius: 8px;
 	padding: 0.65rem 0.75rem;
 	font: inherit;
-	background: #fff;
+	background: var(--wek-input);
 	color: inherit;
 }
 
@@ -276,7 +278,7 @@
 
 .we-formkit__choice:hover,
 .we-formkit__control--choice:hover {
-	background: color-mix(in srgb, var(--wek-accent-soft) 70%, #fff);
+	background: color-mix(in srgb, var(--wek-accent-soft) 70%, var(--wek-surface));
 	border-color: color-mix(in srgb, var(--wek-accent) 22%, transparent);
 }
 
@@ -288,7 +290,7 @@
 
 .we-formkit__choice:has(:checked),
 .we-formkit__control--choice:has(:checked) {
-	background: color-mix(in srgb, var(--wek-accent-soft) 55%, #fff);
+	background: color-mix(in srgb, var(--wek-accent-soft) 55%, var(--wek-surface));
 	border-color: color-mix(in srgb, var(--wek-accent) 45%, transparent);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wek-accent) 18%, transparent);
 }
@@ -314,7 +316,7 @@
 	margin: 0;
 	box-sizing: border-box;
 	border: 1.5px solid color-mix(in srgb, var(--wek-accent) 35%, var(--wek-line));
-	background: #fff;
+	background: var(--wek-input);
 	box-shadow: inset 0 1px 2px rgba(28, 27, 25, 0.06);
 	transition:
 		background-color 0.15s ease,
@@ -351,7 +353,7 @@
 }
 
 .we-formkit__choice input[type="radio"]:checked {
-	background: #fff;
+	background: var(--wek-input);
 	border-color: var(--wek-accent);
 	border-width: 2px;
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--wek-accent) 15%, transparent);
@@ -365,7 +367,7 @@
 	top: 45%;
 	width: 0.28rem;
 	height: 0.5rem;
-	border: solid #fff;
+	border: solid var(--wek-on-accent);
 	border-width: 0 2px 2px 0;
 	transform: translate(-50%, -55%) rotate(45deg);
 }
@@ -504,7 +506,7 @@
 	border: 0;
 	border-radius: 999px;
 	background: var(--wek-accent);
-	color: #fff;
+	color: var(--wek-on-accent);
 	font: inherit;
 	font-weight: 600;
 	padding: 0.8rem 1.4rem;
@@ -562,7 +564,7 @@
 	padding: 0.75rem 1rem;
 	border: 1px solid var(--wek-line, #d4d4d4);
 	border-radius: 6px;
-	background: #fff;
+	background: var(--wek-surface);
 }
 
 .we-formkit__info-docs[hidden] {
@@ -719,7 +721,7 @@
 .we-formkit__nav-btn--primary {
 	border-color: var(--wek-accent);
 	background: var(--wek-accent);
-	color: #fff;
+	color: var(--wek-on-accent);
 }
 
 .we-formkit__nav-btn:disabled {
@@ -740,7 +742,7 @@
 	height: auto;
 	border: 1px solid var(--wek-line);
 	border-radius: 8px;
-	background: #fff;
+	background: var(--wek-input);
 	touch-action: none;
 	cursor: crosshair;
 }

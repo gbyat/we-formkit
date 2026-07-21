@@ -24,8 +24,28 @@ const COLOR_ROLES = [
 	{ id: 'color_ink', key: 'ink', label: __( 'Text', 'we-formkit' ) },
 	{ id: 'color_muted', key: 'muted', label: __( 'Muted text', 'we-formkit' ) },
 	{ id: 'color_line', key: 'line', label: __( 'Borders', 'we-formkit' ) },
+	{ id: 'color_input', key: 'input', label: __( 'Input fill', 'we-formkit' ) },
+	{
+		id: 'color_on_accent',
+		key: 'on_accent',
+		label: __( 'Button text', 'we-formkit' ),
+	},
 	{ id: 'color_danger', key: 'danger', label: __( 'Errors', 'we-formkit' ) },
 ];
+
+const NAMED_SCHEMES = Array.isArray( boot.schemes ) ? boot.schemes : [];
+
+function schemeMap() {
+	const map = {};
+	NAMED_SCHEMES.forEach( ( scheme ) => {
+		if ( scheme && scheme.id ) {
+			map[ scheme.id ] = scheme.colors || {};
+		}
+	} );
+	return map;
+}
+
+const SCHEME_COLORS = schemeMap();
 
 function ColorEdit( { data, field, onChange } ) {
 	const value = data[ field.id ] || '#000000';
@@ -50,6 +70,112 @@ function colorsFromMap( map ) {
 		out[ role.id ] = map && map[ role.key ] ? map[ role.key ] : '#000000';
 	} );
 	return out;
+}
+
+function colorsFromData( data ) {
+	const out = {};
+	COLOR_ROLES.forEach( ( role ) => {
+		out[ role.key ] = data[ role.id ] || '#000000';
+	} );
+	return out;
+}
+
+function ColorSchemePreview( { data } ) {
+	const c = colorsFromData( data );
+	const req =
+		data.required_mark === 'text'
+			? __( '(required)', 'we-formkit' )
+			: data.required_mark === 'none'
+				? ''
+				: '*';
+
+	return (
+		<div className="wek-scheme-preview" aria-live="polite">
+			<p className="wek-scheme-preview__caption">
+				{ __( 'Live preview', 'we-formkit' ) }
+			</p>
+			<div
+				className="wek-scheme-preview__shell"
+				style={ {
+					'--wek-bg': c.bg,
+					'--wek-surface': c.surface,
+					'--wek-ink': c.ink,
+					'--wek-muted': c.muted,
+					'--wek-line': c.line,
+					'--wek-accent': c.accent,
+					'--wek-accent-soft': c.accent_soft,
+					'--wek-input': c.input,
+					'--wek-on-accent': c.on_accent,
+					'--wek-danger': c.danger,
+				} }
+			>
+				<div className="wek-scheme-preview__card">
+					<div className="wek-scheme-preview__title">
+						{ data.title || __( 'Contact request', 'we-formkit' ) }
+					</div>
+					<div className="wek-scheme-preview__intro">
+						{ data.intro ||
+							__(
+								'We reply within one business day.',
+								'we-formkit'
+							) }
+					</div>
+					<div
+						className={
+							'wek-scheme-preview__label' +
+							( data.label_weight === 'normal'
+								? ' is-normal'
+								: '' )
+						}
+					>
+						{ __( 'Email', 'we-formkit' ) }
+						{ req ? (
+							<span className="wek-scheme-preview__req">
+								{ ' ' }
+								{ req }
+							</span>
+						) : null }
+					</div>
+					{ data.help_placement === 'below_label' ? (
+						<div
+							className={
+								'wek-scheme-preview__help' +
+								( data.help_style === 'boxed'
+									? ' is-boxed'
+									: '' )
+							}
+						>
+							{ __( 'Used only for this reply.', 'we-formkit' ) }
+						</div>
+					) : null }
+					<div className="wek-scheme-preview__input">
+						you@example.com
+					</div>
+					{ data.help_placement === 'below_field' ? (
+						<div
+							className={
+								'wek-scheme-preview__help' +
+								( data.help_style === 'boxed'
+									? ' is-boxed'
+									: '' )
+							}
+						>
+							{ __( 'Used only for this reply.', 'we-formkit' ) }
+						</div>
+					) : null }
+					<div className="wek-scheme-preview__choice">
+						{ __( 'Soft choice card / help box', 'we-formkit' ) }
+					</div>
+					<div className="wek-scheme-preview__error">
+						{ __( 'Please enter a valid email.', 'we-formkit' ) }
+					</div>
+					<span className="wek-scheme-preview__submit">
+						{ __( 'Submit', 'we-formkit' ) }
+					</span>
+				</div>
+			</div>
+		</div>
+	);
 }
 
 function flattenSettings( payload ) {
@@ -91,6 +217,23 @@ function toApiPayload( data ) {
 			colors,
 		},
 	};
+}
+
+function presetElements() {
+	return [
+		{
+			value: 'theme',
+			label: __( 'Match site theme', 'we-formkit' ),
+		},
+		...NAMED_SCHEMES.map( ( scheme ) => ( {
+			value: scheme.id,
+			label: scheme.label || scheme.id,
+		} ) ),
+		{
+			value: 'custom',
+			label: __( 'Custom', 'we-formkit' ),
+		},
+	];
 }
 
 function FormSettingsApp() {
@@ -217,26 +360,13 @@ function FormSettingsApp() {
 			},
 			{
 				id: 'style_preset',
-				label: __( 'Color preset', 'we-formkit' ),
+				label: __( 'Color scheme', 'we-formkit' ),
 				type: 'text',
 				description: __(
-					'Match site theme needs no picking. Edit any color to customize.',
+					'Choose a matching palette. Edit any color to switch to Custom — built-in schemes stay selectable.',
 					'we-formkit'
 				),
-				elements: [
-					{
-						value: 'theme',
-						label: __( 'Match site theme', 'we-formkit' ),
-					},
-					{
-						value: 'formkit',
-						label: __( 'Formkit teal', 'we-formkit' ),
-					},
-					{
-						value: 'custom',
-						label: __( 'Custom', 'we-formkit' ),
-					},
-				],
+				elements: presetElements(),
 			},
 			...COLOR_ROLES.map( ( role ) => ( {
 				id: role.id,
@@ -304,8 +434,8 @@ function FormSettingsApp() {
 				const preset = edits.style_preset;
 				if ( preset === 'theme' ) {
 					Object.assign( next, colorsFromMap( boot.themeColors ) );
-				} else if ( preset === 'formkit' ) {
-					Object.assign( next, colorsFromMap( boot.formkitColors ) );
+				} else if ( SCHEME_COLORS[ preset ] ) {
+					Object.assign( next, colorsFromMap( SCHEME_COLORS[ preset ] ) );
 				}
 			} else {
 				const colorTouched = COLOR_ROLES.some( ( role ) =>
@@ -384,12 +514,19 @@ function FormSettingsApp() {
 				</Notice>
 			) }
 
-			<DataForm
-				data={ data }
-				fields={ fields }
-				form={ form }
-				onChange={ onChange }
-			/>
+			<div className="wek-dataform-settings__layout">
+				<div className="wek-dataform-settings__form">
+					<DataForm
+						data={ data }
+						fields={ fields }
+						form={ form }
+						onChange={ onChange }
+					/>
+				</div>
+				<aside className="wek-dataform-settings__preview">
+					<ColorSchemePreview data={ data } />
+				</aside>
+			</div>
 
 			{ data.secret_enabled && secretToken ? (
 				<div className="wek-dataform-settings__secret">
