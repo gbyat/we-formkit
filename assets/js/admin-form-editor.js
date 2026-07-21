@@ -77,6 +77,16 @@
 	}
 
 	function boot() {
+		const saveResume = document.getElementById( 'wek-save-resume' );
+		const saveResumeTtl = document.getElementById( 'wek-save-resume-ttl' );
+		if ( saveResume && saveResumeTtl ) {
+			const syncSaveResumeTtl = function () {
+				saveResumeTtl.disabled = ! saveResume.checked;
+			};
+			saveResume.addEventListener( 'change', syncSaveResumeTtl );
+			syncSaveResumeTtl();
+		}
+
 		const i18n = ( window.weFormkitAdmin && window.weFormkitAdmin.i18n ) || {};
 		const fieldTypes = getFieldTypes();
 		const root = document.getElementById( 'wek-builder' );

@@ -295,30 +295,35 @@ final class Frontend {
 				'saveResume' => Drafts::is_enabled( $form_id ),
 				'draftUrl'   => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/drafts' ) ),
 				'i18n'       => array(
-					'submitting'     => __( 'Submitting…', 'we-formkit' ),
-					'submit'         => __( 'Submit form', 'we-formkit' ),
-					'error'          => __( 'Something went wrong. Please try again.', 'we-formkit' ),
-					'required'       => __( 'This field is required.', 'we-formkit' ),
-					'correctFields'  => __( 'Please correct the highlighted fields.', 'we-formkit' ),
-					'addRow'         => __( 'Add another', 'we-formkit' ),
-					'removeRow'      => __( 'Remove', 'we-formkit' ),
+					'submitting'      => __( 'Submitting…', 'we-formkit' ),
+					'submit'          => __( 'Submit form', 'we-formkit' ),
+					'error'           => __( 'Something went wrong. Please try again.', 'we-formkit' ),
+					'required'        => __( 'This field is required.', 'we-formkit' ),
+					'correctFields'   => __( 'Please correct the highlighted fields.', 'we-formkit' ),
+					'addRow'          => __( 'Add another', 'we-formkit' ),
+					'removeRow'       => __( 'Remove', 'we-formkit' ),
 					/* translators: %d: row number (1-based). */
-					'rowLabel'       => __( 'Row %d', 'we-formkit' ),
-					'autofillReady'  => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
-					'autofillManual' => __( 'Test fill applied. Click Submit form when ready.', 'we-formkit' ),
-					'autofillDone'   => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
-					'infoDocuments'  => __( 'Downloads', 'we-formkit' ),
-					'next'           => __( 'Next', 'we-formkit' ),
-					'previous'       => __( 'Previous', 'we-formkit' ),
+					'rowLabel'        => __( 'Row %d', 'we-formkit' ),
+					'autofillReady'   => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
+					'autofillManual'  => __( 'Test fill applied. Click Submit form when ready.', 'we-formkit' ),
+					'autofillDone'    => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
+					'infoDocuments'   => __( 'Downloads', 'we-formkit' ),
+					'next'            => __( 'Next', 'we-formkit' ),
+					'previous'        => __( 'Previous', 'we-formkit' ),
 					/* translators: 1: current page, 2: total pages. */
-					'pageOf'         => __( 'Step %1$d of %2$d', 'we-formkit' ),
-					'saveProgress'   => __( 'Save progress', 'we-formkit' ),
-					'savedProgress'  => __( 'Progress saved. Copy your resume link:', 'we-formkit' ),
-					'resumeLoaded'   => __( 'Your saved progress was restored.', 'we-formkit' ),
+					'pageOf'          => __( 'Step %1$d of %2$d', 'we-formkit' ),
+					'saveProgress'    => __( 'Save progress', 'we-formkit' ),
+					'saveEmailNeeded' => __( 'Enter an email address to receive your resume link.', 'we-formkit' ),
+					'savingProgress'  => __( 'Saving…', 'we-formkit' ),
+					/* translators: %s: email address. */
+					'savedProgress'   => __( 'Progress saved. We sent a resume link to %s.', 'we-formkit' ),
+					'saveMailFailed'  => __( 'Progress was saved, but the resume email could not be sent. Please try again or contact the site owner.', 'we-formkit' ),
+					'resumeLoaded'    => __( 'Your saved progress was restored.', 'we-formkit' ),
+					'saveEmailPh'     => __( 'Email for resume link', 'we-formkit' ),
 					/* translators: 1: field label, 2: minimum number of selections. */
-					'checkboxesMin'  => __( 'Please select at least %2$d option(s) for %1$s.', 'we-formkit' ),
+					'checkboxesMin'   => __( 'Please select at least %2$d option(s) for %1$s.', 'we-formkit' ),
 					/* translators: 1: field label, 2: maximum number of selections. */
-					'checkboxesMax'  => __( 'Please select at most %2$d option(s) for %1$s.', 'we-formkit' ),
+					'checkboxesMax'   => __( 'Please select at most %2$d option(s) for %1$s.', 'we-formkit' ),
 				),
 				'validation' => Validation_Messages::global_templates_for_js(),
 			)
@@ -402,8 +407,27 @@ final class Frontend {
 					</p>
 				<?php endif; ?>
 
-				<p class="we-formkit__actions" data-wek-submit-wrap>
-					<?php self::render_submit_button( $form_id ); ?>
+				<?php if ( Drafts::is_enabled( $form_id ) ) : ?>
+					<p class="we-formkit__actions we-formkit__actions--save-email" data-wek-save-wrap>
+						<label class="we-formkit__save-email-label">
+							<span class="screen-reader-text"><?php esc_html_e( 'Email for resume link', 'we-formkit' ); ?></span>
+							<input
+								type="email"
+								class="we-formkit__save-email"
+								name="wek_save_email"
+								data-wek-save-email
+								autocomplete="email"
+								inputmode="email"
+								placeholder="<?php esc_attr_e( 'Email for resume link', 'we-formkit' ); ?>"
+							/>
+						</label>
+					</p>
+				<?php endif; ?>
+
+				<p class="we-formkit__actions we-formkit__actions--buttons">
+					<span class="we-formkit__submit-slot" data-wek-submit-wrap>
+						<?php self::render_submit_button( $form_id ); ?>
+					</span>
 					<?php if ( Drafts::is_enabled( $form_id ) ) : ?>
 						<button type="button" class="we-formkit__save-progress" data-wek-save-progress><?php esc_html_e( 'Save progress', 'we-formkit' ); ?></button>
 					<?php endif; ?>

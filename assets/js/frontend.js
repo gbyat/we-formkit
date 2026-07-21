@@ -1174,6 +1174,13 @@
 		}
 
 		root.classList.add( 'we-formkit--multipage' );
+		root.addEventListener( 'wek-go-page', function ( event ) {
+			const next = event && event.detail ? event.detail.index : null;
+			if ( typeof next === 'number' && next >= 0 && next < sections.length ) {
+				index = next;
+				sync();
+			}
+		} );
 		sync();
 	}
 
@@ -1184,7 +1191,33 @@
 		}
 		const form = qs( root, '[data-wek-form]' );
 		const btn = qs( form, '[data-wek-save-progress]' );
+		const emailInput = qs( form, '[data-wek-save-email]' );
 		const i18n = cfg.i18n || {};
+
+		function firstFormEmail() {
+			const fields = qsa( form, '[data-field-type="email"]' );
+			for ( let i = 0; i < fields.length; i++ ) {
+				if ( fields[ i ].classList.contains( 'is-hidden' ) ) {
+					continue;
+				}
+				const input = qs( fields[ i ], 'input[type="email"], input' );
+				const val = input ? String( input.value || '' ).trim() : '';
+				if ( val.indexOf( '@' ) !== -1 ) {
+					return val;
+				}
+			}
+			return '';
+		}
+
+		function syncSaveEmailPrefill() {
+			if ( ! emailInput || String( emailInput.value || '' ).trim() ) {
+				return;
+			}
+			const fromForm = firstFormEmail();
+			if ( fromForm ) {
+				emailInput.value = fromForm;
+			}
+		}
 
 		function fillValues( values ) {
 			if ( ! values || typeof values !== 'object' ) {
@@ -1225,11 +1258,48 @@
 				}
 			} );
 			applyConditionals( root );
+			syncSaveEmailPrefill();
+		}
+
+		if ( emailInput ) {
+			form.addEventListener( 'change', function ( event ) {
+				const t = event.target;
+				if ( t && t.matches && t.matches( 'input[type="email"]' ) && t !== emailInput ) {
+					syncSaveEmailPrefill();
+				}
+			} );
+			syncSaveEmailPrefill();
 		}
 
 		if ( btn ) {
 			btn.addEventListener( 'click', function () {
+				syncSaveEmailPrefill();
+				const email = emailInput ? String( emailInput.value || '' ).trim() : firstFormEmail();
+				if ( ! email || email.indexOf( '@' ) === -1 ) {
+					setStatus(
+						root,
+						i18n.saveEmailNeeded || 'Enter an email address to receive your resume link.',
+						true
+					);
+					if ( emailInput ) {
+						emailInput.focus();
+					}
+					return;
+				}
+
 				const values = collectValues( form );
+				const sections = qsa( form, '[data-wek-section]' );
+				let pageIndex = 0;
+				sections.forEach( function ( section, i ) {
+					if ( section.getAttribute( 'data-wek-page-active' ) === '1' ) {
+						pageIndex = i;
+					}
+				} );
+
+				const prevLabel = btn.textContent;
+				btn.disabled = true;
+				btn.textContent = i18n.savingProgress || 'Saving…';
+
 				fetch( cfg.draftUrl, {
 					method: 'POST',
 					credentials: 'same-origin',
@@ -1240,33 +1310,47 @@
 					body: JSON.stringify( {
 						nonce: cfg.nonce,
 						form_id: cfg.formId,
+						email: email,
 						values: values,
-						page_index: 0,
+						page_index: pageIndex,
 						page_url: window.location.href.split( '#' )[ 0 ],
 					} ),
 				} )
 					.then( function ( response ) {
-						return response.json();
+						return response.json().then( function ( data ) {
+							return { ok: response.ok, data: data };
+						} );
 					} )
-					.then( function ( data ) {
-						if ( data && data.success && data.resume_url ) {
-							const msg =
-								( i18n.savedProgress || 'Progress saved. Copy your resume link:' ) +
-								' ' +
-								data.resume_url;
-							setStatus( root, msg, false );
-							try {
-								if ( navigator.clipboard && navigator.clipboard.writeText ) {
-									navigator.clipboard.writeText( data.resume_url );
-								}
-							} catch ( e ) {
-								/* ignore */
+					.then( function ( result ) {
+						btn.disabled = false;
+						btn.textContent = prevLabel;
+						const data = result.data || {};
+						if ( result.ok && data.success ) {
+							if ( data.email_sent ) {
+								const tpl =
+									i18n.savedProgress ||
+									'Progress saved. We sent a resume link to %s.';
+								setStatus( root, tpl.replace( '%s', email ), false );
+							} else {
+								setStatus(
+									root,
+									i18n.saveMailFailed ||
+										'Progress was saved, but the resume email could not be sent. Please try again or contact the site owner.',
+									true
+								);
 							}
-						} else {
-							setStatus( root, ( data && data.message ) || i18n.error || 'Error', true );
+							return;
 						}
+						const msg =
+							data.message ||
+							( data.data && data.data.message ) ||
+							i18n.error ||
+							'Error';
+						setStatus( root, msg, true );
 					} )
 					.catch( function () {
+						btn.disabled = false;
+						btn.textContent = prevLabel;
 						setStatus( root, i18n.error || 'Error', true );
 					} );
 			} );
@@ -1292,6 +1376,13 @@
 						return;
 					}
 					fillValues( result.data.values );
+					if ( typeof result.data.page_index === 'number' && result.data.page_index > 0 ) {
+						root.dispatchEvent(
+							new CustomEvent( 'wek-go-page', {
+								detail: { index: result.data.page_index },
+							} )
+						);
+					}
 					setStatus( root, i18n.resumeLoaded || 'Your saved progress was restored.', false );
 				} )
 				.catch( function () {

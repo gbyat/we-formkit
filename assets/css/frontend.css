@@ -840,9 +840,99 @@
 	gap: 0.65rem;
 }
 
+.we-formkit__actions--save {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.65rem;
+}
+
+.we-formkit__actions--save-email {
+	margin-bottom: 0;
+}
+
+.we-formkit__actions--buttons {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 1rem;
+	margin-top: 1rem;
+}
+
+.we-formkit__actions--save-email + .we-formkit__actions--buttons {
+	margin-top: 0.85rem;
+}
+
+.we-formkit__submit-slot {
+	display: inline-flex;
+}
+
+.we-formkit__submit-slot[hidden] {
+	display: none !important;
+}
+
+.we-formkit__save-email-label {
+	flex: 1 1 14rem;
+	min-width: 0;
+	margin: 0;
+	display: block;
+}
+
+.we-formkit__save-email {
+	width: 100%;
+	box-sizing: border-box;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input);
+	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
+	font: inherit;
+	font-size: var(--wek-font-input);
+	background: var(--wek-input);
+	color: inherit;
+	min-height: calc(
+		(var(--wek-font-input) * 1.4) + (2 * var(--wek-control-pad-y)) + 2px
+	);
+}
+
+.we-formkit .we-formkit__save-progress {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	margin: 0;
+	border: 2px solid var(--wek-accent);
+	border-radius: var(--wek-radius-button);
+	background: transparent;
+	color: var(--wek-accent);
+	font: inherit;
+	font-weight: 600;
+	line-height: 1.2;
+	padding: 0.75rem 1.35rem;
+	cursor: pointer;
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.we-formkit .we-formkit__save-progress:hover,
+.we-formkit .we-formkit__save-progress:focus-visible {
+	background: color-mix(in srgb, var(--wek-accent) 12%, transparent);
+	outline: none;
+}
+
+.we-formkit .we-formkit__save-progress:disabled {
+	opacity: 0.65;
+	cursor: wait;
+}
+
 .we-formkit__actions--nav[hidden],
 .we-formkit__progress[hidden],
-.we-formkit__actions[hidden] {
+.we-formkit__actions[hidden],
+.we-formkit__submit-slot[hidden] {
 	display: none !important;
 }
 

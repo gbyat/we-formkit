@@ -732,6 +732,7 @@ final class Form_Editor {
 		$pagination  = 'single';
 		$shortcode   = '';
 		$save_resume = false;
+		$save_ttl    = Drafts::TTL_DAYS;
 		if ( ! $is_new && $form_id > 0 ) {
 			$entries_url = add_query_arg(
 				array(
@@ -751,6 +752,7 @@ final class Form_Editor {
 			$clone_url   = wp_nonce_url( admin_url( 'admin.php?page=we-formkit&wek_clone_form=1&form_id=' . $form_id ), 'wek_clone_form_' . $form_id );
 			$pagination  = Form_Schema::get_pagination( $form_id );
 			$save_resume = Drafts::is_enabled( $form_id );
+			$save_ttl    = Drafts::get_ttl_days( $form_id );
 			$slug        = (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true );
 			$shortcode   = $slug
 				? sprintf( '[we_formkit slug="%s"]', $slug )
@@ -802,8 +804,26 @@ final class Form_Editor {
 				</select>
 			</label>
 			<label class="wek-fields-bar__save-resume">
-				<input type="checkbox" name="wek_save_resume" value="1" <?php checked( $save_resume ); ?> />
+				<input type="checkbox" name="wek_save_resume" value="1" id="wek-save-resume" <?php checked( $save_resume ); ?> />
 				<?php esc_html_e( 'Save & Resume', 'we-formkit' ); ?>
+			</label>
+			<label class="wek-fields-bar__save-resume-ttl" for="wek-save-resume-ttl">
+				<span class="screen-reader-text"><?php esc_html_e( 'Keep drafts for', 'we-formkit' ); ?></span>
+				<select name="wek_save_resume_ttl" id="wek-save-resume-ttl" <?php disabled( ! $save_resume ); ?>>
+					<?php foreach ( Drafts::allowed_ttl_days() as $days ) : ?>
+						<option value="<?php echo esc_attr( (string) $days ); ?>" <?php selected( $save_ttl, $days ); ?>>
+							<?php
+							echo esc_html(
+								sprintf(
+									/* translators: %d: number of days. */
+									_n( '%d day', '%d days', $days, 'we-formkit' ),
+									$days
+								)
+							);
+							?>
+						</option>
+					<?php endforeach; ?>
+				</select>
 			</label>
 			<div class="wek-fields-bar__actions">
 				<?php if ( $preview_url ) : ?>
@@ -2113,6 +2133,11 @@ final class Form_Editor {
 		Form_Schema::set_pagination( $form_id, $pagination );
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		Drafts::set_enabled( $form_id, ! empty( $_POST['wek_save_resume'] ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		Drafts::set_ttl_days(
+			$form_id,
+			isset( $_POST['wek_save_resume_ttl'] ) ? absint( wp_unslash( $_POST['wek_save_resume_ttl'] ) ) : Drafts::TTL_DAYS
+		);
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		Form_Schema::set_submit_button(
