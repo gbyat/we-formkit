@@ -726,7 +726,7 @@ final class Drafts {
 					$exp_txt
 				)
 			),
-			'URL:' . self::ics_escape_text( $resume_url ),
+			'URL:' . $resume_url,
 			'TRANSP:TRANSPARENT',
 			'SEQUENCE:0',
 			'CLASS:PRIVATE',
