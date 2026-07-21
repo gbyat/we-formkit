@@ -29,7 +29,7 @@ class Tel_Field extends Abstract_Field_Type {
 	}
 
 	public function render_attributes( array $field ): array {
-		$attrs = parent::render_attributes( $field );
+		$attrs         = parent::render_attributes( $field );
 		$attrs['type'] = 'tel';
 
 		return $attrs;

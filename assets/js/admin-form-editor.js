@@ -124,6 +124,7 @@
 		/** @type {{ type: string, sIndex?: number, fIndex?: number, nIndex?: number }|null} */
 		let selection = null;
 		let activeTab = 'general';
+		let sidebarScope = 'field'; // field | form | integrations
 		const live = { node: null };
 		const CHROME_KEY = 'wek_formkit_builder_chrome';
 		const chrome = ( function () {
@@ -585,6 +586,9 @@
 
 		function selectItem( next, tab ) {
 			selection = next;
+			if ( next ) {
+				sidebarScope = 'field';
+			}
 			if ( tab ) {
 				activeTab = tab;
 			} else if ( next && ( next.type === 'section' || next.type === 'submit' ) && activeTab === 'appearance' ) {
@@ -1874,6 +1878,217 @@
 
 		function renderSidebar( aside ) {
 			aside.innerHTML = '';
+
+			const scopes = [
+				{ id: 'field', label: i18n.scopeField || 'Field' },
+				{ id: 'form', label: i18n.scopeForm || 'Form' },
+				{ id: 'integrations', label: i18n.scopeIntegrations || 'Integrations' },
+			];
+			const scopeBar = el( 'div', {
+				className: 'wek-builder-scope',
+				role: 'tablist',
+				'aria-label': i18n.scopeTabs || 'Settings scope',
+			} );
+			scopes.forEach( function ( scope ) {
+				scopeBar.appendChild(
+					el( 'button', {
+						type: 'button',
+						className:
+							'wek-builder-scope__btn' +
+							( sidebarScope === scope.id ? ' is-active' : '' ),
+						role: 'tab',
+						'aria-selected': sidebarScope === scope.id ? 'true' : 'false',
+						text: scope.label,
+						onClick: function () {
+							sidebarScope = scope.id;
+							refreshSidebar();
+						},
+					} )
+				);
+			} );
+			aside.appendChild( scopeBar );
+
+			const body = el( 'div', {
+				className: 'wek-builder-scope__body',
+				role: 'tabpanel',
+			} );
+			aside.appendChild( body );
+
+			if ( sidebarScope === 'form' ) {
+				renderFormScope( body );
+				return;
+			}
+			if ( sidebarScope === 'integrations' ) {
+				renderIntegrationsScope( body );
+				return;
+			}
+			renderFieldInspector( body );
+		}
+
+		function renderFormScope( container ) {
+			const admin = window.weFormkitAdmin || {};
+			const formId = parseInt( admin.formId, 10 ) || 0;
+			const slug = String( admin.slug || '' );
+			const settingsUrl = String( admin.settingsUrl || '' );
+			const title =
+				( titleInput && titleInput.value ) ||
+				( schema && schema.title ) ||
+				( i18n.untitledForm || 'Untitled form' );
+
+			container.appendChild(
+				el( 'div', { className: 'wek-builder-sidebar__head' }, [
+					el( 'h3', {
+						className: 'wek-builder-sidebar__title',
+						text: i18n.formScopeTitle || 'Form',
+					} ),
+				] )
+			);
+
+			container.appendChild(
+				el( 'p', {
+					className: 'description wek-builder-scope__lead',
+					text:
+						i18n.formScopeLead ||
+						'Quick links for this form. Appearance, Save & Resume, and privacy live under Form Settings.',
+				} )
+			);
+
+			container.appendChild(
+				fieldRow(
+					i18n.formTitle || 'Title',
+					el( 'input', {
+						type: 'text',
+						className: 'regular-text',
+						value: title,
+						readonly: true,
+					} )
+				)
+			);
+
+			if ( formId > 0 ) {
+				container.appendChild(
+					fieldRow(
+						i18n.formIdLabel || 'Form ID',
+						el( 'code', { text: String( formId ) } )
+					)
+				);
+				const shortcode = '[we_formkit id="' + formId + '"]';
+				const shortcodeInput = el( 'input', {
+					type: 'text',
+					className: 'regular-text code',
+					value: shortcode,
+					readonly: true,
+				} );
+				shortcodeInput.addEventListener( 'focus', function () {
+					shortcodeInput.select();
+				} );
+				container.appendChild( fieldRow( i18n.shortcode || 'Shortcode', shortcodeInput ) );
+				if ( slug ) {
+					container.appendChild(
+						fieldRow(
+							i18n.slugLabel || 'Slug',
+							el( 'code', { text: slug } )
+						)
+					);
+				}
+			} else {
+				container.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.saveFormFirst ||
+							'Save the form once to unlock the shortcode and Form Settings link.',
+					} )
+				);
+			}
+
+			if ( settingsUrl ) {
+				container.appendChild(
+					el( 'p', { className: 'wek-builder__row' }, [
+						el( 'a', {
+							className: 'button button-secondary',
+							href: settingsUrl,
+							text: i18n.openFormSettings || 'Open Form Settings',
+						} ),
+					] )
+				);
+			}
+			const designUrl = String( admin.designUrl || '' );
+			if ( designUrl ) {
+				container.appendChild(
+					el( 'p', { className: 'wek-builder__row' }, [
+						el( 'a', {
+							className: 'button button-secondary',
+							href: designUrl,
+							text: i18n.openDesign || 'Open Design',
+						} ),
+					] )
+				);
+			}
+
+			container.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.formScopePaginationHint ||
+						'Pagination (single page / one section per page) is in the toolbar above the canvas.',
+				} )
+			);
+		}
+
+		function renderIntegrationsScope( container ) {
+			const admin = window.weFormkitAdmin || {};
+			const modules = Array.isArray( admin.modules ) ? admin.modules : [];
+
+			container.appendChild(
+				el( 'div', { className: 'wek-builder-sidebar__head' }, [
+					el( 'h3', {
+						className: 'wek-builder-sidebar__title',
+						text: i18n.integrationsTitle || 'Integrations',
+					} ),
+				] )
+			);
+
+			if ( ! modules.length ) {
+				container.appendChild(
+					el( 'div', { className: 'wek-builder-scope__empty' }, [
+						el( 'p', {
+							className: 'wek-builder-sidebar__empty',
+							text:
+								i18n.integrationsEmpty ||
+								'No modules connected yet. Add-ons register here via we_formkit_register_modules.',
+						} ),
+						el( 'p', {
+							className: 'description',
+							text:
+								i18n.integrationsHint ||
+								'Planned modules include Spamfighter, Subscribe to Posts, and server-side PDF.',
+						} ),
+					] )
+				);
+				return;
+			}
+
+			const list = el( 'ul', { className: 'wek-builder-scope__modules' } );
+			modules.forEach( function ( mod ) {
+				const name = ( mod && mod.name ) || ( mod && mod.id ) || '';
+				const desc = ( mod && mod.description ) || '';
+				list.appendChild(
+					el( 'li', null, [
+						el( 'strong', { text: String( name ) } ),
+						desc
+							? el( 'span', {
+									className: 'description',
+									text: String( desc ),
+							  } )
+							: null,
+					] )
+				);
+			} );
+			container.appendChild( list );
+		}
+
+		function renderFieldInspector( aside ) {
 			const selected = getSelected();
 			if ( ! selected ) {
 				aside.appendChild(

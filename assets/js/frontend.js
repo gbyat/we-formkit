@@ -285,6 +285,8 @@
 			el.setAttribute( 'aria-hidden', visible ? 'false' : 'true' );
 			setControlsVisibility( el, visible );
 		} );
+
+		form.dispatchEvent( new Event( 'wek:conditionals' ) );
 	}
 
 	function initConditionals( root, form ) {
@@ -1260,13 +1262,43 @@
 			return count;
 		}
 
+		/**
+		 * True when every visible required field is filled/valid — submit is enough.
+		 */
+		function formIsComplete() {
+			let sawRequired = false;
+			let complete = true;
+			qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
+				const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+				if ( SKIP_TYPES[ type ] ) {
+					return;
+				}
+				if ( fieldEl.classList.contains( 'is-hidden' ) ) {
+					return;
+				}
+				const section = fieldEl.closest( '[data-wek-section]' );
+				if ( section && section.classList.contains( 'is-hidden' ) ) {
+					return;
+				}
+				if ( fieldEl.getAttribute( 'data-required' ) !== '1' ) {
+					return;
+				}
+				sawRequired = true;
+				if ( getFieldValidationMessage( fieldEl ) ) {
+					complete = false;
+				}
+			} );
+			return sawRequired && complete;
+		}
+
 		function syncSaveUnlock() {
 			if ( ! saveUi.length ) {
 				return;
 			}
 			const unlocked = minFilled <= 0 || countFilledFields() >= minFilled;
+			const show = unlocked && ! formIsComplete();
 			saveUi.forEach( function ( el ) {
-				if ( unlocked ) {
+				if ( show ) {
 					el.removeAttribute( 'hidden' );
 				} else {
 					el.setAttribute( 'hidden', '' );
@@ -1358,6 +1390,7 @@
 
 		form.addEventListener( 'input', syncSaveUnlock );
 		form.addEventListener( 'change', syncSaveUnlock );
+		form.addEventListener( 'wek:conditionals', syncSaveUnlock );
 		syncSaveUnlock();
 
 		if ( remindInput ) {

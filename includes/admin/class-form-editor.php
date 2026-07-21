@@ -351,10 +351,30 @@ final class Form_Editor {
 				'icon_position' => 'before',
 			);
 
+		$slug         = $form_id > 0 ? (string) get_post_meta( (int) $form_id, Form_Schema::META_SLUG, true ) : '';
+		$modules_boot = array();
+		foreach ( Plugin::instance()->module_registry()->all() as $module_id => $definition ) {
+			$modules_boot[] = array(
+				'id'          => (string) $module_id,
+				'name'        => (string) ( $definition['name'] ?? $module_id ),
+				'description' => (string) ( $definition['description'] ?? '' ),
+				'version'     => (string) ( $definition['version'] ?? '' ),
+			);
+		}
+
 		wp_localize_script(
 			'we-formkit-admin-form',
 			'weFormkitAdmin',
 			array(
+				'formId'            => (int) $form_id,
+				'slug'              => $slug,
+				'settingsUrl'       => $form_id > 0
+					? admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $form_id . '&view=settings' )
+					: '',
+				'designUrl'         => $form_id > 0
+					? admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $form_id . '&view=design' )
+					: '',
+				'modules'           => $modules_boot,
 				'fieldTypes'        => $field_types,
 				'submitButton'      => array(
 					'label'         => (string) $submit['label'],
@@ -363,131 +383,149 @@ final class Form_Editor {
 				),
 				'submitLabel'       => (string) $submit['label'],
 				'i18n'              => array(
-					'section'              => __( 'Section', 'we-formkit' ),
-					'field'                => __( 'Field', 'we-formkit' ),
-					'remove'               => __( 'Remove', 'we-formkit' ),
-					'addField'             => __( 'Add field', 'we-formkit' ),
-					'addSection'           => __( 'Add section', 'we-formkit' ),
-					'fieldsLibrary'        => __( 'Fields', 'we-formkit' ),
-					'searchFields'         => __( 'Search fields…', 'we-formkit' ),
-					'noFieldsMatch'        => __( 'No matching fields.', 'we-formkit' ),
-					'fieldSettings'        => __( 'Field settings', 'we-formkit' ),
-					'sectionSettings'      => __( 'Section settings', 'we-formkit' ),
-					'submitPreview'        => __( 'Submit', 'we-formkit' ),
-					'label'                => __( 'Label', 'we-formkit' ),
-					'id'                   => __( 'Field ID', 'we-formkit' ),
-					'type'                 => __( 'Type', 'we-formkit' ),
-					'required'             => __( 'Required', 'we-formkit' ),
-					'help'                 => __( 'Help text', 'we-formkit' ),
-					'options'              => __( 'Options (value + label)', 'we-formkit' ),
-					'optionsDefaultHint'   => __( 'Drag to reorder. Mark one option as default, or leave unset to use the placeholder (empty value).', 'we-formkit' ),
-					'dragToReorder'        => __( 'Drag to reorder', 'we-formkit' ),
-					'defaultOption'        => __( 'Default', 'we-formkit' ),
-					'clearDefault'         => __( 'Clear default (use placeholder)', 'we-formkit' ),
-					'optionValue'          => __( 'value', 'we-formkit' ),
-					'optionLabel'          => __( 'Label', 'we-formkit' ),
-					'collapseLibrary'      => __( 'Collapse fields library', 'we-formkit' ),
-					'expandLibrary'        => __( 'Expand fields library', 'we-formkit' ),
-					'collapseSettings'     => __( 'Collapse field settings', 'we-formkit' ),
-					'expandSettings'       => __( 'Expand field settings', 'we-formkit' ),
-					'resizeLibrary'        => __( 'Drag to resize', 'we-formkit' ),
-					'resizeSettings'       => __( 'Drag to resize', 'we-formkit' ),
-					'showWhen'             => __( 'Show when', 'we-formkit' ),
-					'showField'            => __( 'Depends on field', 'we-formkit' ),
-					'showOp'               => __( 'Operator', 'we-formkit' ),
-					'showValue'            => __( 'Value', 'we-formkit' ),
-					'none'                 => __( 'Always visible', 'we-formkit' ),
-					'matchAll'             => __( 'Match all of the following (AND)', 'we-formkit' ),
-					'matchAny'             => __( 'Match any of the following (OR)', 'we-formkit' ),
-					'addCondition'         => __( 'Add condition', 'we-formkit' ),
-					'ruleLabel'            => __( 'Rule', 'we-formkit' ),
-					'selectField'          => __( '— Select field —', 'we-formkit' ),
-					'selectValue'          => __( '— Select value —', 'we-formkit' ),
-					'conditionsEmpty'      => __( 'No conditions — this item is always visible. Add a rule to show it only when…', 'we-formkit' ),
-					'conditionsNoFields'   => __( 'Add other fields first — conditions depend on another field’s value.', 'we-formkit' ),
-					'checkboxPreview'      => __( 'Single checkbox', 'we-formkit' ),
-					'consentPreview'       => __( 'Consent checkbox', 'we-formkit' ),
-					'selectPreview'        => __( 'Select…', 'we-formkit' ),
-					'optionPreview'        => __( 'Option', 'we-formkit' ),
-					'htmlPreview'          => __( 'HTML block', 'we-formkit' ),
-					'hiddenPreview'        => __( 'Hidden field', 'we-formkit' ),
-					'uploadPreview'        => __( 'Choose file…', 'we-formkit' ),
-					'opEquals'             => __( 'equals', 'we-formkit' ),
-					'opNotEquals'          => __( 'not equals', 'we-formkit' ),
-					'opContains'           => __( 'contains', 'we-formkit' ),
-					'opIsChecked'          => __( 'is checked', 'we-formkit' ),
-					'opIsNotEmpty'         => __( 'is not empty', 'we-formkit' ),
-					'confirmDel'           => __( 'Remove this item?', 'we-formkit' ),
-					'duplicate'            => __( 'Duplicate', 'we-formkit' ),
-					'edit'                 => __( 'Edit', 'we-formkit' ),
-					'moveUp'               => __( 'Move up', 'we-formkit' ),
-					'moveDown'             => __( 'Move down', 'we-formkit' ),
-					'fieldActions'         => __( 'Field actions', 'we-formkit' ),
-					'signaturePreview'     => __( 'Signature pad', 'we-formkit' ),
-					'empty'                => __( 'No sections yet. Add a section or pick a field from the library.', 'we-formkit' ),
-					'loadError'            => __( 'Form builder failed to load. Hard-refresh the page or check the browser console.', 'we-formkit' ),
-					'width'                => __( 'Columns', 'we-formkit' ),
-					'widthFull'            => __( 'Full', 'we-formkit' ),
-					'widthTwoThirds'       => __( 'Two thirds', 'we-formkit' ),
-					'widthHalf'            => __( 'Half', 'we-formkit' ),
-					'widthThird'           => __( 'One third', 'we-formkit' ),
-					'widthHint'            => __( 'Choose how many columns this field spans in the row.', 'we-formkit' ),
-					'addOption'            => __( 'Add option', 'we-formkit' ),
-					'tabGeneral'           => __( 'General', 'we-formkit' ),
-					'tabAppearance'        => __( 'Appearance', 'we-formkit' ),
-					'tabConditional'       => __( 'Conditional', 'we-formkit' ),
-					'selectHint'           => __( 'Select a field, section, or the submit button to edit its settings.', 'we-formkit' ),
-					'submitSettings'       => __( 'Submit button', 'we-formkit' ),
-					'submitSettingsHint'   => __( 'Shown at the end of the form. Save the form to apply changes on the front end.', 'we-formkit' ),
-					'submitButtonText'     => __( 'Submit button text', 'we-formkit' ),
-					'submitIconSvg'        => __( 'SVG icon (optional)', 'we-formkit' ),
-					'submitIconSvgHint'    => __( 'Paste inline SVG markup (no scripts). Leave empty for text only.', 'we-formkit' ),
-					'iconPosition'         => __( 'Icon position', 'we-formkit' ),
-					'iconBefore'           => __( 'Before text', 'we-formkit' ),
-					'iconAfter'            => __( 'After text', 'we-formkit' ),
-					'editSubmit'           => __( 'Edit submit button', 'we-formkit' ),
-					'dragHandle'           => __( 'Drag to reorder', 'we-formkit' ),
-					'resizeHandle'         => __( 'Drag to resize', 'we-formkit' ),
-					'resizeHint'           => __( 'You can also drag the right edge of a field on the canvas to change its width.', 'we-formkit' ),
-					'sectionTitle'         => __( 'Title', 'we-formkit' ),
-					'showSectionTitle'     => __( 'Show title on form', 'we-formkit' ),
-					'showSectionTitleHint' => __( 'When off, the title stays in the builder for reference but is hidden on the front end.', 'we-formkit' ),
-					'titleHiddenBadge'     => __( 'Hidden on form', 'we-formkit' ),
-					'sectionId'            => __( 'Section ID', 'we-formkit' ),
-					'moved'                => __( 'Item moved.', 'we-formkit' ),
-					'placeholder'          => __( 'Placeholder', 'we-formkit' ),
-					'validationMessages'   => __( 'Validation messages', 'we-formkit' ),
-					'msgRequired'          => __( 'Required message', 'we-formkit' ),
-					'msgInvalid'           => __( 'Invalid message', 'we-formkit' ),
-					'msgHint'              => __( 'Leave empty to use Formkit Settings defaults. Use {label} for the field label.', 'we-formkit' ),
-					'maxFiles'             => __( 'Max files', 'we-formkit' ),
-					'maxFileSize'          => __( 'Max file size (MB)', 'we-formkit' ),
-					'allowedMime'          => __( 'Allowed MIME types', 'we-formkit' ),
-					'allowedMimeHint'      => __( 'Leave empty to use the WordPress default whitelist.', 'we-formkit' ),
-					'addMimeType'          => __( 'Add type…', 'we-formkit' ),
-					'clearMimeTypes'       => __( 'Clear all', 'we-formkit' ),
-					'removeMimeType'       => __( 'Remove', 'we-formkit' ),
-					'storageMode'          => __( 'Storage mode', 'we-formkit' ),
-					'storagePrivate'       => __( 'Private Formkit folder (recommended)', 'we-formkit' ),
-					'storageMedia'         => __( 'Media Library (not recommended for personal data)', 'we-formkit' ),
-					'htmlContent'          => __( 'HTML content', 'we-formkit' ),
-					'defaultValue'         => __( 'Default value', 'we-formkit' ),
-					'constraints'          => __( 'Date constraints', 'we-formkit' ),
-					'minConstraint'        => __( 'Minimum', 'we-formkit' ),
-					'maxConstraint'        => __( 'Maximum', 'we-formkit' ),
-					'repeaterFields'       => __( 'Fields in each row', 'we-formkit' ),
-					'repeaterHint'         => __( 'Click or drag fields from the library into the repeater. Min/max control how many rows visitors can add.', 'we-formkit' ),
-					'minRows'              => __( 'Minimum rows', 'we-formkit' ),
-					'maxRows'              => __( 'Maximum rows', 'we-formkit' ),
-					'minSelected'          => __( 'Minimum selections', 'we-formkit' ),
-					'maxSelected'          => __( 'Maximum selections', 'we-formkit' ),
-					'checkboxesLimitsHint' => __( '0 minimum = no minimum (unless Required). 0 maximum = unlimited.', 'we-formkit' ),
-					'addRowLabel'          => __( 'Add row button label', 'we-formkit' ),
-					'repeaterDropHint'     => __( 'Drop fields here — they repeat together on the front end.', 'we-formkit' ),
-					'repeaterEmpty'        => __( 'Drop fields here from the library.', 'we-formkit' ),
-					'sectionEmpty'         => __( 'Click or drag a field from the library.', 'we-formkit' ),
-					'repeaterNoNest'       => __( 'A repeater cannot be placed inside another repeater.', 'we-formkit' ),
-					'repeaterTypeBlocked'  => __( 'This field type cannot be used inside a repeater.', 'we-formkit' ),
+					'section'                 => __( 'Section', 'we-formkit' ),
+					'field'                   => __( 'Field', 'we-formkit' ),
+					'scopeField'              => __( 'Field', 'we-formkit' ),
+					'scopeForm'               => __( 'Form', 'we-formkit' ),
+					'scopeIntegrations'       => __( 'Integrations', 'we-formkit' ),
+					'scopeTabs'               => __( 'Settings scope', 'we-formkit' ),
+					'formScopeTitle'          => __( 'Form', 'we-formkit' ),
+					'formScopeLead'           => __( 'Quick links for this form. Save & Resume and privacy live under Form Settings; colors and layout under Design.', 'we-formkit' ),
+					'formTitle'               => __( 'Title', 'we-formkit' ),
+					'formIdLabel'             => __( 'Form ID', 'we-formkit' ),
+					'shortcode'               => __( 'Shortcode', 'we-formkit' ),
+					'slugLabel'               => __( 'Slug', 'we-formkit' ),
+					'saveFormFirst'           => __( 'Save the form once to unlock the shortcode and Form Settings link.', 'we-formkit' ),
+					'openFormSettings'        => __( 'Open Form Settings', 'we-formkit' ),
+					'openDesign'              => __( 'Open Design', 'we-formkit' ),
+					'formScopePaginationHint' => __( 'Pagination (single page / one section per page) is in the toolbar above the canvas.', 'we-formkit' ),
+					'integrationsTitle'       => __( 'Integrations', 'we-formkit' ),
+					'integrationsEmpty'       => __( 'No modules connected yet. Add-ons register here via we_formkit_register_modules.', 'we-formkit' ),
+					'integrationsHint'        => __( 'Planned modules include Spamfighter, Subscribe to Posts, and server-side PDF.', 'we-formkit' ),
+					'untitledForm'            => __( 'Untitled form', 'we-formkit' ),
+					'remove'                  => __( 'Remove', 'we-formkit' ),
+					'addField'                => __( 'Add field', 'we-formkit' ),
+					'addSection'              => __( 'Add section', 'we-formkit' ),
+					'fieldsLibrary'           => __( 'Fields', 'we-formkit' ),
+					'searchFields'            => __( 'Search fields…', 'we-formkit' ),
+					'noFieldsMatch'           => __( 'No matching fields.', 'we-formkit' ),
+					'fieldSettings'           => __( 'Field settings', 'we-formkit' ),
+					'sectionSettings'         => __( 'Section settings', 'we-formkit' ),
+					'submitPreview'           => __( 'Submit', 'we-formkit' ),
+					'label'                   => __( 'Label', 'we-formkit' ),
+					'id'                      => __( 'Field ID', 'we-formkit' ),
+					'type'                    => __( 'Type', 'we-formkit' ),
+					'required'                => __( 'Required', 'we-formkit' ),
+					'help'                    => __( 'Help text', 'we-formkit' ),
+					'options'                 => __( 'Options (value + label)', 'we-formkit' ),
+					'optionsDefaultHint'      => __( 'Drag to reorder. Mark one option as default, or leave unset to use the placeholder (empty value).', 'we-formkit' ),
+					'dragToReorder'           => __( 'Drag to reorder', 'we-formkit' ),
+					'defaultOption'           => __( 'Default', 'we-formkit' ),
+					'clearDefault'            => __( 'Clear default (use placeholder)', 'we-formkit' ),
+					'optionValue'             => __( 'value', 'we-formkit' ),
+					'optionLabel'             => __( 'Label', 'we-formkit' ),
+					'collapseLibrary'         => __( 'Collapse fields library', 'we-formkit' ),
+					'expandLibrary'           => __( 'Expand fields library', 'we-formkit' ),
+					'collapseSettings'        => __( 'Collapse field settings', 'we-formkit' ),
+					'expandSettings'          => __( 'Expand field settings', 'we-formkit' ),
+					'resizeLibrary'           => __( 'Drag to resize', 'we-formkit' ),
+					'resizeSettings'          => __( 'Drag to resize', 'we-formkit' ),
+					'showWhen'                => __( 'Show when', 'we-formkit' ),
+					'showField'               => __( 'Depends on field', 'we-formkit' ),
+					'showOp'                  => __( 'Operator', 'we-formkit' ),
+					'showValue'               => __( 'Value', 'we-formkit' ),
+					'none'                    => __( 'Always visible', 'we-formkit' ),
+					'matchAll'                => __( 'Match all of the following (AND)', 'we-formkit' ),
+					'matchAny'                => __( 'Match any of the following (OR)', 'we-formkit' ),
+					'addCondition'            => __( 'Add condition', 'we-formkit' ),
+					'ruleLabel'               => __( 'Rule', 'we-formkit' ),
+					'selectField'             => __( '— Select field —', 'we-formkit' ),
+					'selectValue'             => __( '— Select value —', 'we-formkit' ),
+					'conditionsEmpty'         => __( 'No conditions — this item is always visible. Add a rule to show it only when…', 'we-formkit' ),
+					'conditionsNoFields'      => __( 'Add other fields first — conditions depend on another field’s value.', 'we-formkit' ),
+					'checkboxPreview'         => __( 'Single checkbox', 'we-formkit' ),
+					'consentPreview'          => __( 'Consent checkbox', 'we-formkit' ),
+					'selectPreview'           => __( 'Select…', 'we-formkit' ),
+					'optionPreview'           => __( 'Option', 'we-formkit' ),
+					'htmlPreview'             => __( 'HTML block', 'we-formkit' ),
+					'hiddenPreview'           => __( 'Hidden field', 'we-formkit' ),
+					'uploadPreview'           => __( 'Choose file…', 'we-formkit' ),
+					'opEquals'                => __( 'equals', 'we-formkit' ),
+					'opNotEquals'             => __( 'not equals', 'we-formkit' ),
+					'opContains'              => __( 'contains', 'we-formkit' ),
+					'opIsChecked'             => __( 'is checked', 'we-formkit' ),
+					'opIsNotEmpty'            => __( 'is not empty', 'we-formkit' ),
+					'confirmDel'              => __( 'Remove this item?', 'we-formkit' ),
+					'duplicate'               => __( 'Duplicate', 'we-formkit' ),
+					'edit'                    => __( 'Edit', 'we-formkit' ),
+					'moveUp'                  => __( 'Move up', 'we-formkit' ),
+					'moveDown'                => __( 'Move down', 'we-formkit' ),
+					'fieldActions'            => __( 'Field actions', 'we-formkit' ),
+					'signaturePreview'        => __( 'Signature pad', 'we-formkit' ),
+					'empty'                   => __( 'No sections yet. Add a section or pick a field from the library.', 'we-formkit' ),
+					'loadError'               => __( 'Form builder failed to load. Hard-refresh the page or check the browser console.', 'we-formkit' ),
+					'width'                   => __( 'Columns', 'we-formkit' ),
+					'widthFull'               => __( 'Full', 'we-formkit' ),
+					'widthTwoThirds'          => __( 'Two thirds', 'we-formkit' ),
+					'widthHalf'               => __( 'Half', 'we-formkit' ),
+					'widthThird'              => __( 'One third', 'we-formkit' ),
+					'widthHint'               => __( 'Choose how many columns this field spans in the row.', 'we-formkit' ),
+					'addOption'               => __( 'Add option', 'we-formkit' ),
+					'tabGeneral'              => __( 'General', 'we-formkit' ),
+					'tabAppearance'           => __( 'Appearance', 'we-formkit' ),
+					'tabConditional'          => __( 'Conditional', 'we-formkit' ),
+					'selectHint'              => __( 'Select a field, section, or the submit button to edit its settings.', 'we-formkit' ),
+					'submitSettings'          => __( 'Submit button', 'we-formkit' ),
+					'submitSettingsHint'      => __( 'Shown at the end of the form. Save the form to apply changes on the front end.', 'we-formkit' ),
+					'submitButtonText'        => __( 'Submit button text', 'we-formkit' ),
+					'submitIconSvg'           => __( 'SVG icon (optional)', 'we-formkit' ),
+					'submitIconSvgHint'       => __( 'Paste inline SVG markup (no scripts). Leave empty for text only.', 'we-formkit' ),
+					'iconPosition'            => __( 'Icon position', 'we-formkit' ),
+					'iconBefore'              => __( 'Before text', 'we-formkit' ),
+					'iconAfter'               => __( 'After text', 'we-formkit' ),
+					'editSubmit'              => __( 'Edit submit button', 'we-formkit' ),
+					'dragHandle'              => __( 'Drag to reorder', 'we-formkit' ),
+					'resizeHandle'            => __( 'Drag to resize', 'we-formkit' ),
+					'resizeHint'              => __( 'You can also drag the right edge of a field on the canvas to change its width.', 'we-formkit' ),
+					'sectionTitle'            => __( 'Title', 'we-formkit' ),
+					'showSectionTitle'        => __( 'Show title on form', 'we-formkit' ),
+					'showSectionTitleHint'    => __( 'When off, the title stays in the builder for reference but is hidden on the front end.', 'we-formkit' ),
+					'titleHiddenBadge'        => __( 'Hidden on form', 'we-formkit' ),
+					'sectionId'               => __( 'Section ID', 'we-formkit' ),
+					'moved'                   => __( 'Item moved.', 'we-formkit' ),
+					'placeholder'             => __( 'Placeholder', 'we-formkit' ),
+					'validationMessages'      => __( 'Validation messages', 'we-formkit' ),
+					'msgRequired'             => __( 'Required message', 'we-formkit' ),
+					'msgInvalid'              => __( 'Invalid message', 'we-formkit' ),
+					'msgHint'                 => __( 'Leave empty to use Formkit Settings defaults. Use {label} for the field label.', 'we-formkit' ),
+					'maxFiles'                => __( 'Max files', 'we-formkit' ),
+					'maxFileSize'             => __( 'Max file size (MB)', 'we-formkit' ),
+					'allowedMime'             => __( 'Allowed MIME types', 'we-formkit' ),
+					'allowedMimeHint'         => __( 'Leave empty to use the WordPress default whitelist.', 'we-formkit' ),
+					'addMimeType'             => __( 'Add type…', 'we-formkit' ),
+					'clearMimeTypes'          => __( 'Clear all', 'we-formkit' ),
+					'removeMimeType'          => __( 'Remove', 'we-formkit' ),
+					'storageMode'             => __( 'Storage mode', 'we-formkit' ),
+					'storagePrivate'          => __( 'Private Formkit folder (recommended)', 'we-formkit' ),
+					'storageMedia'            => __( 'Media Library (not recommended for personal data)', 'we-formkit' ),
+					'htmlContent'             => __( 'HTML content', 'we-formkit' ),
+					'defaultValue'            => __( 'Default value', 'we-formkit' ),
+					'constraints'             => __( 'Date constraints', 'we-formkit' ),
+					'minConstraint'           => __( 'Minimum', 'we-formkit' ),
+					'maxConstraint'           => __( 'Maximum', 'we-formkit' ),
+					'repeaterFields'          => __( 'Fields in each row', 'we-formkit' ),
+					'repeaterHint'            => __( 'Click or drag fields from the library into the repeater. Min/max control how many rows visitors can add.', 'we-formkit' ),
+					'minRows'                 => __( 'Minimum rows', 'we-formkit' ),
+					'maxRows'                 => __( 'Maximum rows', 'we-formkit' ),
+					'minSelected'             => __( 'Minimum selections', 'we-formkit' ),
+					'maxSelected'             => __( 'Maximum selections', 'we-formkit' ),
+					'checkboxesLimitsHint'    => __( '0 minimum = no minimum (unless Required). 0 maximum = unlimited.', 'we-formkit' ),
+					'addRowLabel'             => __( 'Add row button label', 'we-formkit' ),
+					'repeaterDropHint'        => __( 'Drop fields here — they repeat together on the front end.', 'we-formkit' ),
+					'repeaterEmpty'           => __( 'Drop fields here from the library.', 'we-formkit' ),
+					'sectionEmpty'            => __( 'Click or drag a field from the library.', 'we-formkit' ),
+					'repeaterNoNest'          => __( 'A repeater cannot be placed inside another repeater.', 'we-formkit' ),
+					'repeaterTypeBlocked'     => __( 'This field type cannot be used inside a repeater.', 'we-formkit' ),
 				),
 				'repeaterItemTypes' => Repeater_Field::allowed_item_types(),
 				'mimeChoices'       => Upload_Field::common_mime_choices(),
@@ -532,7 +570,7 @@ final class Form_Editor {
 		$form_id = isset( $_GET['form_id'] ) ? absint( $_GET['form_id'] ) : 0;
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$view          = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( (string) $_GET['view'] ) ) : 'fields';
-		$allowed_views = array( 'fields', 'settings', 'documents', 'notifications', 'confirmations', 'entries' );
+		$allowed_views = array( 'fields', 'settings', 'design', 'documents', 'notifications', 'confirmations', 'entries' );
 		if ( ! in_array( $view, $allowed_views, true ) ) {
 			$view = 'fields';
 		}
@@ -591,8 +629,17 @@ final class Form_Editor {
 			);
 		}
 
-		if ( 'settings' === $view ) {
-			self::enqueue_settings_assets( $form_id, $title, $slug, $secret, $privacy, $schema, $secret_url );
+		if ( 'settings' === $view || 'design' === $view ) {
+			self::enqueue_settings_assets(
+				$form_id,
+				$title,
+				$slug,
+				$secret,
+				$privacy,
+				$schema,
+				$secret_url,
+				'design' === $view ? 'design' : 'general'
+			);
 		}
 
 		$heading = $is_new ? __( 'Add Form', 'we-formkit' ) : $title;
@@ -645,6 +692,9 @@ final class Form_Editor {
 			case 'settings':
 				self::render_view_settings( $form_id, $title, $slug, $secret, $privacy, $schema, $secret_url, $is_new );
 				break;
+			case 'design':
+				self::render_view_design( $form_id );
+				break;
 			case 'documents':
 				self::render_view_documents( $form_id, $documents, $notifications, is_array( $schema ) ? $schema : array(), $is_new );
 				break;
@@ -684,6 +734,7 @@ final class Form_Editor {
 		$tabs = array(
 			'fields'        => __( 'Fields', 'we-formkit' ),
 			'settings'      => __( 'Form Settings', 'we-formkit' ),
+			'design'        => __( 'Design', 'we-formkit' ),
 			'documents'     => __( 'Documents', 'we-formkit' ),
 			'notifications' => __( 'Notifications', 'we-formkit' ),
 			'confirmations' => __( 'Confirmations', 'we-formkit' ),
@@ -828,18 +879,7 @@ final class Form_Editor {
 	}
 
 	/**
-	 * @param int                  $form_id Form ID.
-	 * @param string               $title Title.
-	 * @param string               $slug Slug.
-	 * @param array{enabled:bool,token:string} $secret Secret.
-	 * @param string               $privacy Privacy URL.
-	 * @param array<string,mixed>  $schema Schema.
-	 * @param string               $secret_url Share URL.
-	 * @param bool                 $is_new Whether new.
-	 * @return void
-	 */
-	/**
-	 * Enqueue DataForm settings screen assets.
+	 * Enqueue DataForm settings / design screen assets.
 	 *
 	 * @param int                  $form_id Form ID.
 	 * @param string               $title Title.
@@ -848,9 +888,13 @@ final class Form_Editor {
 	 * @param string               $privacy Privacy URL.
 	 * @param array<string,mixed>  $schema Schema.
 	 * @param string               $secret_url Share URL.
+	 * @param string               $panel Panel: general|design.
 	 * @return void
 	 */
-	private static function enqueue_settings_assets( $form_id, $title, $slug, array $secret, $privacy, array $schema, $secret_url ) {
+	private static function enqueue_settings_assets( $form_id, $title, $slug, array $secret, $privacy, array $schema, $secret_url, $panel = 'general' ) {
+		unset( $schema );
+		$panel = 'design' === $panel ? 'design' : 'general';
+
 		$asset_file = WE_FORMKIT_PATH . 'build/admin-form-settings.asset.php';
 		$script     = WE_FORMKIT_URL . 'build/admin-form-settings.js';
 		$style_file = WE_FORMKIT_PATH . 'build/style-admin-form-settings.css';
@@ -904,6 +948,7 @@ final class Form_Editor {
 			'weFormkitFormSettings',
 			array(
 				'formId'        => (int) $form_id,
+				'panel'         => $panel,
 				'secretUrl'     => (string) $secret_url,
 				'secretToken'   => (string) ( $secret['token'] ?? '' ),
 				'regenUrl'      => $form_id > 0
@@ -968,6 +1013,35 @@ final class Form_Editor {
 		$built      = file_exists( $asset_file ) && file_exists( WE_FORMKIT_PATH . 'build/admin-form-settings.js' );
 		?>
 		<div class="wek-admin__settings-panel wek-admin__settings-panel--dataform">
+			<?php if ( ! $built ) : ?>
+				<div class="notice notice-warning inline">
+					<p>
+						<?php
+						echo esc_html__(
+							'Modern settings UI is not built yet. Run npm install && npm run build:assets in the plugin folder.',
+							'we-formkit'
+						);
+						?>
+					</p>
+				</div>
+			<?php endif; ?>
+			<div id="wek-form-settings-root"></div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Design / appearance panel (same React app, design panel).
+	 *
+	 * @param int $form_id Form ID.
+	 * @return void
+	 */
+	private static function render_view_design( $form_id ) {
+		unset( $form_id );
+		$asset_file = WE_FORMKIT_PATH . 'build/admin-form-settings.asset.php';
+		$built      = file_exists( $asset_file ) && file_exists( WE_FORMKIT_PATH . 'build/admin-form-settings.js' );
+		?>
+		<div class="wek-admin__settings-panel wek-admin__settings-panel--dataform wek-admin__settings-panel--design">
 			<?php if ( ! $built ) : ?>
 				<div class="notice notice-warning inline">
 					<p>

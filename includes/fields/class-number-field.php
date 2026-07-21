@@ -26,12 +26,12 @@ class Number_Field extends Abstract_Field_Type {
 
 	public function get_admin_schema(): array {
 		return array(
-			'min' => array(
+			'min'  => array(
 				'label'   => __( 'Minimum value', 'we-formkit' ),
 				'type'    => 'number',
 				'default' => '',
 			),
-			'max' => array(
+			'max'  => array(
 				'label'   => __( 'Maximum value', 'we-formkit' ),
 				'type'    => 'number',
 				'default' => '',
@@ -119,7 +119,7 @@ class Number_Field extends Abstract_Field_Type {
 	}
 
 	public function render_attributes( array $field ): array {
-		$attrs = parent::render_attributes( $field );
+		$attrs         = parent::render_attributes( $field );
 		$attrs['type'] = 'number';
 
 		$opts = $field['type_options'] ?? array();

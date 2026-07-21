@@ -57,7 +57,7 @@ class Text_Field extends Abstract_Field_Type {
 	}
 
 	public function render_attributes( array $field ): array {
-		$attrs = parent::render_attributes( $field );
+		$attrs         = parent::render_attributes( $field );
 		$attrs['type'] = 'text';
 
 		$max = isset( $field['type_options']['max_length'] ) ? (int) $field['type_options']['max_length'] : 0;

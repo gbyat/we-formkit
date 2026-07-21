@@ -18,25 +18,25 @@
  * @package Webentwicklerin\WeFormkit
  */
 
-if (! defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 define( 'WE_FORMKIT_VERSION', '0.4.1' );
-define('WE_FORMKIT_FILE', __FILE__);
-define('WE_FORMKIT_PATH', plugin_dir_path(__FILE__));
-define('WE_FORMKIT_URL', plugin_dir_url(__FILE__));
-define('WE_FORMKIT_GITHUB_REPO', 'gbyat/we-formkit');
+define( 'WE_FORMKIT_FILE', __FILE__ );
+define( 'WE_FORMKIT_PATH', plugin_dir_path( __FILE__ ) );
+define( 'WE_FORMKIT_URL', plugin_dir_url( __FILE__ ) );
+define( 'WE_FORMKIT_GITHUB_REPO', 'gbyat/we-formkit' );
 
-$autoload = WE_FORMKIT_PATH . 'vendor/autoload.php';
-if (file_exists($autoload)) {
-	require_once $autoload;
+$we_formkit_autoload = WE_FORMKIT_PATH . 'vendor/autoload.php';
+if ( file_exists( $we_formkit_autoload ) ) {
+	require_once $we_formkit_autoload;
 } else {
 	require_once WE_FORMKIT_PATH . 'includes/autoload.php';
 }
 
-register_activation_hook(__FILE__, array(Webentwicklerin\WeFormkit\Plugin::class, 'activate'));
-register_deactivation_hook(__FILE__, array(Webentwicklerin\WeFormkit\Plugin::class, 'deactivate'));
+register_activation_hook( __FILE__, array( Webentwicklerin\WeFormkit\Plugin::class, 'activate' ) );
+register_deactivation_hook( __FILE__, array( Webentwicklerin\WeFormkit\Plugin::class, 'deactivate' ) );
 
 add_action(
 	'plugins_loaded',

@@ -1100,7 +1100,8 @@ final class Form_Style {
 	 * @param array<string, string> $used   hex => role already claimed.
 	 * @return string
 	 */
-	private static function nudge_duplicate_role( $role, array $colors, array $used ): string {
+	private static function nudge_duplicate_role( $role, array $colors, array $used ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter -- reserved for future conflict scoring.
+		unset( $used );
 		$accent  = $colors['accent'] ?? '#0f5c4c';
 		$ink     = $colors['ink'] ?? '#1c1b19';
 		$bg      = $colors['bg'] ?? '#f7f5f2';

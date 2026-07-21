@@ -84,7 +84,7 @@ abstract class Abstract_Field_Type {
 	 *
 	 * @return mixed
 	 */
-	public function sanitize( $value, array $field ) {
+	public function sanitize( $value, array $field ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter -- field reserved for type overrides.
 		if ( is_string( $value ) ) {
 			return sanitize_text_field( $value );
 		}
@@ -100,7 +100,7 @@ abstract class Abstract_Field_Type {
 	 *
 	 * @return true|\WP_Error
 	 */
-	public function validate( $value, array $field ) {
+	public function validate( $value, array $field ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter -- defaults; types override.
 		return true;
 	}
 
@@ -127,7 +127,7 @@ abstract class Abstract_Field_Type {
 	 * @param mixed                $value Stored value.
 	 * @param array<string, mixed> $field Field configuration.
 	 */
-	public function format_for_display( $value, array $field ): string {
+	public function format_for_display( $value, array $field ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter -- field reserved for type overrides.
 		if ( is_scalar( $value ) ) {
 			return esc_html( (string) $value );
 		}

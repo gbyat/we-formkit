@@ -81,7 +81,8 @@ final class Private_Files {
 			return new \WP_Error( 'we_formkit_move_failed', __( 'Failed to store the uploaded file.', 'we-formkit' ) );
 		}
 
-		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		// Restrict download ACL; WP_Filesystem is not required for chmod on private uploads.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod, WordPress.PHP.NoSilencedErrors.Discouraged
 		@chmod( $dest, 0640 );
 
 		$size = isset( $file['size'] ) ? (int) $file['size'] : (int) filesize( $dest );
@@ -132,7 +133,8 @@ final class Private_Files {
 			return new \WP_Error( 'we_formkit_move_failed', __( 'Failed to store the signature.', 'we-formkit' ) );
 		}
 
-		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		// Restrict download ACL; WP_Filesystem is not required for chmod on private uploads.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod, WordPress.PHP.NoSilencedErrors.Discouraged
 		@chmod( $dest, 0640 );
 
 		return array(

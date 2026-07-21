@@ -96,6 +96,7 @@ class Signature_Field extends Abstract_Field_Type {
 			);
 		}
 		$encoded = substr( $value, strlen( 'data:image/png;base64,' ) );
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- PNG data-URL payload from signature canvas.
 		$decoded = base64_decode( $encoded, true );
 		if ( false === $decoded || strlen( $decoded ) < 256 ) {
 			return new \WP_Error(
@@ -142,6 +143,7 @@ class Signature_Field extends Abstract_Field_Type {
 			return new \WP_Error( 'we_formkit_signature_invalid', __( 'Invalid signature data.', 'we-formkit' ) );
 		}
 		$encoded = substr( $data_url, strlen( 'data:image/png;base64,' ) );
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- PNG data-URL payload from signature canvas.
 		$decoded = base64_decode( $encoded, true );
 		if ( false === $decoded ) {
 			return new \WP_Error( 'we_formkit_signature_invalid', __( 'Invalid signature data.', 'we-formkit' ) );

@@ -4,7 +4,7 @@ Use this file to continue development without re-deriving decisions from chat hi
 
 ## Status (honest)
 
-**Product surface expanded beyond v0.1** — private uploads, signature, confirmations ×3, multipage, Save & Resume, shortcode, entry CSV/JSON, builder preview/duplicate. Live WP smoke still not verified.
+**Core product usable** — fields, private uploads, signature, confirmations ×3, multipage, Save & Resume, shortcode, entry CSV/JSON/print, configurable spam, global email footer WYSIWYG, builder sidebar scope tabs. Live WP smoke exercised by Gabriele (2026-07).
 
 | Area | State |
 |------|--------|
@@ -12,13 +12,18 @@ Use this file to continue development without re-deriving decisions from chat hi
 | Private uploads (`we-formkit-uploads/{token}/`) + gated download | Done |
 | Confirmations message / redirect / page | Done |
 | Multipage (`per_section`) | Done |
-| Save & Resume drafts | Done (option store + REST; TTL 14d) |
+| Save & Resume | Done — Form Settings (enable, TTL, min filled, calendar .ics); 5 min mail cooldown; token reuse; draft prune/cap |
 | Shortcode `[we_formkit]` / `[we-formkit]` | Done |
 | Entry CSV + JSON export | Done |
-| Entry print → PDF | Done (print dialog) |
-| Builder Preview + Duplicate form/field | Done (sidebar scope tabs polish still open) |
-| Module registry | Empty; integrations later |
-| Live WP smoke | **Not verified** (mail now in checklist) |
+| Entry print → PDF | Done (print dialog; server PDF later) |
+| Builder Preview + Duplicate | Done |
+| Form Settings (title, slug, privacy, secret, Save & Resume) | Done (DataForm) |
+| Design (labels, type, density, colors + preview) | Done — own editor tab |
+| Sidebar scope tabs (Field / Form / Integrations) | Done (Integrations = module stub) |
+| Spam (honeypot / timing / rate / IP hash) | Done — Formkit Settings toggles + limits |
+| Global email footer | Done — TinyMCE in Formkit Settings |
+| Module registry | Empty; modules later |
+| Live WP smoke | **Done** (manual) |
 
 ## Locked product decisions
 
@@ -26,7 +31,7 @@ Use this file to continue development without re-deriving decisions from chat hi
 - **Do not absorb `fro-anamnese`.**
 - **No captcha / foreign CDNs / jQuery** in Formkit assets.
 - **Block Editor line only** — Gutenberg block + shortcode; no Elementor/page builders.
-- **DataForm** = Form Settings tab only (React). Fields canvas = vanilla JS.
+- **DataForm** = Form Settings + Design tabs (React, `panel` general|design). Fields canvas = vanilla JS.
 - **Uploads:** private Formkit folder by default (not Media Library).
 - **Author:** webentwicklerin, Gabriele Laesser — https://webentwicklerin.at
 - **GitHub:** `gbyat/we-formkit`
@@ -46,10 +51,9 @@ Use this file to continue development without re-deriving decisions from chat hi
 
 ## Next implementation order (resume here)
 
-1. **Live smoke** on WP (checklist below) — include notifications / mail.
-2. Sidebar always-visible scope tabs (Field / Form / Integrations stub) — polish.
-3. Modules: Spamfighter adapter, Subscribe-to-Posts, smart-tag picker, server PDF.
-4. PHPCS remaining warnings; i18n POT.
+1. **Modules:** Spamfighter adapter, Subscribe-to-Posts, smart-tag picker, server PDF.
+2. Keep PHPCS / i18n clean on further changes.
+3. Re-smoke after larger changes (checklist below).
 
 ## Live smoke checklist
 
@@ -77,4 +81,4 @@ Run on a real WP install (not only the builder UI):
 
 ## Quick continue prompt
 
-> Continue WE Formkit from AGENTS.md. Smoke-test private uploads + signature + multipage + Save & Resume + confirmations + CSV + **notifications (delivery log / Send to me)**. Then polish sidebar scope tabs. Leave fro-anamnese untouched.
+> Continue WE Formkit from AGENTS.md. Live smoke and sidebar scope tabs done. Next: modules (Spamfighter adapter, etc.) when ready. Leave fro-anamnese untouched.

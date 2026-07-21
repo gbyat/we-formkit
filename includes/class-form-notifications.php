@@ -41,7 +41,7 @@ final class Form_Notifications {
 
 	/**
 	 * @param int                        $form_id Form ID.
-	 * @param list<array<string, mixed>> $list    Notifications.
+	 * @param list<array<string, mixed>> $notifications Notifications.
 	 * @return void
 	 */
 	public static function save( $form_id, array $items ) {
@@ -74,13 +74,13 @@ final class Form_Notifications {
 	}
 
 	/**
-	 * @param list<array<string, mixed>> $list Notification list.
-	 * @param string                     $id     Notification ID.
+	 * @param list<array<string, mixed>> $notifications Notification list.
+	 * @param string                     $id            Notification ID.
 	 * @return int|false
 	 */
-	public static function find_index( array $list, $id ) {
+	public static function find_index( array $notifications, $id ) {
 		$id = sanitize_key( (string) $id );
-		foreach ( $list as $index => $item ) {
+		foreach ( $notifications as $index => $item ) {
 			if ( isset( $item['id'] ) && (string) $item['id'] === $id ) {
 				return (int) $index;
 			}
@@ -89,71 +89,71 @@ final class Form_Notifications {
 	}
 
 	/**
-	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param list<array<string, mixed>> $notifications Notification list.
 	 * @param string                     $id     Notification ID.
 	 * @return array<string, mixed>|null
 	 */
-	public static function find_by_id( array $list, $id ) {
-		$index = self::find_index( $list, $id );
+	public static function find_by_id( array $notifications, $id ) {
+		$index = self::find_index( $notifications, $id );
 		if ( false === $index ) {
 			return null;
 		}
-		return $list[ $index ];
+		return $notifications[ $index ];
 	}
 
 	/**
 	 * Replace or append a notification by ID.
 	 *
-	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param list<array<string, mixed>> $notifications Notification list.
 	 * @param array<string, mixed>       $one  Notification.
 	 * @return list<array<string, mixed>>
 	 */
-	public static function upsert( array $list, array $one ) {
+	public static function upsert( array $notifications, array $one ) {
 		$one   = self::normalize_one( $one );
-		$index = self::find_index( $list, (string) $one['id'] );
+		$index = self::find_index( $notifications, (string) $one['id'] );
 		if ( false === $index ) {
-			$list[] = $one;
-			return $list;
+			$notifications[] = $one;
+			return $notifications;
 		}
-		$list[ $index ] = $one;
-		return $list;
+		$notifications[ $index ] = $one;
+		return $notifications;
 	}
 
 	/**
-	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param list<array<string, mixed>> $notifications Notification list.
 	 * @param string                     $id     Notification ID.
 	 * @return list<array<string, mixed>>
 	 */
-	public static function remove_by_id( array $list, $id ) {
-		$index = self::find_index( $list, $id );
+	public static function remove_by_id( array $notifications, $id ) {
+		$index = self::find_index( $notifications, $id );
 		if ( false === $index ) {
-			return $list;
+			return $notifications;
 		}
-		array_splice( $list, $index, 1 );
-		return $list;
+		array_splice( $notifications, $index, 1 );
+		return $notifications;
 	}
 
 	/**
-	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param list<array<string, mixed>> $notifications Notification list.
 	 * @param string                     $id     Notification ID.
 	 * @return list<array<string, mixed>>
 	 */
-	public static function toggle_enabled( array $list, $id ) {
-		$index = self::find_index( $list, $id );
+	public static function toggle_enabled( array $notifications, $id ) {
+		$index = self::find_index( $notifications, $id );
 		if ( false === $index ) {
-			return $list;
+			return $notifications;
 		}
-		$list[ $index ]['enabled'] = empty( $list[ $index ]['enabled'] );
-		return $list;
+		$notifications[ $index ]['enabled'] = empty( $notifications[ $index ]['enabled'] );
+		return $notifications;
 	}
 
 	/**
-	 * @param list<array<string, mixed>> $list Notification list.
+	 * @param list<array<string, mixed>> $notifications Notification list.
 	 * @param string                     $id     Notification ID.
 	 * @return array<string, mixed>|null
 	 */
-	public static function duplicate_by_id( array $list, $id ) {
-		$item = self::find_by_id( $list, $id );
+	public static function duplicate_by_id( array $notifications, $id ) {
+		$item = self::find_by_id( $notifications, $id );
 		if ( null === $item ) {
 			return null;
 		}
@@ -269,7 +269,7 @@ final class Form_Notifications {
 	}
 
 	/**
-	 * @param list<array<string, mixed>> $list Raw list.
+	 * @param list<array<string, mixed>> $items Raw list.
 	 * @return list<array<string, mixed>>
 	 */
 	public static function normalize_list( array $items ) {

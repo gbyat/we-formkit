@@ -155,10 +155,45 @@ final class Settings {
 	public static function email_footer_html() {
 		$settings = self::get();
 		$html     = isset( $settings['email_footer'] ) ? trim( (string) $settings['email_footer'] ) : '';
+		return self::prepare_email_html( $html );
+	}
+
+	/**
+	 * Normalize stored HTML so editor line breaks survive in HTML emails.
+	 *
+	 * Plain newlines collapse to spaces in HTML. TinyMCE often stores inline
+	 * tags (strong, a, …) plus literal newlines without <br>/<p>.
+	 *
+	 * @param string $html Stored HTML or plain text.
+	 * @return string Sanitized HTML ready for an HTML email body.
+	 */
+	public static function prepare_email_html( $html ) {
+		$html = trim( (string) $html );
 		if ( '' === $html ) {
 			return '';
 		}
-		return wp_kses_post( $html );
+
+		// Legacy bug: "\r\n" sometimes stored as literal "rnrn".
+		if ( false === strpos( $html, '<' ) && false !== strpos( $html, 'rnrn' ) ) {
+			$html = str_replace( 'rnrn', "\n\n", $html );
+		}
+
+		$html = wp_kses_post( $html );
+		if ( '' === trim( $html ) ) {
+			return '';
+		}
+
+		// Block tags or hard breaks already encode line structure.
+		if ( preg_match( '/<(?:p|div|h[1-6]|ul|ol|li|table|br|hr)\b/i', $html ) ) {
+			return $html;
+		}
+
+		// Plain text → paragraphs; inline-only markup + newlines → <br>.
+		if ( false === strpos( $html, '<' ) ) {
+			return wpautop( $html );
+		}
+
+		return nl2br( $html, false );
 	}
 
 	/**
@@ -171,7 +206,7 @@ final class Settings {
 		if ( '' === $html ) {
 			return '';
 		}
-		return '<div style="margin:1.5rem 0 0;padding-top:1rem;border-top:1px solid #e5e5e5;color:#666;font-size:13px;">' . $html . '</div>';
+		return '<div style="margin:1.5rem 0 0;padding-top:1rem;border-top:1px solid #e5e5e5;color:#666;font-size:13px;line-height:1.5;">' . $html . '</div>';
 	}
 
 	/**

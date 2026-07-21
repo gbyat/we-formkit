@@ -45,8 +45,8 @@ class Checkbox_Field extends Abstract_Field_Type {
 	}
 
 	public function render_attributes( array $field ): array {
-		$attrs = parent::render_attributes( $field );
-		$attrs['type'] = 'checkbox';
+		$attrs          = parent::render_attributes( $field );
+		$attrs['type']  = 'checkbox';
 		$attrs['value'] = '1';
 
 		return $attrs;

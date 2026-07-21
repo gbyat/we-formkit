@@ -111,12 +111,12 @@ class Date_Field extends Abstract_Field_Type {
 	}
 
 	public function render_attributes( array $field ): array {
-		$attrs = parent::render_attributes( $field );
+		$attrs         = parent::render_attributes( $field );
 		$attrs['type'] = 'date';
 
 		$constraints = Date_Constraints::get_field_constraints( $field );
-		$min_bound     = Date_Constraints::resolve_bound( $constraints['min'] );
-		$max_bound     = Date_Constraints::resolve_bound( $constraints['max'] );
+		$min_bound   = Date_Constraints::resolve_bound( $constraints['min'] );
+		$max_bound   = Date_Constraints::resolve_bound( $constraints['max'] );
 
 		if ( $min_bound instanceof \DateTimeImmutable ) {
 			$attrs['min'] = $min_bound->format( 'Y-m-d' );

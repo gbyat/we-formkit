@@ -11,6 +11,7 @@ import { DataForm } from '@wordpress/dataviews/wp';
 import './style.css';
 
 const boot = window.weFormkitFormSettings || {};
+const PANEL = boot.panel === 'design' ? 'design' : 'general';
 const DRAFT_TTL_DAYS = Array.isArray( boot.draftTtlDays ) && boot.draftTtlDays.length
 	? boot.draftTtlDays.map( ( day ) => Number( day ) ).filter( ( day ) => day > 0 )
 	: [ 7, 14, 30, 60, 90 ];
@@ -939,7 +940,10 @@ function FormSettingsApp() {
 				setDirty( false );
 				setNotice( {
 					status: 'success',
-					message: __( 'Settings saved.', 'we-formkit' ),
+					message:
+						PANEL === 'design'
+							? __( 'Design saved.', 'we-formkit' )
+							: __( 'Settings saved.', 'we-formkit' ),
 				} );
 			} )
 			.catch( ( error ) => {
@@ -956,7 +960,12 @@ function FormSettingsApp() {
 	}, [ data, formId ] );
 
 	return (
-		<div className="wek-dataform-settings">
+		<div
+			className={
+				'wek-dataform-settings' +
+				( PANEL === 'design' ? ' wek-dataform-settings--design' : '' )
+			}
+		>
 			{ notice && (
 				<Notice
 					status={ notice.status }
@@ -967,63 +976,77 @@ function FormSettingsApp() {
 				</Notice>
 			) }
 
-			<div className="wek-dataform-settings__wide">
-				<DataForm
-					data={ data }
-					fields={ fields }
-					form={ generalForm }
-					onChange={ onChange }
-				/>
-			</div>
+			{ PANEL === 'general' ? (
+				<>
+					<div className="wek-dataform-settings__wide">
+						<DataForm
+							data={ data }
+							fields={ fields }
+							form={ generalForm }
+							onChange={ onChange }
+						/>
+					</div>
 
-			<div className="wek-dataform-settings__layout">
-				<div className="wek-dataform-settings__form">
-					<DataForm
-						data={ data }
-						fields={ fields }
-						form={ visualForm }
-						onChange={ onChange }
-					/>
-				</div>
-				<aside className="wek-dataform-settings__preview">
-					<ColorSchemePreview data={ data } />
-				</aside>
-			</div>
-
-			{ data.secret_enabled && secretToken ? (
-				<div className="wek-dataform-settings__secret">
-					<p>
-						<strong>{ __( 'Secret token', 'we-formkit' ) }</strong>
-						{ ' ' }
-						<code>{ secretToken }</code>
-					</p>
-					{ secretUrl ? (
-						<p>
-							<label htmlFor="wek-secret-url">
-								{ __(
-									'Shareable link (open the page that contains the Formkit Form block):',
-									'we-formkit'
-								) }
-							</label>
-							<input
-								id="wek-secret-url"
-								className="large-text"
-								type="text"
-								readOnly
-								value={ secretUrl }
-								onFocus={ ( event ) => event.target.select() }
-							/>
-						</p>
+					{ data.secret_enabled && secretToken ? (
+						<div className="wek-dataform-settings__secret">
+							<p>
+								<strong>
+									{ __( 'Secret token', 'we-formkit' ) }
+								</strong>
+								{ ' ' }
+								<code>{ secretToken }</code>
+							</p>
+							{ secretUrl ? (
+								<p>
+									<label htmlFor="wek-secret-url">
+										{ __(
+											'Shareable link (open the page that contains the Formkit Form block):',
+											'we-formkit'
+										) }
+									</label>
+									<input
+										id="wek-secret-url"
+										className="large-text"
+										type="text"
+										readOnly
+										value={ secretUrl }
+										onFocus={ ( event ) =>
+											event.target.select()
+										}
+									/>
+								</p>
+							) : null }
+							{ boot.regenUrl ? (
+								<p>
+									<a
+										className="button"
+										href={ boot.regenUrl }
+									>
+										{ __(
+											'Regenerate token',
+											'we-formkit'
+										) }
+									</a>
+								</p>
+							) : null }
+						</div>
 					) : null }
-					{ boot.regenUrl ? (
-						<p>
-							<a className="button" href={ boot.regenUrl }>
-								{ __( 'Regenerate token', 'we-formkit' ) }
-							</a>
-						</p>
-					) : null }
+				</>
+			) : (
+				<div className="wek-dataform-settings__layout">
+					<div className="wek-dataform-settings__form">
+						<DataForm
+							data={ data }
+							fields={ fields }
+							form={ visualForm }
+							onChange={ onChange }
+						/>
+					</div>
+					<aside className="wek-dataform-settings__preview">
+						<ColorSchemePreview data={ data } />
+					</aside>
 				</div>
-			) : null }
+			) }
 
 			<div className="wek-dataform-settings__actions">
 				<Button
@@ -1036,6 +1059,8 @@ function FormSettingsApp() {
 							<Spinner />{ ' ' }
 							{ __( 'Saving…', 'we-formkit' ) }
 						</>
+					) : PANEL === 'design' ? (
+						__( 'Save design', 'we-formkit' )
 					) : (
 						__( 'Save settings', 'we-formkit' )
 					) }

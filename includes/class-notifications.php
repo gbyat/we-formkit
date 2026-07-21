@@ -388,10 +388,48 @@ final class Notifications {
 		);
 
 		foreach ( Form_Schema::fields_by_id( $schema ) as $field_id => $field ) {
-			$vars[ 'field:' . $field_id ] = esc_html( self::format_field_value( $field, $data[ $field_id ] ?? null ) );
+			$vars[ 'field:' . $field_id ] = nl2br(
+				wp_kses(
+					self::format_field_value( $field, $data[ $field_id ] ?? null ),
+					self::email_value_allowed_html()
+				),
+				false
+			);
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Allowed HTML for field values in emails.
+	 *
+	 * Values come from field `format_for_display()`, which already escapes
+	 * attributes/text. wp_kses here is a safety net that keeps only the links
+	 * and inline markup we intentionally emit (upload links, signature image).
+	 *
+	 * @return array<string, array<string, bool>>
+	 */
+	private static function email_value_allowed_html() {
+		return array(
+			'a'      => array(
+				'href'   => true,
+				'target' => true,
+				'rel'    => true,
+				'title'  => true,
+			),
+			'img'    => array(
+				'src'    => true,
+				'alt'    => true,
+				'class'  => true,
+				'style'  => true,
+				'width'  => true,
+				'height' => true,
+			),
+			'br'     => array(),
+			'strong' => array(),
+			'em'     => array(),
+			'span'   => array( 'style' => true ),
+		);
 	}
 
 	/**
@@ -443,12 +481,7 @@ final class Notifications {
 		if ( '' === trim( $raw ) ) {
 			return '';
 		}
-		if ( false === strpos( $raw, '<' ) ) {
-			if ( false !== strpos( $raw, 'rnrn' ) ) {
-				$raw = str_replace( 'rnrn', "\n\n", $raw );
-			}
-			$raw = wpautop( $raw );
-		}
+		$raw = Settings::prepare_email_html( $raw );
 		return self::replace_tags( $raw, $vars );
 	}
 
@@ -482,9 +515,10 @@ final class Notifications {
 			}
 			$label  = isset( $field['label'] ) ? (string) $field['label'] : $field_id;
 			$value  = self::format_field_value( $field, $data[ $field_id ] ?? null );
+			$value  = nl2br( wp_kses( $value, self::email_value_allowed_html() ), false );
 			$rows[] = '<tr>'
 				. '<td style="padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top;font-weight:600;width:35%;">' . esc_html( $label ) . '</td>'
-				. '<td style="padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top;">' . nl2br( esc_html( $value ) ) . '</td>'
+				. '<td style="padding:8px 10px;border-bottom:1px solid #eee;vertical-align:top;">' . $value . '</td>'
 				. '</tr>';
 		}
 

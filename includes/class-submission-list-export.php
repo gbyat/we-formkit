@@ -52,7 +52,7 @@ final class Submission_List_Export {
 		$args = array(
 			'post_type'      => Post_Types::SUBMISSION,
 			'post_status'    => 'publish',
-			'posts_per_page' => 2000,
+			'posts_per_page' => 2000, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- export cap for admin CSV/JSON dump.
 			'orderby'        => 'date',
 			'order'          => 'DESC',
 			'no_found_rows'  => true,

@@ -42,7 +42,7 @@ class Textarea_Field extends Abstract_Field_Type {
 		$attrs = parent::render_attributes( $field );
 		unset( $attrs['type'] );
 
-		$rows = isset( $field['type_options']['rows'] ) ? max( 1, (int) $field['type_options']['rows'] ) : 4;
+		$rows          = isset( $field['type_options']['rows'] ) ? max( 1, (int) $field['type_options']['rows'] ) : 4;
 		$attrs['rows'] = (string) $rows;
 
 		return $attrs;

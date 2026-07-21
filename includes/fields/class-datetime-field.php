@@ -71,7 +71,7 @@ class Datetime_Field extends Abstract_Field_Type {
 		}
 
 		list( $date_part, $time_part ) = explode( 'T', $value, 2 );
-		$parts = explode( '-', $date_part );
+		$parts                         = explode( '-', $date_part );
 		if ( ! checkdate( (int) $parts[1], (int) $parts[2], (int) $parts[0] ) ) {
 			return '';
 		}
@@ -121,12 +121,12 @@ class Datetime_Field extends Abstract_Field_Type {
 	}
 
 	public function render_attributes( array $field ): array {
-		$attrs = parent::render_attributes( $field );
+		$attrs         = parent::render_attributes( $field );
 		$attrs['type'] = 'datetime-local';
 
 		$constraints = Date_Constraints::get_field_constraints( $field );
-		$min_bound     = Date_Constraints::resolve_bound( $constraints['min'] );
-		$max_bound     = Date_Constraints::resolve_bound( $constraints['max'] );
+		$min_bound   = Date_Constraints::resolve_bound( $constraints['min'] );
+		$max_bound   = Date_Constraints::resolve_bound( $constraints['max'] );
 
 		if ( $min_bound instanceof \DateTimeImmutable ) {
 			$attrs['min'] = $min_bound->format( 'Y-m-d\T00:00' );

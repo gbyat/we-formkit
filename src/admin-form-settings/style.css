@@ -3,6 +3,10 @@
 	margin-top: 1rem;
 }
 
+.wek-dataform-settings--design {
+	max-width: 1200px;
+}
+
 .wek-dataform-settings .components-notice {
 	margin: 0 0 1rem;
 }
