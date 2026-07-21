@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-07-21
+
+- Refactor form styling and validation logic. Update CSS for form labels and control rows to enhance appearance and alignment. Modify JavaScript to improve inline control row handling for radio and checkbox inputs, ensuring proper structure and styling consistency.
 ## [0.3.3] - 2026-07-21
 
 - Update CSS styles for form elements to improve consistency and appearance. Change background properties to use 'background-color' for better clarity. Add vendor prefixes for select elements and ensure border-radius is applied consistently across inputs and selects. Adjust layout properties in admin form settings for enhanced responsiveness.
