@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.17] - 2026-07-21
+
+- Enhance form styling and color scheme management. Introduce new CSS variables for input and button text colors, update existing styles for improved consistency, and refactor the Form_Style class to support named color schemes. Update admin panel to include scheme options and ensure proper handling of color roles in the frontend. Adjust translations for new color-related strings.
 ## [0.2.16] - 2026-07-20
 
 - Fix print/PDF export to show option labels and allow safe HTML in answers.
