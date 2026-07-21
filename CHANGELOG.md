@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-21
+
+- Implement modules submenu and Akismet spam adapter; enhance module registry with activation and dependency checks. Update AGENTS.md and translations for new features.
 ## [0.4.8] - 2026-07-21
 
 - Add content guard feature to text and textarea fields to reject submissions containing links or email addresses. Update translations and UI elements for spam protection settings.
