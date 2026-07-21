@@ -703,14 +703,16 @@ final class Drafts {
 		$end     = gmdate( 'Ymd\THis\Z', $event_at + ( 30 * MINUTE_IN_SECONDS ) );
 		$exp_txt = gmdate( 'Y-m-d H:i', $expires ) . ' UTC';
 
-		// No METHOD and no ORGANIZER/ATTENDEE: this is a personal appointment for
-		// the recipient only, so Outlook/clients let them save it instead of
-		// prompting to accept/decline a meeting invitation.
+		// METHOD:PUBLISH marks this as a single published event, so Outlook opens
+		// it as a normal appointment (Save & Close) instead of prompting to add an
+		// "internet calendar" subscription. No ORGANIZER/ATTENDEE and no REQUEST
+		// method means the recipient is never asked to accept/decline a meeting.
 		$lines = array(
 			'BEGIN:VCALENDAR',
 			'VERSION:2.0',
 			'PRODID:-//WE Formkit//EN',
 			'CALSCALE:GREGORIAN',
+			'METHOD:PUBLISH',
 			'BEGIN:VEVENT',
 			'UID:' . self::ics_escape_text( (string) $uid ),
 			'DTSTAMP:' . $stamp,
