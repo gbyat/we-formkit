@@ -251,18 +251,28 @@ final class Form_Style {
 	 * @return bool
 	 */
 	public static function save( $form_id, array $style ) {
+		$form_id    = (int) $form_id;
+		$existing   = self::get( $form_id );
 		$normalized = self::normalize( $style );
-		$json       = wp_json_encode( $normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+
+		if ( self::PRESET_CUSTOM === $normalized['preset'] ) {
+			// Persist a fixed custom snapshot (not overwritten by named schemes).
+			$normalized['custom_colors'] = $normalized['colors'];
+		} else {
+			$normalized['custom_colors'] = $existing['custom_colors'];
+		}
+
+		$json = wp_json_encode( $normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 		if ( false === $json ) {
 			return false;
 		}
-		update_post_meta( (int) $form_id, self::META, $json );
+		update_post_meta( $form_id, self::META, $json );
 		return true;
 	}
 
 	/**
 	 * @param array<string, mixed> $style Raw.
-	 * @return array{preset:string,colors:array<string,string>}
+	 * @return array{preset:string,colors:array<string,string>,custom_colors:array<string,string>}
 	 */
 	public static function normalize( array $style ) {
 		$preset = sanitize_key( (string) ( $style['preset'] ?? self::PRESET_THEME ) );
@@ -279,9 +289,23 @@ final class Form_Style {
 			}
 		}
 
+		$custom_colors = array();
+		$custom_raw    = isset( $style['custom_colors'] ) && is_array( $style['custom_colors'] ) ? $style['custom_colors'] : array();
+		foreach ( array_keys( self::color_labels() ) as $key ) {
+			$hex = self::sanitize_hex( $custom_raw[ $key ] ?? '' );
+			if ( '' !== $hex ) {
+				$custom_colors[ $key ] = $hex;
+			}
+		}
+		// Legacy: custom preset stored only in colors — seed custom_colors once.
+		if ( empty( $custom_colors ) && self::PRESET_CUSTOM === $preset && ! empty( $colors ) ) {
+			$custom_colors = $colors;
+		}
+
 		return array(
-			'preset' => $preset,
-			'colors' => $colors,
+			'preset'        => $preset,
+			'colors'        => $colors,
+			'custom_colors' => $custom_colors,
 		);
 	}
 
@@ -296,8 +320,9 @@ final class Form_Style {
 		$preset = $stored['preset'];
 
 		if ( self::PRESET_CUSTOM === $preset ) {
-			$base = self::theme_defaults();
-			foreach ( $stored['colors'] as $key => $hex ) {
+			$base = self::formkit_defaults();
+			$from = ! empty( $stored['custom_colors'] ) ? $stored['custom_colors'] : $stored['colors'];
+			foreach ( $from as $key => $hex ) {
 				$base[ $key ] = $hex;
 			}
 		} elseif ( self::PRESET_THEME === $preset ) {
@@ -453,9 +478,28 @@ final class Form_Style {
 	public static function editable_colors( $form_id ) {
 		$stored = self::get( $form_id );
 		if ( self::PRESET_CUSTOM === $stored['preset'] ) {
-			return array_merge( self::theme_defaults(), $stored['colors'] );
+			$base = self::formkit_defaults();
+			$from = ! empty( $stored['custom_colors'] ) ? $stored['custom_colors'] : $stored['colors'];
+			return array_merge( $base, $from );
 		}
 		return self::resolve( $form_id );
+	}
+
+	/**
+	 * Last saved custom palette (may be empty).
+	 *
+	 * @param int $form_id Form ID.
+	 * @return array<string, string>
+	 */
+	public static function saved_custom_colors( $form_id ): array {
+		$stored = self::get( $form_id );
+		if ( ! empty( $stored['custom_colors'] ) ) {
+			return array_merge( self::formkit_defaults(), $stored['custom_colors'] );
+		}
+		if ( self::PRESET_CUSTOM === $stored['preset'] && ! empty( $stored['colors'] ) ) {
+			return array_merge( self::formkit_defaults(), $stored['colors'] );
+		}
+		return array();
 	}
 
 	/**
@@ -512,7 +556,7 @@ final class Form_Style {
 			}
 		}
 
-		return self::ensure_contrast_roles( $out );
+		return self::unique_role_colors( self::ensure_contrast_roles( $out ) );
 	}
 
 	/**
@@ -937,6 +981,74 @@ final class Form_Style {
 		}
 
 		return $colors;
+	}
+
+	/**
+	 * Avoid identical hex values across roles (theme import / match site theme).
+	 *
+	 * @param array<string, string> $colors Colors.
+	 * @return array<string, string>
+	 */
+	private static function unique_role_colors( array $colors ): array {
+		$order = array( 'accent', 'ink', 'danger', 'on_accent', 'muted', 'line', 'accent_soft', 'bg', 'surface', 'input' );
+		$used  = array();
+
+		foreach ( $order as $role ) {
+			if ( empty( $colors[ $role ] ) ) {
+				continue;
+			}
+			$key = strtolower( (string) $colors[ $role ] );
+			if ( ! isset( $used[ $key ] ) ) {
+				$used[ $key ] = $role;
+				continue;
+			}
+			$colors[ $role ] = self::nudge_duplicate_role( $role, $colors, $used );
+			$nkey            = strtolower( (string) $colors[ $role ] );
+			$guard           = 0;
+			while ( isset( $used[ $nkey ] ) && $guard < 5 ) {
+				$colors[ $role ] = self::mix_hex( $colors[ $role ], '#808080', 0.12 + ( 0.08 * $guard ) );
+				$nkey            = strtolower( (string) $colors[ $role ] );
+				++$guard;
+			}
+			$used[ $nkey ] = $role;
+		}
+
+		return $colors;
+	}
+
+	/**
+	 * @param string                $role   Role key.
+	 * @param array<string, string> $colors Full palette.
+	 * @param array<string, string> $used   hex => role already claimed.
+	 * @return string
+	 */
+	private static function nudge_duplicate_role( $role, array $colors, array $used ): string {
+		$accent = $colors['accent'] ?? '#0f5c4c';
+		$ink    = $colors['ink'] ?? '#1c1b19';
+		$bg     = $colors['bg'] ?? '#f7f5f2';
+		$surface = $colors['surface'] ?? '#ffffff';
+
+		switch ( $role ) {
+			case 'accent_soft':
+				return self::soft_tint( $accent );
+			case 'bg':
+				return self::mix_hex( $surface, $ink, 0.06 );
+			case 'surface':
+				return self::mix_hex( $bg, '#ffffff', 0.65 );
+			case 'input':
+				return self::mix_hex( $surface, $ink, 0.03 );
+			case 'line':
+				return self::mix_hex( $bg, $ink, 0.18 );
+			case 'muted':
+				return self::mix_hex( $ink, $bg, 0.42 );
+			case 'on_accent':
+				$alt = ( '#ffffff' === strtolower( (string) ( $colors['on_accent'] ?? '' ) ) ) ? '#0d1a17' : '#ffffff';
+				return $alt;
+			case 'danger':
+				return '#8a1f1f';
+			default:
+				return self::mix_hex( $colors[ $role ] ?? $accent, $ink, 0.2 );
+		}
 	}
 
 	/**

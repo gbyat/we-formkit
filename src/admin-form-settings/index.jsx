@@ -123,6 +123,35 @@ const SIZE_SECTION = { sm: '1rem', md: '1.15rem', lg: '1.35rem' };
 const SIZE_LABEL = { sm: '0.85rem', md: '0.95rem', lg: '1.05rem' };
 const SIZE_INPUT = { sm: '0.875rem', md: '1rem', lg: '1.0625rem' };
 
+const RADIUS_CONTROL = {
+	none: '0',
+	sm: '4px',
+	md: '8px',
+	lg: '14px',
+	pill: '999px',
+};
+const RADIUS_SECTION = {
+	none: '0',
+	sm: '8px',
+	md: '12px',
+	lg: '18px',
+};
+
+const RADIUS_FIELD_ELEMENTS = [
+	{ value: 'none', label: __( 'None', 'we-formkit' ) },
+	{ value: 'sm', label: __( 'Small', 'we-formkit' ) },
+	{ value: 'md', label: __( 'Medium', 'we-formkit' ) },
+	{ value: 'lg', label: __( 'Large', 'we-formkit' ) },
+	{ value: 'pill', label: __( 'Pill', 'we-formkit' ) },
+];
+
+const RADIUS_SECTION_ELEMENTS = [
+	{ value: 'none', label: __( 'None', 'we-formkit' ) },
+	{ value: 'sm', label: __( 'Small', 'we-formkit' ) },
+	{ value: 'md', label: __( 'Medium', 'we-formkit' ) },
+	{ value: 'lg', label: __( 'Large', 'we-formkit' ) },
+];
+
 function PreviewField( { label, req, help, helpPlacement, helpStyle, children } ) {
 	const helpEl =
 		help && helpPlacement ? (
@@ -141,7 +170,13 @@ function PreviewField( { label, req, help, helpPlacement, helpStyle, children } 
 			<div className="wek-scheme-preview__label">
 				{ label }
 				{ req ? (
-					<span className="wek-scheme-preview__req">
+					<span
+						className={
+							String( req ).indexOf( 'optional' ) !== -1
+								? 'wek-scheme-preview__opt'
+								: 'wek-scheme-preview__req'
+						}
+					>
 						{ ' ' }
 						{ req }
 					</span>
@@ -162,11 +197,14 @@ function ColorSchemePreview( { data } ) {
 			: data.required_mark === 'none'
 				? ''
 				: '*';
+	const opt =
+		data.optional_mark === 'none' ? '' : __( '(optional)', 'we-formkit' );
 	const spacing = SPACING_VARS[ data.spacing ] || SPACING_VARS.cozy;
 	const control = CONTROL_VARS[ data.control_padding ] || CONTROL_VARS.cozy;
 	const labelClass =
 		'wek-scheme-preview__card' +
 		( data.label_weight === 'normal' ? ' is-label-normal' : '' );
+	const showInline = data.inline_validation !== 'off';
 
 	return (
 		<div className="wek-scheme-preview" aria-live="polite">
@@ -199,6 +237,15 @@ function ColorSchemePreview( { data } ) {
 						SIZE_LABEL[ data.size_label ] || SIZE_LABEL.md,
 					'--wek-font-input':
 						SIZE_INPUT[ data.size_input ] || SIZE_INPUT.md,
+					'--wek-radius-input':
+						RADIUS_CONTROL[ data.radius_input ] ||
+						RADIUS_CONTROL.md,
+					'--wek-radius-button':
+						RADIUS_CONTROL[ data.radius_button ] ||
+						RADIUS_CONTROL.pill,
+					'--wek-radius-section':
+						RADIUS_SECTION[ data.radius_section ] ||
+						RADIUS_SECTION.md,
 				} }
 			>
 				<div className={ labelClass }>
@@ -229,31 +276,48 @@ function ColorSchemePreview( { data } ) {
 								helpPlacement={ data.help_placement }
 								helpStyle={ data.help_style }
 							>
-								<div className="wek-scheme-preview__input">
-									you@example.com
+								<div className="wek-scheme-preview__control-row">
+									<div className="wek-scheme-preview__input is-valid">
+										you@example.com
+									</div>
+									{ showInline ? (
+										<span
+											className="wek-scheme-preview__validity is-valid"
+											aria-hidden="true"
+										/>
+									) : null }
 								</div>
 							</PreviewField>
 
 							<PreviewField
 								label={ __( 'Topic', 'we-formkit' ) }
+								req={ opt }
 								helpPlacement={ data.help_placement }
 								helpStyle={ data.help_style }
 							>
-								<select
-									className="wek-scheme-preview__select"
-									defaultValue="general"
-									aria-label={ __( 'Topic', 'we-formkit' ) }
-								>
-									<option value="general">
-										{ __( 'General', 'we-formkit' ) }
-									</option>
-									<option value="billing">
-										{ __( 'Billing', 'we-formkit' ) }
-									</option>
-									<option value="support">
-										{ __( 'Support', 'we-formkit' ) }
-									</option>
-								</select>
+								<div className="wek-scheme-preview__control-row">
+									<select
+										className="wek-scheme-preview__select"
+										defaultValue="general"
+										aria-label={ __( 'Topic', 'we-formkit' ) }
+									>
+										<option value="general">
+											{ __( 'General', 'we-formkit' ) }
+										</option>
+										<option value="billing">
+											{ __( 'Billing', 'we-formkit' ) }
+										</option>
+										<option value="support">
+											{ __( 'Support', 'we-formkit' ) }
+										</option>
+									</select>
+									{ showInline ? (
+										<span
+											className="wek-scheme-preview__validity is-valid"
+											aria-hidden="true"
+										/>
+									) : null }
+								</div>
 							</PreviewField>
 
 							<PreviewField
@@ -319,6 +383,8 @@ function flattenSettings( payload ) {
 		style_preset: payload.style_preset || 'theme',
 		label_weight: payload.label_weight || 'bold',
 		required_mark: payload.required_mark || 'asterisk',
+		optional_mark: payload.optional_mark || 'text',
+		inline_validation: payload.inline_validation || 'on',
 		help_placement: payload.help_placement || 'below_label',
 		help_style: payload.help_style || 'muted',
 		font_family: payload.font_family || 'inherit',
@@ -327,6 +393,9 @@ function flattenSettings( payload ) {
 		size_section: payload.size_section || 'md',
 		size_label: payload.size_label || 'md',
 		size_input: payload.size_input || 'md',
+		radius_input: payload.radius_input || 'md',
+		radius_button: payload.radius_button || 'pill',
+		radius_section: payload.radius_section || 'md',
 		...colorsFromMap( colors ),
 	};
 }
@@ -344,6 +413,8 @@ function toApiPayload( data ) {
 		secret_enabled: !! data.secret_enabled,
 		label_weight: data.label_weight || 'bold',
 		required_mark: data.required_mark || 'asterisk',
+		optional_mark: data.optional_mark || 'text',
+		inline_validation: data.inline_validation || 'on',
 		help_placement: data.help_placement || 'below_label',
 		help_style: data.help_style || 'muted',
 		font_family: data.font_family || 'inherit',
@@ -352,6 +423,9 @@ function toApiPayload( data ) {
 		size_section: data.size_section || 'md',
 		size_label: data.size_label || 'md',
 		size_input: data.size_input || 'md',
+		radius_input: data.radius_input || 'md',
+		radius_button: data.radius_button || 'pill',
+		radius_section: data.radius_section || 'md',
 		style: {
 			preset: data.style_preset || 'theme',
 			colors,
@@ -359,7 +433,7 @@ function toApiPayload( data ) {
 	};
 }
 
-function presetElements() {
+function presetElements( hasCustom ) {
 	return [
 		{
 			value: 'theme',
@@ -371,7 +445,9 @@ function presetElements() {
 		} ) ),
 		{
 			value: 'custom',
-			label: __( 'Custom', 'we-formkit' ),
+			label: hasCustom
+				? __( 'Custom (saved)', 'we-formkit' )
+				: __( 'Custom', 'we-formkit' ),
 		},
 	];
 }
@@ -444,6 +520,13 @@ function FormSettingsApp() {
 	const [ notice, setNotice ] = useState( null );
 	const [ dirty, setDirty ] = useState( false );
 	const [ themeFillFrom, setThemeFillFrom ] = useState( 'auto' );
+	const [ savedCustom, setSavedCustom ] = useState( () => {
+		const colors = boot.customColors;
+		if ( colors && typeof colors === 'object' && Object.keys( colors ).length ) {
+			return colors;
+		}
+		return null;
+	} );
 
 	const fields = useMemo(
 		() => [
@@ -509,6 +592,35 @@ function FormSettingsApp() {
 						label: __( 'Text “(required)”', 'we-formkit' ),
 					},
 					{ value: 'none', label: __( 'None', 'we-formkit' ) },
+				],
+			},
+			{
+				id: 'optional_mark',
+				label: __( 'Optional mark', 'we-formkit' ),
+				type: 'text',
+				description: __(
+					'Shown next to optional field labels.',
+					'we-formkit'
+				),
+				elements: [
+					{
+						value: 'text',
+						label: __( 'Text “(optional)”', 'we-formkit' ),
+					},
+					{ value: 'none', label: __( 'None', 'we-formkit' ) },
+				],
+			},
+			{
+				id: 'inline_validation',
+				label: __( 'Inline validation', 'we-formkit' ),
+				type: 'text',
+				description: __(
+					'Show a check or error icon beside fields after the visitor leaves the field.',
+					'we-formkit'
+				),
+				elements: [
+					{ value: 'on', label: __( 'On', 'we-formkit' ) },
+					{ value: 'off', label: __( 'Off', 'we-formkit' ) },
 				],
 			},
 			{
@@ -621,14 +733,36 @@ function FormSettingsApp() {
 				],
 			},
 			{
+				id: 'radius_input',
+				label: __( 'Input corners', 'we-formkit' ),
+				type: 'text',
+				description: __(
+					'Applies to text fields, textareas, and selects.',
+					'we-formkit'
+				),
+				elements: RADIUS_FIELD_ELEMENTS,
+			},
+			{
+				id: 'radius_button',
+				label: __( 'Button corners', 'we-formkit' ),
+				type: 'text',
+				elements: RADIUS_FIELD_ELEMENTS,
+			},
+			{
+				id: 'radius_section',
+				label: __( 'Section corners', 'we-formkit' ),
+				type: 'text',
+				elements: RADIUS_SECTION_ELEMENTS,
+			},
+			{
 				id: 'style_preset',
 				label: __( 'Color scheme', 'we-formkit' ),
 				type: 'text',
 				description: __(
-					'Choose a matching palette. Edit any color to switch to Custom — built-in schemes stay selectable.',
+					'Match site theme maps the palette without duplicate roles. Edit a color or import to create Custom — save settings to lock it.',
 					'we-formkit'
 				),
-				elements: presetElements(),
+				elements: presetElements( !! savedCustom ),
 			},
 			...COLOR_ROLES.map( ( role ) => ( {
 				id: role.id,
@@ -637,7 +771,7 @@ function FormSettingsApp() {
 				Edit: ColorEdit,
 			} ) ),
 		],
-		[]
+		[ savedCustom ]
 	);
 
 	const generalForm = useMemo(
@@ -661,7 +795,7 @@ function FormSettingsApp() {
 		[]
 	);
 
-	const appearanceForm = useMemo(
+	const visualForm = useMemo(
 		() => ( {
 			layout: { type: 'regular', labelPosition: 'top' },
 			fields: [
@@ -672,6 +806,8 @@ function FormSettingsApp() {
 					children: [
 						'label_weight',
 						'required_mark',
+						'optional_mark',
+						'inline_validation',
 						'help_placement',
 						'help_style',
 					],
@@ -691,17 +827,14 @@ function FormSettingsApp() {
 					id: 'density',
 					label: __( 'Spacing & density', 'we-formkit' ),
 					layout: { type: 'card', isOpened: true },
-					children: [ 'spacing', 'control_padding' ],
+					children: [
+						'spacing',
+						'control_padding',
+						'radius_input',
+						'radius_button',
+						'radius_section',
+					],
 				},
-			],
-		} ),
-		[]
-	);
-
-	const colorsForm = useMemo(
-		() => ( {
-			layout: { type: 'regular', labelPosition: 'top' },
-			fields: [
 				{
 					id: 'colors',
 					label: __( 'Colors', 'we-formkit' ),
@@ -725,6 +858,11 @@ function FormSettingsApp() {
 				const preset = edits.style_preset;
 				if ( preset === 'theme' ) {
 					Object.assign( next, colorsFromMap( boot.themeColors ) );
+				} else if ( preset === 'custom' ) {
+					if ( savedCustom ) {
+						Object.assign( next, colorsFromMap( savedCustom ) );
+					}
+					// No saved custom yet: keep current swatches as a draft.
 				} else if ( SCHEME_COLORS[ preset ] ) {
 					Object.assign( next, colorsFromMap( SCHEME_COLORS[ preset ] ) );
 				}
@@ -740,7 +878,7 @@ function FormSettingsApp() {
 		} );
 		setDirty( true );
 		setNotice( null );
-	}, [] );
+	}, [ savedCustom ] );
 
 	const importThemeColors = useCallback( () => {
 		const byFill =
@@ -796,6 +934,9 @@ function FormSettingsApp() {
 				}
 				if ( response.settings ) {
 					setData( flattenSettings( response.settings ) );
+					if ( response.settings.style_preset === 'custom' ) {
+						setSavedCustom( response.settings.colors || null );
+					}
 				}
 				if ( typeof response.secret_url === 'string' ) {
 					setSecretUrl( response.secret_url );
@@ -841,12 +982,6 @@ function FormSettingsApp() {
 					form={ generalForm }
 					onChange={ onChange }
 				/>
-				<DataForm
-					data={ data }
-					fields={ fields }
-					form={ appearanceForm }
-					onChange={ onChange }
-				/>
 			</div>
 
 			<div className="wek-dataform-settings__layout">
@@ -854,7 +989,7 @@ function FormSettingsApp() {
 					<DataForm
 						data={ data }
 						fields={ fields }
-						form={ colorsForm }
+						form={ visualForm }
 						onChange={ onChange }
 					/>
 				</div>

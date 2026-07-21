@@ -10,6 +10,9 @@
 	--wek-on-accent: #ffffff;
 	--wek-danger: #8a1f1f;
 	--wek-radius: 12px;
+	--wek-radius-section: 12px;
+	--wek-radius-input: 8px;
+	--wek-radius-button: 999px;
 	--wek-space: 1.25rem;
 	--wek-shell-pad: clamp(1.25rem, 3vw, 2rem);
 	--wek-gap-y: 0.85rem;
@@ -22,7 +25,7 @@
 	color: var(--wek-ink);
 	background: linear-gradient(180deg, var(--wek-bg) 0%, var(--wek-surface) 48%);
 	border: 1px solid var(--wek-line);
-	border-radius: calc(var(--wek-radius) + 4px);
+	border-radius: calc(var(--wek-radius-section) + 4px);
 	padding: var(--wek-shell-pad);
 	max-width: 52rem;
 	margin: 0 auto;
@@ -52,7 +55,7 @@
 .we-formkit__section {
 	background: var(--wek-surface);
 	border: 1px solid var(--wek-line);
-	border-radius: var(--wek-radius);
+	border-radius: var(--wek-radius-section);
 	padding: var(--wek-space);
 	margin: 0 0 1rem;
 }
@@ -144,6 +147,13 @@
 	font-size: 0.85em;
 }
 
+.we-formkit__opt {
+	color: var(--wek-muted);
+	font-weight: 500;
+	font-size: 0.85em;
+	margin-left: 0.15rem;
+}
+
 .we-formkit__help {
 	color: var(--wek-muted);
 	margin: 0.35rem 0 0;
@@ -154,7 +164,7 @@
 	margin-top: 0.45rem;
 	padding: 0.55rem 0.7rem;
 	border: 1px solid var(--wek-line);
-	border-radius: 8px;
+	border-radius: var(--wek-radius-input, 8px);
 	background: var(--wek-accent-soft);
 	color: var(--wek-ink);
 }
@@ -177,7 +187,7 @@
 	margin-bottom: 0.45rem;
 }
 
-.we-formkit--help-below-label .we-formkit__field > :not(.we-formkit__label):not(.we-formkit__help):not(.we-formkit__error) {
+.we-formkit--help-below-label .we-formkit__field > :not(.we-formkit__label):not(.we-formkit__help):not(.we-formkit__error):not(.we-formkit__validity) {
 	order: 3;
 }
 
@@ -185,13 +195,23 @@
 	order: 3;
 }
 
-.we-formkit--help-below-field .we-formkit__field > :not(.we-formkit__label):not(.we-formkit__help):not(.we-formkit__error) {
+.we-formkit--help-below-field .we-formkit__field > :not(.we-formkit__label):not(.we-formkit__help):not(.we-formkit__error):not(.we-formkit__validity) {
 	order: 2;
 }
 
 .we-formkit--help-below-label .we-formkit__field > .we-formkit__error,
 .we-formkit--help-below-field .we-formkit__field > .we-formkit__error {
 	order: 4;
+}
+
+.we-formkit--help-below-label .we-formkit__field > .we-formkit__validity,
+.we-formkit--help-below-field .we-formkit__field > .we-formkit__validity {
+	order: 3;
+}
+
+.we-formkit--help-below-label .we-formkit__field > .we-formkit__control-row,
+.we-formkit--help-below-field .we-formkit__field > .we-formkit__control-row {
+	order: 3;
 }
 
 .we-formkit--help-below-label .we-formkit__fieldset,
@@ -243,7 +263,7 @@
 	width: 100%;
 	box-sizing: border-box;
 	border: 1px solid var(--wek-line);
-	border-radius: 8px;
+	border-radius: var(--wek-radius-input);
 	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
 	font: inherit;
 	font-size: var(--wek-font-input);
@@ -253,6 +273,21 @@
 	);
 	background: var(--wek-input);
 	color: inherit;
+}
+
+.we-formkit select {
+	appearance: none;
+	-webkit-appearance: none;
+	background-image: linear-gradient(45deg, transparent 50%, var(--wek-muted) 50%),
+		linear-gradient(135deg, var(--wek-muted) 50%, transparent 50%);
+	background-position:
+		calc(100% - 14px) calc(50% - 2px),
+		calc(100% - 9px) calc(50% - 2px);
+	background-size:
+		5px 5px,
+		5px 5px;
+	background-repeat: no-repeat;
+	padding-right: 1.75rem;
 }
 
 .we-formkit textarea {
@@ -518,6 +553,72 @@
 	box-shadow: 0 0 0 1px var(--wek-danger);
 }
 
+.we-formkit__control-row {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+}
+
+.we-formkit__control-row > input,
+.we-formkit__control-row > textarea,
+.we-formkit__control-row > select {
+	flex: 1 1 auto;
+	min-width: 0;
+	width: 100%;
+}
+
+.we-formkit__validity {
+	display: none;
+	flex: 0 0 auto;
+	width: 1.35rem;
+	height: 1.35rem;
+	border-radius: 50%;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+}
+
+.we-formkit--inline-validation .we-formkit__field.is-valid .we-formkit__validity,
+.we-formkit--inline-validation .we-formkit__field.is-invalid .we-formkit__validity {
+	display: inline-flex;
+}
+
+.we-formkit--inline-validation .we-formkit__field.is-valid .we-formkit__validity {
+	background: var(--wek-accent);
+	color: var(--wek-on-accent);
+}
+
+.we-formkit--inline-validation .we-formkit__field.is-valid .we-formkit__validity::before {
+	content: "";
+	width: 0.35rem;
+	height: 0.65rem;
+	border: solid currentColor;
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg) translateY(-1px);
+}
+
+.we-formkit--inline-validation .we-formkit__field.is-invalid .we-formkit__validity {
+	background: var(--wek-danger);
+	color: #fff;
+}
+
+.we-formkit--inline-validation .we-formkit__field.is-invalid .we-formkit__validity::before {
+	content: "×";
+	font-size: 0.95rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.we-formkit--inline-validation .we-formkit__field.is-valid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.we-formkit--inline-validation .we-formkit__field.is-valid textarea,
+.we-formkit--inline-validation .we-formkit__field.is-valid select {
+	border-color: var(--wek-accent);
+}
+
+.we-formkit--inline-validation .we-formkit__field.is-valid > .we-formkit__validity {
+	margin-top: 0.35rem;
+}
+
 .we-formkit__actions {
 	margin: 1.25rem 0 0;
 }
@@ -525,7 +626,7 @@
 .we-formkit__submit {
 	appearance: none;
 	border: 0;
-	border-radius: 999px;
+	border-radius: var(--wek-radius-button);
 	background: var(--wek-accent);
 	color: var(--wek-on-accent);
 	font: inherit;
@@ -734,7 +835,7 @@
 	color: var(--wek-ink);
 	font: inherit;
 	font-weight: 600;
-	border-radius: 999px;
+	border-radius: var(--wek-radius-button);
 	padding: 0.55rem 1.15rem;
 	cursor: pointer;
 }
@@ -762,7 +863,7 @@
 	max-width: 480px;
 	height: auto;
 	border: 1px solid var(--wek-line);
-	border-radius: 8px;
+	border-radius: var(--wek-radius-input, 8px);
 	background: var(--wek-input);
 	touch-action: none;
 	cursor: crosshair;

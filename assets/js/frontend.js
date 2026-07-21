@@ -343,8 +343,34 @@
 		qsa( form, '.is-invalid' ).forEach( function ( el ) {
 			el.classList.remove( 'is-invalid' );
 		} );
+		qsa( form, '.is-valid' ).forEach( function ( el ) {
+			el.classList.remove( 'is-valid' );
+		} );
 		qsa( form, '[aria-invalid="true"]' ).forEach( function ( el ) {
 			el.removeAttribute( 'aria-invalid' );
+		} );
+	}
+
+	function clearFieldFeedback( field ) {
+		if ( ! field ) {
+			return;
+		}
+		field.classList.remove( 'is-invalid', 'is-valid' );
+		const err = qs( field, '[data-wek-error]' );
+		if ( err ) {
+			err.hidden = true;
+			const text = qs( err, '[data-wek-error-text]' );
+			if ( text ) {
+				text.textContent = '';
+			} else {
+				err.textContent = '';
+			}
+		}
+		qsa( field, 'input, textarea, select' ).forEach( function ( control ) {
+			if ( control.classList.contains( 'we-formkit__honeypot' ) ) {
+				return;
+			}
+			control.removeAttribute( 'aria-invalid' );
 		} );
 	}
 
@@ -369,6 +395,20 @@
 			( cfg.validation && cfg.validation.required ) ||
 			( cfg.i18n && cfg.i18n.required ) ||
 			'{label} is required.';
+		return applyLabelTemplate( tpl, label || 'This field' );
+	}
+
+	function fieldInvalidMessage( fieldEl ) {
+		const label = fieldEl.getAttribute( 'data-field-label' ) || '';
+		const override = ( fieldEl.getAttribute( 'data-msg-invalid' ) || '' ).trim();
+		if ( override ) {
+			return applyLabelTemplate( override, label );
+		}
+		const cfg = window.weFormkit || {};
+		const tpl =
+			( cfg.validation && cfg.validation.invalid ) ||
+			( cfg.i18n && cfg.i18n.invalid ) ||
+			'{label} is not valid.';
 		return applyLabelTemplate( tpl, label || 'This field' );
 	}
 
@@ -448,11 +488,73 @@
 		} );
 	}
 
+	function fieldIsEmpty( fieldEl ) {
+		const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+		if ( type === 'checkbox' || type === 'consent' ) {
+			const box = qs( fieldEl, 'input[type="checkbox"]' );
+			return ! box || ! box.checked;
+		}
+		if ( type === 'checkboxes' ) {
+			return qsa( fieldEl, 'input[type="checkbox"]:checked' ).length === 0;
+		}
+		if ( type === 'radio' || type === 'radio_image' ) {
+			return ! qs( fieldEl, 'input[type="radio"]:checked' );
+		}
+		if ( type === 'upload' ) {
+			const file = qs( fieldEl, 'input[type="file"]' );
+			return ! file || ! file.files || ! file.files.length;
+		}
+		if ( type === 'signature' ) {
+			const sig = qs( fieldEl, '[data-wek-signature-input]' );
+			return ! sig || ! String( sig.value || '' ).trim();
+		}
+		const input = qs( fieldEl, 'input, textarea, select' );
+		return ! input || ! String( input.value || '' ).trim();
+	}
+
+	function fieldHasMeaningfulValue( fieldEl ) {
+		const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+		if ( type === 'html' || type === 'hidden' ) {
+			return false;
+		}
+		return ! fieldIsEmpty( fieldEl );
+	}
+
+	function fieldFormatError( fieldEl ) {
+		const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+		if ( fieldIsEmpty( fieldEl ) ) {
+			return '';
+		}
+		if ( type === 'email' || type === 'url' || type === 'number' || type === 'tel' ) {
+			const input = qs( fieldEl, 'input' );
+			if ( input && typeof input.checkValidity === 'function' && ! input.checkValidity() ) {
+				return fieldInvalidMessage( fieldEl );
+			}
+		}
+		return '';
+	}
+
+	function getFieldValidationMessage( fieldEl ) {
+		const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+		if ( type === 'html' || type === 'hidden' ) {
+			return '';
+		}
+		const cbMsg = validateCheckboxesField( fieldEl );
+		if ( cbMsg ) {
+			return cbMsg;
+		}
+		if ( fieldEl.getAttribute( 'data-required' ) === '1' && fieldIsEmpty( fieldEl ) ) {
+			return fieldRequiredMessage( fieldEl );
+		}
+		return fieldFormatError( fieldEl );
+	}
+
 	function showFieldError( form, fieldId, message ) {
 		const field = qs( form, '[data-field-id="' + fieldId + '"]' );
 		if ( ! field ) {
 			return;
 		}
+		field.classList.remove( 'is-valid' );
 		field.classList.add( 'is-invalid' );
 		const err = qs( field, '[data-wek-error]' );
 		if ( err ) {
@@ -469,6 +571,139 @@
 				return;
 			}
 			control.setAttribute( 'aria-invalid', 'true' );
+		} );
+	}
+
+	function showFieldValid( field ) {
+		if ( ! field ) {
+			return;
+		}
+		field.classList.remove( 'is-invalid' );
+		field.classList.add( 'is-valid' );
+		const err = qs( field, '[data-wek-error]' );
+		if ( err ) {
+			err.hidden = true;
+			const text = qs( err, '[data-wek-error-text]' );
+			if ( text ) {
+				text.textContent = '';
+			} else {
+				err.textContent = '';
+			}
+		}
+		qsa( field, 'input, textarea, select' ).forEach( function ( control ) {
+			if ( control.classList.contains( 'we-formkit__honeypot' ) ) {
+				return;
+			}
+			control.removeAttribute( 'aria-invalid' );
+		} );
+	}
+
+	function inlineValidationEnabled( root ) {
+		return root && root.getAttribute( 'data-inline-validation' ) === '1';
+	}
+
+	function applyFieldValidationResult( form, fieldEl, message, showSuccess ) {
+		const id = fieldEl.getAttribute( 'data-field-id' );
+		if ( message ) {
+			showFieldError( form, id, message );
+			return false;
+		}
+		if ( showSuccess && fieldHasMeaningfulValue( fieldEl ) ) {
+			showFieldValid( fieldEl );
+		} else {
+			clearFieldFeedback( fieldEl );
+		}
+		return true;
+	}
+
+	function validateFieldLive( form, fieldEl, root ) {
+		if ( fieldEl.classList.contains( 'is-hidden' ) ) {
+			clearFieldFeedback( fieldEl );
+			return true;
+		}
+		const msg = getFieldValidationMessage( fieldEl );
+		return applyFieldValidationResult( form, fieldEl, msg, inlineValidationEnabled( root ) );
+	}
+
+	function prepareInlineControlRows( form ) {
+		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
+			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+			if ( type === 'html' || type === 'hidden' || type === 'checkbox' || type === 'consent' ) {
+				return;
+			}
+			const icon = qs( fieldEl, '[data-wek-validity]' );
+			if ( ! icon ) {
+				return;
+			}
+			const control = ( function () {
+				const kids = fieldEl.children;
+				for ( let i = 0; i < kids.length; i++ ) {
+					const el = kids[ i ];
+					const tag = el.tagName;
+					if ( tag === 'TEXTAREA' || tag === 'SELECT' ) {
+						return el;
+					}
+					if ( tag === 'INPUT' ) {
+						const t = ( el.type || '' ).toLowerCase();
+						if ( t !== 'checkbox' && t !== 'radio' && t !== 'hidden' ) {
+							return el;
+						}
+					}
+				}
+				return null;
+			} )();
+			if ( ! control ) {
+				return;
+			}
+			if ( control.parentElement && control.parentElement.classList.contains( 'we-formkit__control-row' ) ) {
+				return;
+			}
+			const wrap = document.createElement( 'div' );
+			wrap.className = 'we-formkit__control-row';
+			fieldEl.insertBefore( wrap, control );
+			wrap.appendChild( control );
+			wrap.appendChild( icon );
+		} );
+	}
+
+	function bindInlineValidation( root, form ) {
+		if ( ! inlineValidationEnabled( root ) ) {
+			return;
+		}
+		prepareInlineControlRows( form );
+		const touched = new WeakSet();
+
+		form.addEventListener(
+			'focusout',
+			function ( event ) {
+				const fieldEl = event.target && event.target.closest ? event.target.closest( '[data-wek-field]' ) : null;
+				if ( ! fieldEl || ! form.contains( fieldEl ) ) {
+					return;
+				}
+				touched.add( fieldEl );
+				validateFieldLive( form, fieldEl, root );
+			},
+			true
+		);
+
+		form.addEventListener( 'change', function ( event ) {
+			const fieldEl = event.target && event.target.closest ? event.target.closest( '[data-wek-field]' ) : null;
+			if ( ! fieldEl || ! form.contains( fieldEl ) ) {
+				return;
+			}
+			touched.add( fieldEl );
+			validateFieldLive( form, fieldEl, root );
+			if ( ( fieldEl.getAttribute( 'data-field-type' ) || '' ) === 'checkboxes' ) {
+				syncCheckboxesMaxLock( fieldEl );
+			}
+		} );
+
+		form.addEventListener( 'input', function ( event ) {
+			const fieldEl = event.target && event.target.closest ? event.target.closest( '[data-wek-field]' ) : null;
+			if ( ! fieldEl || ! form.contains( fieldEl ) || ! touched.has( fieldEl ) ) {
+				return;
+			}
+			validateFieldLive( form, fieldEl, root );
 		} );
 	}
 
@@ -891,42 +1126,14 @@
 				return true;
 			}
 			let ok = true;
+			const showSuccess = inlineValidationEnabled( root );
 			qsa( section, '[data-wek-field]' ).forEach( function ( fieldEl ) {
 				if ( fieldEl.classList.contains( 'is-hidden' ) ) {
 					return;
 				}
-				const type = fieldEl.getAttribute( 'data-field-type' );
-				const id = fieldEl.getAttribute( 'data-field-id' );
-				const cbMsg = validateCheckboxesField( fieldEl );
-				if ( cbMsg ) {
+				const msg = getFieldValidationMessage( fieldEl );
+				if ( ! applyFieldValidationResult( form, fieldEl, msg, showSuccess ) ) {
 					ok = false;
-					showFieldError( form, id, cbMsg );
-					return;
-				}
-				if ( fieldEl.getAttribute( 'data-required' ) !== '1' ) {
-					return;
-				}
-				let empty = false;
-				if ( type === 'checkbox' || type === 'consent' ) {
-					const box = qs( fieldEl, 'input[type="checkbox"]' );
-					empty = ! box || ! box.checked;
-				} else if ( type === 'checkboxes' ) {
-					empty = qsa( fieldEl, 'input[type="checkbox"]:checked' ).length === 0;
-				} else if ( type === 'radio' || type === 'radio_image' ) {
-					empty = ! qs( fieldEl, 'input[type="radio"]:checked' );
-				} else if ( type === 'upload' ) {
-					const file = qs( fieldEl, 'input[type="file"]' );
-					empty = ! file || ! file.files || ! file.files.length;
-				} else if ( type === 'signature' ) {
-					const sig = qs( fieldEl, '[data-wek-signature-input]' );
-					empty = ! sig || ! sig.value;
-				} else {
-					const input = qs( fieldEl, 'input, textarea, select' );
-					empty = ! input || ! String( input.value || '' ).trim();
-				}
-				if ( empty ) {
-					ok = false;
-					showFieldError( form, id, fieldRequiredMessage( fieldEl ) );
 				}
 			} );
 			return ok;
@@ -1175,44 +1382,16 @@
 		} );
 	}
 
-	function validateVisibleFields( form ) {
+	function validateVisibleFields( form, root ) {
 		let ok = true;
+		const showSuccess = inlineValidationEnabled( root );
 		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
 			if ( fieldEl.classList.contains( 'is-hidden' ) ) {
 				return;
 			}
-			const type = fieldEl.getAttribute( 'data-field-type' );
-			const id = fieldEl.getAttribute( 'data-field-id' );
-			const cbMsg = validateCheckboxesField( fieldEl );
-			if ( cbMsg ) {
+			const msg = getFieldValidationMessage( fieldEl );
+			if ( ! applyFieldValidationResult( form, fieldEl, msg, showSuccess ) ) {
 				ok = false;
-				showFieldError( form, id, cbMsg );
-				return;
-			}
-			if ( fieldEl.getAttribute( 'data-required' ) !== '1' ) {
-				return;
-			}
-			let empty = false;
-			if ( type === 'checkbox' || type === 'consent' ) {
-				const box = qs( fieldEl, 'input[type="checkbox"]' );
-				empty = ! box || ! box.checked;
-			} else if ( type === 'checkboxes' ) {
-				empty = qsa( fieldEl, 'input[type="checkbox"]:checked' ).length === 0;
-			} else if ( type === 'radio' || type === 'radio_image' ) {
-				empty = ! qs( fieldEl, 'input[type="radio"]:checked' );
-			} else if ( type === 'upload' ) {
-				const file = qs( fieldEl, 'input[type="file"]' );
-				empty = ! file || ! file.files || ! file.files.length;
-			} else if ( type === 'signature' ) {
-				const sig = qs( fieldEl, '[data-wek-signature-input]' );
-				empty = ! sig || ! sig.value;
-			} else {
-				const input = qs( fieldEl, 'input, textarea, select' );
-				empty = ! input || ! String( input.value || '' ).trim();
-			}
-			if ( empty ) {
-				ok = false;
-				showFieldError( form, id, fieldRequiredMessage( fieldEl ) );
 			}
 		} );
 		return ok;
@@ -1227,6 +1406,7 @@
 		bindSignatures( root );
 		initPagination( root );
 		bindSaveResume( root );
+		bindInlineValidation( root, form );
 
 		qsa( form, '[data-field-type="checkboxes"]' ).forEach( function ( fieldEl ) {
 			syncCheckboxesMaxLock( fieldEl );
@@ -1261,7 +1441,7 @@
 			clearErrors( form );
 			setStatus( root, '', false );
 
-			if ( ! validateVisibleFields( form ) ) {
+			if ( ! validateVisibleFields( form, root ) ) {
 				setStatus(
 					root,
 					( ( window.weFormkit || {} ).i18n && ( window.weFormkit || {} ).i18n.correctFields ) ||

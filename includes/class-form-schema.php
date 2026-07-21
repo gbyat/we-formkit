@@ -434,6 +434,16 @@ final class Form_Schema {
 			$mark = 'asterisk';
 		}
 
+		$optional = isset( $data['optional_mark'] ) ? sanitize_key( (string) $data['optional_mark'] ) : 'text';
+		if ( ! in_array( $optional, array( 'text', 'none' ), true ) ) {
+			$optional = 'text';
+		}
+
+		$inline = isset( $data['inline_validation'] ) ? sanitize_key( (string) $data['inline_validation'] ) : 'on';
+		if ( ! in_array( $inline, array( 'on', 'off' ), true ) ) {
+			$inline = 'on';
+		}
+
 		$placement = isset( $data['help_placement'] ) ? sanitize_key( (string) $data['help_placement'] ) : 'below_label';
 		if ( ! in_array( $placement, array( 'below_label', 'below_field' ), true ) ) {
 			$placement = 'below_label';
@@ -465,7 +475,7 @@ final class Form_Schema {
 			$control = 'cozy';
 		}
 
-		$size_steps = array( 'sm', 'md', 'lg' );
+		$size_steps   = array( 'sm', 'md', 'lg' );
 		$size_section = isset( $data['size_section'] ) ? sanitize_key( (string) $data['size_section'] ) : 'md';
 		if ( ! in_array( $size_section, $size_steps, true ) ) {
 			$size_section = 'md';
@@ -479,17 +489,36 @@ final class Form_Schema {
 			$size_input = 'md';
 		}
 
+		$radius_steps = array( 'none', 'sm', 'md', 'lg', 'pill' );
+		$radius_input = isset( $data['radius_input'] ) ? sanitize_key( (string) $data['radius_input'] ) : 'md';
+		if ( ! in_array( $radius_input, $radius_steps, true ) ) {
+			$radius_input = 'md';
+		}
+		$radius_button = isset( $data['radius_button'] ) ? sanitize_key( (string) $data['radius_button'] ) : 'pill';
+		if ( ! in_array( $radius_button, $radius_steps, true ) ) {
+			$radius_button = 'pill';
+		}
+		$radius_section = isset( $data['radius_section'] ) ? sanitize_key( (string) $data['radius_section'] ) : 'md';
+		if ( ! in_array( $radius_section, array( 'none', 'sm', 'md', 'lg' ), true ) ) {
+			$radius_section = 'md';
+		}
+
 		return array(
-			'label_weight'    => $weight,
-			'required_mark'   => $mark,
-			'help_placement'  => $placement,
-			'help_style'      => $style,
-			'font_family'     => $font,
-			'spacing'         => $spacing,
-			'control_padding' => $control,
-			'size_section'    => $size_section,
-			'size_label'      => $size_label,
-			'size_input'      => $size_input,
+			'label_weight'      => $weight,
+			'required_mark'     => $mark,
+			'optional_mark'     => $optional,
+			'inline_validation' => $inline,
+			'help_placement'    => $placement,
+			'help_style'        => $style,
+			'font_family'       => $font,
+			'spacing'           => $spacing,
+			'control_padding'   => $control,
+			'size_section'      => $size_section,
+			'size_label'        => $size_label,
+			'size_input'        => $size_input,
+			'radius_input'      => $radius_input,
+			'radius_button'     => $radius_button,
+			'radius_section'    => $radius_section,
 		);
 	}
 
@@ -504,22 +533,22 @@ final class Form_Schema {
 
 		$spacing = array(
 			'compact'     => array(
-				'gap-y'  => '0.55rem',
-				'gap-x'  => '0.65rem',
-				'space'  => '0.85rem',
-				'shell'  => '1rem',
+				'gap-y' => '0.55rem',
+				'gap-x' => '0.65rem',
+				'space' => '0.85rem',
+				'shell' => '1rem',
 			),
 			'cozy'        => array(
-				'gap-y'  => '0.85rem',
-				'gap-x'  => '1rem',
-				'space'  => '1.25rem',
-				'shell'  => 'clamp(1.25rem, 3vw, 2rem)',
+				'gap-y' => '0.85rem',
+				'gap-x' => '1rem',
+				'space' => '1.25rem',
+				'shell' => 'clamp(1.25rem, 3vw, 2rem)',
 			),
 			'comfortable' => array(
-				'gap-y'  => '1.2rem',
-				'gap-x'  => '1.25rem',
-				'space'  => '1.6rem',
-				'shell'  => 'clamp(1.5rem, 3.5vw, 2.35rem)',
+				'gap-y' => '1.2rem',
+				'gap-x' => '1.25rem',
+				'space' => '1.6rem',
+				'shell' => 'clamp(1.5rem, 3.5vw, 2.35rem)',
 			),
 		);
 
@@ -557,6 +586,24 @@ final class Form_Schema {
 		$sp = $spacing[ $a['spacing'] ] ?? $spacing['cozy'];
 		$cp = $controls[ $a['control_padding'] ] ?? $controls['cozy'];
 
+		$radius_map         = array(
+			'none' => '0',
+			'sm'   => '4px',
+			'md'   => '8px',
+			'lg'   => '14px',
+			'pill' => '999px',
+		);
+		$radius_section_map = array(
+			'none' => '0',
+			'sm'   => '8px',
+			'md'   => '12px',
+			'lg'   => '18px',
+		);
+
+		$r_input   = $radius_map[ $a['radius_input'] ] ?? $radius_map['md'];
+		$r_button  = $radius_map[ $a['radius_button'] ] ?? $radius_map['pill'];
+		$r_section = $radius_section_map[ $a['radius_section'] ] ?? $radius_section_map['md'];
+
 		$parts = array(
 			'--wek-gap-y:' . $sp['gap-y'],
 			'--wek-gap-x:' . $sp['gap-x'],
@@ -567,6 +614,10 @@ final class Form_Schema {
 			'--wek-font-section:' . ( $sections[ $a['size_section'] ] ?? $sections['md'] ),
 			'--wek-font-label:' . ( $labels[ $a['size_label'] ] ?? $labels['md'] ),
 			'--wek-font-input:' . ( $inputs[ $a['size_input'] ] ?? $inputs['md'] ),
+			'--wek-radius-input:' . $r_input,
+			'--wek-radius-button:' . $r_button,
+			'--wek-radius-section:' . $r_section,
+			'--wek-radius:' . $r_section,
 		);
 
 		return implode( ';', $parts );
@@ -579,16 +630,18 @@ final class Form_Schema {
 	 * @return string
 	 */
 	public static function appearance_root_classes( $form_id ) {
-		$a = self::get_appearance( $form_id );
-		return implode(
-			' ',
-			array(
-				'we-formkit--label-' . $a['label_weight'],
-				'we-formkit--req-' . $a['required_mark'],
-				'we-formkit--help-' . $a['help_placement'],
-				'we-formkit--help-style-' . $a['help_style'],
-			)
+		$a       = self::get_appearance( $form_id );
+		$classes = array(
+			'we-formkit--label-' . $a['label_weight'],
+			'we-formkit--req-' . $a['required_mark'],
+			'we-formkit--opt-' . $a['optional_mark'],
+			'we-formkit--help-' . $a['help_placement'],
+			'we-formkit--help-style-' . $a['help_style'],
 		);
+		if ( 'on' === $a['inline_validation'] ) {
+			$classes[] = 'we-formkit--inline-validation';
+		}
+		return implode( ' ', $classes );
 	}
 
 	/**
