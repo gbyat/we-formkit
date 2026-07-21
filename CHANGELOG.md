@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.7] - 2026-07-21
+
+- Fix URL formatting in calendar event properties by removing unnecessary text escaping for improved clarity and functionality.
 ## [0.4.6] - 2026-07-21
 
 - Update calendar event properties to include METHOD:PUBLISH for improved compatibility with email clients. This change ensures that personal appointments are handled correctly, allowing recipients to save events without prompts to accept or decline.
