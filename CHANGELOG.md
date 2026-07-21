@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-07-21
+
+- Update email notification templates and validation messages to use sprintf for better localization support. Adjust admin menu items for modules and settings, and update translations accordingly. Add AGENTS.md to .gitignore.
+- Remove AGENTS.md file, which contained development notes and product decisions for WE Formkit. This file is no longer needed as development progresses.
 ## [0.5.0] - 2026-07-21
 
 - Implement modules submenu and Akismet spam adapter; enhance module registry with activation and dependency checks. Update AGENTS.md and translations for new features.
