@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-07-21
+
+- Update CSS styles for form elements to improve consistency and appearance. Change background properties to use 'background-color' for better clarity. Add vendor prefixes for select elements and ensure border-radius is applied consistently across inputs and selects. Adjust layout properties in admin form settings for enhanced responsiveness.
 ## [0.3.2] - 2026-07-21
 
 - Refactor form styling and remove theme import functionality. Update CSS to utilize new variables for padding and border radii across input elements. Remove the Theme Import panel from the admin settings, streamlining the form appearance settings. Adjust translations for improved clarity on input padding and corner settings.
