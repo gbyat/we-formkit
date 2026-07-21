@@ -452,63 +452,6 @@ function presetElements( hasCustom ) {
 	];
 }
 
-function ThemeImportPanel( { fillFrom, onFillChange, onImport } ) {
-	const themeImport = boot.themeImport || {};
-	if ( ! themeImport.hasPalette ) {
-		return null;
-	}
-	const fills = Array.isArray( themeImport.fills ) ? themeImport.fills : [];
-	const palette = Array.isArray( themeImport.palette )
-		? themeImport.palette
-		: [];
-
-	return (
-		<div className="wek-theme-import">
-			<p className="wek-theme-import__title">
-				{ __( 'Import theme colors', 'we-formkit' ) }
-			</p>
-			<p className="wek-theme-import__help">
-				{ __(
-					'Maps the theme palette to form roles with contrast checks. Gaps use the fill scheme below.',
-					'we-formkit'
-				) }
-			</p>
-			{ palette.length ? (
-				<div className="wek-theme-import__swatches" aria-hidden="true">
-					{ palette.slice( 0, 12 ).map( ( swatch ) => (
-						<span
-							key={ swatch.slug + swatch.color }
-							title={ swatch.name || swatch.slug || swatch.color }
-							style={ { background: swatch.color } }
-						/>
-					) ) }
-				</div>
-			) : null }
-			<label
-				className="wek-theme-import__fill-label"
-				htmlFor="wek-theme-fill"
-			>
-				{ __( 'Fill missing colors from', 'we-formkit' ) }
-			</label>
-			<select
-				id="wek-theme-fill"
-				className="wek-theme-import__fill"
-				value={ fillFrom }
-				onChange={ ( event ) => onFillChange( event.target.value ) }
-			>
-				{ fills.map( ( fill ) => (
-					<option key={ fill.id } value={ fill.id }>
-						{ fill.label }
-					</option>
-				) ) }
-			</select>
-			<Button variant="secondary" onClick={ onImport }>
-				{ __( 'Import theme colors', 'we-formkit' ) }
-			</Button>
-		</div>
-	);
-}
-
 function FormSettingsApp() {
 	const [ data, setData ] = useState( () =>
 		flattenSettings( boot.settings || {} )
@@ -519,7 +462,6 @@ function FormSettingsApp() {
 	const [ saving, setSaving ] = useState( false );
 	const [ notice, setNotice ] = useState( null );
 	const [ dirty, setDirty ] = useState( false );
-	const [ themeFillFrom, setThemeFillFrom ] = useState( 'auto' );
 	const [ savedCustom, setSavedCustom ] = useState( () => {
 		const colors = boot.customColors;
 		if ( colors && typeof colors === 'object' && Object.keys( colors ).length ) {
@@ -690,7 +632,7 @@ function FormSettingsApp() {
 				label: __( 'Input padding', 'we-formkit' ),
 				type: 'text',
 				description: __(
-					'Inner padding for text inputs and selects (same height).',
+					'Inner padding for text inputs, selects, and radio/checkbox frames.',
 					'we-formkit'
 				),
 				elements: [
@@ -737,7 +679,7 @@ function FormSettingsApp() {
 				label: __( 'Input corners', 'we-formkit' ),
 				type: 'text',
 				description: __(
-					'Applies to text fields, textareas, and selects.',
+					'Applies to text fields, textareas, selects, and radio/checkbox frames.',
 					'we-formkit'
 				),
 				elements: RADIUS_FIELD_ELEMENTS,
@@ -759,7 +701,7 @@ function FormSettingsApp() {
 				label: __( 'Color scheme', 'we-formkit' ),
 				type: 'text',
 				description: __(
-					'Match site theme maps the palette without duplicate roles. Edit a color or import to create Custom — save settings to lock it.',
+					'Match site theme follows the site palette. Edit a swatch to switch to Custom — save to lock it.',
 					'we-formkit'
 				),
 				elements: presetElements( !! savedCustom ),
@@ -880,35 +822,6 @@ function FormSettingsApp() {
 		setNotice( null );
 	}, [ savedCustom ] );
 
-	const importThemeColors = useCallback( () => {
-		const byFill =
-			( boot.themeImport && boot.themeImport.byFill ) || {};
-		const imported = byFill[ themeFillFrom ] || byFill.auto;
-		if ( ! imported ) {
-			setNotice( {
-				status: 'error',
-				message: __(
-					'No theme color palette is available to import.',
-					'we-formkit'
-				),
-			} );
-			return;
-		}
-		setData( ( prev ) => ( {
-			...prev,
-			style_preset: 'custom',
-			...colorsFromMap( imported ),
-		} ) );
-		setDirty( true );
-		setNotice( {
-			status: 'success',
-			message: __(
-				'Theme colors imported. Review the preview, then save.',
-				'we-formkit'
-			),
-		} );
-	}, [ themeFillFrom ] );
-
 	const saveSettings = useCallback( () => {
 		setSaving( true );
 		setNotice( null );
@@ -995,11 +908,6 @@ function FormSettingsApp() {
 				</div>
 				<aside className="wek-dataform-settings__preview">
 					<ColorSchemePreview data={ data } />
-					<ThemeImportPanel
-						fillFrom={ themeFillFrom }
-						onFillChange={ setThemeFillFrom }
-						onImport={ importThemeColors }
-					/>
 				</aside>
 			</div>
 

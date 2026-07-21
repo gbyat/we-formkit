@@ -921,7 +921,6 @@ final class Form_Editor {
 				'themeColors'   => Form_Style::theme_defaults(),
 				'formkitColors' => Form_Style::formkit_defaults(),
 				'schemes'       => Form_Style::schemes_for_admin(),
-				'themeImport'   => Form_Style::theme_import_for_admin(),
 				'customColors'  => Form_Style::saved_custom_colors( $form_id ),
 				'fontFamilies'  => Form_Style::theme_font_families(),
 				'settings'      => array(
