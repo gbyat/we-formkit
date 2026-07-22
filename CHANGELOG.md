@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.11] - 2026-07-22
+
+- Enhance inline validation features and improve form intro handling. Update CSS for matrix field styling and feedback icons, ensuring better visibility and layout. Refactor JavaScript to support new inline validation modes and integrate a WYSIWYG editor for the form intro text, allowing for basic formatting. Update PHP to sanitize intro content and adjust inline validation settings in the form schema and REST API.
 ## [0.6.10] - 2026-07-22
 
 - Implement chrome gap settings for form layout. Introduce new spacing options for header and status elements in the form schema and admin settings. Update CSS variables to reflect these changes, ensuring improved layout control and responsiveness. Refactor related JavaScript to accommodate new settings in the form editor.
