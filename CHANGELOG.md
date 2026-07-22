@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.9] - 2026-07-22
+
+- Refactor CSS for matrix field to improve layout and responsiveness. Simplify mobile label handling and enhance flexbox properties for better alignment of matrix elements. Update PHP to remove unnecessary mobile select label, streamlining the frontend display.
 ## [0.6.8] - 2026-07-22
 
 - Enhance matrix field functionality by introducing row label alignment options in the admin form editor. Update CSS for improved layout and responsiveness of matrix elements, ensuring better user experience on narrow screens. Refactor PHP methods to support new alignment settings and maintain data integrity in form submissions.

@@ -192,7 +192,7 @@ msgstr "Feld"
 #: includes/admin/class-form-editor.php:407
 #: includes/admin/class-form-editor.php:538
 #: includes/class-frontend.php:305
-#: includes/class-frontend.php:1173
+#: includes/class-frontend.php:1172
 msgid "Remove"
 msgstr "Entfernen"
 
@@ -630,8 +630,8 @@ msgstr "Formular absenden"
 msgid "Privacy policy"
 msgstr "Datenschutzerklärung"
 
-#: includes/class-frontend.php:931
-#: includes/class-frontend.php:1225
+#: includes/class-frontend.php:930
+#: includes/class-frontend.php:1224
 msgid "Please select…"
 msgstr "Bitte wählen…"
 
@@ -1027,24 +1027,24 @@ msgid "Add row button label"
 msgstr "Beschriftung „Zeile hinzufügen“"
 
 #: includes/class-frontend.php:304
-#: includes/class-frontend.php:1098
+#: includes/class-frontend.php:1097
 msgid "Add another"
 msgstr "Weitere hinzufügen"
 
 #. translators: %d: row number (1-based).
 #: includes/class-frontend.php:307
-#: includes/class-frontend.php:1166
+#: includes/class-frontend.php:1165
 #: includes/fields/class-repeater-field.php:381
 #, php-format
 msgid "Row %d"
 msgstr "Zeile %d"
 
-#: includes/class-frontend.php:1114
+#: includes/class-frontend.php:1113
 msgid "This repeater has no fields configured yet."
 msgstr "Dieser Repeater hat noch keine Felder."
 
 #: includes/class-frontend.php:746
-#: includes/class-frontend.php:1162
+#: includes/class-frontend.php:1161
 msgid "Row"
 msgstr "Zeile"
 
@@ -1561,7 +1561,7 @@ msgstr "Dein gespeicherter Fortschritt wurde wiederhergestellt."
 
 #: includes/admin/class-form-editor.php:1836
 #: includes/admin/class-submissions.php:371
-#: includes/class-frontend.php:1041
+#: includes/class-frontend.php:1040
 msgid "Clear"
 msgstr "Löschen"
 
@@ -3484,8 +3484,4 @@ msgstr ""
 #: includes/admin/class-form-editor.php:476
 #: includes/fields/class-matrix-field.php:43
 msgid "Right"
-msgstr ""
-
-#: includes/class-frontend.php:833
-msgid "Include this row"
 msgstr ""

@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WE Formkit 0.6.8\n"
+"Project-Id-Version: WE Formkit 0.6.9\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/we-formkit\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-22T09:26:54+00:00\n"
+"POT-Creation-Date: 2026-07-22T09:34:07+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: we-formkit\n"
@@ -294,7 +294,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:407
 #: includes/admin/class-form-editor.php:538
 #: includes/class-frontend.php:305
-#: includes/class-frontend.php:1173
+#: includes/class-frontend.php:1172
 msgid "Remove"
 msgstr ""
 
@@ -1345,7 +1345,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:1836
 #: includes/admin/class-submissions.php:371
-#: includes/class-frontend.php:1041
+#: includes/class-frontend.php:1040
 msgid "Clear"
 msgstr ""
 
@@ -2359,13 +2359,13 @@ msgid "Please correct the highlighted fields."
 msgstr ""
 
 #: includes/class-frontend.php:304
-#: includes/class-frontend.php:1098
+#: includes/class-frontend.php:1097
 msgid "Add another"
 msgstr ""
 
 #. translators: %d: row number (1-based).
 #: includes/class-frontend.php:307
-#: includes/class-frontend.php:1166
+#: includes/class-frontend.php:1165
 #: includes/fields/class-repeater-field.php:381
 #, php-format
 msgid "Row %d"
@@ -2509,7 +2509,7 @@ msgid "This matrix has no rows or columns yet."
 msgstr ""
 
 #: includes/class-frontend.php:746
-#: includes/class-frontend.php:1162
+#: includes/class-frontend.php:1161
 msgid "Row"
 msgstr ""
 
@@ -2524,16 +2524,12 @@ msgstr ""
 msgid "Select %s"
 msgstr ""
 
-#: includes/class-frontend.php:833
-msgid "Include this row"
-msgstr ""
-
-#: includes/class-frontend.php:931
-#: includes/class-frontend.php:1225
+#: includes/class-frontend.php:930
+#: includes/class-frontend.php:1224
 msgid "Please select…"
 msgstr ""
 
-#: includes/class-frontend.php:1114
+#: includes/class-frontend.php:1113
 msgid "This repeater has no fields configured yet."
 msgstr ""
 
