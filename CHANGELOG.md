@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-07-22
+
+- Add matrix field support to Formkit, including frontend and admin editor enhancements. Implement CSS styles for matrix layout and functionality, and update documentation for new field type. Ensure proper handling of matrix data in form submissions and rendering.
 ## [0.6.2] - 2026-07-22
 
 - Refactor item selection handling in admin form editor to streamline duplicate, move, and delete actions. Replace selectItem calls with direct assignment to selection and ensure UI updates with render calls. Enhance user feedback with announcements on item movements.
