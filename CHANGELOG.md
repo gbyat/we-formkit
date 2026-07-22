@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.4] - 2026-07-22
+
+- Enhance formkit styling in CSS for improved layout and consistency. Introduce new rules for matrix choices, checkboxes, and radio buttons, ensuring better visual integration. Update asset registration priority in PHP to avoid conflicts.
 ## [0.8.3] - 2026-07-22
 
 - Refactor frontend CSS for improved layout and styling. Adjust fieldset and control row properties to enhance responsiveness and visual consistency. Update asset registration in PHP to use dynamic versioning based on file modification times.
