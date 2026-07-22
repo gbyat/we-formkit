@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.7] - 2026-07-22
+
+- Enhance frontend CSS for form elements by refining grid layout and responsiveness. Introduce media queries for better column distribution on larger screens. Update choice controls and labels to ensure consistent styling and alignment across various form components.
 ## [0.8.6] - 2026-07-22
 
 - Enhance frontend CSS layout for form elements. Adjust flex properties for choice controls, labels, and inputs to improve alignment and spacing. Update late theme re-assertion rules for better visual consistency across form components.
