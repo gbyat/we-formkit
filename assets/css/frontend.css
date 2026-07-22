@@ -718,10 +718,10 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 }
 
 .we-formkit__privacy-link {
-	display: inline-block;
-	font-size: var(--wek-font-help, 0.9rem);
+	display: inline;
+	font-size: inherit;
 	font-weight: 600;
-	line-height: 1.35;
+	line-height: inherit;
 	color: var(--wek-accent);
 	text-decoration: underline;
 	text-underline-offset: 0.12em;
@@ -2206,6 +2206,16 @@ body .we-formkit .we-formkit__field .we-formkit__control--choice {
 	padding-right: var(--wek-control-pad-x) !important;
 	box-sizing: border-box !important;
 	min-height: 0 !important;
+}
+
+body .we-formkit .we-formkit__privacy-link {
+	display: inline !important;
+	font-size: inherit !important;
+	font-weight: 600 !important;
+	line-height: inherit !important;
+	color: var(--wek-accent) !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 body .we-formkit .we-formkit__choice > span,

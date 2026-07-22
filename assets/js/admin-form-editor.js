@@ -631,6 +631,10 @@
 				typeOptions.add_button_label = '';
 				typeOptions.fields = [];
 			}
+			if ( typeId === 'consent' ) {
+				typeOptions.link_text = '';
+				typeOptions.privacy_url = '';
+			}
 			if ( typeId === 'upload' ) {
 				typeOptions.max_files = 1;
 				typeOptions.max_file_size_mb = 5;
@@ -673,7 +677,10 @@
 			return {
 				id: ( typeId || 'field' ) + '_' + Date.now().toString( 36 ),
 				type: typeId || 'text',
-				label: ( typeMeta && typeMeta.label ) || i18n.field || 'Field',
+				label:
+					typeId === 'consent'
+						? i18n.consentDefaultLabel || 'I agree to the {link}'
+						: ( typeMeta && typeMeta.label ) || i18n.field || 'Field',
 				help: '',
 				required: false,
 				show_label: true,
@@ -1155,8 +1162,14 @@
 			return panel;
 		}
 
-		function textInput( value, onChange ) {
-			const input = el( 'input', { type: 'text', className: 'regular-text', value: value || '' } );
+		function textInput( value, onChange, attrs ) {
+			const input = el(
+				'input',
+				Object.assign(
+					{ type: 'text', className: 'regular-text', value: value || '' },
+					attrs || {}
+				)
+			);
 			input.addEventListener( 'input', function () {
 				onChange( input.value );
 			} );
@@ -2811,6 +2824,70 @@
 			return wrap;
 		}
 
+		function renderConsentLinkEditor( field ) {
+			const opts = ensureTypeOptions( field );
+			const wrap = el( 'div', { className: 'wek-builder__consent-link' } );
+
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.consentLinkHint ||
+						'Put {link} in the label where the linked text should appear. Without {link}, no link is shown.',
+				} )
+			);
+
+			if ( typeof opts.link_text !== 'string' ) {
+				opts.link_text = '';
+			}
+			if ( typeof opts.privacy_url !== 'string' ) {
+				opts.privacy_url = '';
+			}
+
+			wrap.appendChild(
+				fieldRow(
+					i18n.consentLinkText || 'Link text',
+					textInput( opts.link_text || '', function ( v ) {
+						opts.link_text = v;
+						syncHidden();
+					}, {
+						placeholder: i18n.privacyPolicy || 'Privacy policy',
+					} )
+				)
+			);
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.consentLinkTextHint ||
+						'Defaults to “Privacy policy” when empty.',
+				} )
+			);
+
+			wrap.appendChild(
+				fieldRow(
+					i18n.consentLinkUrl || 'Link URL',
+					textInput( opts.privacy_url || '', function ( v ) {
+						opts.privacy_url = String( v || '' ).trim();
+						syncHidden();
+					}, {
+						type: 'url',
+						placeholder: 'https://',
+					} )
+				)
+			);
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.consentLinkUrlHint ||
+						'Leave empty to use the form privacy URL, then the site default.',
+				} )
+			);
+
+			return wrap;
+		}
+
 		function renderContentGuardEditor( field ) {
 			const opts = ensureTypeOptions( field );
 			const wrap = el( 'div', { className: 'wek-builder__content-guard' } );
@@ -3154,6 +3231,10 @@
 
 				if ( field.type === 'repeater' && ! isNested ) {
 					panel.appendChild( renderRepeaterSettings( field ) );
+				}
+
+				if ( field.type === 'consent' ) {
+					panel.appendChild( renderConsentLinkEditor( field ) );
 				}
 
 				if ( field.type === 'text' || field.type === 'textarea' ) {
@@ -3740,6 +3821,9 @@
 			const hint = field.placeholder || field.help || '';
 
 			if ( type === 'checkbox' || type === 'consent' ) {
+				const opts = field.type_options && typeof field.type_options === 'object' ? field.type_options : {};
+				const linkText = String( opts.link_text || '' ).trim() || ( i18n.privacyPolicy || 'Privacy policy' );
+				const labelText = String( field.label || '' ).replace( /\{link\}/g, linkText );
 				return el( 'div', {
 					className: 'wek-builder__field-preview wek-builder__field-preview--toggle',
 					'aria-hidden': 'true',
@@ -3748,6 +3832,7 @@
 					el( 'span', {
 						className: 'wek-builder__choice-label',
 						text:
+							labelText ||
 							hint ||
 							( type === 'consent'
 								? i18n.consentPreview || 'Consent checkbox'

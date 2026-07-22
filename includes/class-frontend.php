@@ -530,6 +530,42 @@ final class Frontend {
 	}
 
 	/**
+	 * Consent label with optional inline {link} → privacy/terms anchor.
+	 *
+	 * @param array  $field       Field config.
+	 * @param string $privacy_url Form/site privacy URL fallback.
+	 * @return void
+	 */
+	private static function echo_consent_label( array $field, $privacy_url ) {
+		$label = isset( $field['label'] ) ? (string) $field['label'] : '';
+		if ( ! Fields\Consent_Field::label_has_link_placeholder( $field ) ) {
+			echo esc_html( $label );
+			return;
+		}
+
+		$link_text = Fields\Consent_Field::resolve_link_text( $field );
+		$link_url  = Fields\Consent_Field::resolve_link_url( $field, $privacy_url );
+		$parts     = explode( '{link}', $label );
+		$last      = count( $parts ) - 1;
+
+		foreach ( $parts as $i => $part ) {
+			echo esc_html( $part );
+			if ( $i === $last ) {
+				continue;
+			}
+			if ( '' !== $link_url ) {
+				printf(
+					'<a class="we-formkit__privacy-link" href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>',
+					esc_url( $link_url ),
+					esc_html( $link_text )
+				);
+			} else {
+				echo esc_html( $link_text );
+			}
+		}
+	}
+
+	/**
 	 * Required / optional indicator based on form appearance settings.
 	 *
 	 * @param bool   $required   Whether the field is required.
@@ -674,13 +710,6 @@ final class Frontend {
 			aria-hidden="<?php echo $hidden ? 'true' : 'false'; ?>"
 		>
 			<?php if ( 'checkbox' === $type || 'consent' === $type ) : ?>
-				<?php
-				$consent_privacy = '';
-				if ( 'consent' === $type ) {
-					$field_privacy   = isset( $field['type_options']['privacy_url'] ) ? trim( (string) $field['type_options']['privacy_url'] ) : '';
-					$consent_privacy = '' !== $field_privacy ? $field_privacy : (string) $privacy_url;
-				}
-				?>
 				<div class="we-formkit__control we-formkit__control--choice<?php echo 'consent' === $type ? ' we-formkit__control--consent' : ''; ?>">
 					<input
 						type="checkbox"
@@ -688,28 +717,23 @@ final class Frontend {
 						name="<?php echo esc_attr( $id ); ?>"
 						value="1"
 						<?php echo $req ? 'required' : ''; ?>
-						aria-describedby="<?php echo esc_attr( trim( ( ( 'consent' === $type && $consent_privacy ) || ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
+						aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
 					/>
 					<div class="we-formkit__consent-copy">
 						<label for="<?php echo esc_attr( $input_id ); ?>">
-							<?php echo esc_html( $field['label'] ); ?>
+							<?php
+							if ( 'consent' === $type ) {
+								self::echo_consent_label( $field, $privacy_url );
+							} else {
+								echo esc_html( $field['label'] );
+							}
+							?>
 							<?php self::echo_requirement_mark( $req, $type ); ?>
 						</label>
-						<?php if ( 'consent' === $type && $consent_privacy ) : ?>
-							<a
-								class="we-formkit__privacy-link"
-								id="<?php echo esc_attr( $desc_id ); ?>"
-								href="<?php echo esc_url( $consent_privacy ); ?>"
-								target="_blank"
-								rel="noopener noreferrer"
-							><?php esc_html_e( 'Privacy policy', 'we-formkit' ); ?></a>
-						<?php endif; ?>
 					</div>
 				</div>
-				<?php if ( ! empty( $field['help'] ) && ! ( 'consent' === $type && $consent_privacy ) ) : ?>
+				<?php if ( ! empty( $field['help'] ) ) : ?>
 					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
-				<?php elseif ( ! empty( $field['help'] ) && 'consent' === $type && $consent_privacy ) : ?>
-					<p class="we-formkit__help"><?php echo esc_html( $field['help'] ); ?></p>
 				<?php endif; ?>
 			<?php elseif ( in_array( $type, array( 'radio', 'checkboxes' ), true ) ) : ?>
 				<?php
