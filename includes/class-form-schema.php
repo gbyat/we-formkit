@@ -109,12 +109,95 @@ final class Form_Schema {
 			}
 		}
 
-		return array(
+		$normalized = array(
 			'version'  => 1,
 			'title'    => sanitize_text_field( (string) ( $schema['title'] ?? '' ) ),
 			'intro'    => sanitize_textarea_field( (string) ( $schema['intro'] ?? '' ) ),
 			'sections' => $sections,
 		);
+
+		return self::repair_matrix_condition_refs( $normalized );
+	}
+
+	/**
+	 * Rebuild mashed matrix condition refs (`fieldrow` → `field.row`) using the schema catalog.
+	 *
+	 * @param array<string, mixed> $schema Normalized schema.
+	 * @return array<string, mixed>
+	 */
+	private static function repair_matrix_condition_refs( array $schema ) {
+		$paths = self::matrix_condition_paths( $schema );
+		if ( empty( $paths ) ) {
+			return $schema;
+		}
+
+		foreach ( $schema['sections'] as $s_index => $section ) {
+			if ( ! empty( $section['show_when'] ) && is_array( $section['show_when'] ) ) {
+				$schema['sections'][ $s_index ]['show_when'] = self::repair_rule_matrix_refs( $section['show_when'], $paths );
+			}
+			if ( empty( $section['fields'] ) || ! is_array( $section['fields'] ) ) {
+				continue;
+			}
+			foreach ( $section['fields'] as $f_index => $field ) {
+				if ( empty( $field['show_when'] ) || ! is_array( $field['show_when'] ) ) {
+					continue;
+				}
+				$schema['sections'][ $s_index ]['fields'][ $f_index ]['show_when'] = self::repair_rule_matrix_refs( $field['show_when'], $paths );
+			}
+		}
+
+		return $schema;
+	}
+
+	/**
+	 * @param array<string, mixed> $schema Schema.
+	 * @return array<string, string> mashed => field.row
+	 */
+	private static function matrix_condition_paths( array $schema ) {
+		$map = array();
+		foreach ( self::fields_by_id( $schema ) as $fid => $field ) {
+			if ( ( $field['type'] ?? '' ) !== 'matrix' ) {
+				continue;
+			}
+			$opts = isset( $field['type_options'] ) && is_array( $field['type_options'] ) ? $field['type_options'] : array();
+			$rows = isset( $opts['rows'] ) && is_array( $opts['rows'] ) ? $opts['rows'] : array();
+			foreach ( $rows as $row ) {
+				if ( ! is_array( $row ) || empty( $row['value'] ) ) {
+					continue;
+				}
+				$row_id = sanitize_key( (string) $row['value'] );
+				if ( '' === $row_id ) {
+					continue;
+				}
+				$path                  = $fid . '.' . $row_id;
+				$map[ $fid . $row_id ] = $path;
+			}
+		}
+		return $map;
+	}
+
+	/**
+	 * @param array<string, mixed>  $rule  Conditions container.
+	 * @param array<string, string> $paths Mashed => dotted path.
+	 * @return array<string, mixed>
+	 */
+	private static function repair_rule_matrix_refs( array $rule, array $paths ) {
+		if ( empty( $rule['rules'] ) || ! is_array( $rule['rules'] ) ) {
+			return $rule;
+		}
+		foreach ( $rule['rules'] as $i => $one ) {
+			if ( ! is_array( $one ) || empty( $one['field'] ) ) {
+				continue;
+			}
+			$field = (string) $one['field'];
+			if ( false !== strpos( $field, '.' ) ) {
+				continue;
+			}
+			if ( isset( $paths[ $field ] ) ) {
+				$rule['rules'][ $i ]['field'] = $paths[ $field ];
+			}
+		}
+		return $rule;
 	}
 
 	/**
@@ -211,11 +294,36 @@ final class Form_Schema {
 	}
 
 	/**
+	 * Sanitize a condition field reference.
+	 *
+	 * Matrix row rules use `field_id.row_value`. Plain sanitize_key() would strip the dot.
+	 *
+	 * @param string $field Field id or `id.row`.
+	 * @return string
+	 */
+	public static function sanitize_condition_field( $field ) {
+		$raw = trim( (string) $field );
+		if ( '' === $raw ) {
+			return '';
+		}
+		$parts = explode( '.', $raw );
+		$clean = array();
+		foreach ( $parts as $part ) {
+			$key = sanitize_key( $part );
+			if ( '' === $key ) {
+				continue;
+			}
+			$clean[] = $key;
+		}
+		return implode( '.', $clean );
+	}
+
+	/**
 	 * @param array<string, mixed> $rule Single rule.
 	 * @return array{field:string,op:string,value:string}|null
 	 */
 	private static function normalize_one_rule( array $rule ) {
-		$field = sanitize_key( (string) ( $rule['field'] ?? '' ) );
+		$field = self::sanitize_condition_field( (string) ( $rule['field'] ?? '' ) );
 		if ( '' === $field ) {
 			return null;
 		}

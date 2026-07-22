@@ -167,25 +167,17 @@
 	}
 
 	function isTruthy( value ) {
+		if ( Array.isArray( value ) ) {
+			return value.length > 0;
+		}
+		if ( value && typeof value === 'object' ) {
+			return Object.keys( value ).length > 0;
+		}
 		const n = normalize( value ).toLowerCase();
 		return [ '1', 'yes', 'true', 'on' ].indexOf( n ) !== -1;
 	}
 
-	function resolveCurrent( ruleField, values ) {
-		if ( ! ruleField ) {
-			return null;
-		}
-		if ( ruleField.indexOf( '.' ) === -1 ) {
-			return values[ ruleField ];
-		}
-		const parts = ruleField.split( '.' );
-		const root = parts[ 0 ];
-		const rowId = parts[ 1 ] || '';
-		const matrix = values[ root ];
-		if ( ! matrix || typeof matrix !== 'object' || Array.isArray( matrix ) || ! rowId ) {
-			return '';
-		}
-		const rowVal = matrix[ rowId ];
+	function matrixRowSignal( rowVal ) {
 		if ( ! rowVal || typeof rowVal !== 'object' ) {
 			return '';
 		}
@@ -207,6 +199,55 @@
 			}
 		}
 		return '';
+	}
+
+	/**
+	 * Rebuild field.row when an older save mashed them (sanitize_key stripped the dot).
+	 */
+	function recoverMatrixRef( mashed, values ) {
+		let best = null;
+		let bestLen = 0;
+		Object.keys( values || {} ).forEach( function ( id ) {
+			const val = values[ id ];
+			if ( ! val || typeof val !== 'object' || Array.isArray( val ) ) {
+				return;
+			}
+			if ( id.length < 1 || id.length <= bestLen || mashed.indexOf( id ) !== 0 ) {
+				return;
+			}
+			const rowId = mashed.slice( id.length );
+			if ( ! rowId || ! Object.prototype.hasOwnProperty.call( val, rowId ) ) {
+				return;
+			}
+			best = id + '.' + rowId;
+			bestLen = id.length;
+		} );
+		return best;
+	}
+
+	function resolveCurrent( ruleField, values ) {
+		if ( ! ruleField ) {
+			return null;
+		}
+		let path = String( ruleField );
+		if ( path.indexOf( '.' ) === -1 ) {
+			if ( Object.prototype.hasOwnProperty.call( values, path ) ) {
+				return values[ path ];
+			}
+			const recovered = recoverMatrixRef( path, values );
+			if ( ! recovered ) {
+				return null;
+			}
+			path = recovered;
+		}
+		const parts = path.split( '.' );
+		const root = parts[ 0 ];
+		const rowId = parts[ 1 ] || '';
+		const matrix = values[ root ];
+		if ( ! matrix || typeof matrix !== 'object' || Array.isArray( matrix ) || ! rowId ) {
+			return '';
+		}
+		return matrixRowSignal( matrix[ rowId ] );
 	}
 
 	function matchesRule( ruleField, op, ruleValue, values ) {
@@ -321,13 +362,25 @@
 		if ( ! container || typeof container !== 'object' ) {
 			return;
 		}
+		function addDep( field ) {
+			const raw = String( field || '' );
+			if ( ! raw ) {
+				return;
+			}
+			deps[ raw ] = true;
+			// Matrix row rules (`matrix.row`) also watch the root field for input events.
+			const dot = raw.indexOf( '.' );
+			if ( dot > 0 ) {
+				deps[ raw.slice( 0, dot ) ] = true;
+			}
+		}
 		if ( container.field ) {
-			deps[ String( container.field ) ] = true;
+			addDep( container.field );
 		}
 		const rules = Array.isArray( container.rules ) ? container.rules : [];
 		rules.forEach( function ( rule ) {
 			if ( rule && rule.field ) {
-				deps[ String( rule.field ) ] = true;
+				addDep( rule.field );
 			}
 		} );
 	}

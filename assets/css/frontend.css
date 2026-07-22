@@ -1076,6 +1076,13 @@
 	text-align: center;
 }
 
+/* Stronger separators between top-level column blocks (Age | Usage | Tolerance). */
+.we-formkit__matrix thead .we-formkit__matrix-col--block-start,
+.we-formkit__matrix tbody .we-formkit__matrix-cell--block-start {
+	border-left-width: 3px;
+	border-left-color: color-mix(in srgb, var(--wek-ink) 28%, var(--wek-line));
+}
+
 .we-formkit__matrix-corner,
 .we-formkit__matrix-row-label {
 	text-align: left;
@@ -1101,8 +1108,13 @@
 	font-size: var(--wek-font-label);
 	background: var(--wek-bg);
 	color: var(--wek-ink);
-	line-height: 1.3;
-	max-width: 7rem;
+	line-height: 1.25;
+	vertical-align: bottom;
+	padding: 0.55rem 0.4rem;
+	/* Allow wrapped headings to use the full header band (esp. rowspan=2). */
+	max-width: none;
+	height: auto;
+	white-space: normal;
 }
 
 .we-formkit__matrix thead .we-formkit__matrix-col--group {
@@ -1110,6 +1122,24 @@
 	border-bottom-width: 1px;
 	background: var(--wek-accent-soft);
 	font-size: var(--wek-font-label);
+	vertical-align: middle;
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-col--number,
+.we-formkit__matrix thead .we-formkit__matrix-col--text,
+.we-formkit__matrix thead .we-formkit__matrix-col--checkbox,
+.we-formkit__matrix thead .we-formkit__matrix-col--select {
+	vertical-align: middle;
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-col--number {
+	width: 4.25rem;
+	max-width: 5rem;
+	min-width: 3.5rem;
 }
 
 .we-formkit__matrix thead .we-formkit__matrix-head-options th {
@@ -1117,6 +1147,10 @@
 	font-size: calc(var(--wek-font-label) * 0.92);
 	color: var(--wek-muted);
 	background: var(--wek-bg);
+	vertical-align: bottom;
+	padding-top: 0.4rem;
+	padding-bottom: 0.45rem;
+	max-width: 5.5rem;
 }
 
 .we-formkit--label-normal .we-formkit__matrix thead th {
@@ -1128,8 +1162,17 @@
 }
 
 .we-formkit__matrix-col-label {
-	display: inline-block;
+	display: block;
+	white-space: normal;
+	overflow-wrap: anywhere;
+	word-break: normal;
 	hyphens: auto;
+	line-height: 1.25;
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-col--number .we-formkit__matrix-col-label {
+	max-width: 4.5rem;
+	margin-inline: auto;
 }
 
 .we-formkit__matrix-choice {
@@ -1154,6 +1197,13 @@
 	opacity: 0.45;
 }
 
+.we-formkit__matrix-cell--number {
+	width: 4.25rem;
+	max-width: 5rem;
+	padding-left: 0.3rem;
+	padding-right: 0.3rem;
+}
+
 .we-formkit__matrix-input {
 	width: 100%;
 	min-width: 4.5rem;
@@ -1168,13 +1218,26 @@
 	font-size: var(--wek-font-input);
 }
 
+.we-formkit__matrix-cell--number .we-formkit__matrix-input {
+	min-width: 0;
+	max-width: 3.75rem;
+	width: 3.5rem;
+	padding: 0.25rem 0.2rem;
+	text-align: center;
+}
+
 @media (max-width: 640px) {
 	.we-formkit__matrix th,
 	.we-formkit__matrix td {
 		padding: 0.35rem 0.3rem;
 	}
 
-	.we-formkit__matrix thead th {
-		max-width: 5.5rem;
+	.we-formkit__matrix thead .we-formkit__matrix-head-options th {
+		max-width: 4.5rem;
+	}
+
+	.we-formkit__matrix-cell--number .we-formkit__matrix-input {
+		width: 3rem;
+		max-width: 3.25rem;
 	}
 }

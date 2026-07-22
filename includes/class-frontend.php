@@ -745,7 +745,7 @@ final class Frontend {
 											<span class="screen-reader-text"><?php esc_html_e( 'Row', 'we-formkit' ); ?></span>
 										</th>
 										<?php if ( $row_select ) : ?>
-											<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--select"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
+											<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--select we-formkit__matrix-col--block-start"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
 												<span class="screen-reader-text"><?php esc_html_e( 'Select', 'we-formkit' ); ?></span>
 											</th>
 										<?php endif; ?>
@@ -759,7 +759,7 @@ final class Frontend {
 												?>
 												<th
 													scope="colgroup"
-													class="we-formkit__matrix-col we-formkit__matrix-col--group"
+													class="we-formkit__matrix-col we-formkit__matrix-col--group we-formkit__matrix-col--block-start"
 													colspan="<?php echo esc_attr( (string) $span ); ?>"
 												>
 													<span class="we-formkit__matrix-col-label"><?php echo esc_html( $col_lab ); ?></span>
@@ -770,7 +770,7 @@ final class Frontend {
 												?>
 												<th
 													scope="col"
-													class="we-formkit__matrix-col we-formkit__matrix-col--<?php echo esc_attr( $col_mod ); ?>"
+													class="we-formkit__matrix-col we-formkit__matrix-col--<?php echo esc_attr( $col_mod ); ?> we-formkit__matrix-col--block-start"
 													rowspan="2"
 												>
 													<span class="we-formkit__matrix-col-label"><?php echo esc_html( $col_lab ); ?></span>
@@ -779,7 +779,7 @@ final class Frontend {
 											else :
 												$col_mod = in_array( $col_type, array( 'text', 'number' ), true ) ? $col_type : 'checkbox';
 												?>
-												<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--<?php echo esc_attr( $col_mod ); ?>">
+												<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--<?php echo esc_attr( $col_mod ); ?> we-formkit__matrix-col--block-start">
 													<span class="we-formkit__matrix-col-label"><?php echo esc_html( $col_lab ); ?></span>
 												</th>
 												<?php
@@ -796,9 +796,12 @@ final class Frontend {
 												if ( 'radio' !== $col_type || empty( $opts ) ) {
 													continue;
 												}
+												$opt_i = 0;
 												foreach ( $opts as $opt ) :
+													$opt_block = 0 === $opt_i ? ' we-formkit__matrix-col--block-start' : '';
+													++$opt_i;
 													?>
-													<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--radio">
+													<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--radio<?php echo esc_attr( $opt_block ); ?>">
 														<span class="we-formkit__matrix-col-label"><?php echo esc_html( (string) ( $opt['label'] ?? $opt['value'] ) ); ?></span>
 													</th>
 													<?php
@@ -817,7 +820,7 @@ final class Frontend {
 										<tr data-wek-matrix-row="<?php echo esc_attr( $row_id ); ?>">
 											<th scope="row" class="we-formkit__matrix-row-label"><?php echo esc_html( $row_label ); ?></th>
 											<?php if ( $row_select ) : ?>
-												<td class="we-formkit__matrix-cell we-formkit__matrix-cell--select">
+												<td class="we-formkit__matrix-cell we-formkit__matrix-cell--select we-formkit__matrix-cell--block-start">
 													<label class="we-formkit__matrix-choice">
 														<span class="screen-reader-text"><?php echo esc_html( sprintf( /* translators: %s: row label */ __( 'Select %s', 'we-formkit' ), $row_label ) ); ?></span>
 														<input
@@ -835,11 +838,14 @@ final class Frontend {
 												$col_type = (string) ( $col['type'] ?? 'radio' );
 												$opts     = isset( $col['options'] ) && is_array( $col['options'] ) ? $col['options'] : array();
 												if ( 'radio' === $col_type && ! empty( $opts ) ) :
+													$opt_i = 0;
 													foreach ( $opts as $opt ) :
-														$oval = (string) ( $opt['value'] ?? '' );
-														$oid  = $input_id . '-' . $row_id . '-' . $col_id . '-' . $oval;
+														$oval      = (string) ( $opt['value'] ?? '' );
+														$oid       = $input_id . '-' . $row_id . '-' . $col_id . '-' . $oval;
+														$opt_block = 0 === $opt_i ? ' we-formkit__matrix-cell--block-start' : '';
+														++$opt_i;
 														?>
-														<td class="we-formkit__matrix-cell we-formkit__matrix-cell--radio">
+														<td class="we-formkit__matrix-cell we-formkit__matrix-cell--radio<?php echo esc_attr( $opt_block ); ?>">
 															<label class="we-formkit__matrix-choice" for="<?php echo esc_attr( $oid ); ?>">
 																<span class="screen-reader-text"><?php echo esc_html( (string) ( $opt['label'] ?? $oval ) ); ?></span>
 																<input
@@ -856,7 +862,7 @@ final class Frontend {
 												elseif ( 'text' === $col_type || 'number' === $col_type ) :
 													$oid = $input_id . '-' . $row_id . '-' . $col_id;
 													?>
-													<td class="we-formkit__matrix-cell we-formkit__matrix-cell--<?php echo esc_attr( $col_type ); ?>">
+													<td class="we-formkit__matrix-cell we-formkit__matrix-cell--<?php echo esc_attr( $col_type ); ?> we-formkit__matrix-cell--block-start">
 														<label class="we-formkit__matrix-input-wrap" for="<?php echo esc_attr( $oid ); ?>">
 															<span class="screen-reader-text"><?php echo esc_html( $row_label . ' — ' . (string) ( $col['label'] ?? $col_id ) ); ?></span>
 															<input
@@ -874,7 +880,7 @@ final class Frontend {
 												else :
 													$oid = $input_id . '-' . $row_id . '-' . $col_id;
 													?>
-													<td class="we-formkit__matrix-cell we-formkit__matrix-cell--checkbox">
+													<td class="we-formkit__matrix-cell we-formkit__matrix-cell--checkbox we-formkit__matrix-cell--block-start">
 														<label class="we-formkit__matrix-choice" for="<?php echo esc_attr( $oid ); ?>">
 															<span class="screen-reader-text"><?php echo esc_html( (string) ( $col['label'] ?? $col_id ) ); ?></span>
 															<input

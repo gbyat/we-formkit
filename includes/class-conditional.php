@@ -123,8 +123,21 @@ final class Conditional {
 	 * @return mixed
 	 */
 	private static function resolve_current( $field, array $values ) {
+		$field = (string) $field;
+		if ( '' === $field ) {
+			return null;
+		}
+
 		if ( false === strpos( $field, '.' ) ) {
-			return array_key_exists( $field, $values ) ? $values[ $field ] : null;
+			if ( array_key_exists( $field, $values ) ) {
+				return $values[ $field ];
+			}
+			// Recover refs corrupted when sanitize_key() stripped the matrix row dot.
+			$recovered = self::recover_matrix_ref( $field, $values );
+			if ( null === $recovered ) {
+				return null;
+			}
+			$field = $recovered;
 		}
 
 		$parts = explode( '.', $field, 2 );
@@ -139,7 +152,16 @@ final class Conditional {
 			return '';
 		}
 
-		$row_val = $matrix[ $row ];
+		return self::matrix_row_signal( $matrix[ $row ] );
+	}
+
+	/**
+	 * Whether a matrix row counts as selected / answered for conditionals.
+	 *
+	 * @param array<string, mixed> $row_val Row value map.
+	 * @return string '1' or ''.
+	 */
+	private static function matrix_row_signal( array $row_val ) {
 		if ( array_key_exists( 'on', $row_val ) ) {
 			return ! empty( $row_val['on'] ) ? '1' : '';
 		}
@@ -157,6 +179,41 @@ final class Conditional {
 		}
 
 		return '';
+	}
+
+	/**
+	 * Rebuild `field.row` when an older save mashed them via sanitize_key().
+	 *
+	 * Prefers the longest matching field id among current values.
+	 *
+	 * @param string               $mashed Corrupted ref without a dot.
+	 * @param array<string, mixed> $values Values.
+	 * @return string|null Recovered `id.row` or null.
+	 */
+	private static function recover_matrix_ref( $mashed, array $values ) {
+		$mashed   = (string) $mashed;
+		$best     = null;
+		$best_len = 0;
+		foreach ( $values as $id => $val ) {
+			if ( ! is_string( $id ) || ! is_array( $val ) ) {
+				continue;
+			}
+			// Skip sequential lists (e.g. checkboxes); matrix values are row-keyed maps.
+			if ( array_values( $val ) === $val ) {
+				continue;
+			}
+			$id_len = strlen( $id );
+			if ( $id_len < 1 || $id_len <= $best_len || 0 !== strpos( $mashed, $id ) ) {
+				continue;
+			}
+			$row = substr( $mashed, $id_len );
+			if ( '' === $row || ! array_key_exists( $row, $val ) ) {
+				continue;
+			}
+			$best     = $id . '.' . $row;
+			$best_len = $id_len;
+		}
+		return $best;
 	}
 
 	/**
