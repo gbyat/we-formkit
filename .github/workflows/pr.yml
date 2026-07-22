@@ -1,0 +1,78 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@8358ee0e2e8afe63c2fb8253d1d52085811ab1e5 # v2
+        with:
+          php-version: "8.5"
+          tools: composer
+
+      - name: Install PHP dependencies
+        run: |
+          if [ -f composer.json ]; then
+            composer install --no-interaction --prefer-dist
+          fi
+
+      - name: Run PHPCS (non-blocking)
+        continue-on-error: true
+        run: |
+          if [ -f vendor/bin/phpcs ]; then
+            vendor/bin/phpcs --standard=phpcs.xml.dist
+          else
+            echo "vendor/bin/phpcs not found."
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Install npm dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f package.json ]; then
+            npm install
+          fi
+
+      - name: Dependency preflight (warn-only)
+        run: |
+          if [ -f scripts/preflight-deploy.js ]; then
+            node scripts/preflight-deploy.js --warn-only
+          else
+            echo "scripts/preflight-deploy.js not found — skip"
+          fi
+
+      - name: Validate package.json version
+        run: |
+          node -e "
+          const pkg = require('./package.json');
+          if (!pkg.version || !/^\d+\.\d+\.\d+$/.test(pkg.version)) {
+            console.error('Invalid package.json version');
+            process.exit(1);
+          }
+          console.log('package.json version OK:', pkg.version);
+          "
+
+      - name: Validate plugin main file version
+        run: node scripts/validate-pr-version.js

@@ -1,0 +1,2281 @@
+.we-formkit {
+	--wek-bg: #f7f5f2;
+	--wek-surface: #ffffff;
+	--wek-ink: #1c1b19;
+	--wek-muted: #5c574f;
+	--wek-line: #d9d3c8;
+	--wek-accent: #0f5c4c;
+	--wek-accent-soft: #e4f2ee;
+	--wek-input: #ffffff;
+	--wek-on-accent: #ffffff;
+	--wek-danger: #8a1f1f;
+	--wek-radius: 12px;
+	--wek-radius-section: 12px;
+	--wek-radius-input: 8px;
+	--wek-radius-button: 999px;
+	--wek-space: 1.25rem;
+	--wek-shell-pad: clamp(1.25rem, 3vw, 2rem);
+	--wek-gap-y: 0.85rem;
+	--wek-gap-x: 1rem;
+	--wek-header-gap: 0;
+	--wek-status-gap: 0;
+	--wek-control-pad-y: 0.65rem;
+	--wek-control-pad-x: 0.75rem;
+	--wek-font-section: 1.15rem;
+	--wek-font-label: 0.95rem;
+	--wek-font-input: 1rem;
+	color: var(--wek-ink);
+	background: linear-gradient(180deg, var(--wek-bg) 0%, var(--wek-surface) 48%);
+	border: 1px solid var(--wek-line);
+	border-radius: calc(var(--wek-radius-section) + 4px);
+	padding: var(--wek-shell-pad);
+	max-width: 52rem;
+	margin: 0 auto;
+	font-family: var(--wek-font-family, inherit);
+	line-height: 1.5;
+}
+
+/*
+ * Theme isolation — beat common theme rules (.entry-content label, floated
+ * inputs, link-colored labels) even when Autoptimize concatenates CSS after us.
+ * Prefer specificity (body .we-formkit …) over !important / Autoptimize excludes.
+ */
+body .we-formkit,
+.we-formkit {
+	color: var(--wek-ink);
+}
+
+body .we-formkit table,
+body .we-formkit .we-formkit__matrix,
+.we-formkit table,
+.we-formkit .we-formkit__matrix {
+	margin: 0;
+	margin-bottom: 0;
+}
+
+body .we-formkit .we-formkit__choices,
+.we-formkit .we-formkit__choices {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--wek-gap-y) var(--wek-gap-x);
+	float: none;
+	clear: none;
+	width: auto;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+	body .we-formkit .we-formkit__choices,
+	.we-formkit .we-formkit__choices {
+		/* Two equal half-width columns (match side-by-side text fields). */
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+body .we-formkit .we-formkit__field label.we-formkit__choice,
+body .we-formkit .we-formkit__field .we-formkit__choice,
+body .we-formkit .we-formkit__field .we-formkit__control--choice,
+.we-formkit .we-formkit__field label.we-formkit__choice,
+.we-formkit .we-formkit__field .we-formkit__choice,
+.we-formkit .we-formkit__field .we-formkit__control--choice {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 0.65rem;
+	float: none;
+	clear: none;
+	width: auto;
+	max-width: none;
+	margin: 0;
+	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
+	color: var(--wek-ink);
+	background-color: var(--wek-accent-soft);
+	border: 1px solid transparent;
+	border-radius: var(--wek-radius-input);
+	font-size: inherit;
+	font-weight: inherit;
+	line-height: inherit;
+	text-align: left;
+	text-decoration: none;
+	position: relative;
+	box-sizing: border-box;
+	min-height: 0;
+}
+
+body .we-formkit .we-formkit__field label.we-formkit__choice span,
+body .we-formkit .we-formkit__field .we-formkit__choice > span,
+body .we-formkit .we-formkit__field .we-formkit__control--choice label,
+.we-formkit .we-formkit__field label.we-formkit__choice span,
+.we-formkit .we-formkit__field .we-formkit__choice > span,
+.we-formkit .we-formkit__field .we-formkit__control--choice label {
+	display: block;
+	float: none;
+	clear: none;
+	width: auto;
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	color: var(--wek-ink);
+	background: transparent;
+	font-size: var(--wek-font-label);
+	font-weight: 600;
+	line-height: 1.4;
+	position: static;
+	text-indent: 0;
+	text-decoration: none;
+	white-space: normal;
+}
+
+body .we-formkit .we-formkit__field .we-formkit__label,
+body .we-formkit .we-formkit__fieldset > legend,
+.we-formkit .we-formkit__field .we-formkit__label,
+.we-formkit .we-formkit__fieldset > legend {
+	color: var(--wek-ink);
+}
+
+body .we-formkit .we-formkit__field label.we-formkit__choice input[type="checkbox"],
+body .we-formkit .we-formkit__field label.we-formkit__choice input[type="radio"],
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="radio"],
+body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"],
+.we-formkit .we-formkit__field label.we-formkit__choice input[type="checkbox"],
+.we-formkit .we-formkit__field label.we-formkit__choice input[type="radio"],
+.we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
+.we-formkit .we-formkit__field .we-formkit__choice input[type="radio"],
+.we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	float: none;
+	clear: none;
+	display: block;
+	flex: 0 0 auto;
+	align-self: center;
+	position: relative;
+	margin: 0;
+	padding: 0;
+	width: 1.15rem;
+	height: 1.15rem;
+	max-width: none;
+	vertical-align: middle;
+	opacity: 1;
+	visibility: visible;
+	box-sizing: border-box;
+	border: 1.5px solid var(--wek-line);
+	background-color: var(--wek-input);
+	accent-color: var(--wek-accent);
+}
+
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="radio"],
+.we-formkit .we-formkit__field .we-formkit__choice input[type="radio"] {
+	border-radius: 50%;
+}
+
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
+body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"],
+.we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
+.we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"] {
+	border-radius: 5px;
+}
+
+body .we-formkit .we-formkit__matrix-choice,
+body .we-formkit label.we-formkit__matrix-choice,
+.we-formkit .we-formkit__matrix-choice,
+.we-formkit label.we-formkit__matrix-choice {
+	display: inline-flex;
+	float: none;
+	margin: 0;
+	padding: 0;
+	color: var(--wek-ink);
+	font-weight: inherit;
+	line-height: inherit;
+	width: auto;
+	text-decoration: none;
+}
+
+body .we-formkit .we-formkit__matrix-choice input[type="checkbox"],
+body .we-formkit .we-formkit__matrix-choice input[type="radio"],
+.we-formkit .we-formkit__matrix-choice input[type="checkbox"],
+.we-formkit .we-formkit__matrix-choice input[type="radio"] {
+	appearance: none;
+	-webkit-appearance: none;
+	float: none;
+	display: block;
+	margin: 0;
+	opacity: 1;
+	visibility: visible;
+	position: relative;
+	width: 1.1rem;
+	height: 1.1rem;
+	border: 1.5px solid var(--wek-line);
+	background-color: var(--wek-input);
+	accent-color: var(--wek-accent);
+	box-sizing: border-box;
+}
+
+.we-formkit__header {
+	margin-bottom: var(--wek-header-gap, 0);
+}
+
+.we-formkit__title {
+	margin: 0 0 0.5rem;
+	font-family: var(--wek-font-family, inherit);
+	font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+	font-weight: 600;
+	letter-spacing: -0.02em;
+}
+
+.we-formkit__intro,
+.we-formkit__section-intro {
+	color: var(--wek-muted);
+	margin: 0.35rem 0 0;
+	font-size: 0.95rem;
+}
+
+.we-formkit__section {
+	background: var(--wek-surface);
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-section);
+	padding: var(--wek-space);
+	margin: 0 0 1rem;
+}
+
+.we-formkit__section-title {
+	margin: 0 0 1rem;
+	font-size: var(--wek-font-section);
+}
+
+.we-formkit__fields {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: var(--wek-gap-y) var(--wek-gap-x);
+}
+
+.we-formkit__field {
+	margin: 0;
+	grid-column: span 6;
+}
+
+.we-formkit__field--width-half {
+	grid-column: span 6;
+}
+
+.we-formkit__field--width-third {
+	grid-column: span 6;
+}
+
+.we-formkit__field--width-two_thirds {
+	grid-column: span 6;
+}
+
+@media (min-width: 640px) {
+	.we-formkit__field--width-half {
+		grid-column: span 3;
+	}
+
+	.we-formkit__field--width-third {
+		grid-column: span 2;
+	}
+
+	.we-formkit__field--width-two_thirds {
+		grid-column: span 4;
+	}
+}
+
+.we-formkit__field.is-hidden,
+.we-formkit__section.is-hidden {
+	display: none !important;
+}
+
+.we-formkit__honeypot {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+}
+
+/*
+ * Standalone preview (?wek_preview=1) has no theme CSS.
+ * Keep Formkit self-contained for a11y-only labels in matrices etc.
+ */
+.we-formkit .screen-reader-text,
+.we-formkit-preview-body .screen-reader-text {
+	border: 0;
+	clip: rect(1px, 1px, 1px, 1px);
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	word-wrap: normal !important;
+}
+
+.we-formkit__label,
+.we-formkit__fieldset legend {
+	display: block;
+	font-weight: 600;
+	font-size: var(--wek-font-label);
+	margin-bottom: 0.35rem;
+}
+
+.we-formkit__fieldset:has(> .we-formkit__field-reset) > legend {
+	padding-right: 2.1rem;
+}
+
+.we-formkit__field-reset {
+	appearance: none;
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.7rem;
+	height: 1.7rem;
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--wek-line);
+	border-radius: 999px;
+	background: var(--wek-surface);
+	color: var(--wek-muted);
+	cursor: pointer;
+	line-height: 0;
+	box-sizing: border-box;
+	transition:
+		color 0.15s ease,
+		border-color 0.15s ease,
+		background-color 0.15s ease;
+}
+
+.we-formkit__field-reset:hover,
+.we-formkit__field-reset:focus-visible {
+	color: var(--wek-ink);
+	border-color: var(--wek-accent);
+	background: color-mix(in srgb, var(--wek-accent-soft) 70%, var(--wek-surface));
+}
+
+.we-formkit__field-reset:focus-visible {
+	outline: 2px solid var(--wek-accent);
+	outline-offset: 1px;
+}
+
+.we-formkit__field-reset[hidden] {
+	display: none !important;
+}
+
+.we-formkit__field-reset-icon {
+	display: block;
+	width: 0.95rem;
+	height: 0.95rem;
+}
+
+.we-formkit__fieldset--matrix > .we-formkit__field-reset {
+	top: 0.15rem;
+	right: 0.15rem;
+}
+
+/*
+ * Native fieldsets shrink-wrap (min-inline-size: min-content) in some engines.
+ * Block-level flex already fills the parent — avoid width:100% (can overflow).
+ */
+.we-formkit__fieldset {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	align-self: stretch;
+	position: relative;
+	min-width: 0;
+	min-inline-size: 0;
+	max-width: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	box-sizing: border-box;
+	overflow-wrap: break-word;
+}
+
+.we-formkit__fieldset--matrix {
+	border: 0;
+	border-radius: 0;
+	padding: 0;
+	margin: 0;
+	min-inline-size: 0;
+}
+
+.we-formkit--help-below-label .we-formkit__fieldset--matrix,
+.we-formkit--help-below-field .we-formkit__fieldset--matrix {
+	border: 0;
+	padding: 0;
+}
+
+.we-formkit__fields,
+.we-formkit__field,
+.we-formkit__control-row,
+.we-formkit__choices {
+	min-width: 0;
+	max-width: 100%;
+}
+
+.we-formkit--label-normal .we-formkit__label,
+.we-formkit--label-normal .we-formkit__fieldset legend {
+	font-weight: 500;
+}
+
+.we-formkit--label-bold .we-formkit__label,
+.we-formkit--label-bold .we-formkit__fieldset legend {
+	font-weight: 600;
+}
+
+.we-formkit__req {
+	color: var(--wek-danger);
+	margin-left: 0.15rem;
+}
+
+.we-formkit__req--text {
+	font-weight: 500;
+	font-size: 0.85em;
+}
+
+.we-formkit__opt {
+	color: var(--wek-muted);
+	font-weight: 500;
+	font-size: 0.85em;
+	margin-left: 0.15rem;
+}
+
+.we-formkit__help {
+	color: var(--wek-muted);
+	margin: 0.35rem 0 0;
+	font-size: 0.95rem;
+}
+
+.we-formkit--help-style-boxed .we-formkit__help {
+	margin-top: 0.45rem;
+	padding: 0.55rem 0.7rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input, 8px);
+	background: var(--wek-accent-soft);
+	color: var(--wek-ink);
+}
+
+/* Help placement via flex order (label / control / help / error). */
+.we-formkit--help-below-label .we-formkit__field:not(.we-formkit__field--checkbox):not(.we-formkit__field--consent),
+.we-formkit--help-below-field .we-formkit__field:not(.we-formkit__field--checkbox):not(.we-formkit__field--consent) {
+	display: flex;
+	flex-direction: column;
+}
+
+.we-formkit--help-below-label .we-formkit__field > .we-formkit__label,
+.we-formkit--help-below-field .we-formkit__field > .we-formkit__label {
+	order: 1;
+}
+
+.we-formkit--help-below-label .we-formkit__field > .we-formkit__help {
+	order: 2;
+	margin-top: 0;
+	margin-bottom: 0.45rem;
+}
+
+.we-formkit--help-below-label .we-formkit__field > :not(.we-formkit__label):not(.we-formkit__help):not(.we-formkit__error):not(.we-formkit__validity) {
+	order: 3;
+}
+
+.we-formkit--help-below-field .we-formkit__field > .we-formkit__help {
+	order: 3;
+}
+
+.we-formkit--help-below-field .we-formkit__field > :not(.we-formkit__label):not(.we-formkit__help):not(.we-formkit__error):not(.we-formkit__validity) {
+	order: 2;
+}
+
+.we-formkit--help-below-label .we-formkit__field > .we-formkit__error,
+.we-formkit--help-below-field .we-formkit__field > .we-formkit__error {
+	order: 4;
+}
+
+.we-formkit--help-below-label .we-formkit__field > .we-formkit__validity,
+.we-formkit--help-below-field .we-formkit__field > .we-formkit__validity {
+	order: 3;
+}
+
+.we-formkit--help-below-label .we-formkit__field > .we-formkit__control-row,
+.we-formkit--help-below-field .we-formkit__field > .we-formkit__control-row {
+	order: 3;
+}
+
+.we-formkit--help-below-label .we-formkit__fieldset,
+.we-formkit--help-below-field .we-formkit__fieldset {
+	/* Base fieldset already flex + borderless; keep selector for order rules below. */
+	min-width: 0;
+}
+
+.we-formkit--help-below-label .we-formkit__fieldset > .we-formkit__label,
+.we-formkit--help-below-field .we-formkit__fieldset > .we-formkit__label,
+.we-formkit--help-below-label .we-formkit__fieldset > legend,
+.we-formkit--help-below-field .we-formkit__fieldset > legend {
+	order: 1;
+}
+
+.we-formkit--help-below-label .we-formkit__fieldset > .we-formkit__help {
+	order: 2;
+	margin-top: 0;
+	margin-bottom: 0.45rem;
+}
+
+.we-formkit--help-below-label .we-formkit__fieldset > .we-formkit__choices {
+	order: 3;
+}
+
+.we-formkit--help-below-field .we-formkit__fieldset > .we-formkit__choices {
+	order: 2;
+}
+
+.we-formkit--help-below-field .we-formkit__fieldset > .we-formkit__help {
+	order: 3;
+}
+
+.we-formkit input[type="text"],
+.we-formkit input[type="email"],
+.we-formkit input[type="tel"],
+.we-formkit input[type="url"],
+.we-formkit input[type="date"],
+.we-formkit input[type="time"],
+.we-formkit input[type="datetime-local"],
+.we-formkit input[type="number"],
+.we-formkit input[type="file"],
+.we-formkit textarea,
+.we-formkit select {
+	width: 100%;
+	box-sizing: border-box;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input);
+	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
+	font: inherit;
+	font-size: var(--wek-font-input);
+	line-height: 1.4;
+	min-height: calc(
+		(var(--wek-font-input) * 1.4) + (2 * var(--wek-control-pad-y)) + 2px
+	);
+	background-color: var(--wek-input);
+	color: inherit;
+}
+
+.we-formkit select {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	border-radius: var(--wek-radius-input);
+	background-color: var(--wek-input);
+	background-image: linear-gradient(45deg, transparent 50%, var(--wek-muted) 50%),
+		linear-gradient(135deg, var(--wek-muted) 50%, transparent 50%);
+	background-position:
+		calc(100% - 14px) calc(50% - 2px),
+		calc(100% - 9px) calc(50% - 2px);
+	background-size:
+		5px 5px,
+		5px 5px;
+	background-repeat: no-repeat;
+	padding-right: 1.75rem;
+}
+
+.we-formkit textarea {
+	min-height: calc(
+		(var(--wek-font-input) * 1.4 * 3) + (2 * var(--wek-control-pad-y)) + 2px
+	);
+	resize: vertical;
+}
+
+.we-formkit input:focus,
+.we-formkit textarea:focus,
+.we-formkit select:focus {
+	outline: 2px solid var(--wek-accent);
+	outline-offset: 1px;
+	border-color: var(--wek-accent);
+}
+
+.we-formkit__choices {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--wek-gap-y) var(--wek-gap-x);
+	align-self: stretch;
+	box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+	.we-formkit__choices {
+		/* Equal columns: minmax(0,1fr) avoids content-sized uneven tracks. */
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.we-formkit__choice,
+.we-formkit__control--choice {
+	display: flex;
+	gap: 0.65rem;
+	align-items: center;
+	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
+	border: 1px solid transparent;
+	border-radius: var(--wek-radius-input);
+	background: var(--wek-accent-soft);
+	cursor: pointer;
+	min-width: 0;
+	box-sizing: border-box;
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease,
+		box-shadow 0.15s ease;
+}
+
+.we-formkit__choice:hover,
+.we-formkit__control--choice:hover {
+	background: color-mix(in srgb, var(--wek-accent-soft) 70%, var(--wek-surface));
+	border-color: color-mix(in srgb, var(--wek-accent) 22%, transparent);
+}
+
+.we-formkit__choice:has(:focus-visible),
+.we-formkit__control--choice:has(:focus-visible) {
+	border-color: var(--wek-accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--wek-accent) 22%, transparent);
+}
+
+.we-formkit__choice:has(:checked),
+.we-formkit__control--choice:has(:checked) {
+	background: color-mix(in srgb, var(--wek-accent-soft) 55%, var(--wek-surface));
+	border-color: color-mix(in srgb, var(--wek-accent) 45%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wek-accent) 18%, transparent);
+}
+
+.we-formkit__choice--other {
+	flex-wrap: wrap;
+	align-items: center;
+	cursor: default;
+	grid-column: 1 / -1;
+}
+
+.we-formkit__choice--other .we-formkit__choice-main {
+	display: inline-flex;
+	align-items: flex-start;
+	gap: 0.65rem;
+	margin: 0;
+	cursor: pointer;
+	flex: 0 1 auto;
+	min-width: 0;
+}
+
+.we-formkit__other-text {
+	flex: 1 1 10rem;
+	min-width: 8rem;
+	max-width: 100%;
+	margin: 0;
+	padding: 0.35rem 0.5rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input, 8px);
+	background: var(--wek-input);
+	color: var(--wek-ink);
+	font: inherit;
+	font-size: var(--wek-font-input);
+	box-sizing: border-box;
+}
+
+.we-formkit__other-text:focus {
+	border-color: var(--wek-accent);
+	outline: none;
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--wek-accent) 22%, transparent);
+}
+
+.we-formkit__choice span,
+.we-formkit__control--choice label {
+	flex: 1;
+	min-width: 0;
+	line-height: 1.4;
+	font-size: var(--wek-font-label);
+	font-weight: 600;
+	color: inherit;
+	cursor: pointer;
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+}
+
+.we-formkit__consent-copy {
+	flex: 1;
+	min-width: 0;
+	display: grid;
+	gap: 0.35rem;
+}
+
+.we-formkit__control--consent {
+	align-items: flex-start;
+}
+
+.we-formkit__control--consent .we-formkit__consent-copy > label {
+	flex: none;
+	display: block;
+	/* Keep {link} + required mark in normal inline flow (not flex items). */
+	white-space: normal;
+	overflow-wrap: anywhere;
+	word-break: normal;
+}
+
+.we-formkit__privacy-link {
+	display: inline;
+	font-size: inherit;
+	font-weight: 600;
+	line-height: inherit;
+	color: var(--wek-accent);
+	text-decoration: underline;
+	text-underline-offset: 0.12em;
+}
+
+.we-formkit__privacy-link:hover,
+.we-formkit__privacy-link:focus-visible {
+	color: color-mix(in srgb, var(--wek-accent) 75%, #000);
+	outline: none;
+}
+
+.we-formkit__privacy-link:focus-visible {
+	border-radius: 2px;
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--wek-accent) 22%, transparent);
+}
+
+.we-formkit--label-normal .we-formkit__choice span,
+.we-formkit--label-normal .we-formkit__control--choice label {
+	font-weight: 500;
+}
+
+/* Custom radio / checkbox — native input kept for a11y */
+.we-formkit__choice input[type="checkbox"],
+.we-formkit__choice input[type="radio"],
+.we-formkit__control--choice input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	flex: 0 0 auto;
+	width: 1.15rem;
+	height: 1.15rem;
+	margin: 0;
+	box-sizing: border-box;
+	border: 1.5px solid color-mix(in srgb, var(--wek-accent) 35%, var(--wek-line));
+	background: var(--wek-input);
+	box-shadow: inset 0 1px 2px rgba(28, 27, 25, 0.06);
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease,
+		box-shadow 0.15s ease,
+		transform 0.12s ease;
+	cursor: pointer;
+	position: relative;
+	vertical-align: middle;
+}
+
+.we-formkit__choice input[type="checkbox"],
+.we-formkit__control--choice input[type="checkbox"] {
+	border-radius: 5px;
+}
+
+.we-formkit__choice input[type="radio"] {
+	border-radius: 50%;
+}
+
+.we-formkit__choice input[type="checkbox"]:hover,
+.we-formkit__choice input[type="radio"]:hover,
+.we-formkit__control--choice input[type="checkbox"]:hover {
+	border-color: var(--wek-accent);
+}
+
+.we-formkit__choice input[type="checkbox"]:checked,
+.we-formkit__control--choice input[type="checkbox"]:checked {
+	background: var(--wek-accent);
+	border-color: var(--wek-accent);
+	box-shadow:
+		inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+		0 1px 2px color-mix(in srgb, var(--wek-accent) 28%, transparent);
+}
+
+.we-formkit__choice input[type="radio"]:checked {
+	background: var(--wek-input);
+	border-color: var(--wek-accent);
+	border-width: 2px;
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--wek-accent) 15%, transparent);
+}
+
+.we-formkit__choice input[type="checkbox"]:checked::after,
+.we-formkit__control--choice input[type="checkbox"]:checked::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 45%;
+	width: 0.28rem;
+	height: 0.5rem;
+	border: solid var(--wek-on-accent);
+	border-width: 0 2px 2px 0;
+	transform: translate(-50%, -55%) rotate(45deg);
+}
+
+.we-formkit__choice input[type="radio"]:checked::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--wek-accent);
+	transform: translate(-50%, -50%) scale(1);
+	animation: wek-radio-pop 0.18s ease-out;
+}
+
+@keyframes wek-radio-pop {
+	from {
+		transform: translate(-50%, -50%) scale(0.55);
+		opacity: 0.6;
+	}
+	to {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
+	}
+}
+
+.we-formkit__choice input[type="checkbox"]:focus,
+.we-formkit__choice input[type="radio"]:focus,
+.we-formkit__control--choice input[type="checkbox"]:focus {
+	outline: none;
+}
+
+.we-formkit__choice input[type="checkbox"]:focus-visible,
+.we-formkit__choice input[type="radio"]:focus-visible,
+.we-formkit__control--choice input[type="checkbox"]:focus-visible {
+	outline: 2px solid var(--wek-accent);
+	outline-offset: 2px;
+}
+
+.we-formkit__choice input[type="checkbox"]:disabled,
+.we-formkit__choice input[type="radio"]:disabled,
+.we-formkit__control--choice input[type="checkbox"]:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.we-formkit__choice,
+	.we-formkit__control--choice,
+	.we-formkit__choice input[type="checkbox"],
+	.we-formkit__choice input[type="radio"],
+	.we-formkit__control--choice input[type="checkbox"] {
+		transition: none;
+	}
+
+	.we-formkit__choice input[type="radio"]:checked::after {
+		animation: none;
+	}
+}
+
+.we-formkit__choice--image {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0.5rem;
+}
+
+.we-formkit__choice--image input[type="radio"] {
+	align-self: flex-start;
+}
+
+.we-formkit__choice-image {
+	display: block;
+	width: 100%;
+	max-height: 8rem;
+	object-fit: cover;
+	border-radius: var(--wek-radius-input);
+}
+	display: flex;
+	align-items: flex-start;
+	gap: 0.4rem;
+	color: var(--wek-danger);
+	font-size: 0.9rem;
+	margin: 0.35rem 0 0;
+	font-weight: 600;
+}
+
+.we-formkit__error[hidden] {
+	display: none !important;
+}
+
+.we-formkit__error-icon {
+	flex: 0 0 auto;
+	width: 1.05rem;
+	height: 1.05rem;
+	margin-top: 0.1rem;
+	border-radius: 50%;
+	background: var(--wek-danger);
+	color: #fff;
+	position: relative;
+}
+
+.we-formkit__error-icon::before {
+	content: "!";
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.we-formkit__error-text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.we-formkit__field.is-invalid input,
+.we-formkit__field.is-invalid textarea,
+.we-formkit__field.is-invalid select {
+	border-color: var(--wek-danger);
+	box-shadow: 0 0 0 1px var(--wek-danger);
+}
+
+.we-formkit__control-row {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	position: relative;
+}
+
+.we-formkit__control-row--choices {
+	align-items: flex-start;
+}
+
+.we-formkit__control-row > input,
+.we-formkit__control-row > textarea,
+.we-formkit__control-row > select,
+.we-formkit__control-row > .we-formkit__fieldset,
+.we-formkit__control-row > .we-formkit__control--choice {
+	/* Stretch in the row; validity is absolutely positioned and must not steal width. */
+	flex: 1 1 0%;
+	min-width: 0;
+}
+
+.we-formkit__validity {
+	display: none;
+	flex: 0 0 auto;
+	width: 1.35rem;
+	height: 1.35rem;
+	border-radius: 50%;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+}
+
+/*
+ * Pin the badge over the control edge so it never shrinks inputs / choice grids
+ * (visibility:hidden still reserved flex space when display:inline-flex).
+ */
+.we-formkit--inline-feedback-icon .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__validity {
+	display: inline-flex;
+	visibility: hidden;
+	opacity: 0;
+	pointer-events: none;
+	background: transparent;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__control-row > .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__control-row > .we-formkit__validity {
+	position: absolute;
+	top: 50%;
+	right: 0;
+	z-index: 2;
+	margin: 0;
+	transform: translateY(-50%);
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__control-row--choices > .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__control-row--choices > .we-formkit__validity {
+	top: 0.15rem;
+	transform: none;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__fieldset > .we-formkit__field-reset,
+.we-formkit--inline-feedback-both .we-formkit__fieldset > .we-formkit__field-reset {
+	right: 2.1rem;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__validity,
+.we-formkit--inline-feedback-icon .we-formkit__field.is-invalid .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__validity {
+	visibility: visible;
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__validity {
+	background: var(--wek-accent);
+	color: var(--wek-on-accent);
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__validity::before,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__validity::before {
+	content: "";
+	width: 0.35rem;
+	height: 0.65rem;
+	border: solid currentColor;
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg) translateY(-1px);
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field.is-invalid .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__validity {
+	background: var(--wek-danger);
+	color: #fff;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field.is-invalid .we-formkit__validity::before,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__validity::before {
+	content: "×";
+	font-size: 0.95rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.we-formkit--inline-feedback-border .we-formkit__field.is-valid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.we-formkit--inline-feedback-border .we-formkit__field.is-valid textarea,
+.we-formkit--inline-feedback-border .we-formkit__field.is-valid select,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid textarea,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid select {
+	border-color: var(--wek-accent);
+}
+
+.we-formkit--inline-feedback-border .we-formkit__field.is-invalid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.we-formkit--inline-feedback-border .we-formkit__field.is-invalid textarea,
+.we-formkit--inline-feedback-border .we-formkit__field.is-invalid select,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid textarea,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid select {
+	border-color: var(--wek-danger);
+}
+
+.we-formkit--inline-feedback-border .we-formkit__field.is-valid .we-formkit__fieldset,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__fieldset {
+	border-color: var(--wek-accent);
+}
+
+.we-formkit--inline-feedback-border .we-formkit__field.is-invalid .we-formkit__fieldset,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__fieldset {
+	border-color: var(--wek-danger);
+}
+
+.we-formkit--inline-feedback-border .we-formkit__field--matrix.is-valid .we-formkit__matrix-scroll,
+.we-formkit--inline-feedback-both .we-formkit__field--matrix.is-valid .we-formkit__matrix-scroll {
+	border-color: var(--wek-accent);
+}
+
+.we-formkit--inline-feedback-border .we-formkit__field--matrix.is-invalid .we-formkit__matrix-scroll,
+.we-formkit--inline-feedback-both .we-formkit__field--matrix.is-invalid .we-formkit__matrix-scroll {
+	border-color: var(--wek-danger);
+}
+
+/* Matrix: pin the badge so the wide table/cards never shift. */
+.we-formkit__field--matrix {
+	position: relative;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field--matrix .we-formkit__control-row--choices,
+.we-formkit--inline-feedback-both .we-formkit__field--matrix .we-formkit__control-row--choices {
+	display: block;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field--matrix .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field--matrix .we-formkit__validity {
+	position: absolute;
+	top: 0.15rem;
+	right: 0.15rem;
+	z-index: 2;
+	margin: 0;
+	transform: none;
+}
+
+.we-formkit--inline-feedback-border .we-formkit__validity {
+	display: none !important;
+}
+
+.we-formkit__actions {
+	margin: 1.25rem 0 0;
+}
+
+.we-formkit__submit {
+	appearance: none;
+	border: 0;
+	border-radius: var(--wek-radius-button);
+	background: var(--wek-accent);
+	color: var(--wek-on-accent);
+	font: inherit;
+	font-weight: 600;
+	padding: 0.8rem 1.4rem;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.we-formkit__submit-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 0;
+}
+
+.we-formkit__submit-icon svg {
+	width: 1.15em;
+	height: 1.15em;
+	display: block;
+	fill: currentColor;
+}
+
+.we-formkit__submit-text {
+	line-height: 1.2;
+}
+
+.we-formkit__submit:hover,
+.we-formkit__submit:focus-visible {
+	filter: brightness(1.05);
+}
+
+.we-formkit__submit:disabled {
+	opacity: 0.65;
+	cursor: wait;
+}
+
+.we-formkit__status {
+	margin: 0;
+	min-height: 0;
+	font-weight: 600;
+}
+
+.we-formkit__status:not(:empty) {
+	margin-bottom: var(--wek-status-gap, 0);
+}
+
+.we-formkit__status.is-error {
+	color: var(--wek-danger);
+}
+
+.we-formkit__status.is-success {
+	color: var(--wek-accent);
+}
+
+.we-formkit__info-docs {
+	margin: 0 0 1rem;
+	padding: 0.75rem 1rem;
+	border: 1px solid var(--wek-line, #d4d4d4);
+	border-radius: 6px;
+	background: var(--wek-surface);
+}
+
+.we-formkit__info-docs[hidden] {
+	display: none !important;
+}
+
+.we-formkit__info-docs-title {
+	margin: 0 0 0.35rem;
+	font-weight: 600;
+}
+
+.we-formkit__info-docs-list {
+	margin: 0;
+	padding-left: 1.2rem;
+}
+
+.we-formkit__info-docs-list a {
+	color: var(--wek-accent);
+}
+
+.we-formkit__label--repeater {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.35rem;
+}
+
+.we-formkit__repeater {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.we-formkit__repeater-rows {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.we-formkit__repeater-row {
+	display: flex;
+	align-items: flex-end;
+	gap: 0.45rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius);
+	background: var(--wek-accent-soft);
+	padding: 0.85rem 1rem;
+}
+
+.we-formkit__repeater-remove {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	margin: 0;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: var(--wek-radius-input, 8px);
+	background: transparent;
+	color: var(--wek-danger, #b32d2e);
+	font: inherit;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.we-formkit__repeater-remove[hidden] {
+	display: none !important;
+}
+
+.we-formkit__repeater-remove .we-formkit__remove-icon {
+	display: block;
+	width: 1rem;
+	height: 1rem;
+}
+
+.we-formkit__matrix-remove-row .we-formkit__matrix-remove-icon {
+	display: block;
+	font-size: 1.35rem;
+	font-weight: 400;
+	line-height: 1;
+}
+
+.we-formkit__repeater-remove:hover,
+.we-formkit__repeater-remove:focus-visible {
+	border-color: color-mix(in srgb, var(--wek-danger, #b32d2e) 35%, var(--wek-line));
+	color: color-mix(in srgb, var(--wek-danger, #b32d2e) 85%, #000);
+	background: color-mix(in srgb, var(--wek-danger, #b32d2e) 10%, var(--wek-surface));
+	outline: none;
+}
+
+.we-formkit__repeater-remove:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.we-formkit__repeater-fields {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: grid;
+	gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+	.we-formkit__repeater-fields {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.we-formkit__repeater-control--textarea {
+		grid-column: 1 / -1;
+	}
+}
+
+.we-formkit__label--nested {
+	font-size: 0.9rem;
+}
+
+.we-formkit__repeater-actions,
+.we-formkit__matrix-custom-actions {
+	margin: 0.65rem 0 0;
+}
+
+/* Shared subtle “add” control (repeater rows, matrix custom rows). */
+.we-formkit__add-btn,
+.we-formkit__repeater-add,
+.we-formkit__matrix-add-row {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 0.35rem 0.7rem;
+	border: 1px dashed color-mix(in srgb, var(--wek-accent) 45%, var(--wek-line));
+	border-radius: var(--wek-radius-input, 8px);
+	background: color-mix(in srgb, var(--wek-accent) 6%, var(--wek-surface));
+	color: var(--wek-ink);
+	font: inherit;
+	font-size: var(--wek-font-input, 1rem);
+	font-weight: 500;
+	line-height: 1.35;
+	cursor: pointer;
+}
+
+.we-formkit__add-btn:hover,
+.we-formkit__add-btn:focus-visible,
+.we-formkit__repeater-add:hover,
+.we-formkit__repeater-add:focus-visible,
+.we-formkit__matrix-add-row:hover,
+.we-formkit__matrix-add-row:focus-visible {
+	border-style: solid;
+	border-color: var(--wek-accent);
+	background: color-mix(in srgb, var(--wek-accent) 10%, var(--wek-surface));
+	outline: none;
+}
+
+.we-formkit__add-btn:disabled,
+.we-formkit__repeater-add:disabled,
+.we-formkit__matrix-add-row:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.we-formkit--multipage .we-formkit__section.is-page-hidden {
+	display: none !important;
+}
+
+.we-formkit__progress {
+	margin: 0 0 1rem;
+	font-size: 0.9rem;
+	color: var(--wek-muted);
+}
+
+.we-formkit__actions--nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+}
+
+.we-formkit__actions--save {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.65rem;
+}
+
+.we-formkit__actions--save-email {
+	margin-bottom: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+}
+
+.we-formkit [data-wek-save-ui][hidden],
+.we-formkit .we-formkit__actions--save-email[hidden] {
+	display: none !important;
+}
+
+.we-formkit__save-remind {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.45rem;
+	margin: 0;
+	font-size: var(--wek-font-label, 0.95rem);
+	color: var(--wek-muted);
+	line-height: 1.35;
+	cursor: pointer;
+}
+
+.we-formkit__save-remind input {
+	margin: 0.2rem 0 0;
+	flex: 0 0 auto;
+}
+
+.we-formkit__save-remind span {
+	flex: 1 1 auto;
+}
+
+.we-formkit__save-remind-lead {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.45rem 0.65rem;
+	margin: 0;
+	font-size: var(--wek-font-label, 0.95rem);
+	color: var(--wek-muted);
+}
+
+.we-formkit__save-remind-lead[hidden] {
+	display: none !important;
+}
+
+.we-formkit__save-remind-lead-label {
+	flex: 0 0 auto;
+}
+
+.we-formkit__save-remind-lead select {
+	flex: 1 1 12rem;
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input);
+	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
+	font: inherit;
+	font-size: var(--wek-font-input);
+	background: var(--wek-input);
+	color: inherit;
+}
+
+.we-formkit__actions--buttons {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 1rem;
+	margin-top: 1rem;
+}
+
+.we-formkit__actions--save-email + .we-formkit__actions--buttons {
+	margin-top: 0.85rem;
+}
+
+.we-formkit__submit-slot {
+	display: inline-flex;
+}
+
+.we-formkit__submit-slot[hidden] {
+	display: none !important;
+}
+
+.we-formkit__save-email-label {
+	display: block;
+	width: 100%;
+	margin: 0;
+}
+
+.we-formkit__save-email {
+	width: 100%;
+	box-sizing: border-box;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input);
+	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
+	font: inherit;
+	font-size: var(--wek-font-input);
+	background: var(--wek-input);
+	color: inherit;
+	min-height: calc(
+		(var(--wek-font-input) * 1.4) + (2 * var(--wek-control-pad-y)) + 2px
+	);
+}
+
+.we-formkit .we-formkit__save-progress {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	margin: 0;
+	border: 2px solid var(--wek-accent);
+	border-radius: var(--wek-radius-button);
+	background: transparent;
+	color: var(--wek-accent);
+	font: inherit;
+	font-weight: 600;
+	line-height: 1.2;
+	padding: 0.75rem 1.35rem;
+	cursor: pointer;
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.we-formkit .we-formkit__save-progress:hover,
+.we-formkit .we-formkit__save-progress:focus-visible {
+	background: color-mix(in srgb, var(--wek-accent) 12%, transparent);
+	outline: none;
+}
+
+.we-formkit .we-formkit__save-progress:disabled {
+	opacity: 0.65;
+	cursor: wait;
+}
+
+.we-formkit__actions--nav[hidden],
+.we-formkit__progress[hidden],
+.we-formkit__actions[hidden],
+.we-formkit__submit-slot[hidden] {
+	display: none !important;
+}
+
+.we-formkit__nav-btn {
+	appearance: none;
+	border: 1px solid var(--wek-line);
+	background: var(--wek-surface);
+	color: var(--wek-ink);
+	font: inherit;
+	font-weight: 600;
+	border-radius: var(--wek-radius-button);
+	padding: 0.55rem 1.15rem;
+	cursor: pointer;
+}
+
+.we-formkit__nav-btn--primary {
+	border-color: var(--wek-accent);
+	background: var(--wek-accent);
+	color: var(--wek-on-accent);
+}
+
+.we-formkit__nav-btn:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.we-formkit__signature {
+	display: grid;
+	gap: 0.5rem;
+	max-width: 100%;
+}
+
+.we-formkit__signature-canvas {
+	display: block;
+	width: 100%;
+	max-width: 480px;
+	height: auto;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input, 8px);
+	background: var(--wek-input);
+	touch-action: none;
+	cursor: crosshair;
+}
+
+.we-formkit__signature-clear {
+	appearance: none;
+	justify-self: start;
+	border: 1px solid var(--wek-line);
+	background: var(--wek-surface);
+	color: var(--wek-ink);
+	font: inherit;
+	font-size: 0.9rem;
+	border-radius: 999px;
+	padding: 0.35rem 0.85rem;
+	cursor: pointer;
+}
+
+.we-formkit-error {
+	color: var(--wek-danger);
+	font-weight: 600;
+}
+
+.we-formkit__matrix-scroll {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	margin-top: 0;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-section);
+	background: var(--wek-surface);
+}
+
+.we-formkit__fieldset--matrix > .we-formkit__help + .we-formkit__matrix-scroll {
+	margin-top: 0.35rem;
+}
+
+/* Desktop: field name lives in the corner header cell. */
+.we-formkit__matrix-field-label {
+	display: none;
+}
+
+.we-formkit__matrix {
+	width: 100%;
+	margin: 0;
+	margin-bottom: 0;
+	border-collapse: collapse;
+	font-family: inherit;
+	font-size: var(--wek-font-input);
+	line-height: 1.4;
+}
+
+.we-formkit__matrix th,
+.we-formkit__matrix td {
+	border: 1px solid var(--wek-line);
+	padding: 0.45rem 0.5rem;
+	vertical-align: middle;
+	text-align: center;
+}
+
+/* Soft separators between labeled column blocks (Age | Usage | Tolerance). */
+.we-formkit__matrix thead .we-formkit__matrix-col--block-start,
+.we-formkit__matrix tbody .we-formkit__matrix-cell--block-start {
+	border-left-width: 2px;
+	border-left-color: color-mix(in srgb, var(--wek-ink) 22%, var(--wek-line));
+}
+
+.we-formkit__matrix-corner,
+.we-formkit__matrix th.we-formkit__matrix-row-label {
+	text-align: left;
+	font-weight: 600;
+	font-size: var(--wek-font-label);
+	background: var(--wek-accent-soft);
+	color: var(--wek-ink);
+	white-space: nowrap;
+}
+
+.we-formkit__matrix-corner {
+	white-space: normal;
+	max-width: 10rem;
+	vertical-align: middle;
+	line-height: 1.25;
+}
+
+.we-formkit__matrix-corner-label {
+	display: block;
+	overflow-wrap: break-word;
+}
+
+/* Row-select column has no visible header — drop vertical rules so it merges with labels. */
+.we-formkit__matrix-corner:has(+ .we-formkit__matrix-col--select),
+.we-formkit__matrix th.we-formkit__matrix-row-label:has(+ .we-formkit__matrix-cell--select) {
+	border-right: none;
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-col--select,
+.we-formkit__matrix tbody .we-formkit__matrix-cell--select {
+	border-left: none;
+	border-right: none;
+	width: 2.1rem;
+	min-width: 2.1rem;
+	max-width: 2.5rem;
+	padding-left: 0.15rem;
+	padding-right: 0.35rem;
+	background: var(--wek-accent-soft);
+}
+
+.we-formkit__matrix--row-labels-center th.we-formkit__matrix-row-label {
+	text-align: center;
+}
+
+.we-formkit__matrix--row-labels-right th.we-formkit__matrix-row-label {
+	text-align: right;
+}
+
+.we-formkit--label-normal .we-formkit__matrix-corner,
+.we-formkit--label-normal .we-formkit__matrix th.we-formkit__matrix-row-label {
+	font-weight: 500;
+}
+
+.we-formkit--label-bold .we-formkit__matrix-corner,
+.we-formkit--label-bold .we-formkit__matrix th.we-formkit__matrix-row-label {
+	font-weight: 700;
+}
+
+.we-formkit__matrix thead th {
+	font-weight: 600;
+	font-size: var(--wek-font-label);
+	background: var(--wek-bg);
+	color: var(--wek-ink);
+	line-height: 1.25;
+	vertical-align: bottom;
+	padding: 0.55rem 0.4rem;
+	/* Allow wrapped headings to use the full header band (esp. rowspan=2). */
+	max-width: none;
+	height: auto;
+	white-space: normal;
+}
+
+/* Keep corner + row-select band on accent-soft (overrides thead th). */
+.we-formkit__matrix thead .we-formkit__matrix-corner,
+.we-formkit__matrix thead .we-formkit__matrix-col--select,
+.we-formkit__matrix tbody .we-formkit__matrix-cell--select {
+	background: var(--wek-accent-soft);
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-corner {
+	vertical-align: middle;
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-col--group {
+	max-width: none;
+	border-bottom-width: 1px;
+	background: var(--wek-accent-soft);
+	font-size: var(--wek-font-label);
+	vertical-align: middle;
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-col--number,
+.we-formkit__matrix thead .we-formkit__matrix-col--text,
+.we-formkit__matrix thead .we-formkit__matrix-col--checkbox,
+.we-formkit__matrix thead .we-formkit__matrix-col--select {
+	vertical-align: middle;
+	padding-top: 0.65rem;
+	padding-bottom: 0.65rem;
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-col--number {
+	width: 4.25rem;
+	max-width: 5rem;
+	min-width: 3.5rem;
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-head-options th {
+	font-weight: 500;
+	font-size: calc(var(--wek-font-label) * 0.92);
+	color: var(--wek-muted);
+	background: var(--wek-bg);
+	vertical-align: bottom;
+	padding-top: 0.4rem;
+	padding-bottom: 0.45rem;
+	max-width: 5.5rem;
+}
+
+.we-formkit--label-normal .we-formkit__matrix thead th {
+	font-weight: 500;
+}
+
+.we-formkit--label-bold .we-formkit__matrix thead th {
+	font-weight: 700;
+}
+
+.we-formkit__matrix-col-label {
+	display: block;
+	white-space: normal;
+	overflow-wrap: break-word;
+	word-break: normal;
+	hyphens: auto;
+	line-height: 1.25;
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-col--number .we-formkit__matrix-col-label {
+	max-width: 4.5rem;
+	margin-inline: auto;
+}
+
+.we-formkit__matrix-mobile-label,
+.we-formkit__matrix-mobile-opt,
+.we-formkit__matrix-mobile-group {
+	display: none;
+}
+
+.we-formkit__matrix-choice {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	margin: 0;
+	cursor: pointer;
+}
+
+.we-formkit__matrix-choice input {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	margin: 0;
+	width: 1.1rem;
+	height: 1.1rem;
+	flex: 0 0 auto;
+	box-sizing: border-box;
+	border: 1.5px solid color-mix(in srgb, var(--wek-accent) 35%, var(--wek-line));
+	background: var(--wek-input);
+	opacity: 1;
+	cursor: pointer;
+	position: relative;
+	accent-color: var(--wek-accent);
+}
+
+.we-formkit__matrix-choice input[type="checkbox"] {
+	border-radius: 4px;
+}
+
+.we-formkit__matrix-choice input[type="radio"] {
+	border-radius: 50%;
+}
+
+.we-formkit__matrix-choice input[type="checkbox"]:checked {
+	background: var(--wek-accent);
+	border-color: var(--wek-accent);
+}
+
+.we-formkit__matrix-choice input[type="checkbox"]:checked::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 45%;
+	width: 0.25rem;
+	height: 0.45rem;
+	border: solid var(--wek-on-accent);
+	border-width: 0 2px 2px 0;
+	transform: translate(-50%, -55%) rotate(45deg);
+}
+
+.we-formkit__matrix-choice input[type="radio"]:checked {
+	background: var(--wek-input);
+	border-color: var(--wek-accent);
+	border-width: 2px;
+}
+
+.we-formkit__matrix-choice input[type="radio"]:checked::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 0.45rem;
+	height: 0.45rem;
+	border-radius: 50%;
+	background: var(--wek-accent);
+	transform: translate(-50%, -50%);
+}
+
+.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--radio,
+.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--checkbox,
+.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--text,
+.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--number {
+	opacity: 0.45;
+}
+
+.we-formkit__matrix-cell--number {
+	width: 4.25rem;
+	max-width: 5rem;
+	padding-left: 0.3rem;
+	padding-right: 0.3rem;
+}
+
+.we-formkit__matrix-input {
+	width: 100%;
+	min-width: 4.5rem;
+	max-width: 8rem;
+	margin: 0;
+	padding: 0.25rem 0.4rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input, 8px);
+	background: var(--wek-input);
+	color: var(--wek-ink);
+	font: inherit;
+	font-size: var(--wek-font-input);
+	box-sizing: border-box;
+}
+
+.we-formkit__matrix-cell--number .we-formkit__matrix-input {
+	min-width: 0;
+	max-width: 3.75rem;
+	width: 3.5rem;
+	padding: 0.25rem 0.2rem;
+	text-align: center;
+}
+
+.we-formkit__matrix-custom-label-wrap {
+	display: block;
+	margin: 0;
+	flex: 1 1 auto;
+	min-width: 0;
+	width: 100%;
+}
+
+.we-formkit__matrix-custom-label-row {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	width: 100%;
+}
+
+.we-formkit__matrix-custom-label {
+	width: 100%;
+	min-width: 7rem;
+	max-width: 14rem;
+	margin: 0;
+	padding: 0.3rem 0.45rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input, 8px);
+	background: var(--wek-input);
+	color: var(--wek-ink);
+	font: inherit;
+	font-size: var(--wek-font-input);
+	box-sizing: border-box;
+}
+
+.we-formkit__matrix-remove-row {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	margin: 0;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: var(--wek-radius-input, 8px);
+	background: transparent;
+	color: color-mix(in srgb, var(--wek-ink) 55%, transparent);
+	font: inherit;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.we-formkit__matrix-remove-icon {
+	display: block;
+	font-size: 1.35rem;
+	font-weight: 400;
+	line-height: 1;
+}
+
+.we-formkit__matrix-remove-row:hover,
+.we-formkit__matrix-remove-row:focus-visible {
+	border-color: var(--wek-line);
+	color: var(--wek-ink);
+	background: color-mix(in srgb, var(--wek-ink) 6%, var(--wek-surface));
+	outline: none;
+}
+
+.we-formkit__matrix-custom-actions {
+	margin: 0.65rem 0 0;
+}
+
+/*
+ * Narrow screens: one card per matrix row.
+ * Table stays in the DOM for a11y / JS; presentation becomes stacked forms.
+ */
+@media (max-width: 720px) {
+	.we-formkit__matrix-field-label {
+		display: block;
+		margin: 0 0 0.5rem;
+		font-weight: 600;
+		font-size: var(--wek-font-label);
+		color: var(--wek-ink);
+	}
+
+	.we-formkit--label-normal .we-formkit__matrix-field-label {
+		font-weight: 500;
+	}
+
+	.we-formkit--label-bold .we-formkit__matrix-field-label {
+		font-weight: 700;
+	}
+
+	.we-formkit__matrix-scroll {
+		overflow: visible;
+		margin-top: 0.35rem;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+	}
+
+	.we-formkit__matrix,
+	.we-formkit__matrix thead,
+	.we-formkit__matrix tbody,
+	.we-formkit__matrix tr,
+	.we-formkit__matrix th,
+	.we-formkit__matrix td {
+		display: block;
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+
+	.we-formkit__matrix {
+		border: 0;
+	}
+
+	.we-formkit__matrix thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	.we-formkit__matrix tbody {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.we-formkit__matrix tbody tr[data-wek-matrix-row] {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.55rem 0.65rem;
+		padding: 0.75rem 0.8rem;
+		border: 1px solid var(--wek-line);
+		border-radius: var(--wek-radius-input, 8px);
+		background: var(--wek-surface);
+		box-shadow: 0 1px 0 color-mix(in srgb, var(--wek-ink) 4%, transparent);
+	}
+
+	.we-formkit__matrix tbody tr[data-wek-matrix-row].is-row-off {
+		background: color-mix(in srgb, var(--wek-bg) 70%, var(--wek-surface));
+	}
+
+	.we-formkit__matrix th,
+	.we-formkit__matrix td {
+		border: 0;
+		padding: 0;
+		text-align: left;
+		width: auto;
+		max-width: none;
+	}
+
+	.we-formkit__matrix thead .we-formkit__matrix-col--block-start,
+	.we-formkit__matrix tbody .we-formkit__matrix-cell--block-start {
+		border-left: 0;
+	}
+
+	/* Checkbox + row title as one header line. */
+	.we-formkit__matrix-cell--select {
+		order: -2;
+		flex: 0 0 auto;
+		align-self: center;
+		padding-bottom: 0.45rem;
+		border-bottom: 1px solid var(--wek-line);
+	}
+
+	.we-formkit__matrix th.we-formkit__matrix-row-label {
+		order: -1;
+		flex: 1 1 0;
+		min-width: 0;
+		white-space: normal;
+		background: transparent;
+		font-size: 1.02rem;
+		font-weight: 700;
+		padding: 0 0 0.45rem;
+		border-bottom: 1px solid var(--wek-line);
+		margin: 0;
+	}
+
+	.we-formkit__matrix th.we-formkit__matrix-row-label--custom {
+		flex: 1 1 100%;
+		order: -1;
+	}
+
+	.we-formkit__matrix-custom-label {
+		max-width: none;
+		min-width: 0;
+		font-size: 1rem;
+		font-weight: 600;
+	}
+
+	.we-formkit__matrix--row-labels-center th.we-formkit__matrix-row-label,
+	.we-formkit__matrix--row-labels-right th.we-formkit__matrix-row-label {
+		text-align: left;
+	}
+
+	.we-formkit__matrix-choice--select {
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		width: auto;
+		min-height: 0;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		border-radius: 0;
+	}
+
+	.we-formkit__matrix-choice--select:has(:checked) {
+		border: 0;
+		background: transparent;
+	}
+
+	.we-formkit__matrix-cell--number,
+	.we-formkit__matrix-cell--text,
+	.we-formkit__matrix-cell--radio,
+	.we-formkit__matrix-cell--checkbox {
+		flex: 1 1 100%;
+	}
+
+	.we-formkit__matrix-mobile-label,
+	.we-formkit__matrix-mobile-opt,
+	.we-formkit__matrix-mobile-group {
+		display: inline;
+	}
+
+	.we-formkit__matrix-mobile-group {
+		display: block;
+		font-weight: 600;
+		font-size: var(--wek-font-label);
+		margin: 0.15rem 0 0.35rem;
+		color: var(--wek-ink);
+	}
+
+	.we-formkit__matrix-mobile-label {
+		display: block;
+		font-weight: 600;
+		font-size: calc(var(--wek-font-label) * 0.95);
+		margin-bottom: 0.3rem;
+		color: var(--wek-ink);
+	}
+
+	.we-formkit__matrix-mobile-opt {
+		font-size: var(--wek-font-label);
+		font-weight: 500;
+		line-height: 1.35;
+		overflow-wrap: break-word;
+	}
+
+	.we-formkit__matrix-cell--radio,
+	.we-formkit__matrix-cell--checkbox {
+		display: block;
+		width: 100%;
+	}
+
+	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice,
+	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice {
+		display: flex;
+		justify-content: flex-start;
+		align-items: flex-start;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.55rem 0.65rem;
+		border: 1px solid var(--wek-line);
+		border-radius: var(--wek-radius-input, 8px);
+		background: var(--wek-accent-soft);
+		min-height: 2.5rem;
+	}
+
+	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice:has(:checked),
+	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice:has(:checked) {
+		border-color: color-mix(in srgb, var(--wek-accent) 45%, transparent);
+		background: color-mix(in srgb, var(--wek-accent-soft) 55%, var(--wek-surface));
+	}
+
+	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice input,
+	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice input {
+		margin-top: 0.2rem;
+	}
+
+	.we-formkit__matrix-input-wrap {
+		display: block;
+		width: 100%;
+	}
+
+	.we-formkit__matrix-input,
+	.we-formkit__matrix-cell--number .we-formkit__matrix-input {
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		text-align: left;
+	}
+
+	.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--radio,
+	.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--checkbox,
+	.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--text,
+	.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--number {
+		opacity: 1;
+	}
+
+	.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--radio .we-formkit__matrix-choice,
+	.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice,
+	.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--text,
+	.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--number {
+		opacity: 0.55;
+	}
+}
+
+/*
+ * Late theme re-assert (end of sheet): choice grid + row geometry.
+ * Themes / Autoptimize often override grid-template-columns or label padding
+ * after us — pin half-width columns and choice padding here.
+ */
+body .we-formkit .we-formkit__choices {
+	display: grid !important;
+	grid-template-columns: minmax(0, 1fr) !important;
+	gap: var(--wek-gap-y) var(--wek-gap-x) !important;
+	width: auto !important;
+	max-width: 100% !important;
+	box-sizing: border-box !important;
+}
+
+@media (min-width: 640px) {
+	body .we-formkit .we-formkit__choices {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+}
+
+body .we-formkit .we-formkit__field .we-formkit__choice,
+body .we-formkit .we-formkit__field label.we-formkit__choice,
+body .we-formkit .we-formkit__field .we-formkit__control--choice {
+	display: flex !important;
+	flex-direction: row !important;
+	align-items: center !important;
+	justify-self: stretch !important;
+	width: auto !important;
+	max-width: 100% !important;
+	min-width: 0 !important;
+	gap: 0.65rem !important;
+	padding-top: var(--wek-control-pad-y) !important;
+	padding-bottom: var(--wek-control-pad-y) !important;
+	padding-left: var(--wek-control-pad-x) !important;
+	padding-right: var(--wek-control-pad-x) !important;
+	box-sizing: border-box !important;
+	min-height: 0 !important;
+}
+
+body .we-formkit .we-formkit__privacy-link {
+	display: inline !important;
+	font-size: inherit !important;
+	font-weight: 600 !important;
+	line-height: inherit !important;
+	color: var(--wek-accent) !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+body .we-formkit .we-formkit__choice > span,
+body .we-formkit label.we-formkit__choice span,
+body .we-formkit .we-formkit__control--choice label {
+	color: var(--wek-ink);
+	display: flex !important;
+	align-items: center !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	line-height: 1.25 !important;
+	min-height: 1.15rem;
+}
+
+/* Consent: label is multi-line copy with inline {link} — must not be a flex row. */
+body .we-formkit .we-formkit__control--consent {
+	align-items: flex-start !important;
+}
+
+body .we-formkit .we-formkit__control--consent .we-formkit__consent-copy > label {
+	display: block !important;
+	align-items: unset !important;
+	gap: 0 !important;
+	line-height: 1.4 !important;
+	min-height: 0 !important;
+	font-weight: 600 !important;
+}
+
+body .we-formkit .we-formkit__control--consent .we-formkit__privacy-link,
+body .we-formkit .we-formkit__control--consent .we-formkit__req,
+body .we-formkit .we-formkit__control--consent .we-formkit__opt {
+	display: inline !important;
+}
+
+body .we-formkit .we-formkit__fieldset > legend,
+body .we-formkit .we-formkit__label {
+	color: var(--wek-ink);
+}
+
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="radio"],
+body .we-formkit .we-formkit__field label.we-formkit__choice input[type="checkbox"],
+body .we-formkit .we-formkit__field label.we-formkit__choice input[type="radio"],
+body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"] {
+	flex: 0 0 auto !important;
+	align-self: center !important;
+	margin: 0 !important;
+	margin-block: 0 !important;
+	margin-inline: 0 !important;
+	padding: 0 !important;
+	position: relative !important;
+	top: 0 !important;
+	transform: none !important;
+	vertical-align: middle !important;
+}
