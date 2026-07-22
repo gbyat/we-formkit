@@ -745,6 +745,91 @@
 		} );
 	}
 
+	function syncFieldResetButton( fieldEl ) {
+		const btn = qs( fieldEl, '[data-wek-field-reset]' );
+		if ( ! btn ) {
+			return;
+		}
+		const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+		let has = false;
+		if ( type === 'radio' || type === 'radio_image' ) {
+			has = !! qs( fieldEl, 'input[type="radio"]:checked' );
+		} else if ( type === 'matrix' ) {
+			has = matrixFieldHasAnswer( fieldEl );
+		}
+		btn.hidden = ! has;
+	}
+
+	function syncAllFieldResets( root ) {
+		qsa( root, '[data-wek-field]' ).forEach( function ( fieldEl ) {
+			syncFieldResetButton( fieldEl );
+		} );
+	}
+
+	function resetChoiceField( fieldEl ) {
+		const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+		if ( type === 'radio' || type === 'radio_image' ) {
+			qsa( fieldEl, 'input[type="radio"]' ).forEach( function ( radio ) {
+				radio.checked = false;
+			} );
+		} else if ( type === 'matrix' ) {
+			qsa( fieldEl, '[data-wek-matrix-row]' ).forEach( function ( row ) {
+				const onBox = qs( row, '[data-wek-matrix-on]' );
+				if ( onBox ) {
+					onBox.checked = false;
+				}
+				const label = qs( row, '[data-wek-matrix-label]' );
+				if ( label ) {
+					label.value = '';
+				}
+				clearMatrixRowControls( row );
+				if ( onBox ) {
+					syncMatrixRowSelect( row );
+				}
+			} );
+		} else {
+			return;
+		}
+		clearFieldFeedback( fieldEl );
+		syncFieldResetButton( fieldEl );
+		fieldEl.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	}
+
+	function bindFieldResets( root ) {
+		qsa( root, '[data-wek-field]' ).forEach( function ( fieldEl ) {
+			const btn = qs( fieldEl, '[data-wek-field-reset]' );
+			if ( ! btn || btn.getAttribute( 'data-wek-bound' ) === '1' ) {
+				return;
+			}
+			btn.setAttribute( 'data-wek-bound', '1' );
+			btn.addEventListener( 'click', function ( event ) {
+				event.preventDefault();
+				resetChoiceField( fieldEl );
+			} );
+			syncFieldResetButton( fieldEl );
+		} );
+
+		const form = qs( root, '[data-wek-form]' );
+		if ( ! form || form.getAttribute( 'data-wek-reset-sync' ) === '1' ) {
+			return;
+		}
+		form.setAttribute( 'data-wek-reset-sync', '1' );
+		form.addEventListener( 'change', function ( event ) {
+			const fieldEl =
+				event.target && event.target.closest ? event.target.closest( '[data-wek-field]' ) : null;
+			if ( fieldEl && form.contains( fieldEl ) ) {
+				syncFieldResetButton( fieldEl );
+			}
+		} );
+		form.addEventListener( 'input', function ( event ) {
+			const fieldEl =
+				event.target && event.target.closest ? event.target.closest( '[data-wek-field]' ) : null;
+			if ( fieldEl && form.contains( fieldEl ) && fieldEl.getAttribute( 'data-field-type' ) === 'matrix' ) {
+				syncFieldResetButton( fieldEl );
+			}
+		} );
+	}
+
 	function setMatrixRowEnabled( row, enabled ) {
 		const isCustom = row.hasAttribute( 'data-wek-matrix-custom-row' );
 		qsa( row, '[data-wek-matrix-col]' ).forEach( function ( input ) {
@@ -2175,6 +2260,7 @@
 						// Ignore quota / private mode.
 					}
 					fillValues( result.data.values );
+					syncAllFieldResets( root );
 					if ( typeof result.data.page_index === 'number' && result.data.page_index > 0 ) {
 						root.dispatchEvent(
 							new CustomEvent( 'wek-go-page', {
@@ -2312,6 +2398,7 @@
 		bindInlineValidation( root, form );
 		bindMatrixRows( root );
 		bindCheckboxesOther( root );
+		bindFieldResets( root );
 
 		qsa( form, '[data-field-type="checkboxes"]' ).forEach( function ( fieldEl ) {
 			syncCheckboxesMaxLock( fieldEl );
@@ -2323,6 +2410,7 @@
 		const cfg = window.weFormkit || {};
 		if ( cfg.autofill && wantsAutofill() ) {
 			autofillForm( form, root );
+			syncAllFieldResets( root );
 			if ( wantsAutosubmit() ) {
 				scheduleAutofillSubmit( form, root, cfg );
 			} else {

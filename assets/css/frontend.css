@@ -147,6 +147,68 @@
 	margin-bottom: 0.35rem;
 }
 
+.we-formkit__fieldset:has(> .we-formkit__field-reset) > legend {
+	padding-right: 2.1rem;
+}
+
+.we-formkit__field-reset {
+	appearance: none;
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.7rem;
+	height: 1.7rem;
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--wek-line);
+	border-radius: 999px;
+	background: var(--wek-surface);
+	color: var(--wek-muted);
+	cursor: pointer;
+	line-height: 0;
+	box-sizing: border-box;
+	transition:
+		color 0.15s ease,
+		border-color 0.15s ease,
+		background-color 0.15s ease;
+}
+
+.we-formkit__field-reset:hover,
+.we-formkit__field-reset:focus-visible {
+	color: var(--wek-ink);
+	border-color: var(--wek-accent);
+	background: color-mix(in srgb, var(--wek-accent-soft) 70%, var(--wek-surface));
+}
+
+.we-formkit__field-reset:focus-visible {
+	outline: 2px solid var(--wek-accent);
+	outline-offset: 1px;
+}
+
+.we-formkit__field-reset[hidden] {
+	display: none !important;
+}
+
+.we-formkit__field-reset-icon {
+	display: block;
+	width: 0.95rem;
+	height: 0.95rem;
+}
+
+.we-formkit__fieldset--matrix > .we-formkit__field-reset {
+	top: 0.15rem;
+	right: 0.15rem;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field--matrix .we-formkit__fieldset--matrix > .we-formkit__field-reset,
+.we-formkit--inline-feedback-both .we-formkit__field--matrix .we-formkit__fieldset--matrix > .we-formkit__field-reset {
+	right: 2.1rem;
+}
+
 /*
  * Native fieldsets shrink-wrap (min-inline-size: min-content) and ignore width in
  * some engines — stretch explicitly so radio/checkbox groups match text inputs.
@@ -155,6 +217,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
+	position: relative;
 	min-width: 0;
 	min-inline-size: 0;
 	max-width: 100%;
@@ -368,7 +431,7 @@
 .we-formkit__choices {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr);
-	gap: 0.5rem;
+	gap: var(--wek-gap-y) var(--wek-gap-x);
 	width: 100%;
 	align-self: stretch;
 	box-sizing: border-box;

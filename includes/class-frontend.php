@@ -332,6 +332,7 @@ final class Frontend {
 					'matrixAddRow'      => __( 'Add other row', 'we-formkit' ),
 					'matrixRemoveRow'   => __( 'Remove row', 'we-formkit' ),
 					'matrixRowLabelPh'  => __( 'Your label', 'we-formkit' ),
+					'clearSelection'    => __( 'Clear selection', 'we-formkit' ),
 				),
 				'validation'    => Validation_Messages::global_templates_for_js(),
 			)
@@ -559,6 +560,29 @@ final class Frontend {
 	}
 
 	/**
+	 * Small circular-arrow control to clear radio / matrix selections.
+	 *
+	 * @return void
+	 */
+	private static function echo_field_reset_button() {
+		$label = __( 'Clear selection', 'we-formkit' );
+		?>
+		<button
+			type="button"
+			class="we-formkit__field-reset"
+			data-wek-field-reset
+			aria-label="<?php echo esc_attr( $label ); ?>"
+			title="<?php echo esc_attr( $label ); ?>"
+			hidden
+		>
+			<svg class="we-formkit__field-reset-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+				<path fill="currentColor" d="M12 5V2.21c0-.45-.54-.67-.85-.35l-3.8 3.79c-.2.2-.2.51 0 .71l3.8 3.79c.31.32.85.1.85-.35V7c3.73 0 6.68 3.42 5.86 7.29-.47 2.27-2.31 4.1-4.57 4.57-3.57.75-6.75-1.7-7.23-5.01-.07-.48-.48-.85-.98-.85-.61 0-1.09.54-1 1.14.73 4.2 4.8 7.11 9.28 6.25 2.92-.56 5.25-2.9 5.81-5.81C20.29 9.44 16.72 5 12 5z"/>
+			</svg>
+		</button>
+		<?php
+	}
+
+	/**
 	 * @param int $form_id Form ID.
 	 * @return void
 	 */
@@ -716,6 +740,9 @@ final class Frontend {
 						<?php echo esc_html( $field['label'] ); ?>
 						<?php self::echo_requirement_mark( $req || $min_sel > 0, $type ); ?>
 					</legend>
+					<?php if ( 'radio' === $type && ! $req ) : ?>
+						<?php self::echo_field_reset_button(); ?>
+					<?php endif; ?>
 					<?php if ( '' !== $help_text ) : ?>
 						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $help_text ); ?></p>
 					<?php endif; ?>
@@ -777,6 +804,9 @@ final class Frontend {
 						<?php echo esc_html( $field['label'] ); ?>
 						<?php self::echo_requirement_mark( $req, $type ); ?>
 					</legend>
+					<?php if ( ! $req ) : ?>
+						<?php self::echo_field_reset_button(); ?>
+					<?php endif; ?>
 					<?php if ( ! empty( $field['help'] ) ) : ?>
 						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 					<?php endif; ?>
@@ -827,6 +857,7 @@ final class Frontend {
 						<?php echo esc_html( $field['label'] ); ?>
 						<?php self::echo_requirement_mark( $req, $type ); ?>
 					</legend>
+					<?php self::echo_field_reset_button(); ?>
 					<?php if ( $show_matrix_label ) : ?>
 						<p class="we-formkit__matrix-field-label" aria-hidden="true">
 							<?php echo esc_html( $field['label'] ); ?>

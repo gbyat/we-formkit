@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-22T14:21:24+00:00\n"
+"POT-Creation-Date: 2026-07-22T14:30:24+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: we-formkit\n"
@@ -1478,7 +1478,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:1873
 #: includes/admin/class-submissions.php:371
-#: includes/class-frontend.php:1095
+#: includes/class-frontend.php:1126
 msgid "Clear"
 msgstr ""
 
@@ -2484,7 +2484,7 @@ msgid "Please correct the highlighted fields."
 msgstr ""
 
 #: includes/class-frontend.php:304
-#: includes/class-frontend.php:1320
+#: includes/class-frontend.php:1351
 msgid "Add another"
 msgstr ""
 
@@ -2512,12 +2512,12 @@ msgid "Downloads"
 msgstr ""
 
 #: includes/class-frontend.php:312
-#: includes/class-frontend.php:417
+#: includes/class-frontend.php:418
 msgid "Next"
 msgstr ""
 
 #: includes/class-frontend.php:313
-#: includes/class-frontend.php:416
+#: includes/class-frontend.php:417
 msgid "Previous"
 msgstr ""
 
@@ -2528,7 +2528,7 @@ msgid "Step %1$d of %2$d"
 msgstr ""
 
 #: includes/class-frontend.php:316
-#: includes/class-frontend.php:480
+#: includes/class-frontend.php:481
 msgid "Save progress"
 msgstr ""
 
@@ -2560,13 +2560,13 @@ msgid "Your saved progress was restored."
 msgstr ""
 
 #: includes/class-frontend.php:325
-#: includes/class-frontend.php:437
-#: includes/class-frontend.php:445
+#: includes/class-frontend.php:438
+#: includes/class-frontend.php:446
 msgid "Email for resume link"
 msgstr ""
 
 #: includes/class-frontend.php:326
-#: includes/class-frontend.php:451
+#: includes/class-frontend.php:452
 msgid "Add a calendar reminder (.ics) before this link expires"
 msgstr ""
 
@@ -2589,110 +2589,115 @@ msgid "Please enter text for Other."
 msgstr ""
 
 #: includes/class-frontend.php:332
-#: includes/class-frontend.php:974
+#: includes/class-frontend.php:1005
 msgid "Add other row"
 msgstr ""
 
 #: includes/class-frontend.php:333
-#: includes/class-frontend.php:1181
-#: includes/class-frontend.php:1182
-#: includes/class-frontend.php:1390
-#: includes/class-frontend.php:1391
+#: includes/class-frontend.php:1212
+#: includes/class-frontend.php:1213
+#: includes/class-frontend.php:1421
+#: includes/class-frontend.php:1422
 msgid "Remove row"
 msgstr ""
 
 #: includes/class-frontend.php:334
-#: includes/class-frontend.php:1172
+#: includes/class-frontend.php:1203
 msgid "Your label"
 msgstr ""
 
-#: includes/class-frontend.php:454
+#: includes/class-frontend.php:335
+#: includes/class-frontend.php:568
+msgid "Clear selection"
+msgstr ""
+
+#: includes/class-frontend.php:455
 msgid "Remind me"
 msgstr ""
 
 #. translators: %d: number of days before the resume link expires.
-#: includes/class-frontend.php:462
+#: includes/class-frontend.php:463
 #, php-format
 msgid "%d day before expiry"
 msgid_plural "%d days before expiry"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-frontend.php:547
+#: includes/class-frontend.php:548
 #: src/admin-form-settings/index.jsx:313
 msgid "(required)"
 msgstr ""
 
-#: includes/class-frontend.php:558
+#: includes/class-frontend.php:559
 #: src/admin-form-settings/index.jsx:318
 msgid "(optional)"
 msgstr ""
 
-#: includes/class-frontend.php:676
+#: includes/class-frontend.php:700
 msgid "Privacy policy"
 msgstr ""
 
 #. translators: 1: minimum selections, 2: maximum selections.
-#: includes/class-frontend.php:693
+#: includes/class-frontend.php:717
 #, php-format
 msgid "Select between %1$d and %2$d options."
 msgstr ""
 
 #. translators: %d: minimum selections.
-#: includes/class-frontend.php:700
+#: includes/class-frontend.php:724
 #, php-format
 msgid "Select at least %d option(s)."
 msgstr ""
 
 #. translators: %d: maximum selections.
-#: includes/class-frontend.php:706
+#: includes/class-frontend.php:730
 #, php-format
 msgid "Select at most %d option(s)."
 msgstr ""
 
-#: includes/class-frontend.php:765
+#: includes/class-frontend.php:792
 msgid "Please specify…"
 msgstr ""
 
 #. translators: %s: Other option label
-#: includes/class-frontend.php:768
+#: includes/class-frontend.php:795
 #, php-format
 msgid "%s text"
 msgstr ""
 
-#: includes/class-frontend.php:840
+#: includes/class-frontend.php:871
 msgid "This matrix has no rows or columns yet."
 msgstr ""
 
-#: includes/class-frontend.php:865
+#: includes/class-frontend.php:896
 #: includes/fields/class-select-field.php:24
 msgid "Select"
 msgstr ""
 
-#: includes/class-frontend.php:985
-#: includes/class-frontend.php:1450
+#: includes/class-frontend.php:1016
+#: includes/class-frontend.php:1481
 msgid "Please select…"
 msgstr ""
 
-#: includes/class-frontend.php:1166
+#: includes/class-frontend.php:1197
 msgid "Row label"
 msgstr ""
 
-#: includes/class-frontend.php:1198
+#: includes/class-frontend.php:1229
 msgid "Select this row"
 msgstr ""
 
 #. translators: %s: row label
-#: includes/class-frontend.php:1201
+#: includes/class-frontend.php:1232
 #, php-format
 msgid "Select %s"
 msgstr ""
 
-#: includes/class-frontend.php:1262
+#: includes/class-frontend.php:1293
 msgid "Custom row"
 msgstr ""
 
-#: includes/class-frontend.php:1336
+#: includes/class-frontend.php:1367
 msgid "This repeater has no fields configured yet."
 msgstr ""
 
