@@ -69,6 +69,9 @@ body .we-formkit .we-formkit__field .we-formkit__control--choice,
 .we-formkit .we-formkit__field .we-formkit__choice,
 .we-formkit .we-formkit__field .we-formkit__control--choice {
 	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 0.65rem;
 	float: none;
 	clear: none;
 	width: auto;
@@ -86,6 +89,9 @@ body .we-formkit .we-formkit__field .we-formkit__control--choice,
 	text-decoration: none;
 	position: relative;
 	box-sizing: border-box;
+	min-height: calc(
+		(var(--wek-font-label) * 1.4) + (2 * var(--wek-control-pad-y)) + 2px
+	);
 }
 
 body .we-formkit .we-formkit__field label.we-formkit__choice span,
@@ -135,6 +141,8 @@ body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="che
 	float: none;
 	clear: none;
 	display: block;
+	flex: 0 0 auto;
+	align-self: center;
 	position: relative;
 	margin: 0;
 	padding: 0;
@@ -604,7 +612,7 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 .we-formkit__control--choice {
 	display: flex;
 	gap: 0.65rem;
-	align-items: flex-start;
+	align-items: center;
 	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
 	border: 1px solid transparent;
 	border-radius: var(--wek-radius-input);
@@ -2153,13 +2161,32 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 }
 
 /*
- * Late theme re-assert (end of sheet): ink color on choice labels / legends.
+ * Late theme re-assert (end of sheet): layout + ink for choice rows.
  * Helps when Autoptimize places Formkit before theme but specificity still ties.
  */
+body .we-formkit .we-formkit__field .we-formkit__choice,
+body .we-formkit .we-formkit__field label.we-formkit__choice,
+body .we-formkit .we-formkit__field .we-formkit__control--choice {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 0.65rem;
+	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
+	box-sizing: border-box;
+}
+
 body .we-formkit .we-formkit__choice > span,
 body .we-formkit label.we-formkit__choice span,
 body .we-formkit .we-formkit__control--choice label,
 body .we-formkit .we-formkit__fieldset > legend,
 body .we-formkit .we-formkit__label {
 	color: var(--wek-ink);
+}
+
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="radio"],
+body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"] {
+	flex: 0 0 auto;
+	align-self: center;
+	margin: 0;
 }
