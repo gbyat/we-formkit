@@ -192,7 +192,7 @@ msgstr "Feld"
 #: includes/admin/class-form-editor.php:407
 #: includes/admin/class-form-editor.php:533
 #: includes/class-frontend.php:305
-#: includes/class-frontend.php:1085
+#: includes/class-frontend.php:1104
 msgid "Remove"
 msgstr "Entfernen"
 
@@ -630,8 +630,8 @@ msgstr "Formular absenden"
 msgid "Privacy policy"
 msgstr "Datenschutzerklärung"
 
-#: includes/class-frontend.php:843
-#: includes/class-frontend.php:1137
+#: includes/class-frontend.php:862
+#: includes/class-frontend.php:1156
 msgid "Please select…"
 msgstr "Bitte wählen…"
 
@@ -1027,24 +1027,24 @@ msgid "Add row button label"
 msgstr "Beschriftung „Zeile hinzufügen“"
 
 #: includes/class-frontend.php:304
-#: includes/class-frontend.php:1010
+#: includes/class-frontend.php:1029
 msgid "Add another"
 msgstr "Weitere hinzufügen"
 
 #. translators: %d: row number (1-based).
 #: includes/class-frontend.php:307
-#: includes/class-frontend.php:1078
+#: includes/class-frontend.php:1097
 #: includes/fields/class-repeater-field.php:381
 #, php-format
 msgid "Row %d"
 msgstr "Zeile %d"
 
-#: includes/class-frontend.php:1026
+#: includes/class-frontend.php:1045
 msgid "This repeater has no fields configured yet."
 msgstr "Dieser Repeater hat noch keine Felder."
 
 #: includes/class-frontend.php:734
-#: includes/class-frontend.php:1074
+#: includes/class-frontend.php:1093
 msgid "Row"
 msgstr "Zeile"
 
@@ -1561,7 +1561,7 @@ msgstr "Dein gespeicherter Fortschritt wurde wiederhergestellt."
 
 #: includes/admin/class-form-editor.php:1831
 #: includes/admin/class-submissions.php:371
-#: includes/class-frontend.php:953
+#: includes/class-frontend.php:972
 msgid "Clear"
 msgstr "Löschen"
 
@@ -3437,7 +3437,7 @@ msgid "This matrix has no rows or columns yet."
 msgstr ""
 
 #. translators: %s: row label
-#: includes/class-frontend.php:778
+#: includes/class-frontend.php:779
 #, php-format
 msgid "Select %s"
 msgstr ""
@@ -3454,10 +3454,10 @@ msgstr ""
 msgid "Show a checkbox to mark each row as selected."
 msgstr ""
 
-#: includes/fields/class-matrix-field.php:370
+#: includes/fields/class-matrix-field.php:395
 msgid "selected"
 msgstr ""
 
-#: includes/fields/class-matrix-field.php:370
+#: includes/fields/class-matrix-field.php:395
 msgid "not selected"
 msgstr ""

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.4] - 2026-07-22
+
+- Enhance matrix field functionality by adding support for text and number column types, improving data handling in submissions. Update CSS for better styling and responsiveness of matrix elements. Refactor frontend and admin scripts to manage matrix row states and interactions more effectively. Update documentation to reflect new features and usage guidelines.
 ## [0.6.3] - 2026-07-22
 
 - Add matrix field support to Formkit, including frontend and admin editor enhancements. Implement CSS styles for matrix layout and functionality, and update documentation for new field type. Ensure proper handling of matrix data in form submissions and rendering.
