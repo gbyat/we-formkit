@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-07-22
+
+- Add screen reader text styles for standalone preview in Formkit. Enhance accessibility by ensuring proper visibility and positioning of a11y-only labels in matrices.
 ## [0.7.2] - 2026-07-22
 
 - Enhance number field options in form editor. Add support for minimum, maximum, step, and decimal places settings in the number field configuration. Update CSS for number field previews and improve rendering logic in JavaScript. Adjust PHP to normalize and sanitize new options, ensuring proper handling of numeric inputs.
