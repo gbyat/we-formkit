@@ -830,7 +830,6 @@ final class Frontend {
 															value="1"
 															data-wek-matrix-on
 														/>
-														<span class="we-formkit__matrix-mobile-select-label" aria-hidden="true"><?php esc_html_e( 'Include this row', 'we-formkit' ); ?></span>
 													</label>
 												</td>
 											<?php endif; ?>

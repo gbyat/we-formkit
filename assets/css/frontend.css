@@ -1210,8 +1210,7 @@
 
 .we-formkit__matrix-mobile-label,
 .we-formkit__matrix-mobile-opt,
-.we-formkit__matrix-mobile-group,
-.we-formkit__matrix-mobile-select-label {
+.we-formkit__matrix-mobile-group {
 	display: none;
 }
 
@@ -1313,8 +1312,10 @@
 	}
 
 	.we-formkit__matrix tbody tr[data-wek-matrix-row] {
-		display: grid;
-		gap: 0.55rem;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.55rem 0.65rem;
 		padding: 0.75rem 0.8rem;
 		border: 1px solid var(--wek-line);
 		border-radius: var(--wek-radius-input, 8px);
@@ -1340,16 +1341,26 @@
 		border-left: 0;
 	}
 
-	.we-formkit__matrix th.we-formkit__matrix-row-label {
+	/* Checkbox + row title as one header line. */
+	.we-formkit__matrix-cell--select {
 		order: -2;
+		flex: 0 0 auto;
+		align-self: center;
+		padding-bottom: 0.45rem;
+		border-bottom: 1px solid var(--wek-line);
+	}
+
+	.we-formkit__matrix th.we-formkit__matrix-row-label {
+		order: -1;
+		flex: 1 1 0;
+		min-width: 0;
 		white-space: normal;
 		background: transparent;
 		font-size: 1.02rem;
 		font-weight: 700;
-		padding: 0 0 0.15rem;
+		padding: 0 0 0.45rem;
 		border-bottom: 1px solid var(--wek-line);
-		padding-bottom: 0.45rem;
-		margin-bottom: 0.1rem;
+		margin: 0;
 	}
 
 	.we-formkit__matrix--row-labels-center th.we-formkit__matrix-row-label,
@@ -1357,16 +1368,30 @@
 		text-align: left;
 	}
 
-	.we-formkit__matrix-cell--select {
-		order: -1;
-	}
-
 	.we-formkit__matrix-choice--select {
-		justify-content: flex-start;
-		width: 100%;
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		width: auto;
+		min-height: 0;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		border-radius: 0;
 	}
 
-	.we-formkit__matrix-mobile-select-label,
+	.we-formkit__matrix-choice--select:has(:checked) {
+		border: 0;
+		background: transparent;
+	}
+
+	.we-formkit__matrix-cell--number,
+	.we-formkit__matrix-cell--text,
+	.we-formkit__matrix-cell--radio,
+	.we-formkit__matrix-cell--checkbox {
+		flex: 1 1 100%;
+	}
+
 	.we-formkit__matrix-mobile-label,
 	.we-formkit__matrix-mobile-opt,
 	.we-formkit__matrix-mobile-group {
@@ -1377,7 +1402,7 @@
 		display: block;
 		font-weight: 600;
 		font-size: var(--wek-font-label);
-		margin: 0.35rem 0 0.35rem;
+		margin: 0.15rem 0 0.35rem;
 		color: var(--wek-ink);
 	}
 
@@ -1389,8 +1414,7 @@
 		color: var(--wek-ink);
 	}
 
-	.we-formkit__matrix-mobile-opt,
-	.we-formkit__matrix-mobile-select-label {
+	.we-formkit__matrix-mobile-opt {
 		font-size: var(--wek-font-label);
 		font-weight: 500;
 		line-height: 1.35;
@@ -1404,8 +1428,7 @@
 	}
 
 	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice,
-	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice,
-	.we-formkit__matrix-choice--select {
+	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice {
 		display: flex;
 		justify-content: flex-start;
 		align-items: flex-start;
@@ -1419,15 +1442,13 @@
 	}
 
 	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice:has(:checked),
-	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice:has(:checked),
-	.we-formkit__matrix-choice--select:has(:checked) {
+	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice:has(:checked) {
 		border-color: color-mix(in srgb, var(--wek-accent) 45%, transparent);
 		background: color-mix(in srgb, var(--wek-accent-soft) 55%, var(--wek-surface));
 	}
 
 	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice input,
-	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice input,
-	.we-formkit__matrix-choice--select input {
+	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice input {
 		margin-top: 0.2rem;
 	}
 
