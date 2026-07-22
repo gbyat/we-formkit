@@ -204,24 +204,19 @@
 	right: 0.15rem;
 }
 
-.we-formkit--inline-feedback-icon .we-formkit__field--matrix .we-formkit__fieldset--matrix > .we-formkit__field-reset,
-.we-formkit--inline-feedback-both .we-formkit__field--matrix .we-formkit__fieldset--matrix > .we-formkit__field-reset {
-	right: 2.1rem;
-}
-
 /*
- * Native fieldsets shrink-wrap (min-inline-size: min-content) and ignore width in
- * some engines — stretch explicitly so radio/checkbox groups match text inputs.
+ * Native fieldsets shrink-wrap (min-inline-size: min-content) in some engines.
+ * Block-level flex already fills the parent — avoid width:100% (can overflow).
  */
 .we-formkit__fieldset {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
+	align-self: stretch;
 	position: relative;
 	min-width: 0;
 	min-inline-size: 0;
 	max-width: 100%;
-	width: 100%;
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -432,7 +427,6 @@
 	display: grid;
 	grid-template-columns: minmax(0, 1fr);
 	gap: var(--wek-gap-y) var(--wek-gap-x);
-	width: 100%;
 	align-self: stretch;
 	box-sizing: border-box;
 }
@@ -454,10 +448,8 @@
 	border-radius: var(--wek-radius-input);
 	background: var(--wek-accent-soft);
 	cursor: pointer;
-	width: 100%;
-	max-width: none;
-	box-sizing: border-box;
 	min-width: 0;
+	box-sizing: border-box;
 	transition:
 		background-color 0.15s ease,
 		border-color 0.15s ease,
@@ -767,6 +759,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.55rem;
+	position: relative;
 }
 
 .we-formkit__control-row--choices {
@@ -778,15 +771,9 @@
 .we-formkit__control-row > select,
 .we-formkit__control-row > .we-formkit__fieldset,
 .we-formkit__control-row > .we-formkit__control--choice {
-	/* 0% basis forces equal stretch next to the validity icon (fieldset quirk). */
+	/* Stretch in the row; validity is absolutely positioned and must not steal width. */
 	flex: 1 1 0%;
 	min-width: 0;
-	width: auto;
-	max-width: 100%;
-}
-
-.we-formkit__control-row--choices > .we-formkit__validity {
-	margin-top: 0.55rem;
 }
 
 .we-formkit__validity {
@@ -800,7 +787,10 @@
 	box-sizing: border-box;
 }
 
-/* Reserve icon slot so showing/hiding does not shift the layout. */
+/*
+ * Pin the badge over the control edge so it never shrinks inputs / choice grids
+ * (visibility:hidden still reserved flex space when display:inline-flex).
+ */
 .we-formkit--inline-feedback-icon .we-formkit__validity,
 .we-formkit--inline-feedback-both .we-formkit__validity {
 	display: inline-flex;
@@ -808,6 +798,27 @@
 	opacity: 0;
 	pointer-events: none;
 	background: transparent;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__control-row > .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__control-row > .we-formkit__validity {
+	position: absolute;
+	top: 50%;
+	right: 0;
+	z-index: 2;
+	margin: 0;
+	transform: translateY(-50%);
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__control-row--choices > .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__control-row--choices > .we-formkit__validity {
+	top: 0.15rem;
+	transform: none;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__fieldset > .we-formkit__field-reset,
+.we-formkit--inline-feedback-both .we-formkit__fieldset > .we-formkit__field-reset {
+	right: 2.1rem;
 }
 
 .we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__validity,
@@ -904,11 +915,7 @@
 	right: 0.15rem;
 	z-index: 2;
 	margin: 0;
-}
-
-.we-formkit--inline-feedback-icon .we-formkit__field.is-valid > .we-formkit__validity,
-.we-formkit--inline-feedback-both .we-formkit__field.is-valid > .we-formkit__validity {
-	margin-top: 0.35rem;
+	transform: none;
 }
 
 .we-formkit--inline-feedback-border .we-formkit__validity {

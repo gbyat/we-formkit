@@ -104,17 +104,22 @@ final class Frontend {
 	 * @return void
 	 */
 	public static function register_assets() {
+		$style_path = WE_FORMKIT_PATH . 'assets/css/frontend.css';
+		$script_path = WE_FORMKIT_PATH . 'assets/js/frontend.js';
+		$style_ver   = file_exists( $style_path ) ? (string) filemtime( $style_path ) : WE_FORMKIT_VERSION;
+		$script_ver  = file_exists( $script_path ) ? (string) filemtime( $script_path ) : WE_FORMKIT_VERSION;
+
 		wp_register_style(
 			'we-formkit-form',
 			WE_FORMKIT_URL . 'assets/css/frontend.css',
 			array(),
-			WE_FORMKIT_VERSION
+			$style_ver
 		);
 		wp_register_script(
 			'we-formkit-form',
 			WE_FORMKIT_URL . 'assets/js/frontend.js',
 			array(),
-			WE_FORMKIT_VERSION,
+			$script_ver,
 			true
 		);
 		wp_set_script_translations( 'we-formkit-form', 'we-formkit', WE_FORMKIT_PATH . 'languages' );
