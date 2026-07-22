@@ -1017,6 +1017,7 @@ final class Form_Editor {
 					'help_style'            => (string) $appear['help_style'],
 					'font_family'           => (string) $appear['font_family'],
 					'spacing'               => (string) $appear['spacing'],
+					'chrome_gap'            => (string) $appear['chrome_gap'],
 					'control_padding'       => (string) $appear['control_padding'],
 					'size_section'          => (string) $appear['size_section'],
 					'size_label'            => (string) $appear['size_label'],

@@ -140,7 +140,7 @@
 .wek-scheme-preview__intro {
 	color: var(--wek-muted);
 	font-size: 0.85rem;
-	margin: 0 0 var(--wek-gap-y);
+	margin: 0 0 var(--wek-header-gap, 0);
 	line-height: 1.4;
 }
 

@@ -128,6 +128,13 @@ const SPACING_VARS = {
 	},
 };
 
+const CHROME_GAP_VARS = {
+	none: { header: '0', status: '0' },
+	sm: { header: '0.75rem', status: '0.5rem' },
+	md: { header: '1.25rem', status: '0.75rem' },
+	lg: { header: '1.75rem', status: '1rem' },
+};
+
 const CONTROL_VARS = {
 	compact: { padY: '0.4rem', padX: '0.55rem' },
 	cozy: { padY: '0.65rem', padX: '0.75rem' },
@@ -215,6 +222,7 @@ function ColorSchemePreview( { data } ) {
 	const opt =
 		data.optional_mark === 'none' ? '' : __( '(optional)', 'we-formkit' );
 	const spacing = SPACING_VARS[ data.spacing ] || SPACING_VARS.cozy;
+	const chromeGap = CHROME_GAP_VARS[ data.chrome_gap ] || CHROME_GAP_VARS.none;
 	const control = CONTROL_VARS[ data.control_padding ] || CONTROL_VARS.cozy;
 	const labelClass =
 		'wek-scheme-preview__card' +
@@ -244,6 +252,8 @@ function ColorSchemePreview( { data } ) {
 					'--wek-gap-x': spacing.gapX,
 					'--wek-space': spacing.space,
 					'--wek-shell-pad': spacing.shell,
+					'--wek-header-gap': chromeGap.header,
+					'--wek-status-gap': chromeGap.status,
 					'--wek-control-pad-y': control.padY,
 					'--wek-control-pad-x': control.padX,
 					'--wek-font-section':
@@ -404,6 +414,7 @@ function flattenSettings( payload ) {
 		help_style: payload.help_style || 'muted',
 		font_family: payload.font_family || 'inherit',
 		spacing: payload.spacing || 'cozy',
+		chrome_gap: payload.chrome_gap || 'none',
 		control_padding: payload.control_padding || 'cozy',
 		size_section: payload.size_section || 'md',
 		size_label: payload.size_label || 'md',
@@ -443,6 +454,7 @@ function toApiPayload( data ) {
 		help_style: data.help_style || 'muted',
 		font_family: data.font_family || 'inherit',
 		spacing: data.spacing || 'cozy',
+		chrome_gap: data.chrome_gap || 'none',
 		control_padding: data.control_padding || 'cozy',
 		size_section: data.size_section || 'md',
 		size_label: data.size_label || 'md',
@@ -695,6 +707,21 @@ function FormSettingsApp() {
 				],
 			},
 			{
+				id: 'chrome_gap',
+				label: __( 'Title & status spacing', 'we-formkit' ),
+				type: 'text',
+				description: __(
+					'Space below the form title and below status messages. Default is none (tight on mobile).',
+					'we-formkit'
+				),
+				elements: [
+					{ value: 'none', label: __( 'None', 'we-formkit' ) },
+					{ value: 'sm', label: __( 'Small', 'we-formkit' ) },
+					{ value: 'md', label: __( 'Medium', 'we-formkit' ) },
+					{ value: 'lg', label: __( 'Large', 'we-formkit' ) },
+				],
+			},
+			{
 				id: 'control_padding',
 				label: __( 'Input padding', 'we-formkit' ),
 				type: 'text',
@@ -851,6 +878,7 @@ function FormSettingsApp() {
 					layout: { type: 'card', isOpened: true },
 					children: [
 						'spacing',
+						'chrome_gap',
 						'control_padding',
 						'radius_input',
 						'radius_button',

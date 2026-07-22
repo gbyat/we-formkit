@@ -583,6 +583,11 @@ final class Form_Schema {
 			$spacing = 'cozy';
 		}
 
+		$chrome_gap = isset( $data['chrome_gap'] ) ? sanitize_key( (string) $data['chrome_gap'] ) : 'none';
+		if ( ! in_array( $chrome_gap, array( 'none', 'sm', 'md', 'lg' ), true ) ) {
+			$chrome_gap = 'none';
+		}
+
 		$control = isset( $data['control_padding'] ) ? sanitize_key( (string) $data['control_padding'] ) : 'cozy';
 		if ( ! in_array( $control, array( 'compact', 'cozy', 'comfortable' ), true ) ) {
 			$control = 'cozy';
@@ -625,6 +630,7 @@ final class Form_Schema {
 			'help_style'        => $style,
 			'font_family'       => $font,
 			'spacing'           => $spacing,
+			'chrome_gap'        => $chrome_gap,
 			'control_padding'   => $control,
 			'size_section'      => $size_section,
 			'size_label'        => $size_label,
@@ -699,6 +705,25 @@ final class Form_Schema {
 		$sp = $spacing[ $a['spacing'] ] ?? $spacing['cozy'];
 		$cp = $controls[ $a['control_padding'] ] ?? $controls['cozy'];
 
+		$chrome             = array(
+			'none' => array(
+				'header' => '0',
+				'status' => '0',
+			),
+			'sm'   => array(
+				'header' => '0.75rem',
+				'status' => '0.5rem',
+			),
+			'md'   => array(
+				'header' => '1.25rem',
+				'status' => '0.75rem',
+			),
+			'lg'   => array(
+				'header' => '1.75rem',
+				'status' => '1rem',
+			),
+		);
+		$cg                 = $chrome[ $a['chrome_gap'] ?? 'none' ] ?? $chrome['none'];
 		$radius_map         = array(
 			'none' => '0',
 			'sm'   => '4px',
@@ -722,6 +747,8 @@ final class Form_Schema {
 			'--wek-gap-x:' . $sp['gap-x'],
 			'--wek-space:' . $sp['space'],
 			'--wek-shell-pad:' . $sp['shell'],
+			'--wek-header-gap:' . $cg['header'],
+			'--wek-status-gap:' . $cg['status'],
 			'--wek-control-pad-y:' . $cp['pad-y'],
 			'--wek-control-pad-x:' . $cp['pad-x'],
 			'--wek-font-section:' . ( $sections[ $a['size_section'] ] ?? $sections['md'] ),

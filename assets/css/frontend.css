@@ -17,6 +17,8 @@
 	--wek-shell-pad: clamp(1.25rem, 3vw, 2rem);
 	--wek-gap-y: 0.85rem;
 	--wek-gap-x: 1rem;
+	--wek-header-gap: 0;
+	--wek-status-gap: 0;
 	--wek-control-pad-y: 0.65rem;
 	--wek-control-pad-x: 0.75rem;
 	--wek-font-section: 1.15rem;
@@ -34,7 +36,7 @@
 }
 
 .we-formkit__header {
-	margin-bottom: 1.75rem;
+	margin-bottom: var(--wek-header-gap, 0);
 }
 
 .we-formkit__title {
@@ -711,9 +713,13 @@
 }
 
 .we-formkit__status {
-	min-height: 1.25rem;
-	margin-bottom: 1rem;
+	margin: 0;
+	min-height: 0;
 	font-weight: 600;
+}
+
+.we-formkit__status:not(:empty) {
+	margin-bottom: var(--wek-status-gap, 0);
 }
 
 .we-formkit__status.is-error {
