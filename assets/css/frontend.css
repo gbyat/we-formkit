@@ -121,6 +121,24 @@
 	border: 0 !important;
 }
 
+/*
+ * Standalone preview (?wek_preview=1) has no theme CSS.
+ * Keep Formkit self-contained for a11y-only labels in matrices etc.
+ */
+.we-formkit .screen-reader-text,
+.we-formkit-preview-body .screen-reader-text {
+	border: 0;
+	clip: rect(1px, 1px, 1px, 1px);
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	word-wrap: normal !important;
+}
+
 .we-formkit__label,
 .we-formkit__fieldset legend {
 	display: block;
