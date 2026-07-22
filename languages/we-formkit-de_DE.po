@@ -192,7 +192,7 @@ msgstr "Feld"
 #: includes/admin/class-form-editor.php:407
 #: includes/admin/class-form-editor.php:534
 #: includes/class-frontend.php:305
-#: includes/class-frontend.php:1147
+#: includes/class-frontend.php:1153
 msgid "Remove"
 msgstr "Entfernen"
 
@@ -399,7 +399,7 @@ msgid "Save settings"
 msgstr "Einstellungen speichern"
 
 #: includes/admin/class-form-editor.php:2178
-#: includes/class-form-schema.php:320
+#: includes/class-form-schema.php:428
 msgid "Thank you. Your form was submitted successfully."
 msgstr "Vielen Dank. Dein Formular wurde erfolgreich gesendet."
 
@@ -621,7 +621,7 @@ msgstr "Dieses Feld ist erforderlich."
 
 #: includes/admin/class-form-editor.php:350
 #: includes/admin/class-form-editor.php:852
-#: includes/class-form-schema.php:367
+#: includes/class-form-schema.php:475
 #: includes/class-frontend.php:300
 msgid "Submit form"
 msgstr "Formular absenden"
@@ -630,8 +630,8 @@ msgstr "Formular absenden"
 msgid "Privacy policy"
 msgstr "Datenschutzerklärung"
 
-#: includes/class-frontend.php:905
-#: includes/class-frontend.php:1199
+#: includes/class-frontend.php:911
+#: includes/class-frontend.php:1205
 msgid "Please select…"
 msgstr "Bitte wählen…"
 
@@ -1027,24 +1027,24 @@ msgid "Add row button label"
 msgstr "Beschriftung „Zeile hinzufügen“"
 
 #: includes/class-frontend.php:304
-#: includes/class-frontend.php:1072
+#: includes/class-frontend.php:1078
 msgid "Add another"
 msgstr "Weitere hinzufügen"
 
 #. translators: %d: row number (1-based).
 #: includes/class-frontend.php:307
-#: includes/class-frontend.php:1140
+#: includes/class-frontend.php:1146
 #: includes/fields/class-repeater-field.php:381
 #, php-format
 msgid "Row %d"
 msgstr "Zeile %d"
 
-#: includes/class-frontend.php:1088
+#: includes/class-frontend.php:1094
 msgid "This repeater has no fields configured yet."
 msgstr "Dieser Repeater hat noch keine Felder."
 
 #: includes/class-frontend.php:745
-#: includes/class-frontend.php:1136
+#: includes/class-frontend.php:1142
 msgid "Row"
 msgstr "Zeile"
 
@@ -1561,7 +1561,7 @@ msgstr "Dein gespeicherter Fortschritt wurde wiederhergestellt."
 
 #: includes/admin/class-form-editor.php:1832
 #: includes/admin/class-submissions.php:371
-#: includes/class-frontend.php:1015
+#: includes/class-frontend.php:1021
 msgid "Clear"
 msgstr "Löschen"
 
@@ -3437,7 +3437,7 @@ msgid "This matrix has no rows or columns yet."
 msgstr ""
 
 #. translators: %s: row label
-#: includes/class-frontend.php:822
+#: includes/class-frontend.php:825
 #, php-format
 msgid "Select %s"
 msgstr ""

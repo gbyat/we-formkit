@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WE Formkit 0.6.6\n"
+"Project-Id-Version: WE Formkit 0.6.7\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/we-formkit\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-22T08:54:08+00:00\n"
+"POT-Creation-Date: 2026-07-22T09:15:28+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: we-formkit\n"
@@ -213,7 +213,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:350
 #: includes/admin/class-form-editor.php:852
-#: includes/class-form-schema.php:367
+#: includes/class-form-schema.php:475
 #: includes/class-frontend.php:300
 msgid "Submit form"
 msgstr ""
@@ -294,7 +294,7 @@ msgstr ""
 #: includes/admin/class-form-editor.php:407
 #: includes/admin/class-form-editor.php:534
 #: includes/class-frontend.php:305
-#: includes/class-frontend.php:1147
+#: includes/class-frontend.php:1153
 msgid "Remove"
 msgstr ""
 
@@ -1325,7 +1325,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:1832
 #: includes/admin/class-submissions.php:371
-#: includes/class-frontend.php:1015
+#: includes/class-frontend.php:1021
 msgid "Clear"
 msgstr ""
 
@@ -1368,7 +1368,7 @@ msgid "Use this file"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:2178
-#: includes/class-form-schema.php:320
+#: includes/class-form-schema.php:428
 msgid "Thank you. Your form was submitted successfully."
 msgstr ""
 
@@ -2339,13 +2339,13 @@ msgid "Please correct the highlighted fields."
 msgstr ""
 
 #: includes/class-frontend.php:304
-#: includes/class-frontend.php:1072
+#: includes/class-frontend.php:1078
 msgid "Add another"
 msgstr ""
 
 #. translators: %d: row number (1-based).
 #: includes/class-frontend.php:307
-#: includes/class-frontend.php:1140
+#: includes/class-frontend.php:1146
 #: includes/fields/class-repeater-field.php:381
 #, php-format
 msgid "Row %d"
@@ -2489,7 +2489,7 @@ msgid "This matrix has no rows or columns yet."
 msgstr ""
 
 #: includes/class-frontend.php:745
-#: includes/class-frontend.php:1136
+#: includes/class-frontend.php:1142
 msgid "Row"
 msgstr ""
 
@@ -2499,17 +2499,17 @@ msgid "Select"
 msgstr ""
 
 #. translators: %s: row label
-#: includes/class-frontend.php:822
+#: includes/class-frontend.php:825
 #, php-format
 msgid "Select %s"
 msgstr ""
 
-#: includes/class-frontend.php:905
-#: includes/class-frontend.php:1199
+#: includes/class-frontend.php:911
+#: includes/class-frontend.php:1205
 msgid "Please select…"
 msgstr ""
 
-#: includes/class-frontend.php:1088
+#: includes/class-frontend.php:1094
 msgid "This repeater has no fields configured yet."
 msgstr ""
 

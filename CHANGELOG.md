@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.7] - 2026-07-22
+
+- Enhance matrix field functionality by improving CSS styles for better layout and responsiveness. Update JavaScript to handle matrix row references more effectively, including recovery of corrupted references. Refactor PHP methods to support matrix condition references and ensure proper sanitization of field IDs. This update aims to improve user experience and maintain data integrity in form submissions.
 ## [0.6.6] - 2026-07-22
 
 - Implement drag-and-drop functionality for matrix items in the admin form editor. Enhance user experience with visual cues during item movement and add buttons for reordering options. Update CSS styles for improved layout and interaction feedback.
