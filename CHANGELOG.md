@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-07-22
+
+- Update admin menu page title to 'WE Formkit' for improved branding consistency.
 ## [0.6.0] - 2026-07-21
 
 - Enhance Formkit with smart tag picker for email and confirmation messages, allowing users to insert dynamic content easily. Update package.json to include new PHP script for internationalization. Add filters for managing MIME types and submission data, improving extensibility and customization options. Update translations for consistency.

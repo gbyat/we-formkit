@@ -16,6 +16,8 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: we-formkit.php
+#: includes/admin/class-admin.php:59
+#: includes/admin/class-admin.php:60
 msgid "WE Formkit"
 msgstr "WE Formkit"
 
@@ -38,11 +40,6 @@ msgstr "webentwicklerin, Gabriele Laesser"
 #: we-formkit.php
 msgid "https://webentwicklerin.at"
 msgstr "https://webentwicklerin.at"
-
-#: includes/admin/class-admin.php:59
-#: includes/admin/class-admin.php:60
-msgid "Formkit"
-msgstr "Formkit"
 
 #: includes/admin/class-admin.php:70
 #: includes/admin/class-admin.php:71
