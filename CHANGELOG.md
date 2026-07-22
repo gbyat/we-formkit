@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-07-22
+
+- Add section copy and paste functionality in form editor. Implement clipboard support for sections, allowing users to copy, paste, and manage section visibility. Enhance UI with new toggle styles and improve section handling in JavaScript and PHP.
 ## [0.7.3] - 2026-07-22
 
 - Add screen reader text styles for standalone preview in Formkit. Enhance accessibility by ensuring proper visibility and positioning of a11y-only labels in matrices.
