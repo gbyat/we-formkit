@@ -561,6 +561,11 @@ final class Form_Schema {
 			$inline = 'both';
 		}
 
+		$inline_scope = isset( $data['inline_scope'] ) ? sanitize_key( (string) $data['inline_scope'] ) : 'required';
+		if ( ! in_array( $inline_scope, array( 'required', 'all' ), true ) ) {
+			$inline_scope = 'required';
+		}
+
 		$placement = isset( $data['help_placement'] ) ? sanitize_key( (string) $data['help_placement'] ) : 'below_label';
 		if ( ! in_array( $placement, array( 'below_label', 'below_field' ), true ) ) {
 			$placement = 'below_label';
@@ -630,6 +635,7 @@ final class Form_Schema {
 			'required_mark'     => $mark,
 			'optional_mark'     => $optional,
 			'inline_validation' => $inline,
+			'inline_scope'      => $inline_scope,
 			'help_placement'    => $placement,
 			'help_style'        => $style,
 			'font_family'       => $font,

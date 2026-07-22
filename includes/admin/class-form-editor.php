@@ -930,7 +930,6 @@ final class Form_Editor {
 	 * @return void
 	 */
 	private static function enqueue_settings_assets( $form_id, $title, $slug, array $secret, $privacy, array $schema, $secret_url, $panel = 'general' ) {
-		unset( $schema );
 		$panel = 'design' === $panel ? 'design' : 'general';
 
 		$asset_file = WE_FORMKIT_PATH . 'build/admin-form-settings.asset.php';
@@ -1018,6 +1017,7 @@ final class Form_Editor {
 					'required_mark'         => (string) $appear['required_mark'],
 					'optional_mark'         => (string) $appear['optional_mark'],
 					'inline_validation'     => (string) $appear['inline_validation'],
+					'inline_scope'          => (string) $appear['inline_scope'],
 					'help_placement'        => (string) $appear['help_placement'],
 					'help_style'            => (string) $appear['help_style'],
 					'font_family'           => (string) $appear['font_family'],

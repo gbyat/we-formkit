@@ -851,15 +851,24 @@
 		return mode === 'icon' || mode === 'both';
 	}
 
+	function inlineValidationScope( root ) {
+		if ( ! root ) {
+			return 'required';
+		}
+		const raw = String( root.getAttribute( 'data-inline-scope' ) || 'required' );
+		return raw === 'all' ? 'all' : 'required';
+	}
+
 	function applyFieldValidationResult( form, fieldEl, message, showSuccess ) {
 		const id = fieldEl.getAttribute( 'data-field-id' );
+		const root = form ? form.closest( '[data-we-formkit]' ) : null;
 		if ( message ) {
 			showFieldError( form, id, message );
 			return false;
 		}
-		// Success chrome only for required fields — optional matrices stay quiet when partially filled.
 		const required = fieldEl.getAttribute( 'data-required' ) === '1';
-		if ( showSuccess && required && fieldHasMeaningfulValue( fieldEl ) ) {
+		const allowSuccess = inlineValidationScope( root ) === 'all' || required;
+		if ( showSuccess && allowSuccess && fieldHasMeaningfulValue( fieldEl ) ) {
 			showFieldValid( fieldEl );
 		} else {
 			clearFieldFeedback( fieldEl );
@@ -869,6 +878,14 @@
 
 	function validateFieldLive( form, fieldEl, root ) {
 		if ( fieldEl.classList.contains( 'is-hidden' ) ) {
+			clearFieldFeedback( fieldEl );
+			return true;
+		}
+		// Optional fields stay quiet when scope is "required only".
+		if (
+			inlineValidationScope( root ) === 'required' &&
+			fieldEl.getAttribute( 'data-required' ) !== '1'
+		) {
 			clearFieldFeedback( fieldEl );
 			return true;
 		}

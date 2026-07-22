@@ -78,6 +78,29 @@
 	color: #5c574f;
 }
 
+.wek-dataform-wysiwyg {
+	width: 100%;
+	max-width: 100%;
+}
+
+.wek-dataform-wysiwyg .wp-editor-wrap {
+	width: 100%;
+}
+
+.wek-dataform-wysiwyg .wp-editor-container {
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+}
+
+.wek-dataform-wysiwyg .mce-tinymce {
+	box-sizing: border-box;
+}
+
+.wek-dataform-wysiwyg__textarea {
+	width: 100%;
+	min-height: 10rem;
+}
+
 .wek-scheme-preview__caption {
 	margin: 0 0 0.5rem;
 	font-size: 12px;

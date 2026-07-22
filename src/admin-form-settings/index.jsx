@@ -37,6 +37,7 @@ function IntroWysiwygEdit( { data, field, onChange } ) {
 	const value = data[ field.id ] || '';
 	const onChangeRef = useRef( onChange );
 	const valueRef = useRef( value );
+	const readyRef = useRef( false );
 	onChangeRef.current = onChange;
 	valueRef.current = value;
 
@@ -46,9 +47,11 @@ function IntroWysiwygEdit( { data, field, onChange } ) {
 			return undefined;
 		}
 
+		readyRef.current = false;
 		wpEditor.initialize( INTRO_EDITOR_ID, {
 			tinymce: {
 				wpautop: true,
+				height: 180,
 				toolbar1:
 					'formatselect,bold,italic,bullist,numlist,link,unlink,undo,redo,removeformat',
 				toolbar2: '',
@@ -58,13 +61,17 @@ function IntroWysiwygEdit( { data, field, onChange } ) {
 						if ( valueRef.current ) {
 							editor.setContent( valueRef.current );
 						}
+						readyRef.current = true;
 					} );
 					const push = () => {
+						if ( ! readyRef.current ) {
+							return;
+						}
 						onChangeRef.current( {
 							[ field.id ]: editor.getContent(),
 						} );
 					};
-					editor.on( 'change keyup SetContent Undo Redo', push );
+					editor.on( 'change keyup Undo Redo', push );
 				},
 			},
 			quicktags: true,
@@ -72,20 +79,44 @@ function IntroWysiwygEdit( { data, field, onChange } ) {
 		} );
 
 		return () => {
+			readyRef.current = false;
 			if ( window.wp && window.wp.editor && typeof window.wp.editor.remove === 'function' ) {
 				window.wp.editor.remove( INTRO_EDITOR_ID );
 			}
 		};
 	}, [ field.id ] );
 
+	// Keep TinyMCE in sync when intro is loaded/saved from outside the editor.
+	useEffect( () => {
+		if ( ! readyRef.current || ! window.tinymce ) {
+			return;
+		}
+		const editor = window.tinymce.get( INTRO_EDITOR_ID );
+		if ( ! editor || editor.isHidden() ) {
+			return;
+		}
+		const current = editor.getContent();
+		if ( current !== value ) {
+			editor.setContent( value || '' );
+		}
+	}, [ value ] );
+
 	return (
 		<div className="wek-dataform-wysiwyg">
 			<textarea
 				id={ INTRO_EDITOR_ID }
-				className="wek-dataform-wysiwyg__textarea"
+				name={ INTRO_EDITOR_ID }
+				className="wek-dataform-wysiwyg__textarea large-text"
 				defaultValue={ value }
 				aria-label={ field.label }
-				rows={ 6 }
+				rows={ 8 }
+				onChange={ ( event ) => {
+					// Fallback when TinyMCE is unavailable or Text tab is active.
+					if ( window.tinymce && window.tinymce.get( INTRO_EDITOR_ID ) ) {
+						return;
+					}
+					onChange( { [ field.id ]: event.target.value } );
+				} }
 			/>
 		</div>
 	);
@@ -486,6 +517,7 @@ function flattenSettings( payload ) {
 		required_mark: payload.required_mark || 'asterisk',
 		optional_mark: payload.optional_mark || 'text',
 		inline_validation: payload.inline_validation || 'both',
+		inline_scope: payload.inline_scope || 'required',
 		help_placement: payload.help_placement || 'below_label',
 		help_style: payload.help_style || 'muted',
 		font_family: payload.font_family || 'inherit',
@@ -526,6 +558,7 @@ function toApiPayload( data ) {
 		required_mark: data.required_mark || 'asterisk',
 		optional_mark: data.optional_mark || 'text',
 		inline_validation: data.inline_validation || 'both',
+		inline_scope: data.inline_scope || 'required',
 		help_placement: data.help_placement || 'below_label',
 		help_style: data.help_style || 'muted',
 		font_family: data.font_family || 'inherit',
@@ -607,7 +640,7 @@ function FormSettingsApp() {
 				label: __( 'Intro text', 'we-formkit' ),
 				type: 'text',
 				description: __(
-					'Shown under the form title. Supports basic formatting.',
+					'Shown under the form title. Use the toolbar for basic formatting.',
 					'we-formkit'
 				),
 				Edit: IntroWysiwygEdit,
@@ -716,7 +749,7 @@ function FormSettingsApp() {
 				label: __( 'Inline validation', 'we-formkit' ),
 				type: 'text',
 				description: __(
-					'Live feedback after the visitor leaves a field. Success marks appear on required fields only. Prefer Border on dense fields such as matrices.',
+					'Live feedback after the visitor leaves a field. Prefer Border on dense fields such as matrices.',
 					'we-formkit'
 				),
 				elements: [
@@ -729,6 +762,25 @@ function FormSettingsApp() {
 					{
 						value: 'both',
 						label: __( 'Icons and border', 'we-formkit' ),
+					},
+				],
+			},
+			{
+				id: 'inline_scope',
+				label: __( 'Inline validation applies to', 'we-formkit' ),
+				type: 'text',
+				description: __(
+					'Required only keeps optional fields (e.g. matrix) quiet until submit.',
+					'we-formkit'
+				),
+				elements: [
+					{
+						value: 'required',
+						label: __( 'Required fields only', 'we-formkit' ),
+					},
+					{
+						value: 'all',
+						label: __( 'All fields', 'we-formkit' ),
 					},
 				],
 			},
@@ -796,10 +848,10 @@ function FormSettingsApp() {
 			},
 			{
 				id: 'chrome_gap',
-				label: __( 'Title & status spacing', 'we-formkit' ),
+				label: __( 'Space below intro', 'we-formkit' ),
 				type: 'text',
 				description: __(
-					'Space below the form title and below status messages. Default is none (tight on mobile).',
+					'Gap between the title/intro block and the first section (also below status messages).',
 					'we-formkit'
 				),
 				elements: [
@@ -910,6 +962,7 @@ function FormSettingsApp() {
 						'title',
 						'slug',
 						'intro',
+						'chrome_gap',
 						'privacy_url',
 						'secret_enabled',
 					],
@@ -945,6 +998,7 @@ function FormSettingsApp() {
 						'required_mark',
 						'optional_mark',
 						'inline_validation',
+						'inline_scope',
 						'help_placement',
 						'help_style',
 					],

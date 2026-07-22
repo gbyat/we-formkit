@@ -356,6 +356,7 @@ final class Frontend {
 			data-form-id="<?php echo esc_attr( (string) $form_id ); ?>"
 			data-pagination="<?php echo esc_attr( $pagination ); ?>"
 			data-inline-validation="<?php echo esc_attr( (string) ( self::$appearance['inline_validation'] ?? 'both' ) ); ?>"
+			data-inline-scope="<?php echo esc_attr( (string) ( self::$appearance['inline_scope'] ?? 'required' ) ); ?>"
 			style="<?php echo esc_attr( Form_Style::css_variables_attr( $form_id ) ); ?>"
 		>
 			<header class="we-formkit__header">
