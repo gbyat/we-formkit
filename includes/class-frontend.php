@@ -495,14 +495,15 @@ final class Frontend {
 	/**
 	 * Whether the field label should be visibly shown.
 	 *
-	 * Checkbox/consent keep their label (it is the control text). Html/hidden have no label UI.
+	 * Html/hidden have no label UI. Checkbox/consent use `label` as the field title
+	 * (optional via show_label); control copy lives in type_options.choice_label.
 	 *
 	 * @param array<string, mixed> $field Field.
 	 */
 	private static function field_shows_label( array $field ): bool {
 		$type = sanitize_key( (string) ( $field['type'] ?? '' ) );
-		if ( in_array( $type, array( 'checkbox', 'consent', 'html', 'hidden' ), true ) ) {
-			return true;
+		if ( in_array( $type, array( 'html', 'hidden' ), true ) ) {
+			return false;
 		}
 		return ! array_key_exists( 'show_label', $field ) || ! empty( $field['show_label'] );
 	}
@@ -530,22 +531,26 @@ final class Frontend {
 	}
 
 	/**
-	 * Consent label with optional inline {link} → privacy/terms anchor.
+	 * Consent / checkbox text beside the control, with optional inline {link}.
 	 *
 	 * @param array  $field       Field config.
 	 * @param string $privacy_url Form/site privacy URL fallback.
 	 * @return void
 	 */
-	private static function echo_consent_label( array $field, $privacy_url ) {
-		$label = isset( $field['label'] ) ? (string) $field['label'] : '';
-		if ( ! Fields\Consent_Field::label_has_link_placeholder( $field ) ) {
-			echo esc_html( $label );
+	private static function echo_choice_label_text( array $field, $privacy_url ) {
+		$type = sanitize_key( (string) ( $field['type'] ?? '' ) );
+		$text = 'consent' === $type
+			? Fields\Consent_Field::choice_label( $field )
+			: Fields\Checkbox_Field::choice_label( $field );
+
+		if ( 'consent' !== $type || ! Fields\Consent_Field::text_has_link_placeholder( $field ) ) {
+			echo esc_html( $text );
 			return;
 		}
 
 		$link_text = Fields\Consent_Field::resolve_link_text( $field );
 		$link_url  = Fields\Consent_Field::resolve_link_url( $field, $privacy_url );
-		$parts     = explode( '{link}', $label );
+		$parts     = explode( '{link}', $text );
 		$last      = count( $parts ) - 1;
 
 		foreach ( $parts as $i => $part ) {
@@ -710,6 +715,15 @@ final class Frontend {
 			aria-hidden="<?php echo $hidden ? 'true' : 'false'; ?>"
 		>
 			<?php if ( 'checkbox' === $type || 'consent' === $type ) : ?>
+				<?php
+				$shows_title = self::field_shows_label( $field );
+				?>
+				<?php if ( $shows_title ) : ?>
+					<div class="<?php echo esc_attr( self::label_classes( $field ) ); ?>">
+						<?php echo esc_html( (string) ( $field['label'] ?? '' ) ); ?>
+						<?php self::echo_requirement_mark( $req, $type ); ?>
+					</div>
+				<?php endif; ?>
 				<div class="we-formkit__control we-formkit__control--choice<?php echo 'consent' === $type ? ' we-formkit__control--consent' : ''; ?>">
 					<input
 						type="checkbox"
@@ -721,14 +735,12 @@ final class Frontend {
 					/>
 					<div class="we-formkit__consent-copy">
 						<label for="<?php echo esc_attr( $input_id ); ?>">
+							<?php self::echo_choice_label_text( $field, $privacy_url ); ?>
 							<?php
-							if ( 'consent' === $type ) {
-								self::echo_consent_label( $field, $privacy_url );
-							} else {
-								echo esc_html( $field['label'] );
+							if ( ! $shows_title ) {
+								self::echo_requirement_mark( $req, $type );
 							}
 							?>
-							<?php self::echo_requirement_mark( $req, $type ); ?>
 						</label>
 					</div>
 				</div>

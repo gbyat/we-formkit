@@ -632,8 +632,12 @@
 				typeOptions.fields = [];
 			}
 			if ( typeId === 'consent' ) {
+				typeOptions.choice_label = i18n.consentDefaultText || 'I agree to the {link}';
 				typeOptions.link_text = '';
 				typeOptions.privacy_url = '';
+			}
+			if ( typeId === 'checkbox' ) {
+				typeOptions.choice_label = i18n.checkboxDefaultText || 'Yes';
 			}
 			if ( typeId === 'upload' ) {
 				typeOptions.max_files = 1;
@@ -677,13 +681,10 @@
 			return {
 				id: ( typeId || 'field' ) + '_' + Date.now().toString( 36 ),
 				type: typeId || 'text',
-				label:
-					typeId === 'consent'
-						? i18n.consentDefaultLabel || 'I agree to the {link}'
-						: ( typeMeta && typeMeta.label ) || i18n.field || 'Field',
+				label: ( typeMeta && typeMeta.label ) || i18n.field || 'Field',
 				help: '',
 				required: false,
-				show_label: true,
+				show_label: typeId === 'checkbox' || typeId === 'consent' ? false : true,
 				css_class: '',
 				placeholder: '',
 				messages: { required: '', invalid: '' },
@@ -1211,20 +1212,27 @@
 		}
 
 		/**
-		 * Checkbox/consent use the field label as the control copy — no separate title row.
+		 * Checkbox/consent: field label is the title; choice_label is the control copy.
 		 *
 		 * @param {string} type Field type.
 		 * @return {boolean}
 		 */
-		function usesLabelAsControl( type ) {
+		function usesChoiceLabel( type ) {
 			return type === 'checkbox' || type === 'consent';
 		}
 
-		function consentPreviewLabel( field, labelText ) {
+		function fieldChoiceLabel( field ) {
+			const opts = field && field.type_options && typeof field.type_options === 'object' ? field.type_options : {};
+			if ( Object.prototype.hasOwnProperty.call( opts, 'choice_label' ) ) {
+				return String( opts.choice_label || '' );
+			}
+			return fieldLabelText( field );
+		}
+
+		function consentPreviewLabel( field ) {
 			const opts = field && field.type_options && typeof field.type_options === 'object' ? field.type_options : {};
 			const linkText = String( opts.link_text || '' ).trim() || ( i18n.privacyPolicy || 'Privacy policy' );
-			const raw = fieldLabelText( field, labelText );
-			return String( raw ).replace( /\{link\}/g, linkText );
+			return String( fieldChoiceLabel( field ) ).replace( /\{link\}/g, linkText );
 		}
 
 		function buildFieldLabelEl( field, labelText ) {
@@ -1261,13 +1269,17 @@
 				return;
 			}
 
-			if ( usesLabelAsControl( selected.field.type ) ) {
+			if ( usesChoiceLabel( selected.field.type ) ) {
 				const choice = body.querySelector( '.wek-builder__choice-label' );
 				if ( choice ) {
 					choice.textContent =
 						selected.field.type === 'consent'
-							? consentPreviewLabel( selected.field, labelText )
-							: fieldLabelText( selected.field, labelText );
+							? consentPreviewLabel( selected.field )
+							: fieldChoiceLabel( selected.field );
+				}
+				const title = body.querySelector( '.wek-builder__field-label-text' );
+				if ( title && labelText != null ) {
+					title.textContent = fieldLabelText( selected.field, labelText );
 				}
 				return;
 			}
@@ -1596,7 +1608,7 @@
 		 */
 		function appendFieldAppearanceControls( panel, field, options ) {
 			const isNested = !!( options && options.isNested );
-			const canToggleLabel = [ 'checkbox', 'consent', 'html', 'hidden' ].indexOf( field.type ) === -1;
+			const canToggleLabel = [ 'html', 'hidden' ].indexOf( field.type ) === -1;
 
 			if ( canToggleLabel ) {
 				if ( typeof field.show_label === 'undefined' ) {
@@ -1607,6 +1619,7 @@
 				showLabel.addEventListener( 'change', function () {
 					field.show_label = !! showLabel.checked;
 					syncHidden();
+					refreshCanvas();
 				} );
 				panel.appendChild( toggleRow( i18n.showLabel || 'Show label', showLabel ) );
 			}
@@ -2853,6 +2866,67 @@
 			return wrap;
 		}
 
+		function renderChoiceLabelEditor( field ) {
+			const opts = ensureTypeOptions( field );
+			const wrap = el( 'div', { className: 'wek-builder__choice-label-editor' } );
+			const isConsent = field.type === 'consent';
+
+			if ( typeof opts.choice_label !== 'string' ) {
+				opts.choice_label = '';
+			}
+
+			const labelKey = isConsent
+				? i18n.consentText || 'Consent text'
+				: i18n.checkboxText || 'Checkbox text';
+
+			if ( isConsent ) {
+				const area = el( 'textarea', {
+					className: 'large-text',
+					rows: '3',
+				} );
+				area.value = opts.choice_label || '';
+				area.addEventListener( 'input', function () {
+					opts.choice_label = area.value;
+					syncHidden();
+					const selected = getSelected();
+					if ( selected && selected.field === field ) {
+						updateCanvasFieldLabel( selected, field.label );
+					}
+				} );
+				wrap.appendChild( fieldRow( labelKey, area ) );
+				wrap.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.consentTextHint ||
+							'Text beside the checkbox. Use {link} where the linked phrase should appear.',
+					} )
+				);
+			} else {
+				wrap.appendChild(
+					fieldRow(
+						labelKey,
+						textInput( opts.choice_label || '', function ( v ) {
+							opts.choice_label = v;
+							syncHidden();
+							const selected = getSelected();
+							if ( selected && selected.field === field ) {
+								updateCanvasFieldLabel( selected, field.label );
+							}
+						} )
+					)
+				);
+				wrap.appendChild(
+					el( 'p', {
+						className: 'description',
+						text: i18n.checkboxTextHint || 'Text shown beside the checkbox.',
+					} )
+				);
+			}
+
+			return wrap;
+		}
+
 		function renderConsentLinkEditor( field ) {
 			const opts = ensureTypeOptions( field );
 			const wrap = el( 'div', { className: 'wek-builder__consent-link' } );
@@ -2862,7 +2936,7 @@
 					className: 'description',
 					text:
 						i18n.consentLinkHint ||
-						'Put {link} in the label where the linked text should appear. Without {link}, no link is shown.',
+						'Put {link} in the consent text where the linked phrase should appear. Without {link}, no link is shown.',
 				} )
 			);
 
@@ -2879,6 +2953,10 @@
 					textInput( opts.link_text || '', function ( v ) {
 						opts.link_text = v;
 						syncHidden();
+						const selected = getSelected();
+						if ( selected && selected.field === field ) {
+							updateCanvasFieldLabel( selected, field.label );
+						}
 					}, {
 						placeholder: i18n.privacyPolicy || 'Privacy policy',
 					} )
@@ -3260,6 +3338,10 @@
 
 				if ( field.type === 'repeater' && ! isNested ) {
 					panel.appendChild( renderRepeaterSettings( field ) );
+				}
+
+				if ( field.type === 'checkbox' || field.type === 'consent' ) {
+					panel.appendChild( renderChoiceLabelEditor( field ) );
 				}
 
 				if ( field.type === 'consent' ) {
@@ -3847,7 +3929,9 @@
 
 		function fieldBodyChildren( field ) {
 			const kids = [];
-			if ( ! usesLabelAsControl( field.type ) ) {
+			if ( ! usesChoiceLabel( field.type ) ) {
+				kids.push( buildFieldLabelEl( field ) );
+			} else if ( field.show_label !== false ) {
 				kids.push( buildFieldLabelEl( field ) );
 			}
 			kids.push( renderFieldPreview( field ) );
@@ -3862,7 +3946,7 @@
 				const labelText =
 					type === 'consent'
 						? consentPreviewLabel( field )
-						: fieldLabelText( field );
+						: fieldChoiceLabel( field );
 				return el( 'div', {
 					className: 'wek-builder__field-preview wek-builder__field-preview--toggle',
 					'aria-hidden': 'true',

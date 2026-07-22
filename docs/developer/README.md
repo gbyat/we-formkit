@@ -27,6 +27,25 @@ Stored value: `{ row_id: { on?: bool, col_id?: string|bool|number, … }, … }`
 
 **Conditionals:** pick `Matrix label › Row label` in the Depends-on list (field key `matrix_id.row_id`) with operator **is checked**.
 
+### Consent field
+
+Type id: `consent`.
+
+- **`label`** — field title (optional via `show_label`, like other fields)
+- **`type_options.choice_label`** — text beside the checkbox (consent copy)
+- Optional inline link via **`{link}`** inside `choice_label`:
+  - `type_options.link_text` — anchor text (default: “Privacy policy”)
+  - `type_options.privacy_url` — URL (empty → form privacy URL, then plugin/site default)
+
+Example consent text: `I agree to the {link}.`  
+Without `{link}`, no privacy link is rendered.
+
+### Checkbox field
+
+Type id: `checkbox`. Same split: `label` (title) + `type_options.choice_label` (text beside the control).
+
+Legacy schemas that only had the control copy in `label` are migrated on normalize (`choice_label` ← old label, `show_label` → false).
+
 ## Register a module
 
 ```php

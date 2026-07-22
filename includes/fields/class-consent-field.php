@@ -12,7 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Consent checkbox with optional inline {link} placeholder in the label.
+ * Consent checkbox with optional inline {link} in the consent text.
+ *
+ * `label` = field title (show_label). `type_options.choice_label` = text beside the checkbox.
  */
 class Consent_Field extends Abstract_Field_Type {
 
@@ -26,13 +28,19 @@ class Consent_Field extends Abstract_Field_Type {
 
 	public function get_admin_schema(): array {
 		return array(
-			'link_text'   => array(
+			'choice_label' => array(
+				'label'       => __( 'Consent text', 'we-formkit' ),
+				'type'        => 'textarea',
+				'default'     => '',
+				'description' => __( 'Text beside the checkbox. Use {link} for the optional linked phrase.', 'we-formkit' ),
+			),
+			'link_text'    => array(
 				'label'       => __( 'Link text', 'we-formkit' ),
 				'type'        => 'text',
 				'default'     => '',
-				'description' => __( 'Shown where {link} appears in the label. Defaults to “Privacy policy”.', 'we-formkit' ),
+				'description' => __( 'Shown where {link} appears in the consent text. Defaults to “Privacy policy”.', 'we-formkit' ),
 			),
-			'privacy_url' => array(
+			'privacy_url'  => array(
 				'label'       => __( 'Link URL', 'we-formkit' ),
 				'type'        => 'url',
 				'default'     => '',
@@ -43,12 +51,17 @@ class Consent_Field extends Abstract_Field_Type {
 
 	public function normalize_config( array $field ): array {
 		$field = parent::normalize_config( $field );
+		$field = Checkbox_Field::migrate_legacy_choice_label( $field, $this->get_label() );
 
 		if ( ! isset( $field['type_options'] ) || ! is_array( $field['type_options'] ) ) {
 			$field['type_options'] = array();
 		}
 
 		$opts = $field['type_options'];
+
+		$field['type_options']['choice_label'] = isset( $opts['choice_label'] )
+			? sanitize_textarea_field( (string) $opts['choice_label'] )
+			: '';
 
 		$link_text                          = isset( $opts['link_text'] ) ? sanitize_text_field( (string) $opts['link_text'] ) : '';
 		$field['type_options']['link_text'] = $link_text;
@@ -60,6 +73,15 @@ class Consent_Field extends Abstract_Field_Type {
 		}
 
 		return $field;
+	}
+
+	/**
+	 * Text beside the checkbox (falls back to label for legacy schemas).
+	 *
+	 * @param array<string, mixed> $field Field config.
+	 */
+	public static function choice_label( array $field ): string {
+		return Checkbox_Field::choice_label( $field );
 	}
 
 	public function sanitize( $value, array $field ) {
@@ -106,7 +128,7 @@ class Consent_Field extends Abstract_Field_Type {
 	}
 
 	/**
-	 * Link anchor text for {link} in the label.
+	 * Link anchor text for {link} in the consent text.
 	 *
 	 * @param array $field Field config.
 	 */
@@ -120,13 +142,12 @@ class Consent_Field extends Abstract_Field_Type {
 	}
 
 	/**
-	 * Whether the label uses the {link} placeholder.
+	 * Whether the consent text uses the {link} placeholder.
 	 *
 	 * @param array $field Field config.
 	 */
-	public static function label_has_link_placeholder( array $field ): bool {
-		$label = isset( $field['label'] ) ? (string) $field['label'] : '';
-		return false !== strpos( $label, '{link}' );
+	public static function text_has_link_placeholder( array $field ): bool {
+		return false !== strpos( self::choice_label( $field ), '{link}' );
 	}
 
 	/**
