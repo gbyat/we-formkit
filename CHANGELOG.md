@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.6] - 2026-07-22
+
+- Add "Other" option for checkboxes in form fields. Implement functionality to allow users to specify custom text when selecting "Other." Update JavaScript to handle input validation and synchronization with checkbox states. Enhance CSS for improved styling of the "Other" input field. Update PHP to support new options in the form editor.
 ## [0.7.5] - 2026-07-22
 
 - Implement custom row functionality in matrix fields. Allow users to add custom rows with labels, set maximum custom rows, and enhance the matrix editor UI. Update JavaScript and PHP to handle custom row logic and ensure proper validation. Improve CSS for better styling of matrix components.
