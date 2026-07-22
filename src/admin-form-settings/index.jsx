@@ -504,6 +504,21 @@ function ColorSchemePreview( { data } ) {
 	);
 }
 
+/** Default / clamp for Save & Resume min filled (0 = always show; empty → 1). */
+function normalizeSaveResumeMin( value ) {
+	if ( value === 0 || value === '0' ) {
+		return 0;
+	}
+	if ( value === '' || value === null || value === undefined ) {
+		return 1;
+	}
+	const n = Number( value );
+	if ( Number.isNaN( n ) ) {
+		return 1;
+	}
+	return Math.max( 0, Math.min( 100, Math.floor( n ) ) );
+}
+
 function flattenSettings( payload ) {
 	const colors = payload.colors || {};
 	return {
@@ -534,10 +549,7 @@ function flattenSettings( payload ) {
 		save_resume_ttl: String(
 			payload.save_resume_ttl || DRAFT_TTL_DAYS[ 0 ] || 14
 		),
-		save_resume_min:
-			typeof payload.save_resume_min === 'number'
-				? payload.save_resume_min
-				: Number( payload.save_resume_min ) || 1,
+		save_resume_min: normalizeSaveResumeMin( payload.save_resume_min ),
 		save_resume_reminders: !! payload.save_resume_reminders,
 		...colorsFromMap( colors ),
 	};
@@ -573,7 +585,7 @@ function toApiPayload( data ) {
 		radius_section: data.radius_section || 'md',
 		save_resume: !! data.save_resume,
 		save_resume_ttl: Number( data.save_resume_ttl ) || 14,
-		save_resume_min: Math.max( 0, Math.min( 100, Number( data.save_resume_min ) || 0 ) ),
+		save_resume_min: normalizeSaveResumeMin( data.save_resume_min ),
 		save_resume_reminders: !! data.save_resume_reminders,
 		style: {
 			preset: data.style_preset || 'theme',
@@ -1045,6 +1057,21 @@ function FormSettingsApp() {
 		setData( ( prev ) => {
 			const next = { ...prev, ...edits };
 			if (
+				Object.prototype.hasOwnProperty.call( edits, 'save_resume' ) &&
+				edits.save_resume
+			) {
+				next.save_resume_min = normalizeSaveResumeMin(
+					next.save_resume_min
+				);
+				if (
+					! next.save_resume_ttl &&
+					next.save_resume_ttl !== 0 &&
+					next.save_resume_ttl !== '0'
+				) {
+					next.save_resume_ttl = String( DRAFT_TTL_DAYS[ 0 ] || 14 );
+				}
+			}
+			if (
 				Object.prototype.hasOwnProperty.call( edits, 'style_preset' )
 			) {
 				const preset = edits.style_preset;
@@ -1179,13 +1206,13 @@ function FormSettingsApp() {
 								<p>
 									<label htmlFor="wek-secret-url">
 										{ __(
-											'Shareable link (open the page that contains the Formkit Form block):',
+											'Append to the URL of the page that embeds this form:',
 											'we-formkit'
 										) }
 									</label>
 									<input
 										id="wek-secret-url"
-										className="large-text"
+										className="large-text code"
 										type="text"
 										readOnly
 										value={ secretUrl }
@@ -1193,6 +1220,12 @@ function FormSettingsApp() {
 											event.target.select()
 										}
 									/>
+									<span className="description">
+										{ __(
+											'If that page URL already has a ?, replace the leading ? below with &.',
+											'we-formkit'
+										) }
+									</span>
 								</p>
 							) : null }
 							{ boot.regenUrl ? (

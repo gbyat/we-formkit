@@ -414,6 +414,45 @@ final class Form_Schema {
 	}
 
 	/**
+	 * Query string to append to any page URL that embeds the form.
+	 *
+	 * Example: ?wek_form=contact&token=…
+	 * If the page URL already has query args, replace the leading ? with &.
+	 *
+	 * @param string $slug  Form slug.
+	 * @param string $token Secret token.
+	 * @return string Empty when slug or token missing; otherwise starts with ?.
+	 */
+	public static function secret_query_string( $slug, $token ) {
+		$slug  = sanitize_title( (string) $slug );
+		$token = (string) $token;
+		if ( '' === $slug || '' === $token ) {
+			return '';
+		}
+		return '?' . build_query(
+			array(
+				'wek_form' => $slug,
+				'token'    => $token,
+			)
+		);
+	}
+
+	/**
+	 * Secret query string for a form (when secret mode is enabled).
+	 *
+	 * @param int $form_id Form ID.
+	 * @return string
+	 */
+	public static function get_secret_query( $form_id ) {
+		$secret = self::get_secret( $form_id );
+		if ( empty( $secret['enabled'] ) || '' === $secret['token'] ) {
+			return '';
+		}
+		$slug = (string) get_post_meta( (int) $form_id, self::META_SLUG, true );
+		return self::secret_query_string( $slug, $secret['token'] );
+	}
+
+	/**
 	 * Confirmation message shown after a successful submit (legacy helper).
 	 *
 	 * @param int $form_id Form ID.

@@ -224,10 +224,12 @@ final class Rest_Form_Settings {
 			$form_id,
 			isset( $params['save_resume_ttl'] ) ? absint( $params['save_resume_ttl'] ) : Drafts::TTL_DAYS
 		);
-		Drafts::set_min_filled(
-			$form_id,
-			isset( $params['save_resume_min'] ) ? absint( $params['save_resume_min'] ) : Drafts::MIN_FILLED
-		);
+		if ( array_key_exists( 'save_resume_min', $params ) && null !== $params['save_resume_min'] && '' !== $params['save_resume_min'] ) {
+			Drafts::set_min_filled( $form_id, absint( $params['save_resume_min'] ) );
+		} elseif ( ! empty( $params['save_resume'] ) && '' === get_post_meta( $form_id, Drafts::META_MIN_FILLED, true ) ) {
+			// First enable without an explicit min: use product default (not 0).
+			Drafts::set_min_filled( $form_id, Drafts::MIN_FILLED );
+		}
 		Drafts::set_reminders_allowed( $form_id, ! empty( $params['save_resume_reminders'] ) );
 
 		return true;
@@ -244,19 +246,7 @@ final class Rest_Form_Settings {
 		$colors = Form_Style::editable_colors( $form_id );
 		$appear = Form_Schema::get_appearance( $form_id );
 
-		$secret_url = '';
-		if ( ! empty( $secret['enabled'] ) && ! empty( $secret['token'] ) ) {
-			$slug = (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true );
-			if ( '' !== $slug ) {
-				$secret_url = add_query_arg(
-					array(
-						'wek_form' => $slug,
-						'token'    => $secret['token'],
-					),
-					home_url( '/' )
-				);
-			}
-		}
+		$secret_url = Form_Schema::get_secret_query( $form_id );
 
 		return array(
 			'form_id'      => (int) $form_id,

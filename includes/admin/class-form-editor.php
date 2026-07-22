@@ -679,16 +679,9 @@ final class Form_Editor {
 			self::enqueue_builder_assets( is_array( $schema ) ? $schema : array(), $form_id );
 		}
 
-		$public_page = home_url( '/' );
-		$secret_url  = '';
+		$secret_url = '';
 		if ( $secret['enabled'] && $slug && $secret['token'] ) {
-			$secret_url = add_query_arg(
-				array(
-					'wek_form' => $slug,
-					'token'    => $secret['token'],
-				),
-				$public_page
-			);
+			$secret_url = Form_Schema::secret_query_string( $slug, $secret['token'] );
 		}
 
 		if ( 'settings' === $view || 'design' === $view ) {

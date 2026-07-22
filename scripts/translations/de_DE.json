@@ -807,7 +807,8 @@
   "Design saved.": "Design gespeichert.",
   "Could not save settings.": "Einstellungen konnten nicht gespeichert werden.",
   "Secret token": "Geheim-Token",
-  "Shareable link (open the page that contains the Formkit Form block):": "Teilbarer Link (Seite mit dem Formkit-Formular-Block öffnen):",
+  "Append to the URL of the page that embeds this form:": "An die URL der Seite anhängen, die dieses Formular einbettet:",
+  "If that page URL already has a ?, replace the leading ? below with &.": "Wenn die Seiten-URL schon ein ? enthält, das führende ? unten durch & ersetzen.",
   "Regenerate token": "Token neu erzeugen",
   "Save design": "Design speichern"
 }
