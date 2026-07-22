@@ -737,6 +737,8 @@
   "Compact": "Kompakt",
   "Cozy": "Gemütlich",
   "Comfortable": "Großzügig",
+  "Title & status spacing": "",
+  "Space below the form title and below status messages. Default is none (tight on mobile).": "",
   "Input padding": "Eingabe-Innenabstand",
   "Inner padding for text inputs, selects, and radio/checkbox frames.": "Innenabstand für Textfelder, Selects sowie Radio-/Checkbox-Rahmen.",
   "Section title size": "Section-Titelgröße",

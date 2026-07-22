@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.10] - 2026-07-22
+
+- Implement chrome gap settings for form layout. Introduce new spacing options for header and status elements in the form schema and admin settings. Update CSS variables to reflect these changes, ensuring improved layout control and responsiveness. Refactor related JavaScript to accommodate new settings in the form editor.
 ## [0.6.9] - 2026-07-22
 
 - Refactor CSS for matrix field to improve layout and responsiveness. Simplify mobile label handling and enhance flexbox properties for better alignment of matrix elements. Update PHP to remove unnecessary mobile select label, streamlining the frontend display.
