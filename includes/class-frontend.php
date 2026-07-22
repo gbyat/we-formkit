@@ -839,17 +839,10 @@ final class Frontend {
 									?>
 									<tr class="we-formkit__matrix-head-groups">
 										<th scope="col" class="we-formkit__matrix-corner"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
-											<?php if ( $show_matrix_label ) : ?>
-												<span class="screen-reader-text">
-													<?php echo esc_html( $field['label'] ); ?>
-													<?php self::echo_requirement_mark( $req, $type ); ?>
-												</span>
-											<?php else : ?>
-												<span class="we-formkit__matrix-corner-label">
-													<?php echo esc_html( $field['label'] ); ?>
-													<?php self::echo_requirement_mark( $req, $type ); ?>
-												</span>
-											<?php endif; ?>
+											<span class="we-formkit__matrix-corner-label<?php echo $show_matrix_label ? '' : ' screen-reader-text'; ?>">
+												<?php echo esc_html( $field['label'] ); ?>
+												<?php self::echo_requirement_mark( $req, $type ); ?>
+											</span>
 										</th>
 										<?php if ( $row_select ) : ?>
 											<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--select"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
