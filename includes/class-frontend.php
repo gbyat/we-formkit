@@ -30,7 +30,7 @@ final class Frontend {
 		add_action( 'init', array( __CLASS__, 'register_block' ) );
 		add_action( 'init', array( __CLASS__, 'register_shortcode' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'maybe_render_preview' ) );
-		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_assets' ) );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_assets' ), 20 );
 		add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'enqueue_editor_assets' ) );
 	}
 
