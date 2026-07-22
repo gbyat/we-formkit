@@ -2621,35 +2621,35 @@ msgstr "Eingabefeld-Hintergrund"
 msgid "Button text"
 msgstr "Button-Text"
 
-#: includes/class-form-style.php:75
+#: includes/class-form-style.php:79
 msgid "Formkit Teal"
 msgstr "Formkit-Petrol"
 
-#: includes/class-form-style.php:90
+#: includes/class-form-style.php:94
 msgid "Slate Harbor"
 msgstr "Schieferhafen"
 
-#: includes/class-form-style.php:105
+#: includes/class-form-style.php:109
 msgid "Forest Moss"
 msgstr "Waldmoos"
 
-#: includes/class-form-style.php:120
+#: includes/class-form-style.php:124
 msgid "Warm Brick"
 msgstr "Warmer Ziegel"
 
-#: includes/class-form-style.php:135
+#: includes/class-form-style.php:139
 msgid "Saffron Stone"
 msgstr "Safranstein"
 
-#: includes/class-form-style.php:150
+#: includes/class-form-style.php:154
 msgid "Graphite"
 msgstr "Graphit"
 
-#: includes/class-form-style.php:165
+#: includes/class-form-style.php:169
 msgid "Plum Ink"
 msgstr "Pflaumentinte"
 
-#: includes/class-form-style.php:180
+#: includes/class-form-style.php:184
 msgid "Midnight"
 msgstr "Mitternacht"
 
@@ -2677,7 +2677,7 @@ msgstr "Bitte eine gültige E-Mail eingeben."
 msgid "Color scheme"
 msgstr "Farbschema"
 
-#: includes/class-form-style.php:650
+#: includes/class-form-style.php:654
 msgid "Auto (closest scheme)"
 msgstr "Auto (ähnlichstes Schema)"
 
