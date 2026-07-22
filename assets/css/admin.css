@@ -1042,64 +1042,7 @@ body.wek-builder-is-resizing iframe {
 	text-align: center;
 }
 
-/* Sidebar tabs — underline */
-.wek-admin .wek-builder-scope {
-	display: flex;
-	gap: 0;
-	border-bottom: 1px solid var(--wek-line);
-	padding: 0 0.5rem;
-	background: var(--wek-surface);
-	position: sticky;
-	top: 0;
-	z-index: 3;
-}
-
-.wek-admin .wek-builder-scope__btn {
-	appearance: none;
-	border: 0;
-	background: transparent;
-	padding: 0.7rem 0.65rem;
-	cursor: pointer;
-	font-size: 12px;
-	font-weight: 700;
-	letter-spacing: 0.02em;
-	color: var(--wek-muted);
-	border-bottom: 2px solid transparent;
-	margin-bottom: -1px;
-}
-
-.wek-admin .wek-builder-scope__btn.is-active {
-	color: var(--wek-accent);
-	border-bottom-color: var(--wek-accent);
-}
-
-.wek-admin .wek-builder-scope__body {
-	min-height: 8rem;
-}
-
-.wek-admin .wek-builder-scope__lead {
-	padding: 0 1rem;
-	margin: 0.75rem 0 0.25rem;
-}
-
-.wek-admin .wek-builder-scope__empty {
-	padding: 0.25rem 0 1rem;
-}
-
-.wek-admin .wek-builder-scope__modules {
-	margin: 0.5rem 1rem 1rem;
-	padding-left: 1.1rem;
-}
-
-.wek-admin .wek-builder-scope__modules li {
-	margin: 0 0 0.65rem;
-}
-
-.wek-admin .wek-builder-scope__modules .description {
-	display: block;
-	margin-top: 0.15rem;
-}
-
+/* Field settings tabs — underline */
 .wek-admin .wek-builder-tabs {
 	display: flex;
 	gap: 0;

@@ -487,6 +487,43 @@ final class Frontend {
 	}
 
 	/**
+	 * Whether the field label should be visibly shown.
+	 *
+	 * Checkbox/consent keep their label (it is the control text). Html/hidden have no label UI.
+	 *
+	 * @param array<string, mixed> $field Field.
+	 */
+	private static function field_shows_label( array $field ): bool {
+		$type = sanitize_key( (string) ( $field['type'] ?? '' ) );
+		if ( in_array( $type, array( 'checkbox', 'consent', 'html', 'hidden' ), true ) ) {
+			return true;
+		}
+		return ! array_key_exists( 'show_label', $field ) || ! empty( $field['show_label'] );
+	}
+
+	/**
+	 * CSS classes for a field label / legend.
+	 *
+	 * @param array<string, mixed> $field Field.
+	 * @param string               $extra Extra classes.
+	 */
+	private static function label_classes( array $field, $extra = '' ): string {
+		$parts = array( 'we-formkit__label' );
+		$extra = trim( (string) $extra );
+		if ( '' !== $extra ) {
+			foreach ( preg_split( '/\s+/', $extra ) as $class ) {
+				if ( is_string( $class ) && '' !== $class ) {
+					$parts[] = $class;
+				}
+			}
+		}
+		if ( ! self::field_shows_label( $field ) ) {
+			$parts[] = 'screen-reader-text';
+		}
+		return implode( ' ', array_unique( $parts ) );
+	}
+
+	/**
 	 * Required / optional indicator based on form appearance settings.
 	 *
 	 * @param bool   $required   Whether the field is required.
@@ -653,7 +690,7 @@ final class Frontend {
 				$help_text  = implode( ' ', $help_parts );
 				?>
 				<fieldset class="we-formkit__fieldset">
-					<legend class="we-formkit__label">
+					<legend class="<?php echo esc_attr( self::label_classes( $field ) ); ?>">
 						<?php echo esc_html( $field['label'] ); ?>
 						<?php self::echo_requirement_mark( $req || $min_sel > 0, $type ); ?>
 					</legend>
@@ -714,7 +751,7 @@ final class Frontend {
 				</fieldset>
 			<?php elseif ( 'radio_image' === $type ) : ?>
 				<fieldset class="we-formkit__fieldset">
-					<legend class="we-formkit__label">
+					<legend class="<?php echo esc_attr( self::label_classes( $field ) ); ?>">
 						<?php echo esc_html( $field['label'] ); ?>
 						<?php self::echo_requirement_mark( $req, $type ); ?>
 					</legend>
@@ -761,16 +798,19 @@ final class Frontend {
 				$row_label_align   = $matrix_cfg['row_label_align'];
 				$allow_custom_rows = ! empty( $matrix_cfg['allow_custom_rows'] );
 				$max_custom_rows   = (int) $matrix_cfg['max_custom_rows'];
+				$show_matrix_label = self::field_shows_label( $field );
 				?>
 				<fieldset class="we-formkit__fieldset we-formkit__fieldset--matrix">
 					<legend class="screen-reader-text">
 						<?php echo esc_html( $field['label'] ); ?>
 						<?php self::echo_requirement_mark( $req, $type ); ?>
 					</legend>
-					<p class="we-formkit__matrix-field-label" aria-hidden="true">
-						<?php echo esc_html( $field['label'] ); ?>
-						<?php self::echo_requirement_mark( $req, $type ); ?>
-					</p>
+					<?php if ( $show_matrix_label ) : ?>
+						<p class="we-formkit__matrix-field-label" aria-hidden="true">
+							<?php echo esc_html( $field['label'] ); ?>
+							<?php self::echo_requirement_mark( $req, $type ); ?>
+						</p>
+					<?php endif; ?>
 					<?php if ( ! empty( $field['help'] ) ) : ?>
 						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 					<?php endif; ?>
@@ -793,7 +833,7 @@ final class Frontend {
 									?>
 									<tr class="we-formkit__matrix-head-groups">
 										<th scope="col" class="we-formkit__matrix-corner"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
-											<span class="we-formkit__matrix-corner-label">
+											<span class="we-formkit__matrix-corner-label<?php echo $show_matrix_label ? '' : ' screen-reader-text'; ?>">
 												<?php echo esc_html( $field['label'] ); ?>
 												<?php self::echo_requirement_mark( $req, $type ); ?>
 											</span>
@@ -905,7 +945,7 @@ final class Frontend {
 							<p class="we-formkit__matrix-custom-actions">
 								<button
 									type="button"
-									class="we-formkit__matrix-add-row"
+									class="we-formkit__add-btn we-formkit__matrix-add-row"
 									data-wek-matrix-add-row
 									data-max-custom-rows="<?php echo esc_attr( (string) $max_custom_rows ); ?>"
 								>
@@ -924,7 +964,7 @@ final class Frontend {
 				}
 				$show_empty = '' === $default;
 				?>
-				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
+				<label class="<?php echo esc_attr( self::label_classes( $field ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
 					<?php self::echo_requirement_mark( $req, $type ); ?>
 				</label>
@@ -948,7 +988,7 @@ final class Frontend {
 					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 				<?php endif; ?>
 			<?php elseif ( 'textarea' === $type ) : ?>
-				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
+				<label class="<?php echo esc_attr( self::label_classes( $field ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
 					<?php self::echo_requirement_mark( $req, $type ); ?>
 				</label>
@@ -981,7 +1021,7 @@ final class Frontend {
 					value="<?php echo esc_attr( $default ); ?>"
 				/>
 			<?php elseif ( 'upload' === $type ) : ?>
-				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
+				<label class="<?php echo esc_attr( self::label_classes( $field ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
 					<?php self::echo_requirement_mark( $req, $type ); ?>
 				</label>
@@ -1008,7 +1048,7 @@ final class Frontend {
 					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 				<?php endif; ?>
 			<?php elseif ( 'signature' === $type ) : ?>
-				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
+				<label class="<?php echo esc_attr( self::label_classes( $field ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
 					<?php self::echo_requirement_mark( $req, $type ); ?>
 				</label>
@@ -1038,7 +1078,7 @@ final class Frontend {
 			<?php elseif ( 'repeater' === $type ) : ?>
 				<?php self::render_repeater( $field, $input_id, $desc_id, $error_id, $req ); ?>
 			<?php else : ?>
-				<label class="we-formkit__label" for="<?php echo esc_attr( $input_id ); ?>">
+				<label class="<?php echo esc_attr( self::label_classes( $field ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
 					<?php self::echo_requirement_mark( $req, $type ); ?>
 				</label>
@@ -1262,7 +1302,7 @@ final class Frontend {
 			$item_fields = is_array( $field['type_options']['fields'] ) ? $field['type_options']['fields'] : array();
 		}
 		?>
-		<div class="we-formkit__label we-formkit__label--repeater" id="<?php echo esc_attr( $input_id . '-label' ); ?>">
+		<div class="<?php echo esc_attr( self::label_classes( $field, 'we-formkit__label--repeater' ) ); ?>" id="<?php echo esc_attr( $input_id . '-label' ); ?>">
 			<?php echo esc_html( $field['label'] ); ?>
 			<?php self::echo_requirement_mark( $req, 'repeater' ); ?>
 		</div>
@@ -1292,7 +1332,7 @@ final class Frontend {
 				<?php endfor; ?>
 			</div>
 			<p class="we-formkit__repeater-actions">
-				<button type="button" class="we-formkit__repeater-add" data-wek-repeater-add>
+				<button type="button" class="we-formkit__add-btn we-formkit__repeater-add" data-wek-repeater-add>
 					<?php echo esc_html( $add_label ); ?>
 				</button>
 			</p>
@@ -1303,36 +1343,28 @@ final class Frontend {
 		<?php
 	}
 
-		/**
-		 * @param array<string, mixed>        $field       Parent repeater field.
-		 * @param array<int, array<string, mixed>> $item_fields Nested fields.
-		 * @param int|string                  $index       Row index or placeholder.
-		 * @param bool                        $is_template Whether rendering inside a template.
-		 * @return void
-		 */
-	private static function render_repeater_row( array $field, array $item_fields, $index, $is_template ) {
+	/**
+	 * @param array<string, mixed>             $field       Parent repeater field.
+	 * @param array<int, array<string, mixed>> $item_fields Nested fields.
+	 * @param int|string                       $index       Row index or placeholder.
+	 * @param bool                             $is_template Whether rendering inside a template (kept for call-site symmetry).
+	 * @return void
+	 */
+	private static function render_repeater_row( array $field, array $item_fields, $index, $is_template ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- template flag reserved if row chrome diverges again.
+		unset( $is_template );
 		$parent_id = (string) $field['id'];
 		$index_str = (string) $index;
 		?>
 		<div class="we-formkit__repeater-row" data-wek-repeater-row>
-			<div class="we-formkit__repeater-row-head">
-				<span class="we-formkit__repeater-row-label" data-wek-repeater-row-label>
-				<?php
-				if ( $is_template ) {
-					esc_html_e( 'Row', 'we-formkit' );
-				} else {
-					printf(
-					/* translators: %d: row number (1-based). */
-						esc_html__( 'Row %d', 'we-formkit' ),
-						(int) $index + 1
-					);
-				}
-				?>
-				</span>
-				<button type="button" class="we-formkit__repeater-remove" data-wek-repeater-remove>
-				<?php esc_html_e( 'Remove', 'we-formkit' ); ?>
-				</button>
-			</div>
+			<button
+				type="button"
+				class="we-formkit__repeater-remove"
+				data-wek-repeater-remove
+				aria-label="<?php echo esc_attr__( 'Remove row', 'we-formkit' ); ?>"
+				title="<?php echo esc_attr__( 'Remove row', 'we-formkit' ); ?>"
+			>
+				<span class="we-formkit__remove-icon" aria-hidden="true">×</span>
+			</button>
 			<div class="we-formkit__repeater-fields">
 					<?php foreach ( $item_fields as $child ) : ?>
 						<?php self::render_repeater_control( $parent_id, $child, $index_str ); ?>
@@ -1363,7 +1395,7 @@ final class Frontend {
 		$label    = (string) ( $child['label'] ?? $cid );
 		?>
 		<div class="we-formkit__repeater-control we-formkit__repeater-control--<?php echo esc_attr( $ctype ); ?>">
-			<label class="we-formkit__label we-formkit__label--nested" for="<?php echo esc_attr( $input_id ); ?>">
+			<label class="<?php echo esc_attr( self::label_classes( $child, 'we-formkit__label--nested' ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 			<?php echo esc_html( $label ); ?>
 			<?php self::echo_requirement_mark( $req, $ctype ); ?>
 			</label>

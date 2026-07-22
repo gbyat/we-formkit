@@ -417,6 +417,8 @@ final class Form_Editor {
 					'id'                        => __( 'Field ID', 'we-formkit' ),
 					'type'                      => __( 'Type', 'we-formkit' ),
 					'required'                  => __( 'Required', 'we-formkit' ),
+					'showLabel'                 => __( 'Show label', 'we-formkit' ),
+					'showLabelHint'             => __( 'When off, the label stays available to screen readers but is hidden visually (useful for repeater item fields with placeholders).', 'we-formkit' ),
 					'help'                      => __( 'Help text', 'we-formkit' ),
 					'contentGuard'              => __( 'Spam protection', 'we-formkit' ),
 					'contentGuardHint'          => __( 'Reject submissions where this field contains links or an email address (helps against bots).', 'we-formkit' ),

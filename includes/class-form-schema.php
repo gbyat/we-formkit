@@ -222,9 +222,10 @@ final class Form_Schema {
 			$field = $type->normalize_config( $field );
 		}
 
-		$field['id']        = sanitize_key( (string) ( $field['id'] ?? '' ) );
-		$field['width']     = self::normalize_width( $field['width'] ?? 'full' );
-		$field['show_when'] = self::normalize_rule( $field['show_when'] ?? null );
+		$field['id']         = sanitize_key( (string) ( $field['id'] ?? '' ) );
+		$field['width']      = self::normalize_width( $field['width'] ?? 'full' );
+		$field['show_when']  = self::normalize_rule( $field['show_when'] ?? null );
+		$field['show_label'] = ! array_key_exists( 'show_label', $field ) || ! empty( $field['show_label'] );
 
 		return $field;
 	}

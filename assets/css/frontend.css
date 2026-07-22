@@ -917,36 +917,49 @@
 }
 
 .we-formkit__repeater-row {
+	position: relative;
 	border: 1px solid var(--wek-line);
 	border-radius: var(--wek-radius);
 	background: var(--wek-accent-soft);
 	padding: 0.85rem 1rem;
-}
-
-.we-formkit__repeater-row-head {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.75rem;
-	margin-bottom: 0.75rem;
-}
-
-.we-formkit__repeater-row-label {
-	font-size: 0.85rem;
-	font-weight: 600;
-	color: var(--wek-muted);
+	padding-top: 2.15rem;
 }
 
 .we-formkit__repeater-remove {
-	appearance: none;
-	border: 0;
+	position: absolute;
+	top: 0.45rem;
+	inset-inline-end: 0.45rem;
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.75rem;
+	height: 1.75rem;
+	margin: 0;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: var(--wek-radius-input, 8px);
 	background: transparent;
-	color: var(--wek-danger);
+	color: color-mix(in srgb, var(--wek-ink) 55%, transparent);
 	font: inherit;
-	font-size: 0.85rem;
-	font-weight: 600;
+	line-height: 1;
 	cursor: pointer;
-	padding: 0.15rem 0.25rem;
+}
+
+.we-formkit__repeater-remove .we-formkit__remove-icon,
+.we-formkit__matrix-remove-row .we-formkit__matrix-remove-icon {
+	display: block;
+	font-size: 1.35rem;
+	font-weight: 400;
+	line-height: 1;
+}
+
+.we-formkit__repeater-remove:hover,
+.we-formkit__repeater-remove:focus-visible {
+	border-color: var(--wek-line);
+	color: var(--wek-ink);
+	background: color-mix(in srgb, var(--wek-ink) 6%, var(--wek-surface));
+	outline: none;
 }
 
 .we-formkit__repeater-remove:disabled {
@@ -973,28 +986,47 @@
 	font-size: 0.9rem;
 }
 
-.we-formkit__repeater-actions {
-	margin: 0;
+.we-formkit__repeater-actions,
+.we-formkit__matrix-custom-actions {
+	margin: 0.65rem 0 0;
 }
 
-.we-formkit__repeater-add {
+/* Shared subtle “add” control (repeater rows, matrix custom rows). */
+.we-formkit__add-btn,
+.we-formkit__repeater-add,
+.we-formkit__matrix-add-row {
 	appearance: none;
-	border: 1px dashed var(--wek-accent);
-	background: transparent;
-	color: var(--wek-accent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 0.35rem 0.7rem;
+	border: 1px dashed color-mix(in srgb, var(--wek-accent) 45%, var(--wek-line));
+	border-radius: var(--wek-radius-input, 8px);
+	background: color-mix(in srgb, var(--wek-accent) 6%, var(--wek-surface));
+	color: var(--wek-ink);
 	font: inherit;
-	font-weight: 600;
-	border-radius: 999px;
-	padding: 0.45rem 1rem;
+	font-size: var(--wek-font-input, 1rem);
+	font-weight: 500;
+	line-height: 1.35;
 	cursor: pointer;
 }
 
+.we-formkit__add-btn:hover,
+.we-formkit__add-btn:focus-visible,
 .we-formkit__repeater-add:hover,
-.we-formkit__repeater-add:focus-visible {
-	background: var(--wek-accent-soft);
+.we-formkit__repeater-add:focus-visible,
+.we-formkit__matrix-add-row:hover,
+.we-formkit__matrix-add-row:focus-visible {
+	border-style: solid;
+	border-color: var(--wek-accent);
+	background: color-mix(in srgb, var(--wek-accent) 10%, var(--wek-surface));
+	outline: none;
 }
 
-.we-formkit__repeater-add:disabled {
+.we-formkit__add-btn:disabled,
+.we-formkit__repeater-add:disabled,
+.we-formkit__matrix-add-row:disabled {
 	opacity: 0.45;
 	cursor: not-allowed;
 }
@@ -1532,30 +1564,6 @@
 
 .we-formkit__matrix-custom-actions {
 	margin: 0.65rem 0 0;
-}
-
-.we-formkit__matrix-add-row {
-	margin: 0;
-	padding: 0.4rem 0.75rem;
-	border: 1px dashed color-mix(in srgb, var(--wek-accent) 55%, var(--wek-line));
-	border-radius: var(--wek-radius-input, 8px);
-	background: color-mix(in srgb, var(--wek-accent) 8%, var(--wek-surface));
-	color: var(--wek-ink);
-	font: inherit;
-	font-size: var(--wek-font-input);
-	cursor: pointer;
-}
-
-.we-formkit__matrix-add-row:hover,
-.we-formkit__matrix-add-row:focus-visible {
-	border-style: solid;
-	border-color: var(--wek-accent);
-	outline: none;
-}
-
-.we-formkit__matrix-add-row:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
 }
 
 /*

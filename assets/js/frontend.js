@@ -1332,20 +1332,10 @@
 		box.hidden = false;
 	}
 
-	function rowLabelText( index ) {
-		const cfg = window.weFormkit || {};
-		const base = ( cfg.i18n && cfg.i18n.rowLabel ) || 'Row %d';
-		return String( base ).replace( '%d', String( index + 1 ) );
-	}
-
 	function reindexRepeater( repeater ) {
 		const fieldId = repeater.getAttribute( 'data-field-id' ) || '';
 		const rows = qsa( repeater, '[data-wek-repeater-row]' );
 		rows.forEach( function ( row, index ) {
-			const label = qs( row, '[data-wek-repeater-row-label]' );
-			if ( label ) {
-				label.textContent = rowLabelText( index );
-			}
 			qsa( row, '[data-wek-repeater-input]' ).forEach( function ( input ) {
 				const subId = input.getAttribute( 'data-sub-id' );
 				if ( ! subId ) {

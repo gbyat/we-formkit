@@ -145,8 +145,9 @@ class Repeater_Field extends Abstract_Field_Type {
 			}
 
 			// Nested fields never carry their own show_when / width layout in v1.
-			$child['show_when'] = array();
-			$child['width']     = 'full';
+			$child['show_when']  = array();
+			$child['width']      = 'full';
+			$child['show_label'] = ! array_key_exists( 'show_label', $child ) || ! empty( $child['show_label'] );
 
 			$out[] = $child;
 		}
