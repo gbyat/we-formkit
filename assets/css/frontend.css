@@ -36,15 +36,24 @@
 }
 
 /*
- * Theme isolation — common theme rules (.entry-content label, floated checkboxes,
- * table margins) beat single-class Formkit selectors. Re-assert under .we-formkit.
+ * Theme isolation — beat common theme rules (.entry-content label, floated
+ * inputs, link-colored labels) even when Autoptimize concatenates CSS after us.
+ * Prefer specificity (body .we-formkit …) over !important / Autoptimize excludes.
  */
+body .we-formkit,
+.we-formkit {
+	color: var(--wek-ink);
+}
+
+body .we-formkit table,
+body .we-formkit .we-formkit__matrix,
 .we-formkit table,
 .we-formkit .we-formkit__matrix {
 	margin: 0;
 	margin-bottom: 0;
 }
 
+body .we-formkit .we-formkit__choices,
 .we-formkit .we-formkit__choices {
 	display: grid;
 	float: none;
@@ -53,9 +62,12 @@
 	max-width: 100%;
 }
 
-.we-formkit label.we-formkit__choice,
-.we-formkit .we-formkit__choice,
-.we-formkit .we-formkit__control--choice {
+body .we-formkit .we-formkit__field label.we-formkit__choice,
+body .we-formkit .we-formkit__field .we-formkit__choice,
+body .we-formkit .we-formkit__field .we-formkit__control--choice,
+.we-formkit .we-formkit__field label.we-formkit__choice,
+.we-formkit .we-formkit__field .we-formkit__choice,
+.we-formkit .we-formkit__field .we-formkit__control--choice {
 	display: flex;
 	float: none;
 	clear: none;
@@ -63,18 +75,25 @@
 	max-width: none;
 	margin: 0;
 	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
-	color: inherit;
+	color: var(--wek-ink);
+	background-color: var(--wek-accent-soft);
+	border: 1px solid transparent;
+	border-radius: var(--wek-radius-input);
 	font-size: inherit;
 	font-weight: inherit;
 	line-height: inherit;
 	text-align: left;
+	text-decoration: none;
 	position: relative;
 	box-sizing: border-box;
 }
 
-.we-formkit label.we-formkit__choice span,
-.we-formkit .we-formkit__choice > span,
-.we-formkit .we-formkit__control--choice label {
+body .we-formkit .we-formkit__field label.we-formkit__choice span,
+body .we-formkit .we-formkit__field .we-formkit__choice > span,
+body .we-formkit .we-formkit__field .we-formkit__control--choice label,
+.we-formkit .we-formkit__field label.we-formkit__choice span,
+.we-formkit .we-formkit__field .we-formkit__choice > span,
+.we-formkit .we-formkit__field .we-formkit__control--choice label {
 	display: block;
 	float: none;
 	clear: none;
@@ -82,20 +101,34 @@
 	max-width: none;
 	margin: 0;
 	padding: 0;
-	color: inherit;
+	color: var(--wek-ink);
+	background: transparent;
 	font-size: var(--wek-font-label);
 	font-weight: 600;
 	line-height: 1.4;
 	position: static;
 	text-indent: 0;
+	text-decoration: none;
 	white-space: normal;
 }
 
-.we-formkit label.we-formkit__choice input[type="checkbox"],
-.we-formkit label.we-formkit__choice input[type="radio"],
-.we-formkit .we-formkit__choice input[type="checkbox"],
-.we-formkit .we-formkit__choice input[type="radio"],
-.we-formkit .we-formkit__control--choice input[type="checkbox"] {
+body .we-formkit .we-formkit__field .we-formkit__label,
+body .we-formkit .we-formkit__fieldset > legend,
+.we-formkit .we-formkit__field .we-formkit__label,
+.we-formkit .we-formkit__fieldset > legend {
+	color: var(--wek-ink);
+}
+
+body .we-formkit .we-formkit__field label.we-formkit__choice input[type="checkbox"],
+body .we-formkit .we-formkit__field label.we-formkit__choice input[type="radio"],
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="radio"],
+body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"],
+.we-formkit .we-formkit__field label.we-formkit__choice input[type="checkbox"],
+.we-formkit .we-formkit__field label.we-formkit__choice input[type="radio"],
+.we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
+.we-formkit .we-formkit__field .we-formkit__choice input[type="radio"],
+.we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"] {
 	appearance: none;
 	-webkit-appearance: none;
 	-moz-appearance: none;
@@ -112,20 +145,40 @@
 	opacity: 1;
 	visibility: visible;
 	box-sizing: border-box;
+	border: 1.5px solid var(--wek-line);
+	background-color: var(--wek-input);
+	accent-color: var(--wek-accent);
 }
 
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="radio"],
+.we-formkit .we-formkit__field .we-formkit__choice input[type="radio"] {
+	border-radius: 50%;
+}
+
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
+body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"],
+.we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
+.we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"] {
+	border-radius: 5px;
+}
+
+body .we-formkit .we-formkit__matrix-choice,
+body .we-formkit label.we-formkit__matrix-choice,
 .we-formkit .we-formkit__matrix-choice,
 .we-formkit label.we-formkit__matrix-choice {
 	display: inline-flex;
 	float: none;
 	margin: 0;
 	padding: 0;
-	color: inherit;
+	color: var(--wek-ink);
 	font-weight: inherit;
 	line-height: inherit;
 	width: auto;
+	text-decoration: none;
 }
 
+body .we-formkit .we-formkit__matrix-choice input[type="checkbox"],
+body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 .we-formkit .we-formkit__matrix-choice input[type="checkbox"],
 .we-formkit .we-formkit__matrix-choice input[type="radio"] {
 	appearance: none;
@@ -136,9 +189,12 @@
 	opacity: 1;
 	visibility: visible;
 	position: relative;
-	width: 1.05em;
-	height: 1.05em;
+	width: 1.1rem;
+	height: 1.1rem;
+	border: 1.5px solid var(--wek-line);
+	background-color: var(--wek-input);
 	accent-color: var(--wek-accent);
+	box-sizing: border-box;
 }
 
 .we-formkit__header {
@@ -2094,4 +2150,16 @@
 	.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--number {
 		opacity: 0.55;
 	}
+}
+
+/*
+ * Late theme re-assert (end of sheet): ink color on choice labels / legends.
+ * Helps when Autoptimize places Formkit before theme but specificity still ties.
+ */
+body .we-formkit .we-formkit__choice > span,
+body .we-formkit label.we-formkit__choice span,
+body .we-formkit .we-formkit__control--choice label,
+body .we-formkit .we-formkit__fieldset > legend,
+body .we-formkit .we-formkit__label {
+	color: var(--wek-ink);
 }
