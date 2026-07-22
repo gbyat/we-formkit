@@ -3221,33 +3221,38 @@
 					onDuplicate: function () {
 						const copy = cloneFieldDeep( child );
 						nestedList.splice( nIndex + 1, 0, copy );
-						syncHidden();
-						selectItem( {
+						selection = {
 							type: 'nested',
 							sIndex: sIndex,
 							fIndex: fIndex,
 							nIndex: nIndex + 1,
-						} );
+						};
+						syncHidden();
+						render();
 					},
 					onMoveUp: function () {
 						const next = moveInArray( nestedList, nIndex, nIndex - 1 );
-						syncHidden();
-						selectItem( {
+						selection = {
 							type: 'nested',
 							sIndex: sIndex,
 							fIndex: fIndex,
 							nIndex: next,
-						} );
+						};
+						announce( i18n.moved || 'Item moved.' );
+						syncHidden();
+						render();
 					},
 					onMoveDown: function () {
 						const next = moveInArray( nestedList, nIndex, nIndex + 1 );
-						syncHidden();
-						selectItem( {
+						selection = {
 							type: 'nested',
 							sIndex: sIndex,
 							fIndex: fIndex,
 							nIndex: next,
-						} );
+						};
+						announce( i18n.moved || 'Item moved.' );
+						syncHidden();
+						render();
 					},
 					onDelete: function () {
 						if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
@@ -3344,18 +3349,23 @@
 					onDuplicate: function () {
 						const copy = cloneFieldDeep( field );
 						section.fields.splice( fIndex + 1, 0, copy );
+						selection = { type: 'field', sIndex: sIndex, fIndex: fIndex + 1 };
 						syncHidden();
-						selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex + 1 } );
+						render();
 					},
 					onMoveUp: function () {
 						const next = moveInArray( section.fields, fIndex, fIndex - 1 );
+						selection = { type: 'field', sIndex: sIndex, fIndex: next };
+						announce( i18n.moved || 'Item moved.' );
 						syncHidden();
-						selectItem( { type: 'field', sIndex: sIndex, fIndex: next } );
+						render();
 					},
 					onMoveDown: function () {
 						const next = moveInArray( section.fields, fIndex, fIndex + 1 );
+						selection = { type: 'field', sIndex: sIndex, fIndex: next };
+						announce( i18n.moved || 'Item moved.' );
 						syncHidden();
-						selectItem( { type: 'field', sIndex: sIndex, fIndex: next } );
+						render();
 					},
 					onDelete: function () {
 						if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
@@ -3453,18 +3463,23 @@
 					onDuplicate: function () {
 						const copy = cloneFieldDeep( field );
 						section.fields.splice( fIndex + 1, 0, copy );
+						selection = { type: 'field', sIndex: sIndex, fIndex: fIndex + 1 };
 						syncHidden();
-						selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex + 1 } );
+						render();
 					},
 					onMoveUp: function () {
 						const next = moveInArray( section.fields, fIndex, fIndex - 1 );
+						selection = { type: 'field', sIndex: sIndex, fIndex: next };
+						announce( i18n.moved || 'Item moved.' );
 						syncHidden();
-						selectItem( { type: 'field', sIndex: sIndex, fIndex: next } );
+						render();
 					},
 					onMoveDown: function () {
 						const next = moveInArray( section.fields, fIndex, fIndex + 1 );
+						selection = { type: 'field', sIndex: sIndex, fIndex: next };
+						announce( i18n.moved || 'Item moved.' );
 						syncHidden();
-						selectItem( { type: 'field', sIndex: sIndex, fIndex: next } );
+						render();
 					},
 					onDelete: function () {
 						if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
