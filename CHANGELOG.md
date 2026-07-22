@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-07-22
+
+- Implement custom row functionality in matrix fields. Allow users to add custom rows with labels, set maximum custom rows, and enhance the matrix editor UI. Update JavaScript and PHP to handle custom row logic and ensure proper validation. Improve CSS for better styling of matrix components.
 ## [0.7.4] - 2026-07-22
 
 - Add section copy and paste functionality in form editor. Implement clipboard support for sections, allowing users to copy, paste, and manage section visibility. Enhance UI with new toggle styles and improve section handling in JavaScript and PHP.
