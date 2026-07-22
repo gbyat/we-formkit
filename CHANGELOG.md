@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.9] - 2026-07-22
+
+- Refactor matrix field configuration by removing the 'entries_label' option to streamline the setup process. Update JavaScript to enhance the UI for custom row management, including improved layout for toggles. Adjust CSS for better styling of admin components and ensure consistent design across the admin interface.
 ## [0.7.8] - 2026-07-22
 
 - Enhance matrix field functionality by introducing an 'entries_label' option for improved row labeling. Update frontend rendering to conditionally display the entries label based on user input. Refactor JavaScript to support new field pairing for toggles and compact layouts. Improve CSS for better styling of admin sidebar components and form fields, ensuring a more cohesive user experience.
