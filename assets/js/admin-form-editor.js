@@ -2606,6 +2606,42 @@
 					)
 				)
 			);
+
+			if ( typeof opts.allow_other === 'undefined' ) {
+				opts.allow_other = false;
+			}
+			if ( typeof opts.other_label !== 'string' || ! opts.other_label ) {
+				opts.other_label = i18n.otherLabelDefault || 'Other';
+			}
+
+			const allowOther = el( 'input', { type: 'checkbox' } );
+			allowOther.checked = !! opts.allow_other;
+			const otherLabelInput = textInput( opts.other_label, function ( v ) {
+				opts.other_label = String( v || '' ).trim() || ( i18n.otherLabelDefault || 'Other' );
+				syncHidden();
+			} );
+			const otherLabelRow = fieldRow( i18n.otherLabel || 'Other label', otherLabelInput );
+			otherLabelRow.hidden = ! allowOther.checked;
+
+			allowOther.addEventListener( 'change', function () {
+				opts.allow_other = allowOther.checked;
+				otherLabelRow.hidden = ! allowOther.checked;
+				syncHidden();
+			} );
+
+			wrap.appendChild(
+				toggleRow( i18n.allowOther || 'Allow “Other” with free text', allowOther )
+			);
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.allowOtherHint ||
+						'Visitors can tick Other and type their own answer. Typing auto-checks Other. (Not available for radio fields.)',
+				} )
+			);
+			wrap.appendChild( otherLabelRow );
+
 			return wrap;
 		}
 

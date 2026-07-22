@@ -103,9 +103,17 @@
 				return;
 			}
 			if ( type === 'checkboxes' ) {
-				values[ id ] = qsa( fieldEl, 'input[type="checkbox"]:checked' ).map( function ( el ) {
-					return el.value;
+				const selected = [];
+				qsa( fieldEl, 'input[type="checkbox"]:checked' ).forEach( function ( box ) {
+					if ( box.hasAttribute( 'data-wek-other' ) ) {
+						const textEl = qs( fieldEl, '[data-wek-other-text]' );
+						const text = textEl ? String( textEl.value || '' ).trim() : '';
+						selected.push( text !== '' ? 'other:' + text : '__other__' );
+						return;
+					}
+					selected.push( box.value );
 				} );
+				values[ id ] = selected;
 				return;
 			}
 			if ( type === 'radio' || type === 'radio_image' ) {
@@ -634,6 +642,15 @@
 		if ( max > 0 && count > max ) {
 			return checkboxesLimitMessage( fieldEl, 'max', max );
 		}
+		const otherBox = qs( fieldEl, 'input[type="checkbox"][data-wek-other]' );
+		const otherText = qs( fieldEl, '[data-wek-other-text]' );
+		if ( otherBox && otherBox.checked && otherText && String( otherText.value || '' ).trim() === '' ) {
+			return (
+				fieldInvalidMessage( fieldEl ) ||
+				( ( window.weFormkit && window.weFormkit.i18n && window.weFormkit.i18n.otherTextRequired ) ||
+					'Please enter text for Other.' )
+			);
+		}
 		return '';
 	}
 
@@ -655,6 +672,34 @@
 				return;
 			}
 			box.disabled = checked >= max;
+		} );
+	}
+
+	function bindCheckboxesOther( root ) {
+		qsa( root, '[data-field-type="checkboxes"]' ).forEach( function ( fieldEl ) {
+			const otherBox = qs( fieldEl, 'input[type="checkbox"][data-wek-other]' );
+			const otherText = qs( fieldEl, '[data-wek-other-text]' );
+			if ( ! otherBox || ! otherText || otherBox.getAttribute( 'data-wek-other-bound' ) ) {
+				return;
+			}
+			otherBox.setAttribute( 'data-wek-other-bound', '1' );
+
+			otherText.addEventListener( 'input', function () {
+				const hasText = String( otherText.value || '' ).trim() !== '';
+				if ( hasText && ! otherBox.checked ) {
+					otherBox.checked = true;
+					otherBox.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+			} );
+
+			otherBox.addEventListener( 'change', function () {
+				if ( ! otherBox.checked ) {
+					return;
+				}
+				if ( String( otherText.value || '' ).trim() === '' ) {
+					otherText.focus();
+				}
+			} );
 		} );
 	}
 
@@ -701,7 +746,14 @@
 	}
 
 	function setMatrixRowEnabled( row, enabled ) {
+		const isCustom = row.hasAttribute( 'data-wek-matrix-custom-row' );
 		qsa( row, '[data-wek-matrix-col]' ).forEach( function ( input ) {
+			// Custom rows: leave checkbox columns clickable so checking one can auto-enable the row.
+			// Radios stay disabled until the row is on (no auto-enable from radio).
+			if ( isCustom && input.type === 'checkbox' ) {
+				input.disabled = false;
+				return;
+			}
 			input.disabled = ! enabled;
 		} );
 		row.classList.toggle( 'is-row-off', ! enabled );
@@ -719,20 +771,75 @@
 		setMatrixRowEnabled( row, on );
 	}
 
-	function bindMatrixRowSelect( row ) {
+	/**
+	 * Turn on the row-select checkbox (custom rows: also when typing a label or ticking a checkbox column).
+	 */
+	function ensureMatrixRowOn( row ) {
 		const onBox = qs( row, '[data-wek-matrix-on]' );
-		if ( ! onBox || onBox.getAttribute( 'data-wek-matrix-bound' ) ) {
+		if ( ! onBox || onBox.checked ) {
+			return false;
+		}
+		onBox.checked = true;
+		syncMatrixRowSelect( row );
+		return true;
+	}
+
+	function bindMatrixCustomAutoOn( row ) {
+		if ( ! row.hasAttribute( 'data-wek-matrix-custom-row' ) ) {
 			return;
 		}
-		onBox.setAttribute( 'data-wek-matrix-bound', '1' );
-		syncMatrixRowSelect( row );
-		onBox.addEventListener( 'change', function () {
-			syncMatrixRowSelect( row );
-			const form = row.closest( '[data-wek-form]' );
-			if ( form ) {
-				form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		if ( row.getAttribute( 'data-wek-matrix-auto-on-bound' ) ) {
+			return;
+		}
+		row.setAttribute( 'data-wek-matrix-auto-on-bound', '1' );
+
+		const labelInput = qs( row, '[data-wek-matrix-label]' );
+		if ( labelInput ) {
+			labelInput.addEventListener( 'input', function () {
+				if ( String( labelInput.value || '' ).trim() === '' ) {
+					return;
+				}
+				if ( ensureMatrixRowOn( row ) ) {
+					const form = row.closest( '[data-wek-form]' );
+					if ( form ) {
+						form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+					}
+				}
+			} );
+		}
+
+		qsa( row, '[data-wek-matrix-col]' ).forEach( function ( input ) {
+			if ( input.type !== 'checkbox' ) {
+				return;
 			}
+			input.addEventListener( 'change', function () {
+				if ( ! input.checked ) {
+					return;
+				}
+				if ( ensureMatrixRowOn( row ) ) {
+					const form = row.closest( '[data-wek-form]' );
+					if ( form ) {
+						form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+					}
+				}
+			} );
 		} );
+	}
+
+	function bindMatrixRowSelect( row ) {
+		const onBox = qs( row, '[data-wek-matrix-on]' );
+		if ( onBox && ! onBox.getAttribute( 'data-wek-matrix-bound' ) ) {
+			onBox.setAttribute( 'data-wek-matrix-bound', '1' );
+			syncMatrixRowSelect( row );
+			onBox.addEventListener( 'change', function () {
+				syncMatrixRowSelect( row );
+				const form = row.closest( '[data-wek-form]' );
+				if ( form ) {
+					form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+			} );
+		}
+		bindMatrixCustomAutoOn( row );
 	}
 
 	function matrixCustomRowCount( fieldEl ) {
@@ -808,6 +915,8 @@
 		replaceMatrixCustomId( row, customId );
 		body.appendChild( row );
 		bindMatrixRowSelect( row );
+		// New custom rows start selected so radios/columns are usable immediately.
+		ensureMatrixRowOn( row );
 		const removeBtn = qs( row, '[data-wek-matrix-remove-row]' );
 		if ( removeBtn && ! removeBtn.getAttribute( 'data-wek-matrix-remove-bound' ) ) {
 			removeBtn.setAttribute( 'data-wek-matrix-remove-bound', '1' );
@@ -1835,9 +1944,28 @@
 					return;
 				}
 				if ( type === 'checkboxes' && Array.isArray( val ) ) {
+					const otherBox = qs( fieldEl, 'input[type="checkbox"][data-wek-other]' );
+					const otherText = qs( fieldEl, '[data-wek-other-text]' );
+					let otherEntry = '';
 					qsa( fieldEl, 'input[type="checkbox"]' ).forEach( function ( box ) {
+						if ( box.hasAttribute( 'data-wek-other' ) ) {
+							return;
+						}
 						box.checked = val.indexOf( box.value ) !== -1;
 					} );
+					val.forEach( function ( item ) {
+						const s = String( item || '' );
+						if ( s === '__other__' || s.indexOf( 'other:' ) === 0 ) {
+							otherEntry = s;
+						}
+					} );
+					if ( otherBox ) {
+						otherBox.checked = otherEntry !== '';
+					}
+					if ( otherText ) {
+						otherText.value =
+							otherEntry.indexOf( 'other:' ) === 0 ? otherEntry.slice( 6 ) : '';
+					}
 					return;
 				}
 				if ( ( type === 'radio' || type === 'radio_image' ) && val ) {
@@ -2190,6 +2318,7 @@
 		bindSaveResume( root );
 		bindInlineValidation( root, form );
 		bindMatrixRows( root );
+		bindCheckboxesOther( root );
 
 		qsa( form, '[data-field-type="checkboxes"]' ).forEach( function ( fieldEl ) {
 			syncCheckboxesMaxLock( fieldEl );

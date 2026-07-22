@@ -296,41 +296,42 @@ final class Frontend {
 				'saveMinFilled' => Drafts::get_min_filled( $form_id ),
 				'draftUrl'      => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/drafts' ) ),
 				'i18n'          => array(
-					'submitting'       => __( 'Submitting…', 'we-formkit' ),
-					'submit'           => __( 'Submit form', 'we-formkit' ),
-					'error'            => __( 'Something went wrong. Please try again.', 'we-formkit' ),
-					'required'         => __( 'This field is required.', 'we-formkit' ),
-					'correctFields'    => __( 'Please correct the highlighted fields.', 'we-formkit' ),
-					'addRow'           => __( 'Add another', 'we-formkit' ),
-					'removeRow'        => __( 'Remove', 'we-formkit' ),
+					'submitting'        => __( 'Submitting…', 'we-formkit' ),
+					'submit'            => __( 'Submit form', 'we-formkit' ),
+					'error'             => __( 'Something went wrong. Please try again.', 'we-formkit' ),
+					'required'          => __( 'This field is required.', 'we-formkit' ),
+					'correctFields'     => __( 'Please correct the highlighted fields.', 'we-formkit' ),
+					'addRow'            => __( 'Add another', 'we-formkit' ),
+					'removeRow'         => __( 'Remove', 'we-formkit' ),
 					/* translators: %d: row number (1-based). */
-					'rowLabel'         => __( 'Row %d', 'we-formkit' ),
-					'autofillReady'    => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
-					'autofillManual'   => __( 'Test fill applied. Click Submit form when ready.', 'we-formkit' ),
-					'autofillDone'     => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
-					'infoDocuments'    => __( 'Downloads', 'we-formkit' ),
-					'next'             => __( 'Next', 'we-formkit' ),
-					'previous'         => __( 'Previous', 'we-formkit' ),
+					'rowLabel'          => __( 'Row %d', 'we-formkit' ),
+					'autofillReady'     => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
+					'autofillManual'    => __( 'Test fill applied. Click Submit form when ready.', 'we-formkit' ),
+					'autofillDone'      => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
+					'infoDocuments'     => __( 'Downloads', 'we-formkit' ),
+					'next'              => __( 'Next', 'we-formkit' ),
+					'previous'          => __( 'Previous', 'we-formkit' ),
 					/* translators: 1: current page, 2: total pages. */
-					'pageOf'           => __( 'Step %1$d of %2$d', 'we-formkit' ),
-					'saveProgress'     => __( 'Save progress', 'we-formkit' ),
-					'saveEmailNeeded'  => __( 'Enter an email address to receive your resume link.', 'we-formkit' ),
-					'savingProgress'   => __( 'Saving…', 'we-formkit' ),
+					'pageOf'            => __( 'Step %1$d of %2$d', 'we-formkit' ),
+					'saveProgress'      => __( 'Save progress', 'we-formkit' ),
+					'saveEmailNeeded'   => __( 'Enter an email address to receive your resume link.', 'we-formkit' ),
+					'savingProgress'    => __( 'Saving…', 'we-formkit' ),
 					/* translators: %s: email address. */
-					'savedProgress'    => __( 'Progress saved. We sent a resume link to %s.', 'we-formkit' ),
-					'saveUpdated'      => __( 'Progress updated. Use the resume link from your earlier email.', 'we-formkit' ),
-					'saveMailFailed'   => __( 'Progress was saved, but the resume email could not be sent. Please try again or contact the site owner.', 'we-formkit' ),
-					'saveTooEarly'     => __( 'Fill in a few fields before saving your progress.', 'we-formkit' ),
-					'resumeLoaded'     => __( 'Your saved progress was restored.', 'we-formkit' ),
-					'saveEmailPh'      => __( 'Email for resume link', 'we-formkit' ),
-					'saveRemind'       => __( 'Add a calendar reminder (.ics) before this link expires', 'we-formkit' ),
+					'savedProgress'     => __( 'Progress saved. We sent a resume link to %s.', 'we-formkit' ),
+					'saveUpdated'       => __( 'Progress updated. Use the resume link from your earlier email.', 'we-formkit' ),
+					'saveMailFailed'    => __( 'Progress was saved, but the resume email could not be sent. Please try again or contact the site owner.', 'we-formkit' ),
+					'saveTooEarly'      => __( 'Fill in a few fields before saving your progress.', 'we-formkit' ),
+					'resumeLoaded'      => __( 'Your saved progress was restored.', 'we-formkit' ),
+					'saveEmailPh'       => __( 'Email for resume link', 'we-formkit' ),
+					'saveRemind'        => __( 'Add a calendar reminder (.ics) before this link expires', 'we-formkit' ),
 					/* translators: 1: field label, 2: minimum number of selections. */
-					'checkboxesMin'    => __( 'Please select at least %2$d option(s) for %1$s.', 'we-formkit' ),
+					'checkboxesMin'     => __( 'Please select at least %2$d option(s) for %1$s.', 'we-formkit' ),
 					/* translators: 1: field label, 2: maximum number of selections. */
-					'checkboxesMax'    => __( 'Please select at most %2$d option(s) for %1$s.', 'we-formkit' ),
-					'matrixAddRow'     => __( 'Add other row', 'we-formkit' ),
-					'matrixRemoveRow'  => __( 'Remove row', 'we-formkit' ),
-					'matrixRowLabelPh' => __( 'Your label', 'we-formkit' ),
+					'checkboxesMax'     => __( 'Please select at most %2$d option(s) for %1$s.', 'we-formkit' ),
+					'otherTextRequired' => __( 'Please enter text for Other.', 'we-formkit' ),
+					'matrixAddRow'      => __( 'Add other row', 'we-formkit' ),
+					'matrixRemoveRow'   => __( 'Remove row', 'we-formkit' ),
+					'matrixRowLabelPh'  => __( 'Your label', 'we-formkit' ),
 				),
 				'validation'    => Validation_Messages::global_templates_for_js(),
 			)
@@ -661,7 +662,9 @@ final class Frontend {
 					<?php endif; ?>
 					<div class="we-formkit__choices" role="group" aria-describedby="<?php echo esc_attr( trim( ( '' !== $help_text ? $desc_id . ' ' : '' ) . $error_id ) ); ?>">
 						<?php
-						$default = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
+						$default     = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
+						$allow_other = 'checkboxes' === $type && Fields\Checkboxes_Field::allows_other( $field );
+						$other_label = $allow_other ? Fields\Checkboxes_Field::other_label( $field ) : '';
 						foreach ( $field['options'] as $option ) :
 							$oid    = $input_id . '-' . $option['value'];
 							$iname  = 'checkboxes' === $type ? $id . '[]' : $id;
@@ -679,6 +682,34 @@ final class Frontend {
 								<span><?php echo esc_html( $option['label'] ); ?></span>
 							</label>
 						<?php endforeach; ?>
+						<?php if ( $allow_other ) : ?>
+							<?php
+							$other_oid     = $input_id . '-other';
+							$other_text_id = $input_id . '-other-text';
+							?>
+							<div class="we-formkit__choice we-formkit__choice--other">
+								<label class="we-formkit__choice-main" for="<?php echo esc_attr( $other_oid ); ?>">
+									<input
+										type="checkbox"
+										id="<?php echo esc_attr( $other_oid ); ?>"
+										name="<?php echo esc_attr( $id . '[]' ); ?>"
+										value="<?php echo esc_attr( Fields\Checkboxes_Field::OTHER_TOKEN ); ?>"
+										data-wek-other
+									/>
+									<span><?php echo esc_html( $other_label ); ?></span>
+								</label>
+								<input
+									type="text"
+									id="<?php echo esc_attr( $other_text_id ); ?>"
+									class="we-formkit__other-text"
+									value=""
+									placeholder="<?php echo esc_attr__( 'Please specify…', 'we-formkit' ); ?>"
+									autocomplete="off"
+									data-wek-other-text
+									aria-label="<?php echo esc_attr( sprintf( /* translators: %s: Other option label */ __( '%s text', 'we-formkit' ), $other_label ) ); ?>"
+								/>
+							</div>
+						<?php endif; ?>
 					</div>
 				</fieldset>
 			<?php elseif ( 'radio_image' === $type ) : ?>
@@ -809,11 +840,6 @@ final class Frontend {
 											endif;
 											?>
 										<?php endforeach; ?>
-										<?php if ( $allow_custom_rows ) : ?>
-											<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--actions"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
-												<span class="screen-reader-text"><?php esc_html_e( 'Row actions', 'we-formkit' ); ?></span>
-											</th>
-										<?php endif; ?>
 									</tr>
 									<?php if ( $needs_option_headers ) : ?>
 										<tr class="we-formkit__matrix-head-options">
@@ -851,7 +877,6 @@ final class Frontend {
 												'row_select' => $row_select,
 												'columns'  => $columns,
 												'is_custom' => false,
-												'allow_custom' => $allow_custom_rows,
 											)
 										);
 										?>
@@ -869,7 +894,6 @@ final class Frontend {
 												'row_select' => $row_select,
 												'columns'  => $columns,
 												'is_custom' => true,
-												'allow_custom' => true,
 											)
 										);
 										?>
@@ -1055,21 +1079,19 @@ final class Frontend {
 	 *   row_label:string,
 	 *   row_select:bool,
 	 *   columns:array<int,array<string,mixed>>,
-	 *   is_custom:bool,
-	 *   allow_custom:bool
+	 *   is_custom:bool
 	 * } $args Row args.
 	 * @return void
 	 */
 	private static function render_matrix_row( array $args ) {
-		$field_id     = (string) $args['field_id'];
-		$input_id     = (string) $args['input_id'];
-		$row_id       = (string) $args['row_id'];
-		$row_label    = (string) $args['row_label'];
-		$row_select   = ! empty( $args['row_select'] );
-		$columns      = isset( $args['columns'] ) && is_array( $args['columns'] ) ? $args['columns'] : array();
-		$is_custom    = ! empty( $args['is_custom'] );
-		$allow_custom = ! empty( $args['allow_custom'] );
-		$row_attrs    = 'data-wek-matrix-row="' . esc_attr( $row_id ) . '"';
+		$field_id   = (string) $args['field_id'];
+		$input_id   = (string) $args['input_id'];
+		$row_id     = (string) $args['row_id'];
+		$row_label  = (string) $args['row_label'];
+		$row_select = ! empty( $args['row_select'] );
+		$columns    = isset( $args['columns'] ) && is_array( $args['columns'] ) ? $args['columns'] : array();
+		$is_custom  = ! empty( $args['is_custom'] );
+		$row_attrs  = 'data-wek-matrix-row="' . esc_attr( $row_id ) . '"';
 		if ( $is_custom ) {
 			$row_attrs .= ' data-wek-matrix-custom-row="1"';
 		}
@@ -1077,18 +1099,29 @@ final class Frontend {
 		<tr <?php echo $row_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
 			<th scope="row" class="we-formkit__matrix-row-label<?php echo $is_custom ? ' we-formkit__matrix-row-label--custom' : ''; ?>">
 				<?php if ( $is_custom ) : ?>
-					<label class="we-formkit__matrix-custom-label-wrap">
-						<span class="screen-reader-text"><?php esc_html_e( 'Row label', 'we-formkit' ); ?></span>
-						<input
-							type="text"
-							class="we-formkit__matrix-custom-label"
-							name="<?php echo esc_attr( $field_id . '[' . $row_id . '][label]' ); ?>"
-							value=""
-							placeholder="<?php echo esc_attr__( 'Your label', 'we-formkit' ); ?>"
-							autocomplete="off"
-							data-wek-matrix-label
-						/>
-					</label>
+					<div class="we-formkit__matrix-custom-label-row">
+						<label class="we-formkit__matrix-custom-label-wrap">
+							<span class="screen-reader-text"><?php esc_html_e( 'Row label', 'we-formkit' ); ?></span>
+							<input
+								type="text"
+								class="we-formkit__matrix-custom-label"
+								name="<?php echo esc_attr( $field_id . '[' . $row_id . '][label]' ); ?>"
+								value=""
+								placeholder="<?php echo esc_attr__( 'Your label', 'we-formkit' ); ?>"
+								autocomplete="off"
+								data-wek-matrix-label
+							/>
+						</label>
+						<button
+							type="button"
+							class="we-formkit__matrix-remove-row"
+							data-wek-matrix-remove-row
+							aria-label="<?php echo esc_attr__( 'Remove row', 'we-formkit' ); ?>"
+							title="<?php echo esc_attr__( 'Remove row', 'we-formkit' ); ?>"
+						>
+							<span class="we-formkit__matrix-remove-icon" aria-hidden="true">×</span>
+						</button>
+					</div>
 				<?php else : ?>
 					<?php echo esc_html( $row_label ); ?>
 				<?php endif; ?>
@@ -1200,20 +1233,6 @@ final class Frontend {
 				endif;
 				?>
 			<?php endforeach; ?>
-			<?php if ( $allow_custom ) : ?>
-				<td class="we-formkit__matrix-cell we-formkit__matrix-cell--actions">
-					<?php if ( $is_custom ) : ?>
-						<button
-							type="button"
-							class="we-formkit__matrix-remove-row"
-							data-wek-matrix-remove-row
-							aria-label="<?php echo esc_attr__( 'Remove row', 'we-formkit' ); ?>"
-						>
-							<?php esc_html_e( 'Remove', 'we-formkit' ); ?>
-						</button>
-					<?php endif; ?>
-				</td>
-			<?php endif; ?>
 		</tr>
 		<?php
 	}
