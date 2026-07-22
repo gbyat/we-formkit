@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-07-22
+
+- Refactor item selection handling in admin form editor to streamline duplicate, move, and delete actions. Replace selectItem calls with direct assignment to selection and ensure UI updates with render calls. Enhance user feedback with announcements on item movements.
 ## [0.6.1] - 2026-07-22
 
 - Update admin menu page title to 'WE Formkit' for improved branding consistency.
