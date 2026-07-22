@@ -115,7 +115,7 @@ class Matrix_Field extends Abstract_Field_Type {
 				continue;
 			}
 			$type = isset( $col['type'] ) ? sanitize_key( (string) $col['type'] ) : 'radio';
-			if ( ! in_array( $type, array( 'radio', 'checkbox' ), true ) ) {
+			if ( ! in_array( $type, array( 'radio', 'checkbox', 'text', 'number' ), true ) ) {
 				$type = 'radio';
 			}
 			$label = isset( $col['label'] ) ? sanitize_text_field( (string) $col['label'] ) : '';
@@ -225,6 +225,10 @@ class Matrix_Field extends Abstract_Field_Type {
 			$clean = array();
 			if ( $cfg['row_select'] ) {
 				$clean['on'] = ! empty( $row_val['on'] ) && '0' !== (string) $row_val['on'];
+				// Unchecked rows store nothing — column answers are discarded.
+				if ( empty( $clean['on'] ) ) {
+					continue;
+				}
 			}
 
 			foreach ( $col_map as $col_id => $col ) {
@@ -234,6 +238,21 @@ class Matrix_Field extends Abstract_Field_Type {
 				$raw = $row_val[ $col_id ];
 				if ( 'checkbox' === $col['type'] ) {
 					$clean[ $col_id ] = ! empty( $raw ) && '0' !== (string) $raw;
+					continue;
+				}
+				if ( 'text' === $col['type'] ) {
+					$text = sanitize_text_field( (string) $raw );
+					if ( '' !== $text ) {
+						$clean[ $col_id ] = $text;
+					}
+					continue;
+				}
+				if ( 'number' === $col['type'] ) {
+					$num = is_numeric( $raw ) ? (string) $raw : trim( (string) $raw );
+					if ( '' === $num || ! is_numeric( $num ) ) {
+						continue;
+					}
+					$clean[ $col_id ] = $num;
 					continue;
 				}
 				$choice = sanitize_key( (string) $raw );
@@ -248,9 +267,6 @@ class Matrix_Field extends Abstract_Field_Type {
 			}
 			// Drop empty rows when row_select is off and nothing meaningful was chosen.
 			if ( ! $cfg['row_select'] && self::row_answers_empty( $clean, $col_map ) ) {
-				continue;
-			}
-			if ( $cfg['row_select'] && empty( $clean['on'] ) && self::row_answers_empty( $clean, $col_map ) ) {
 				continue;
 			}
 
@@ -336,6 +352,15 @@ class Matrix_Field extends Abstract_Field_Type {
 						);
 					}
 				}
+				if ( 'number' === $col['type'] ) {
+					$num = (string) $row_val[ $col_id ];
+					if ( '' !== $num && ! is_numeric( $num ) ) {
+						return new \WP_Error(
+							'we_formkit_matrix_invalid',
+							Validation_Messages::invalid_for_field( $field )
+						);
+					}
+				}
 			}
 		}
 
@@ -383,12 +408,16 @@ class Matrix_Field extends Abstract_Field_Type {
 					$parts[] = $col['label'];
 					continue;
 				}
-				$choice = (string) $row_val[ $col_id ];
-				if ( '' === $choice ) {
+				$cell = (string) $row_val[ $col_id ];
+				if ( '' === $cell ) {
 					continue;
 				}
-				$opt_label = $col['options'][ $choice ] ?? $choice;
-				$parts[]   = $col['label'] . ': ' . $opt_label;
+				if ( 'radio' === $col['type'] ) {
+					$opt_label = $col['options'][ $cell ] ?? $cell;
+					$parts[]   = $col['label'] . ': ' . $opt_label;
+					continue;
+				}
+				$parts[] = $col['label'] . ': ' . $cell;
 			}
 
 			if ( empty( $parts ) ) {

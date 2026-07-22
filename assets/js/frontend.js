@@ -57,6 +57,9 @@
 					const onBox = qs( row, '[data-wek-matrix-on]' );
 					if ( onBox ) {
 						entry.on = !! onBox.checked;
+						if ( ! entry.on ) {
+							return;
+						}
 					}
 					qsa( row, '[data-wek-matrix-col]' ).forEach( function ( input ) {
 						const colId = input.getAttribute( 'data-wek-matrix-col' );
@@ -69,8 +72,15 @@
 							}
 							return;
 						}
-						if ( input.type === 'radio' && input.checked ) {
-							entry[ colId ] = input.value;
+						if ( input.type === 'radio' ) {
+							if ( input.checked ) {
+								entry[ colId ] = input.value;
+							}
+							return;
+						}
+						const text = String( input.value || '' ).trim();
+						if ( text !== '' ) {
+							entry[ colId ] = text;
 						}
 					} );
 					const keys = Object.keys( entry );
@@ -161,11 +171,49 @@
 		return [ '1', 'yes', 'true', 'on' ].indexOf( n ) !== -1;
 	}
 
+	function resolveCurrent( ruleField, values ) {
+		if ( ! ruleField ) {
+			return null;
+		}
+		if ( ruleField.indexOf( '.' ) === -1 ) {
+			return values[ ruleField ];
+		}
+		const parts = ruleField.split( '.' );
+		const root = parts[ 0 ];
+		const rowId = parts[ 1 ] || '';
+		const matrix = values[ root ];
+		if ( ! matrix || typeof matrix !== 'object' || Array.isArray( matrix ) || ! rowId ) {
+			return '';
+		}
+		const rowVal = matrix[ rowId ];
+		if ( ! rowVal || typeof rowVal !== 'object' ) {
+			return '';
+		}
+		if ( Object.prototype.hasOwnProperty.call( rowVal, 'on' ) ) {
+			return rowVal.on ? '1' : '';
+		}
+		const keys = Object.keys( rowVal );
+		for ( let i = 0; i < keys.length; i++ ) {
+			const key = keys[ i ];
+			if ( key === 'on' ) {
+				continue;
+			}
+			const cell = rowVal[ key ];
+			if ( cell === true ) {
+				return '1';
+			}
+			if ( cell !== false && String( cell == null ? '' : cell ).trim() !== '' ) {
+				return '1';
+			}
+		}
+		return '';
+	}
+
 	function matchesRule( ruleField, op, ruleValue, values ) {
 		if ( ! ruleField ) {
 			return true;
 		}
-		const current = values[ ruleField ];
+		const current = resolveCurrent( ruleField, values );
 		switch ( op ) {
 			case 'equals':
 				return normalize( current ) === normalize( ruleValue );
@@ -181,8 +229,14 @@
 			case 'is_not_empty':
 				if ( Array.isArray( current ) ) {
 					return current.filter( function ( item ) {
+						if ( item && typeof item === 'object' ) {
+							return Object.keys( item ).length > 0;
+						}
 						return normalize( item ) !== '';
 					} ).length > 0;
+				}
+				if ( current && typeof current === 'object' ) {
+					return Object.keys( current ).length > 0;
 				}
 				return normalize( current ) !== '';
 			default:
@@ -561,17 +615,73 @@
 		return ! input || ! String( input.value || '' ).trim();
 	}
 
+	function clearMatrixRowControls( row ) {
+		qsa( row, '[data-wek-matrix-col]' ).forEach( function ( input ) {
+			if ( input.type === 'checkbox' || input.type === 'radio' ) {
+				input.checked = false;
+			} else {
+				input.value = '';
+			}
+		} );
+	}
+
+	function setMatrixRowEnabled( row, enabled ) {
+		qsa( row, '[data-wek-matrix-col]' ).forEach( function ( input ) {
+			input.disabled = ! enabled;
+		} );
+		row.classList.toggle( 'is-row-off', ! enabled );
+	}
+
+	function syncMatrixRowSelect( row ) {
+		const onBox = qs( row, '[data-wek-matrix-on]' );
+		if ( ! onBox ) {
+			return;
+		}
+		const on = !! onBox.checked;
+		if ( ! on ) {
+			clearMatrixRowControls( row );
+		}
+		setMatrixRowEnabled( row, on );
+	}
+
+	function bindMatrixRows( root ) {
+		qsa( root, '[data-field-type="matrix"]' ).forEach( function ( fieldEl ) {
+			qsa( fieldEl, '[data-wek-matrix-row]' ).forEach( function ( row ) {
+				const onBox = qs( row, '[data-wek-matrix-on]' );
+				if ( ! onBox || onBox.getAttribute( 'data-wek-matrix-bound' ) ) {
+					return;
+				}
+				onBox.setAttribute( 'data-wek-matrix-bound', '1' );
+				syncMatrixRowSelect( row );
+				onBox.addEventListener( 'change', function () {
+					syncMatrixRowSelect( row );
+					const form = row.closest( '[data-wek-form]' );
+					if ( form ) {
+						form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+					}
+				} );
+			} );
+		} );
+	}
+
 	function matrixFieldHasAnswer( fieldEl ) {
 		return qsa( fieldEl, '[data-wek-matrix-row]' ).some( function ( row ) {
 			const onBox = qs( row, '[data-wek-matrix-on]' );
-			if ( onBox && onBox.checked ) {
-				return true;
+			if ( onBox ) {
+				return !! onBox.checked;
 			}
 			if ( qs( row, 'input[type="radio"]:checked' ) ) {
 				return true;
 			}
-			return qsa( row, 'input[type="checkbox"]:checked' ).some( function ( box ) {
-				return ! box.hasAttribute( 'data-wek-matrix-on' );
+			if (
+				qsa( row, 'input[type="checkbox"]:checked' ).some( function ( box ) {
+					return ! box.hasAttribute( 'data-wek-matrix-on' );
+				} )
+			) {
+				return true;
+			}
+			return qsa( row, 'input[type="text"], input[type="number"]' ).some( function ( input ) {
+				return String( input.value || '' ).trim() !== '';
 			} );
 		} );
 	}
@@ -1480,8 +1590,13 @@
 							}
 							if ( input.type === 'radio' ) {
 								input.checked = cell != null && String( cell ) === String( input.value );
+								return;
 							}
+							input.value = cell != null ? String( cell ) : '';
 						} );
+						if ( onBox ) {
+							setMatrixRowEnabled( row, !! onBox.checked );
+						}
 					} );
 					return;
 				}
@@ -1790,6 +1905,7 @@
 		initPagination( root );
 		bindSaveResume( root );
 		bindInlineValidation( root, form );
+		bindMatrixRows( root );
 
 		qsa( form, '[data-field-type="checkboxes"]' ).forEach( function ( fieldEl ) {
 			syncCheckboxesMaxLock( fieldEl );

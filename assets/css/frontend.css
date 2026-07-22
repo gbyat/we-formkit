@@ -1063,13 +1063,15 @@
 .we-formkit__matrix {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 0.9rem;
+	font-family: inherit;
+	font-size: var(--wek-font-input);
+	line-height: 1.4;
 }
 
 .we-formkit__matrix th,
 .we-formkit__matrix td {
 	border: 1px solid var(--wek-line);
-	padding: 0.4rem 0.45rem;
+	padding: 0.45rem 0.5rem;
 	vertical-align: middle;
 	text-align: center;
 }
@@ -1078,18 +1080,37 @@
 .we-formkit__matrix-row-label {
 	text-align: left;
 	font-weight: 600;
+	font-size: var(--wek-font-label);
 	background: var(--wek-accent-soft);
 	color: var(--wek-ink);
 	white-space: nowrap;
 }
 
+.we-formkit--label-normal .we-formkit__matrix-corner,
+.we-formkit--label-normal .we-formkit__matrix-row-label {
+	font-weight: 500;
+}
+
+.we-formkit--label-bold .we-formkit__matrix-corner,
+.we-formkit--label-bold .we-formkit__matrix-row-label {
+	font-weight: 700;
+}
+
 .we-formkit__matrix thead th {
 	font-weight: 600;
+	font-size: var(--wek-font-label);
 	background: var(--wek-bg);
-	color: var(--wek-muted);
-	font-size: 0.8rem;
-	line-height: 1.25;
-	max-width: 5.5rem;
+	color: var(--wek-ink);
+	line-height: 1.3;
+	max-width: 7rem;
+}
+
+.we-formkit--label-normal .we-formkit__matrix thead th {
+	font-weight: 500;
+}
+
+.we-formkit--label-bold .we-formkit__matrix thead th {
+	font-weight: 700;
 }
 
 .we-formkit__matrix-col-label {
@@ -1107,13 +1128,39 @@
 
 .we-formkit__matrix-choice input {
 	margin: 0;
+	width: 1.05em;
+	height: 1.05em;
 	accent-color: var(--wek-accent);
 }
 
+.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--radio,
+.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--checkbox,
+.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--text,
+.we-formkit__matrix tr.is-row-off .we-formkit__matrix-cell--number {
+	opacity: 0.45;
+}
+
+.we-formkit__matrix-input {
+	width: 100%;
+	min-width: 4.5rem;
+	max-width: 8rem;
+	margin: 0;
+	padding: 0.25rem 0.4rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input, 8px);
+	background: var(--wek-input);
+	color: var(--wek-ink);
+	font: inherit;
+	font-size: var(--wek-font-input);
+}
+
 @media (max-width: 640px) {
+	.we-formkit__matrix th,
+	.we-formkit__matrix td {
+		padding: 0.35rem 0.3rem;
+	}
+
 	.we-formkit__matrix thead th {
-		font-size: 0.72rem;
-		max-width: 4rem;
-		padding: 0.3rem 0.25rem;
+		max-width: 5.5rem;
 	}
 }

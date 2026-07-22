@@ -658,10 +658,29 @@
 					if ( field.type === 'html' || field.type === 'hidden' ) {
 						return;
 					}
+					const label = String( field.label || field.id );
 					list.push( {
 						id: String( field.id ),
-						label: String( field.label || field.id ),
+						label: label,
 						options: Array.isArray( field.options ) ? field.options : [],
+						kind: field.type === 'matrix' ? 'matrix' : 'field',
+					} );
+					if ( field.type !== 'matrix' ) {
+						return;
+					}
+					const opts = field.type_options && typeof field.type_options === 'object' ? field.type_options : {};
+					const rows = Array.isArray( opts.rows ) ? opts.rows : [];
+					rows.forEach( function ( row ) {
+						if ( ! row || ! row.value ) {
+							return;
+						}
+						const rowLabel = String( row.label || row.value );
+						list.push( {
+							id: String( field.id ) + '.' + String( row.value ),
+							label: label + ' › ' + rowLabel,
+							options: [],
+							kind: 'matrix_row',
+						} );
 					} );
 				} );
 			} );
@@ -882,6 +901,14 @@
 
 					fieldSelect.addEventListener( 'change', function () {
 						rule.field = fieldSelect.value;
+						const meta = fields.find( function ( f ) {
+							return f.id === fieldSelect.value;
+						} );
+						if ( meta && meta.kind === 'matrix_row' ) {
+							rule.op = 'is_checked';
+							opSelect.value = 'is_checked';
+							rule.value = '';
+						}
 						paintValueControl( valueWrap, rule, fieldSelect, opSelect );
 						commitShowWhen( target, container );
 					} );
@@ -1913,22 +1940,30 @@
 
 				if ( kind === 'column' ) {
 					const typeSelect = el( 'select' );
-					[ 'radio', 'checkbox' ].forEach( function ( t ) {
-						const opt = el( 'option', { value: t, text: t === 'radio' ? ( i18n.matrixColRadio || 'Radio' ) : ( i18n.matrixColCheckbox || 'Checkbox' ) } );
-						if ( item.type === t ) {
+					const typeChoices = [
+						{ value: 'radio', label: i18n.matrixColRadio || 'Radio' },
+						{ value: 'checkbox', label: i18n.matrixColCheckbox || 'Checkbox' },
+						{ value: 'text', label: i18n.matrixColText || 'Text' },
+						{ value: 'number', label: i18n.matrixColNumber || 'Number' },
+					];
+					typeChoices.forEach( function ( t ) {
+						const opt = el( 'option', { value: t.value, text: t.label } );
+						if ( item.type === t.value ) {
 							opt.selected = true;
 						}
 						typeSelect.appendChild( opt );
 					} );
 					typeSelect.addEventListener( 'change', function () {
 						item.type = typeSelect.value;
-						if ( item.type === 'checkbox' ) {
+						if ( item.type === 'radio' ) {
+							if ( ! Array.isArray( item.options ) || ! item.options.length ) {
+								item.options = [
+									{ value: 'a', label: i18n.matrixOptA || 'Option A' },
+									{ value: 'b', label: i18n.matrixOptB || 'Option B' },
+								];
+							}
+						} else {
 							item.options = [];
-						} else if ( ! Array.isArray( item.options ) || ! item.options.length ) {
-							item.options = [
-								{ value: 'a', label: i18n.matrixOptA || 'Option A' },
-								{ value: 'b', label: i18n.matrixOptB || 'Option B' },
-							];
 						}
 						syncHidden();
 						refresh();

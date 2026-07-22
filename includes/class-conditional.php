@@ -75,7 +75,7 @@ final class Conditional {
 			return true;
 		}
 
-		$current = array_key_exists( $field, $values ) ? $values[ $field ] : null;
+		$current = self::resolve_current( $field, $values );
 
 		switch ( $op ) {
 			case 'equals':
@@ -101,6 +101,9 @@ final class Conditional {
 						array_filter(
 							$current,
 							static function ( $item ) {
+								if ( is_array( $item ) ) {
+									return ! empty( $item );
+								}
 								return '' !== self::normalize( $item );
 							}
 						)
@@ -110,6 +113,50 @@ final class Conditional {
 			default:
 				return true;
 		}
+	}
+
+	/**
+	 * Resolve a field key, including matrix row paths (`matrix_id.row_id`).
+	 *
+	 * @param string               $field  Field id or `id.row`.
+	 * @param array<string, mixed> $values Values.
+	 * @return mixed
+	 */
+	private static function resolve_current( $field, array $values ) {
+		if ( false === strpos( $field, '.' ) ) {
+			return array_key_exists( $field, $values ) ? $values[ $field ] : null;
+		}
+
+		$parts = explode( '.', $field, 2 );
+		$root  = (string) $parts[0];
+		$row   = isset( $parts[1] ) ? (string) $parts[1] : '';
+		if ( '' === $root || '' === $row || ! isset( $values[ $root ] ) || ! is_array( $values[ $root ] ) ) {
+			return '';
+		}
+
+		$matrix = $values[ $root ];
+		if ( ! isset( $matrix[ $row ] ) || ! is_array( $matrix[ $row ] ) ) {
+			return '';
+		}
+
+		$row_val = $matrix[ $row ];
+		if ( array_key_exists( 'on', $row_val ) ) {
+			return ! empty( $row_val['on'] ) ? '1' : '';
+		}
+
+		foreach ( $row_val as $key => $cell ) {
+			if ( 'on' === $key ) {
+				continue;
+			}
+			if ( is_bool( $cell ) && $cell ) {
+				return '1';
+			}
+			if ( ! is_bool( $cell ) && '' !== trim( (string) $cell ) ) {
+				return '1';
+			}
+		}
+
+		return '';
 	}
 
 	/**

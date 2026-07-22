@@ -754,8 +754,9 @@ final class Frontend {
 													<?php
 												endforeach;
 											else :
+												$col_mod = in_array( $col_type, array( 'text', 'number' ), true ) ? $col_type : 'checkbox';
 												?>
-												<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--checkbox">
+												<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--<?php echo esc_attr( $col_mod ); ?>">
 													<span class="we-formkit__matrix-col-label"><?php echo esc_html( (string) ( $col['label'] ?? $col['id'] ) ); ?></span>
 												</th>
 												<?php
@@ -809,6 +810,24 @@ final class Frontend {
 														</td>
 														<?php
 													endforeach;
+												elseif ( 'text' === $col_type || 'number' === $col_type ) :
+													$oid = $input_id . '-' . $row_id . '-' . $col_id;
+													?>
+													<td class="we-formkit__matrix-cell we-formkit__matrix-cell--<?php echo esc_attr( $col_type ); ?>">
+														<label class="we-formkit__matrix-input-wrap" for="<?php echo esc_attr( $oid ); ?>">
+															<span class="screen-reader-text"><?php echo esc_html( $row_label . ' — ' . (string) ( $col['label'] ?? $col_id ) ); ?></span>
+															<input
+																type="<?php echo esc_attr( $col_type ); ?>"
+																id="<?php echo esc_attr( $oid ); ?>"
+																class="we-formkit__matrix-input"
+																name="<?php echo esc_attr( $id . '[' . $row_id . '][' . $col_id . ']' ); ?>"
+																value=""
+																<?php echo 'number' === $col_type ? 'inputmode="decimal" step="any"' : ''; ?>
+																data-wek-matrix-col="<?php echo esc_attr( $col_id ); ?>"
+															/>
+														</label>
+													</td>
+													<?php
 												else :
 													$oid = $input_id . '-' . $row_id . '-' . $col_id;
 													?>

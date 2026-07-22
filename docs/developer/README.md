@@ -19,11 +19,13 @@ Your class must extend `Webentwicklerin\WeFormkit\Fields\Abstract_Field_Type` an
 
 Type id: `matrix`. Config in `type_options`:
 
-- `row_select` (bool) — checkbox to mark a row as selected (`on`)
+- `row_select` (bool) — checkbox to mark each row as selected (`on`); unchecking clears that row’s answers
 - `rows` — `{ value, label }[]`
-- `columns` — `{ id, type: radio|checkbox, label, options? }[]` (`options` for radio column headers)
+- `columns` — `{ id, type: radio|checkbox|text|number, label, options? }[]` (`options` for radio column headers)
 
-Stored value: `{ row_id: { on?: bool, col_id?: string|bool, … }, … }`.
+Stored value: `{ row_id: { on?: bool, col_id?: string|bool|number, … }, … }`.
+
+**Conditionals:** pick `Matrix label › Row label` in the Depends-on list (field key `matrix_id.row_id`) with operator **is checked**.
 
 ## Register a module
 
