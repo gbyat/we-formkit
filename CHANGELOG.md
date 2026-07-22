@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-07-22
+
+- Add field reset functionality for radio and matrix selections. Introduce a reset button in the frontend PHP, enhance CSS for styling, and update JavaScript to manage button visibility and reset actions. Update localization files for new labels.
 ## [0.8.1] - 2026-07-22
 
 - Enhance form styling and structure by updating CSS for fieldsets, choices, and consent controls. Introduce new classes for privacy links and improve layout consistency. Refactor PHP to streamline consent field rendering and ensure proper handling of privacy URLs.
