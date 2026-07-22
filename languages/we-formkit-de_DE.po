@@ -55,7 +55,7 @@ msgstr "Formular bearbeiten"
 
 #: includes/admin/class-admin.php:80
 #: includes/admin/class-form-editor.php:234
-#: includes/admin/class-form-editor.php:679
+#: includes/admin/class-form-editor.php:683
 msgid "Add Form"
 msgstr "Formular hinzufügen"
 
@@ -72,7 +72,7 @@ msgid "Settings"
 msgstr "Einstellungen"
 
 #: includes/admin/class-form-editor.php:219
-#: includes/admin/class-form-editor.php:593
+#: includes/admin/class-form-editor.php:597
 #: includes/admin/class-modules-page.php:65
 #: includes/admin/class-settings-page.php:87
 #: includes/admin/class-submissions.php:242
@@ -93,7 +93,7 @@ msgstr "Formular konnte nicht dupliziert werden."
 
 #: includes/admin/class-form-editor.php:252
 #: includes/admin/class-form-editor.php:395
-#: includes/admin/class-form-editor.php:513
+#: includes/admin/class-form-editor.php:517
 #: src/admin-form-settings/index.jsx:505
 msgid "Title"
 msgstr "Titel"
@@ -123,14 +123,14 @@ msgid "No forms yet."
 msgstr "Noch keine Formulare."
 
 #: includes/admin/class-form-editor.php:274
-#: includes/admin/class-form-editor.php:1433
-#: includes/admin/class-form-editor.php:1804
+#: includes/admin/class-form-editor.php:1437
+#: includes/admin/class-form-editor.php:1808
 msgid "Enabled"
 msgstr "Aktiviert"
 
 #: includes/admin/class-form-editor.php:275
-#: includes/admin/class-form-editor.php:1824
-#: includes/admin/class-form-editor.php:2080
+#: includes/admin/class-form-editor.php:1828
+#: includes/admin/class-form-editor.php:2084
 msgid "Open"
 msgstr "Öffnen"
 
@@ -140,15 +140,15 @@ msgstr "Block: Formkit-Formular"
 
 #: includes/admin/class-form-editor.php:280
 #: includes/admin/class-form-editor.php:465
-#: includes/admin/class-form-editor.php:1208
-#: includes/admin/class-form-editor.php:1748
+#: includes/admin/class-form-editor.php:1212
+#: includes/admin/class-form-editor.php:1752
 msgid "Edit"
 msgstr "Bearbeiten"
 
 #: includes/admin/class-form-editor.php:282
 #: includes/admin/class-form-editor.php:464
-#: includes/admin/class-form-editor.php:892
-#: includes/admin/class-form-editor.php:1215
+#: includes/admin/class-form-editor.php:896
+#: includes/admin/class-form-editor.php:1219
 msgid "Duplicate"
 msgstr "Duplizieren"
 
@@ -162,8 +162,8 @@ msgid "Delete this form?"
 msgstr "Dieses Formular löschen?"
 
 #: includes/admin/class-form-editor.php:286
-#: includes/admin/class-form-editor.php:1222
-#: includes/admin/class-form-editor.php:1755
+#: includes/admin/class-form-editor.php:1226
+#: includes/admin/class-form-editor.php:1759
 msgid "Delete"
 msgstr "Löschen"
 
@@ -180,7 +180,7 @@ msgid "Import JSON"
 msgstr "JSON importieren"
 
 #: includes/admin/class-form-editor.php:387
-#: includes/admin/class-form-editor.php:578
+#: includes/admin/class-form-editor.php:582
 msgid "Section"
 msgstr "Abschnitt"
 
@@ -190,9 +190,9 @@ msgid "Field"
 msgstr "Feld"
 
 #: includes/admin/class-form-editor.php:407
-#: includes/admin/class-form-editor.php:534
+#: includes/admin/class-form-editor.php:538
 #: includes/class-frontend.php:305
-#: includes/class-frontend.php:1153
+#: includes/class-frontend.php:1173
 msgid "Remove"
 msgstr "Entfernen"
 
@@ -234,14 +234,14 @@ msgid "Show when"
 msgstr "Anzeigen wenn"
 
 #: includes/admin/class-form-editor.php:440
-#: includes/admin/class-form-editor.php:1937
+#: includes/admin/class-form-editor.php:1941
 msgid "Operator"
 msgstr "Operator"
 
 #: includes/admin/class-form-editor.php:441
-#: includes/admin/class-form-editor.php:1946
-#: includes/admin/class-form-editor.php:1953
-#: includes/admin/class-form-editor.php:2003
+#: includes/admin/class-form-editor.php:1950
+#: includes/admin/class-form-editor.php:1957
+#: includes/admin/class-form-editor.php:2007
 msgid "Value"
 msgstr "Wert"
 
@@ -253,115 +253,115 @@ msgstr "Immer sichtbar"
 msgid "Remove this item?"
 msgstr "Diesen Eintrag entfernen?"
 
-#: includes/admin/class-form-editor.php:489
+#: includes/admin/class-form-editor.php:493
 msgid "Form builder failed to load. Hard-refresh the page or check the browser console."
 msgstr "Formular-Builder konnte nicht geladen werden. Seite hart neu laden oder die Browser-Konsole prüfen."
 
-#: includes/admin/class-form-editor.php:494
+#: includes/admin/class-form-editor.php:498
 msgid "One third"
 msgstr "Ein Drittel"
 
-#: includes/admin/class-form-editor.php:496
+#: includes/admin/class-form-editor.php:500
 msgid "Add option"
 msgstr "Option hinzufügen"
 
-#: includes/admin/class-form-editor.php:497
+#: includes/admin/class-form-editor.php:501
 #: src/admin-form-settings/index.jsx:320
 #: src/admin-form-settings/index.jsx:792
 msgid "General"
 msgstr "Allgemein"
 
-#: includes/admin/class-form-editor.php:498
+#: includes/admin/class-form-editor.php:502
 msgid "Appearance"
 msgstr "Darstellung"
 
-#: includes/admin/class-form-editor.php:499
+#: includes/admin/class-form-editor.php:503
 msgid "Conditional"
 msgstr "Bedingt"
 
 #: includes/admin/class-form-editor.php:427
-#: includes/admin/class-form-editor.php:510
+#: includes/admin/class-form-editor.php:514
 msgid "Drag to reorder"
 msgstr "Ziehen zum Sortieren"
 
 #: includes/admin/class-form-editor.php:436
 #: includes/admin/class-form-editor.php:437
-#: includes/admin/class-form-editor.php:511
+#: includes/admin/class-form-editor.php:515
 msgid "Drag to resize"
 msgstr "Ziehen zum Ändern der Größe"
 
-#: includes/admin/class-form-editor.php:512
+#: includes/admin/class-form-editor.php:516
 msgid "You can also drag the right edge of a field on the canvas to change its width."
 msgstr "Du kannst auch den rechten Rand eines Feldes auf der Arbeitsfläche ziehen, um die Breite zu ändern."
 
-#: includes/admin/class-form-editor.php:517
+#: includes/admin/class-form-editor.php:521
 msgid "Section ID"
 msgstr "Abschnitts-ID"
 
-#: includes/admin/class-form-editor.php:518
+#: includes/admin/class-form-editor.php:522
 msgid "Item moved."
 msgstr "Element verschoben."
 
-#: includes/admin/class-form-editor.php:610
-#: includes/admin/class-form-editor.php:2340
-#: includes/admin/class-form-editor.php:2598
+#: includes/admin/class-form-editor.php:614
+#: includes/admin/class-form-editor.php:2344
+#: includes/admin/class-form-editor.php:2602
 msgid "New form"
 msgstr "Neues Formular"
 
-#: includes/admin/class-form-editor.php:688
-#: includes/admin/class-form-editor.php:862
-#: includes/admin/class-form-editor.php:864
+#: includes/admin/class-form-editor.php:692
+#: includes/admin/class-form-editor.php:866
+#: includes/admin/class-form-editor.php:868
 msgid "All Forms"
 msgstr "Alle Formulare"
 
-#: includes/admin/class-form-editor.php:693
+#: includes/admin/class-form-editor.php:697
 msgid "Form duplicated. Review the slug and secret link, then save."
 msgstr "Formular dupliziert. Prüfe Slug und geheimen Link, dann speichern."
 
-#: includes/admin/class-form-editor.php:696
+#: includes/admin/class-form-editor.php:700
 msgid "Form saved."
 msgstr "Formular gespeichert."
 
-#: includes/admin/class-form-editor.php:699
+#: includes/admin/class-form-editor.php:703
 msgid "Secret token regenerated. Old links no longer work."
 msgstr "Geheim-Token neu erzeugt. Alte Links funktionieren nicht mehr."
 
 #: includes/admin/class-form-editor.php:410
-#: includes/admin/class-form-editor.php:769
+#: includes/admin/class-form-editor.php:773
 #: includes/class-merge-tags.php:168
 msgid "Fields"
 msgstr "Felder"
 
-#: includes/admin/class-form-editor.php:770
+#: includes/admin/class-form-editor.php:774
 msgid "Form Settings"
 msgstr "Formular-Einstellungen"
 
-#: includes/admin/class-form-editor.php:773
-#: includes/admin/class-form-editor.php:1139
+#: includes/admin/class-form-editor.php:777
+#: includes/admin/class-form-editor.php:1143
 #: includes/admin/class-submissions.php:397
 msgid "Notifications"
 msgstr "Benachrichtigungen"
 
-#: includes/admin/class-form-editor.php:774
+#: includes/admin/class-form-editor.php:778
 msgid "Confirmations"
 msgstr "Bestätigungen"
 
-#: includes/admin/class-form-editor.php:775
-#: includes/admin/class-form-editor.php:895
+#: includes/admin/class-form-editor.php:779
+#: includes/admin/class-form-editor.php:899
 #: includes/admin/class-submissions.php:309
 msgid "Entries"
 msgstr "Einträge"
 
-#: includes/admin/class-form-editor.php:778
+#: includes/admin/class-form-editor.php:782
 msgid "Form editor sections"
 msgstr "Formular-Editor-Abschnitte"
 
-#: includes/admin/class-form-editor.php:794
+#: includes/admin/class-form-editor.php:798
 #: includes/admin/class-submissions.php:269
 msgid "Save the form first to view entries."
 msgstr "Speichere das Formular zuerst, um Einträge anzuzeigen."
 
-#: includes/admin/class-form-editor.php:909
+#: includes/admin/class-form-editor.php:913
 msgid "Build sections and fields here. Form settings, notifications, and confirmations are on the other tabs."
 msgstr "Baue hier Abschnitte und Felder. Formular-Einstellungen, Benachrichtigungen und Bestätigungen findest du in den anderen Tabs."
 
@@ -398,23 +398,23 @@ msgstr "Einleitungstext"
 msgid "Save settings"
 msgstr "Einstellungen speichern"
 
-#: includes/admin/class-form-editor.php:2178
+#: includes/admin/class-form-editor.php:2182
 #: includes/class-form-schema.php:428
 msgid "Thank you. Your form was submitted successfully."
 msgstr "Vielen Dank. Dein Formular wurde erfolgreich gesendet."
 
-#: includes/admin/class-form-editor.php:2201
+#: includes/admin/class-form-editor.php:2205
 msgid "Confirmation message"
 msgstr "Bestätigungstext"
 
-#: includes/admin/class-form-editor.php:2235
+#: includes/admin/class-form-editor.php:2239
 msgid "Save confirmation"
 msgstr "Bestätigung speichern"
 
 #: includes/admin/class-form-editor.php:122
 #: includes/admin/class-form-editor.php:188
-#: includes/admin/class-form-editor.php:2269
-#: includes/admin/class-form-editor.php:2621
+#: includes/admin/class-form-editor.php:2273
+#: includes/admin/class-form-editor.php:2625
 #: includes/admin/class-modules-page.php:37
 #: includes/admin/class-settings-page.php:45
 #: includes/admin/class-settings-page.php:64
@@ -428,8 +428,8 @@ msgstr "Ungültiger Sicherheitstoken."
 
 #: includes/admin/class-form-editor.php:127
 #: includes/admin/class-form-editor.php:193
-#: includes/admin/class-form-editor.php:2280
-#: includes/admin/class-form-editor.php:2715
+#: includes/admin/class-form-editor.php:2284
+#: includes/admin/class-form-editor.php:2719
 #: includes/class-frontend.php:53
 #: includes/class-frontend.php:265
 #: includes/class-rest-api.php:96
@@ -438,41 +438,41 @@ msgstr "Ungültiger Sicherheitstoken."
 msgid "Form not found."
 msgstr "Formular nicht gefunden."
 
-#: includes/admin/class-form-editor.php:2351
-#: includes/admin/class-form-editor.php:2421
-#: includes/admin/class-form-editor.php:2608
+#: includes/admin/class-form-editor.php:2355
+#: includes/admin/class-form-editor.php:2425
+#: includes/admin/class-form-editor.php:2612
 #: includes/class-rest-form-settings.php:125
 msgid "Could not create form."
 msgstr "Formular konnte nicht erstellt werden."
 
-#: includes/admin/class-form-editor.php:2397
+#: includes/admin/class-form-editor.php:2401
 #: includes/class-rest-form-settings.php:113
 #: includes/class-rest-form-settings.php:156
 msgid "Title is required."
 msgstr "Titel ist erforderlich."
 
-#: includes/admin/class-form-editor.php:2625
+#: includes/admin/class-form-editor.php:2629
 msgid "No file uploaded."
 msgstr "Keine Datei hochgeladen."
 
-#: includes/admin/class-form-editor.php:2637
+#: includes/admin/class-form-editor.php:2641
 msgid "Invalid JSON file."
 msgstr "Ungültige JSON-Datei."
 
-#: includes/admin/class-form-editor.php:2644
+#: includes/admin/class-form-editor.php:2648
 msgid "Gravity Forms import is available as a future module. Please import WE Formkit JSON for now."
 msgstr "Gravity-Forms-Import kommt als späteres Modul. Bitte vorerst WE-Formkit-JSON importieren."
 
-#: includes/admin/class-form-editor.php:2653
+#: includes/admin/class-form-editor.php:2657
 msgid "Imported form"
 msgstr "Importiertes Formular"
 
-#: includes/admin/class-form-editor.php:2667
+#: includes/admin/class-form-editor.php:2671
 msgid "Could not import form."
 msgstr "Formular konnte nicht importiert werden."
 
 #. translators: %s: original form title
-#: includes/admin/class-form-editor.php:2749
+#: includes/admin/class-form-editor.php:2753
 #, php-format
 msgid "%s (Copy)"
 msgstr "%s (Kopie)"
@@ -620,7 +620,7 @@ msgid "This field is required."
 msgstr "Dieses Feld ist erforderlich."
 
 #: includes/admin/class-form-editor.php:350
-#: includes/admin/class-form-editor.php:852
+#: includes/admin/class-form-editor.php:856
 #: includes/class-form-schema.php:475
 #: includes/class-frontend.php:300
 msgid "Submit form"
@@ -630,8 +630,8 @@ msgstr "Formular absenden"
 msgid "Privacy policy"
 msgstr "Datenschutzerklärung"
 
-#: includes/class-frontend.php:911
-#: includes/class-frontend.php:1205
+#: includes/class-frontend.php:931
+#: includes/class-frontend.php:1225
 msgid "Please select…"
 msgstr "Bitte wählen…"
 
@@ -752,7 +752,7 @@ msgstr "Eintrag: %1$s · %2$s"
 msgid "Generated by %s"
 msgstr "Erstellt von %s"
 
-#: includes/admin/class-form-editor.php:479
+#: includes/admin/class-form-editor.php:483
 #: includes/fields/class-checkbox-field.php:24
 msgid "Checkbox"
 msgstr "Kontrollkästchen"
@@ -801,7 +801,7 @@ msgstr "Nicht akzeptiert"
 msgid "Please choose a valid date for %s."
 msgstr "Bitte ein gültiges Datum für %s wählen."
 
-#: includes/admin/class-form-editor.php:540
+#: includes/admin/class-form-editor.php:544
 #: includes/fields/class-date-field.php:30
 #: includes/fields/class-datetime-field.php:30
 msgid "Date constraints"
@@ -835,7 +835,7 @@ msgstr "E-Mail"
 msgid "Hidden"
 msgstr "Versteckt"
 
-#: includes/admin/class-form-editor.php:539
+#: includes/admin/class-form-editor.php:543
 #: includes/fields/class-hidden-field.php:30
 msgid "Default value"
 msgstr "Standardwert"
@@ -844,7 +844,7 @@ msgstr "Standardwert"
 msgid "HTML / Note"
 msgstr "HTML / Hinweis"
 
-#: includes/admin/class-form-editor.php:538
+#: includes/admin/class-form-editor.php:542
 #: includes/fields/class-html-field.php:30
 msgid "HTML content"
 msgstr "HTML-Inhalt"
@@ -877,7 +877,7 @@ msgstr "%1$s muss mindestens %2$s sein."
 msgid "%1$s must be at most %2$s."
 msgstr "%1$s darf höchstens %2$s sein."
 
-#: includes/admin/class-form-editor.php:478
+#: includes/admin/class-form-editor.php:482
 #: includes/fields/class-radio-field.php:24
 msgid "Radio"
 msgstr "Optionsfeld"
@@ -902,7 +902,7 @@ msgstr "Optionen"
 msgid "Each option supports value, label, and an optional image (Media Library id or URL)."
 msgstr "Jede Option unterstützt Wert, Beschriftung und optional ein Bild (Mediathek-ID oder URL)."
 
-#: includes/class-frontend.php:749
+#: includes/class-frontend.php:750
 #: includes/fields/class-select-field.php:24
 msgid "Select"
 msgstr "Auswahl"
@@ -963,17 +963,17 @@ msgstr "Maximale Dateien"
 msgid "Maximum size per file (MB)"
 msgstr "Maximale Größe pro Datei (MB)"
 
-#: includes/admin/class-form-editor.php:530
+#: includes/admin/class-form-editor.php:534
 #: includes/fields/class-upload-field.php:43
 msgid "Allowed MIME types"
 msgstr "Erlaubte MIME-Typen"
 
-#: includes/admin/class-form-editor.php:535
+#: includes/admin/class-form-editor.php:539
 #: includes/fields/class-upload-field.php:49
 msgid "Storage mode"
 msgstr "Speichermodus"
 
-#: includes/admin/class-form-editor.php:1817
+#: includes/admin/class-form-editor.php:1821
 #: includes/fields/class-upload-field.php:159
 msgid "File"
 msgstr "Datei"
@@ -982,69 +982,69 @@ msgstr "Datei"
 msgid "URL"
 msgstr "URL"
 
-#: includes/admin/class-form-editor.php:488
+#: includes/admin/class-form-editor.php:492
 msgid "No sections yet. Add a section or pick a field from the library."
 msgstr "Noch keine Abschnitte. Abschnitt hinzufügen oder Feld aus der Bibliothek wählen."
 
-#: includes/admin/class-form-editor.php:519
+#: includes/admin/class-form-editor.php:523
 msgid "Placeholder"
 msgstr "Platzhalter"
 
-#: includes/admin/class-form-editor.php:528
+#: includes/admin/class-form-editor.php:532
 msgid "Max files"
 msgstr "Max. Dateien"
 
-#: includes/admin/class-form-editor.php:529
+#: includes/admin/class-form-editor.php:533
 msgid "Max file size (MB)"
 msgstr "Max. Dateigröße (MB)"
 
-#: includes/admin/class-form-editor.php:541
+#: includes/admin/class-form-editor.php:545
 msgid "Minimum"
 msgstr "Minimum"
 
-#: includes/admin/class-form-editor.php:542
+#: includes/admin/class-form-editor.php:546
 msgid "Maximum"
 msgstr "Maximum"
 
-#: includes/admin/class-form-editor.php:543
+#: includes/admin/class-form-editor.php:547
 #: includes/fields/class-repeater-field.php:77
 msgid "Fields in each row"
 msgstr "Felder pro Zeile"
 
-#: includes/admin/class-form-editor.php:545
+#: includes/admin/class-form-editor.php:549
 #: includes/fields/class-repeater-field.php:62
 msgid "Minimum rows"
 msgstr "Mindestzeilen"
 
-#: includes/admin/class-form-editor.php:546
+#: includes/admin/class-form-editor.php:550
 #: includes/fields/class-repeater-field.php:67
 msgid "Maximum rows"
 msgstr "Maximalzeilen"
 
-#: includes/admin/class-form-editor.php:550
+#: includes/admin/class-form-editor.php:554
 #: includes/fields/class-repeater-field.php:72
 msgid "Add row button label"
 msgstr "Beschriftung „Zeile hinzufügen“"
 
 #: includes/class-frontend.php:304
-#: includes/class-frontend.php:1078
+#: includes/class-frontend.php:1098
 msgid "Add another"
 msgstr "Weitere hinzufügen"
 
 #. translators: %d: row number (1-based).
 #: includes/class-frontend.php:307
-#: includes/class-frontend.php:1146
+#: includes/class-frontend.php:1166
 #: includes/fields/class-repeater-field.php:381
 #, php-format
 msgid "Row %d"
 msgstr "Zeile %d"
 
-#: includes/class-frontend.php:1094
+#: includes/class-frontend.php:1114
 msgid "This repeater has no fields configured yet."
 msgstr "Dieser Repeater hat noch keine Felder."
 
-#: includes/class-frontend.php:745
-#: includes/class-frontend.php:1142
+#: includes/class-frontend.php:746
+#: includes/class-frontend.php:1162
 msgid "Row"
 msgstr "Zeile"
 
@@ -1081,37 +1081,37 @@ msgstr "%1$s — Zeile %2$d: %3$s ist erforderlich."
 msgid "%1$s — row %2$d: %3$s"
 msgstr "%1$s — Zeile %2$d: %3$s"
 
-#: includes/admin/class-form-editor.php:474
-#: includes/admin/class-form-editor.php:490
-#: includes/fields/class-matrix-field.php:42
+#: includes/admin/class-form-editor.php:478
+#: includes/admin/class-form-editor.php:494
+#: includes/fields/class-matrix-field.php:52
 msgid "Columns"
 msgstr "Spalten"
 
-#: includes/admin/class-form-editor.php:491
+#: includes/admin/class-form-editor.php:495
 msgid "Full"
 msgstr "Voll"
 
-#: includes/admin/class-form-editor.php:492
+#: includes/admin/class-form-editor.php:496
 msgid "Two thirds"
 msgstr "Zwei Drittel"
 
-#: includes/admin/class-form-editor.php:493
+#: includes/admin/class-form-editor.php:497
 msgid "Half"
 msgstr "Halb"
 
-#: includes/admin/class-form-editor.php:495
+#: includes/admin/class-form-editor.php:499
 msgid "Choose how many columns this field spans in the row."
 msgstr "Lege fest, über wie viele Spalten dieses Feld in der Zeile geht."
 
-#: includes/admin/class-form-editor.php:551
+#: includes/admin/class-form-editor.php:555
 msgid "Drop fields here — they repeat together on the front end."
 msgstr "Felder hier ablegen — sie wiederholen sich gemeinsam im Frontend."
 
-#: includes/admin/class-form-editor.php:554
+#: includes/admin/class-form-editor.php:558
 msgid "A repeater cannot be placed inside another repeater."
 msgstr "Ein Repeater kann nicht in einen anderen Repeater gelegt werden."
 
-#: includes/admin/class-form-editor.php:555
+#: includes/admin/class-form-editor.php:559
 msgid "This field type cannot be used inside a repeater."
 msgstr "Dieser Feldtyp kann nicht in einem Repeater verwendet werden."
 
@@ -1137,17 +1137,17 @@ msgid "Submit"
 msgstr "Absenden"
 
 #: includes/admin/class-form-editor.php:439
-#: includes/admin/class-form-editor.php:1924
+#: includes/admin/class-form-editor.php:1928
 msgid "Depends on field"
 msgstr "Abhängig von Feld"
 
 #: includes/admin/class-form-editor.php:443
-#: includes/admin/class-form-editor.php:1877
+#: includes/admin/class-form-editor.php:1881
 msgid "Match all of the following (AND)"
 msgstr "Alle folgenden Bedingungen (UND)"
 
 #: includes/admin/class-form-editor.php:444
-#: includes/admin/class-form-editor.php:1882
+#: includes/admin/class-form-editor.php:1886
 msgid "Match any of the following (OR)"
 msgstr "Eine der folgenden Bedingungen (ODER)"
 
@@ -1160,13 +1160,13 @@ msgid "Rule"
 msgstr "Regel"
 
 #: includes/admin/class-form-editor.php:447
-#: includes/admin/class-form-editor.php:1925
+#: includes/admin/class-form-editor.php:1929
 msgid "— Select field —"
 msgstr "— Feld wählen —"
 
 #: includes/admin/class-form-editor.php:448
-#: includes/admin/class-form-editor.php:1947
-#: includes/admin/class-form-editor.php:2002
+#: includes/admin/class-form-editor.php:1951
+#: includes/admin/class-form-editor.php:2006
 msgid "— Select value —"
 msgstr "— Wert wählen —"
 
@@ -1207,27 +1207,27 @@ msgid "Choose file…"
 msgstr "Datei wählen…"
 
 #: includes/admin/class-form-editor.php:458
-#: includes/admin/class-form-editor.php:1938
+#: includes/admin/class-form-editor.php:1942
 msgid "equals"
 msgstr "gleich"
 
 #: includes/admin/class-form-editor.php:459
-#: includes/admin/class-form-editor.php:1939
+#: includes/admin/class-form-editor.php:1943
 msgid "not equals"
 msgstr "ungleich"
 
 #: includes/admin/class-form-editor.php:460
-#: includes/admin/class-form-editor.php:1940
+#: includes/admin/class-form-editor.php:1944
 msgid "contains"
 msgstr "enthält"
 
 #: includes/admin/class-form-editor.php:461
-#: includes/admin/class-form-editor.php:1941
+#: includes/admin/class-form-editor.php:1945
 msgid "is checked"
 msgstr "ist aktiviert"
 
 #: includes/admin/class-form-editor.php:462
-#: includes/admin/class-form-editor.php:1942
+#: includes/admin/class-form-editor.php:1946
 msgid "is not empty"
 msgstr "ist nicht leer"
 
@@ -1235,43 +1235,43 @@ msgstr "ist nicht leer"
 msgid "Signature pad"
 msgstr "Unterschriftenfeld"
 
-#: includes/admin/class-form-editor.php:544
+#: includes/admin/class-form-editor.php:548
 msgid "Click or drag fields from the library into the repeater. Min/max control how many rows visitors can add."
 msgstr "Felder aus der Bibliothek in den Repeater klicken oder ziehen. Min/Max steuern, wie viele Zeilen Besucher hinzufügen können."
 
-#: includes/admin/class-form-editor.php:552
+#: includes/admin/class-form-editor.php:556
 msgid "Drop fields here from the library."
 msgstr "Felder hier aus der Bibliothek ablegen."
 
-#: includes/admin/class-form-editor.php:553
+#: includes/admin/class-form-editor.php:557
 msgid "Click or drag a field from the library."
 msgstr "Feld aus der Bibliothek anklicken oder ziehen."
 
-#: includes/admin/class-form-editor.php:867
+#: includes/admin/class-form-editor.php:871
 #: includes/class-merge-tags.php:64
 msgid "Form title"
 msgstr "Formulartitel"
 
 #: includes/admin/class-form-editor.php:406
-#: includes/admin/class-form-editor.php:874
-#: includes/admin/class-form-editor.php:2329
+#: includes/admin/class-form-editor.php:878
+#: includes/admin/class-form-editor.php:2333
 msgid "Untitled form"
 msgstr "Unbenanntes Formular"
 
-#: includes/admin/class-form-editor.php:878
+#: includes/admin/class-form-editor.php:882
 msgid "Form ID for the Formkit block"
 msgstr "Formular-ID für den Formkit-Block"
 
-#: includes/admin/class-form-editor.php:881
-#: includes/admin/class-form-editor.php:882
+#: includes/admin/class-form-editor.php:885
+#: includes/admin/class-form-editor.php:886
 msgid "Pagination"
 msgstr "Seitenaufteilung"
 
-#: includes/admin/class-form-editor.php:883
+#: includes/admin/class-form-editor.php:887
 msgid "Single page"
 msgstr "Eine Seite"
 
-#: includes/admin/class-form-editor.php:884
+#: includes/admin/class-form-editor.php:888
 msgid "One section per page"
 msgstr "Ein Abschnitt pro Seite"
 
@@ -1279,75 +1279,75 @@ msgstr "Ein Abschnitt pro Seite"
 msgid "Save & Resume"
 msgstr "Speichern & Fortsetzen"
 
-#: includes/admin/class-form-editor.php:889
+#: includes/admin/class-form-editor.php:893
 msgid "Preview"
 msgstr "Vorschau"
 
-#: includes/admin/class-form-editor.php:897
+#: includes/admin/class-form-editor.php:901
 msgid "Save Form"
 msgstr "Formular speichern"
 
-#: includes/admin/class-form-editor.php:902
+#: includes/admin/class-form-editor.php:906
 msgid "Shortcode:"
 msgstr "Shortcode:"
 
-#: includes/admin/class-form-editor.php:1054
-#: includes/admin/class-form-editor.php:1083
+#: includes/admin/class-form-editor.php:1058
+#: includes/admin/class-form-editor.php:1087
 msgid "Modern settings UI is not built yet. Run npm install && npm run build:assets in the plugin folder."
 msgstr "Moderne Einstellungs-UI ist noch nicht gebaut. Im Plugin-Ordner npm install && npm run build:assets ausführen."
 
-#: includes/admin/class-form-editor.php:1437
+#: includes/admin/class-form-editor.php:1441
 msgid "Send this notification"
 msgstr "Diese Benachrichtigung senden"
 
-#: includes/admin/class-form-editor.php:1169
-#: includes/admin/class-form-editor.php:1236
-#: includes/admin/class-form-editor.php:1442
-#: includes/admin/class-form-editor.php:1701
-#: includes/admin/class-form-editor.php:1813
+#: includes/admin/class-form-editor.php:1173
+#: includes/admin/class-form-editor.php:1240
+#: includes/admin/class-form-editor.php:1446
+#: includes/admin/class-form-editor.php:1705
+#: includes/admin/class-form-editor.php:1817
 msgid "Name"
 msgstr "Name"
 
-#: includes/admin/class-form-editor.php:1446
+#: includes/admin/class-form-editor.php:1450
 msgid "Send to"
 msgstr "Senden an"
 
-#: includes/admin/class-form-editor.php:1449
+#: includes/admin/class-form-editor.php:1453
 msgid "Email address(es)"
 msgstr "E-Mail-Adresse(n)"
 
-#: includes/admin/class-form-editor.php:1450
-#: includes/admin/class-form-editor.php:1484
+#: includes/admin/class-form-editor.php:1454
+#: includes/admin/class-form-editor.php:1488
 msgid "Email field from form"
 msgstr "E-Mail-Feld aus dem Formular"
 
-#: includes/admin/class-form-editor.php:1454
+#: includes/admin/class-form-editor.php:1458
 msgid "Comma-separated. Empty uses the plugin default, then the site admin email."
 msgstr "Kommagetrennt. Leer = Plugin-Standard, dann Admin-E-Mail der Website."
 
-#: includes/admin/class-form-editor.php:1458
+#: includes/admin/class-form-editor.php:1462
 msgid "— Select email field —"
 msgstr "— E-Mail-Feld wählen —"
 
-#: includes/admin/class-form-editor.php:1468
+#: includes/admin/class-form-editor.php:1472
 #: includes/admin/class-settings-page.php:172
 msgid "From name"
 msgstr "Absendername"
 
-#: includes/admin/class-form-editor.php:1472
+#: includes/admin/class-form-editor.php:1476
 #: includes/admin/class-settings-page.php:189
 msgid "From email"
 msgstr "Absender-E-Mail"
 
-#: includes/admin/class-form-editor.php:1475
+#: includes/admin/class-form-editor.php:1479
 msgid "Prefer an address on your site domain for deliverability."
 msgstr "Für bessere Zustellbarkeit eine Adresse der Website-Domain bevorzugen."
 
-#: includes/admin/class-form-editor.php:1479
+#: includes/admin/class-form-editor.php:1483
 msgid "Reply-To"
 msgstr "Antwort an"
 
-#: includes/admin/class-form-editor.php:1482
+#: includes/admin/class-form-editor.php:1486
 #: includes/admin/class-settings-page.php:309
 #: src/admin-form-settings/index.jsx:156
 #: src/admin-form-settings/index.jsx:164
@@ -1356,90 +1356,90 @@ msgstr "Antwort an"
 msgid "None"
 msgstr "Keine"
 
-#: includes/admin/class-form-editor.php:1483
+#: includes/admin/class-form-editor.php:1487
 msgid "Fixed email"
 msgstr "Feste E-Mail"
 
-#: includes/admin/class-form-editor.php:1491
+#: includes/admin/class-form-editor.php:1495
 msgid "— First email field / any email value —"
 msgstr "— Erstes E-Mail-Feld / beliebiger E-Mail-Wert —"
 
-#: includes/admin/class-form-editor.php:1496
+#: includes/admin/class-form-editor.php:1500
 msgid "Useful so admins can reply directly to the submitter."
 msgstr "Nützlich, damit Admins direkt dem Absender antworten können."
 
-#: includes/admin/class-form-editor.php:1501
+#: includes/admin/class-form-editor.php:1505
 msgid "CC"
 msgstr "CC"
 
-#: includes/admin/class-form-editor.php:1505
+#: includes/admin/class-form-editor.php:1509
 msgid "BCC"
 msgstr "BCC"
 
-#: includes/admin/class-form-editor.php:1170
-#: includes/admin/class-form-editor.php:1237
-#: includes/admin/class-form-editor.php:1509
+#: includes/admin/class-form-editor.php:1174
+#: includes/admin/class-form-editor.php:1241
+#: includes/admin/class-form-editor.php:1513
 msgid "Subject"
 msgstr "Betreff"
 
-#: includes/admin/class-form-editor.php:1531
+#: includes/admin/class-form-editor.php:1535
 msgid "Message"
 msgstr "Nachricht"
 
-#: includes/admin/class-form-editor.php:1572
+#: includes/admin/class-form-editor.php:1576
 #: includes/class-merge-tags.php:94
 msgid "All fields"
 msgstr "Alle Felder"
 
-#: includes/admin/class-form-editor.php:1573
+#: includes/admin/class-form-editor.php:1577
 msgid "Selected fields"
 msgstr "Ausgewählte Felder"
 
-#: includes/admin/class-form-editor.php:1574
+#: includes/admin/class-form-editor.php:1578
 msgid "None (message only)"
 msgstr "Keine (nur Nachricht)"
 
-#: includes/admin/class-form-editor.php:1578
+#: includes/admin/class-form-editor.php:1582
 msgid "Add fields on the Fields tab first."
 msgstr "Zuerst Felder im Tab „Felder“ hinzufügen."
 
-#: includes/admin/class-form-editor.php:1591
+#: includes/admin/class-form-editor.php:1595
 msgid "Footer"
 msgstr "Fußzeile"
 
-#: includes/admin/class-form-editor.php:1606
+#: includes/admin/class-form-editor.php:1610
 msgid "Attachments"
 msgstr "Anhänge"
 
-#: includes/admin/class-form-editor.php:1610
+#: includes/admin/class-form-editor.php:1614
 msgid "Attach uploaded files to this email"
 msgstr "Hochgeladene Dateien an diese E-Mail anhängen"
 
-#: includes/admin/class-form-editor.php:2191
+#: includes/admin/class-form-editor.php:2195
 msgid "After submit"
 msgstr "Nach dem Absenden"
 
-#: includes/admin/class-form-editor.php:2194
+#: includes/admin/class-form-editor.php:2198
 msgid "Show message"
 msgstr "Nachricht anzeigen"
 
-#: includes/admin/class-form-editor.php:2195
+#: includes/admin/class-form-editor.php:2199
 msgid "Redirect to URL"
 msgstr "Weiterleitung zur URL"
 
-#: includes/admin/class-form-editor.php:2196
+#: includes/admin/class-form-editor.php:2200
 msgid "Show a WordPress page"
 msgstr "WordPress-Seite anzeigen"
 
-#: includes/admin/class-form-editor.php:2209
+#: includes/admin/class-form-editor.php:2213
 msgid "Redirect URL"
 msgstr "Weiterleitungs-URL"
 
-#: includes/admin/class-form-editor.php:2217
+#: includes/admin/class-form-editor.php:2221
 msgid "Thank-you page"
 msgstr "Danke-Seite"
 
-#: includes/admin/class-form-editor.php:2225
+#: includes/admin/class-form-editor.php:2229
 msgid "— Select a page —"
 msgstr "— Seite wählen —"
 
@@ -1559,13 +1559,13 @@ msgstr "Fortschritt speichern"
 msgid "Your saved progress was restored."
 msgstr "Dein gespeicherter Fortschritt wurde wiederhergestellt."
 
-#: includes/admin/class-form-editor.php:1832
+#: includes/admin/class-form-editor.php:1836
 #: includes/admin/class-submissions.php:371
-#: includes/class-frontend.php:1021
+#: includes/class-frontend.php:1041
 msgid "Clear"
 msgstr "Löschen"
 
-#: includes/admin/class-form-editor.php:2630
+#: includes/admin/class-form-editor.php:2634
 #: includes/class-private-files.php:72
 msgid "Invalid upload."
 msgstr "Ungültiger Upload."
@@ -1662,12 +1662,12 @@ msgstr "Ungültige Unterschriftsdaten."
 msgid "Default: private Formkit folder (not in Media Library). Media Library is discouraged for personal data."
 msgstr "Standard: privater Formkit-Ordner (nicht in der Mediathek). Mediathek für personenbezogene Daten nicht empfohlen."
 
-#: includes/admin/class-form-editor.php:536
+#: includes/admin/class-form-editor.php:540
 #: includes/fields/class-upload-field.php:57
 msgid "Private Formkit folder (recommended)"
 msgstr "Privater Formkit-Ordner (empfohlen)"
 
-#: includes/admin/class-form-editor.php:537
+#: includes/admin/class-form-editor.php:541
 #: includes/fields/class-upload-field.php:61
 msgid "Media Library (not recommended for personal data)"
 msgstr "Mediathek (nicht empfohlen für personenbezogene Daten)"
@@ -1709,93 +1709,93 @@ msgstr "Nach unten"
 msgid "Field actions"
 msgstr "Feldaktionen"
 
-#: includes/admin/class-form-editor.php:702
+#: includes/admin/class-form-editor.php:706
 msgid "Notification status updated."
 msgstr "Benachrichtigungsstatus aktualisiert."
 
-#: includes/admin/class-form-editor.php:705
+#: includes/admin/class-form-editor.php:709
 msgid "Notification deleted."
 msgstr "Benachrichtigung gelöscht."
 
-#: includes/admin/class-form-editor.php:708
+#: includes/admin/class-form-editor.php:712
 msgid "Notification duplicated. Review the copy, then save."
 msgstr "Benachrichtigung dupliziert. Kopie prüfen, dann speichern."
 
-#: includes/admin/class-form-editor.php:1115
+#: includes/admin/class-form-editor.php:1119
 #: includes/class-notifications.php:148
 msgid "Notification not found."
 msgstr "Benachrichtigung nicht gefunden."
 
-#: includes/admin/class-form-editor.php:1140
-#: includes/admin/class-form-editor.php:1686
+#: includes/admin/class-form-editor.php:1144
+#: includes/admin/class-form-editor.php:1690
 msgid "Add New"
 msgstr "Neu hinzufügen"
 
-#: includes/admin/class-form-editor.php:1162
+#: includes/admin/class-form-editor.php:1166
 msgid "Default admin and submitter notifications are shown below. Save a notification to create the form first."
 msgstr "Standard-Admin- und Absender-Benachrichtigungen siehst du unten. Benachrichtigung speichern, um das Formular zuerst anzulegen."
 
-#: includes/admin/class-form-editor.php:1168
-#: includes/admin/class-form-editor.php:1235
-#: includes/admin/class-form-editor.php:1700
+#: includes/admin/class-form-editor.php:1172
+#: includes/admin/class-form-editor.php:1239
+#: includes/admin/class-form-editor.php:1704
 #: includes/admin/class-submissions.php:845
 #: includes/admin/class-submissions.php:955
 msgid "Status"
 msgstr "Status"
 
-#: includes/admin/class-form-editor.php:1176
+#: includes/admin/class-form-editor.php:1180
 msgid "No notifications yet."
 msgstr "Noch keine Benachrichtigungen."
 
-#: includes/admin/class-form-editor.php:1192
-#: includes/admin/class-form-editor.php:1733
+#: includes/admin/class-form-editor.php:1196
+#: includes/admin/class-form-editor.php:1737
 msgid "Click to deactivate"
 msgstr "Klicken zum Deaktivieren"
 
-#: includes/admin/class-form-editor.php:1192
-#: includes/admin/class-form-editor.php:1733
+#: includes/admin/class-form-editor.php:1196
+#: includes/admin/class-form-editor.php:1737
 msgid "Click to activate"
 msgstr "Klicken zum Aktivieren"
 
-#: includes/admin/class-form-editor.php:1195
-#: includes/admin/class-form-editor.php:1200
-#: includes/admin/class-form-editor.php:1736
-#: includes/admin/class-form-editor.php:1741
+#: includes/admin/class-form-editor.php:1199
+#: includes/admin/class-form-editor.php:1204
+#: includes/admin/class-form-editor.php:1740
+#: includes/admin/class-form-editor.php:1745
 #: includes/admin/class-modules-page.php:92
 #: includes/admin/class-submissions.php:880
 msgid "Active"
 msgstr "Aktiv"
 
-#: includes/admin/class-form-editor.php:1195
-#: includes/admin/class-form-editor.php:1200
-#: includes/admin/class-form-editor.php:1736
-#: includes/admin/class-form-editor.php:1741
+#: includes/admin/class-form-editor.php:1199
+#: includes/admin/class-form-editor.php:1204
+#: includes/admin/class-form-editor.php:1740
+#: includes/admin/class-form-editor.php:1745
 #: includes/admin/class-submissions.php:880
 msgid "Inactive"
 msgstr "Inaktiv"
 
-#: includes/admin/class-form-editor.php:1221
+#: includes/admin/class-form-editor.php:1225
 msgid "Delete this notification?"
 msgstr "Diese Benachrichtigung löschen?"
 
-#: includes/admin/class-form-editor.php:1226
+#: includes/admin/class-form-editor.php:1230
 msgid "Show more details"
 msgstr "Mehr Details anzeigen"
 
-#: includes/admin/class-form-editor.php:1264
+#: includes/admin/class-form-editor.php:1268
 msgid "Back to notifications"
 msgstr "Zurück zu Benachrichtigungen"
 
-#: includes/admin/class-form-editor.php:1267
 #: includes/admin/class-form-editor.php:1271
+#: includes/admin/class-form-editor.php:1275
 msgid "Add notification"
 msgstr "Benachrichtigung hinzufügen"
 
-#: includes/admin/class-form-editor.php:1271
+#: includes/admin/class-form-editor.php:1275
 msgid "Update notification"
 msgstr "Benachrichtigung aktualisieren"
 
-#: includes/admin/class-form-editor.php:1463
+#: includes/admin/class-form-editor.php:1467
 msgid "Typical for submitter confirmations."
 msgstr "Typisch für Absender-Bestätigungen."
 
@@ -1811,109 +1811,109 @@ msgstr "(Kopie)"
 msgid "Submitter confirmation"
 msgstr "Absender-Bestätigung"
 
-#: includes/admin/class-form-editor.php:711
+#: includes/admin/class-form-editor.php:715
 msgid "Document status updated."
 msgstr "Dokumentstatus aktualisiert."
 
-#: includes/admin/class-form-editor.php:714
+#: includes/admin/class-form-editor.php:718
 msgid "Document deleted."
 msgstr "Dokument gelöscht."
 
-#: includes/admin/class-form-editor.php:772
+#: includes/admin/class-form-editor.php:776
 msgid "Documents"
 msgstr "Dokumente"
 
-#: includes/admin/class-form-editor.php:1661
+#: includes/admin/class-form-editor.php:1665
 msgid "Document not found."
 msgstr "Dokument nicht gefunden."
 
-#: includes/admin/class-form-editor.php:1685
+#: includes/admin/class-form-editor.php:1689
 msgid "Info documents"
 msgstr "Infodokumente"
 
-#: includes/admin/class-form-editor.php:1690
+#: includes/admin/class-form-editor.php:1694
 msgid "Offer download links and/or email attachments when conditions match (for example a selected radio or checkbox option). The same file is only delivered once even if multiple rules match."
 msgstr "Download-Links und/oder E-Mail-Anhänge anbieten, wenn Bedingungen passen (z. B. gewählte Radio- oder Checkbox-Option). Dieselbe Datei wird nur einmal geliefert, auch wenn mehrere Regeln passen."
 
-#: includes/admin/class-form-editor.php:1694
+#: includes/admin/class-form-editor.php:1698
 msgid "Save a document to create the form first."
 msgstr "Dokument speichern, um das Formular zuerst anzulegen."
 
-#: includes/admin/class-form-editor.php:1702
-#: includes/admin/class-form-editor.php:1867
+#: includes/admin/class-form-editor.php:1706
+#: includes/admin/class-form-editor.php:1871
 msgid "When"
 msgstr "Wann"
 
-#: includes/admin/class-form-editor.php:1703
-#: includes/admin/class-form-editor.php:1837
+#: includes/admin/class-form-editor.php:1707
+#: includes/admin/class-form-editor.php:1841
 msgid "Delivery"
 msgstr "Zustellung"
 
-#: includes/admin/class-form-editor.php:1709
+#: includes/admin/class-form-editor.php:1713
 msgid "No documents yet. Add one to attach info PDFs to options or always."
 msgstr "Noch keine Dokumente. Eines hinzufügen, um Info-PDFs an Optionen oder immer anzuhängen."
 
-#: includes/admin/class-form-editor.php:1718
-#: includes/admin/class-form-editor.php:1870
+#: includes/admin/class-form-editor.php:1722
+#: includes/admin/class-form-editor.php:1874
 msgid "Always"
 msgstr "Immer"
 
-#: includes/admin/class-form-editor.php:1718
-#: includes/admin/class-form-editor.php:1871
+#: includes/admin/class-form-editor.php:1722
+#: includes/admin/class-form-editor.php:1875
 msgid "When conditions match"
 msgstr "Wenn Bedingungen passen"
 
-#: includes/admin/class-form-editor.php:1721
+#: includes/admin/class-form-editor.php:1725
 msgid "Download link"
 msgstr "Download-Link"
 
-#: includes/admin/class-form-editor.php:1724
+#: includes/admin/class-form-editor.php:1728
 msgid "Email attachment"
 msgstr "E-Mail-Anhang"
 
-#: includes/admin/class-form-editor.php:1754
+#: includes/admin/class-form-editor.php:1758
 msgid "Delete this document?"
 msgstr "Dieses Dokument löschen?"
 
-#: includes/admin/class-form-editor.php:1799
+#: includes/admin/class-form-editor.php:1803
 msgid "Back to documents"
 msgstr "Zurück zu Dokumenten"
 
-#: includes/admin/class-form-editor.php:1800
-#: includes/admin/class-form-editor.php:1964
+#: includes/admin/class-form-editor.php:1804
+#: includes/admin/class-form-editor.php:1968
 msgid "Add document"
 msgstr "Dokument hinzufügen"
 
-#: includes/admin/class-form-editor.php:1808
+#: includes/admin/class-form-editor.php:1812
 msgid "Use this document when conditions match"
 msgstr "Dieses Dokument verwenden, wenn Bedingungen passen"
 
-#: includes/admin/class-form-editor.php:1826
-#: includes/admin/class-form-editor.php:2081
+#: includes/admin/class-form-editor.php:1830
+#: includes/admin/class-form-editor.php:2085
 msgid "No file selected."
 msgstr "Keine Datei ausgewählt."
 
-#: includes/admin/class-form-editor.php:1831
+#: includes/admin/class-form-editor.php:1835
 msgid "Select from Media Library"
 msgstr "Aus Mediathek wählen"
 
-#: includes/admin/class-form-editor.php:1853
+#: includes/admin/class-form-editor.php:1857
 msgid "Attach file to email notification(s)"
 msgstr "Datei an E-Mail-Benachrichtigung(en) anhängen"
 
-#: includes/admin/class-form-editor.php:1856
+#: includes/admin/class-form-editor.php:1860
 msgid "Leave all unchecked to attach to every enabled notification. Prefer the submitter confirmation."
 msgstr "Alle unmarkiert lassen, um an jede aktive Benachrichtigung anzuhängen. Absender-Bestätigung bevorzugen."
 
-#: includes/admin/class-form-editor.php:1964
+#: includes/admin/class-form-editor.php:1968
 msgid "Update document"
 msgstr "Dokument aktualisieren"
 
-#: includes/admin/class-form-editor.php:2096
+#: includes/admin/class-form-editor.php:2100
 msgid "Select document"
 msgstr "Dokument wählen"
 
-#: includes/admin/class-form-editor.php:2097
+#: includes/admin/class-form-editor.php:2101
 msgid "Use this file"
 msgstr "Diese Datei verwenden"
 
@@ -1930,19 +1930,19 @@ msgstr "Dokument"
 msgid "Downloads"
 msgstr "Downloads"
 
-#: includes/admin/class-form-editor.php:1516
+#: includes/admin/class-form-editor.php:1520
 msgid "Header"
 msgstr "Kopfzeile"
 
-#: includes/admin/class-form-editor.php:1527
+#: includes/admin/class-form-editor.php:1531
 msgid "Shown above the message (logo text, greeting). Supports merge tags. Formatting is kept in the email."
 msgstr "Wird über der Nachricht angezeigt (Logo-Text, Begrüßung). Unterstützt Merge-Tags. Formatierung bleibt in der E-Mail erhalten."
 
-#: includes/admin/class-form-editor.php:1602
+#: includes/admin/class-form-editor.php:1606
 msgid "Shown below the message (signature, legal line, contact). Supports merge tags and formatting."
 msgstr "Wird unter der Nachricht angezeigt (Signatur, Rechtstext, Kontakt). Unterstützt Merge-Tags und Formatierung."
 
-#: includes/admin/class-form-editor.php:1885
+#: includes/admin/class-form-editor.php:1889
 msgid "Pick a field and value. For checkboxes / multi-select, use “contains”."
 msgstr "Feld und Wert wählen. Bei Checkboxen / Mehrfachauswahl „enthält“ verwenden."
 
@@ -2219,15 +2219,15 @@ msgstr "Nutzt die Seite aus den WordPress-Datenschutz-Einstellungen (%1$s). Änd
 msgid "Custom privacy policy URL"
 msgstr "Benutzerdefinierte Datenschutz-URL"
 
-#: includes/admin/class-form-editor.php:520
+#: includes/admin/class-form-editor.php:524
 msgid "Validation messages"
 msgstr "Validierungsmeldungen"
 
-#: includes/admin/class-form-editor.php:521
+#: includes/admin/class-form-editor.php:525
 msgid "Required message"
 msgstr "Pflichtfeld-Meldung"
 
-#: includes/admin/class-form-editor.php:522
+#: includes/admin/class-form-editor.php:526
 msgid "Invalid message"
 msgstr "Ungültig-Meldung"
 
@@ -2279,29 +2279,29 @@ msgstr "Feldeinstellungen einklappen"
 msgid "Expand field settings"
 msgstr "Feldeinstellungen ausklappen"
 
-#: includes/admin/class-form-editor.php:547
+#: includes/admin/class-form-editor.php:551
 #: includes/fields/class-checkboxes-field.php:31
 msgid "Minimum selections"
 msgstr "Mindestauswahl"
 
-#: includes/admin/class-form-editor.php:548
+#: includes/admin/class-form-editor.php:552
 #: includes/fields/class-checkboxes-field.php:37
 msgid "Maximum selections"
 msgstr "Maximalauswahl"
 
-#: includes/admin/class-form-editor.php:549
+#: includes/admin/class-form-editor.php:553
 msgid "0 minimum = no minimum (unless Required). 0 maximum = unlimited."
 msgstr "0 als Minimum = kein Minimum (außer Pflichtfeld). 0 als Maximum = unbegrenzt."
 
-#: includes/admin/class-form-editor.php:717
+#: includes/admin/class-form-editor.php:721
 msgid "Please select a file from the Media Library before saving."
 msgstr "Bitte vor dem Speichern eine Datei aus der Mediathek auswählen."
 
-#: includes/admin/class-form-editor.php:2079
+#: includes/admin/class-form-editor.php:2083
 msgid "Media Library could not be loaded. Please refresh the page."
 msgstr "Die Mediathek konnte nicht geladen werden. Bitte die Seite neu laden."
 
-#: includes/admin/class-form-editor.php:2082
+#: includes/admin/class-form-editor.php:2086
 msgid "Please select a file from the Media Library."
 msgstr "Bitte eine Datei aus der Mediathek auswählen."
 
@@ -2351,43 +2351,43 @@ msgstr "0 = kein Minimum (außer das Feld ist Pflicht)."
 msgid "0 = unlimited."
 msgstr "0 = unbegrenzt."
 
-#: includes/admin/class-form-editor.php:503
+#: includes/admin/class-form-editor.php:507
 msgid "Submit button text"
 msgstr "Absenden-Button-Text"
 
-#: includes/admin/class-form-editor.php:506
+#: includes/admin/class-form-editor.php:510
 msgid "Icon position"
 msgstr "Icon-Position"
 
-#: includes/admin/class-form-editor.php:507
+#: includes/admin/class-form-editor.php:511
 msgid "Before text"
 msgstr "Vor dem Text"
 
-#: includes/admin/class-form-editor.php:508
+#: includes/admin/class-form-editor.php:512
 msgid "After text"
 msgstr "Nach dem Text"
 
-#: includes/admin/class-form-editor.php:500
+#: includes/admin/class-form-editor.php:504
 msgid "Select a field, section, or the submit button to edit its settings."
 msgstr ""
 
-#: includes/admin/class-form-editor.php:501
+#: includes/admin/class-form-editor.php:505
 msgid "Submit button"
 msgstr "Absenden-Button"
 
-#: includes/admin/class-form-editor.php:502
+#: includes/admin/class-form-editor.php:506
 msgid "Shown at the end of the form. Save the form to apply changes on the front end."
 msgstr ""
 
-#: includes/admin/class-form-editor.php:504
+#: includes/admin/class-form-editor.php:508
 msgid "SVG icon (optional)"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:505
+#: includes/admin/class-form-editor.php:509
 msgid "Paste inline SVG markup (no scripts). Leave empty for text only."
 msgstr ""
 
-#: includes/admin/class-form-editor.php:509
+#: includes/admin/class-form-editor.php:513
 msgid "Edit submit button"
 msgstr ""
 
@@ -2452,27 +2452,27 @@ msgstr "Mit Kasten"
 msgid "Labels & help"
 msgstr "Labels & Hilfe"
 
-#: includes/admin/class-form-editor.php:514
+#: includes/admin/class-form-editor.php:518
 msgid "Show title on form"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:515
+#: includes/admin/class-form-editor.php:519
 msgid "When off, the title stays in the builder for reference but is hidden on the front end."
 msgstr ""
 
-#: includes/admin/class-form-editor.php:516
+#: includes/admin/class-form-editor.php:520
 msgid "Hidden on form"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:531
+#: includes/admin/class-form-editor.php:535
 msgid "Leave empty to use the WordPress default whitelist."
 msgstr ""
 
-#: includes/admin/class-form-editor.php:532
+#: includes/admin/class-form-editor.php:536
 msgid "Add type…"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:533
+#: includes/admin/class-form-editor.php:537
 msgid "Clear all"
 msgstr ""
 
@@ -3104,7 +3104,7 @@ msgstr "Schnellzugriff für dieses Formular. Speichern & Fortsetzen und Datensch
 msgid "Open Design"
 msgstr "Design öffnen"
 
-#: includes/admin/class-form-editor.php:771
+#: includes/admin/class-form-editor.php:775
 msgid "Design"
 msgstr "Design"
 
@@ -3216,31 +3216,31 @@ msgid "Your submission was flagged as spam. If this is a mistake, please try aga
 msgstr "Dein Eintrag wurde als Spam eingestuft. Falls das ein Fehler ist, versuche es bitte erneut oder kontaktiere uns direkt."
 
 #. translators: %s: literal merge tag {label} (do not translate the tag).
-#: includes/admin/class-form-editor.php:525
+#: includes/admin/class-form-editor.php:529
 #, php-format
 msgid "Leave empty to use Formkit Settings defaults. Use %s for the field label."
 msgstr "Leer lassen für die Formkit-Einstellungen. %s für die Feldbeschriftung verwenden."
 
 #. translators: 1–7: merge tags (do not translate the tags).
-#: includes/admin/class-form-editor.php:1148
+#: includes/admin/class-form-editor.php:1152
 #, php-format
 msgid "Configure who receives emails after a submission. Use %1$s, %2$s, %3$s, %4$s, %5$s, %6$s, or %7$s in subject and message."
 msgstr "Lege fest, wer nach einer Einsendung E-Mails erhält. In Betreff und Nachricht: %1$s, %2$s, %3$s, %4$s, %5$s, %6$s oder %7$s."
 
 #. translators: 1–4: merge tags (do not translate the tags).
-#: includes/admin/class-form-editor.php:1547
+#: includes/admin/class-form-editor.php:1551
 #, php-format
 msgid "HTML email body. Use %1$s, %2$s, %3$s, %4$s, and other merge tags."
 msgstr "HTML-E-Mail-Text. Nutze %1$s, %2$s, %3$s, %4$s und andere Merge-Tags."
 
 #. translators: %s: merge tag {all_fields} (do not translate the tag).
-#: includes/admin/class-form-editor.php:1564
+#: includes/admin/class-form-editor.php:1568
 #, php-format
 msgid "Fields in %s"
 msgstr "Felder in %s"
 
 #. translators: %s: merge tag {info_links} (do not translate the tag).
-#: includes/admin/class-form-editor.php:1845
+#: includes/admin/class-form-editor.php:1849
 #, php-format
 msgid "Show download link after submit (and via %s in emails)"
 msgstr "Download-Link nach dem Absenden anzeigen (und über %s in E-Mails)"
@@ -3293,16 +3293,16 @@ msgstr "%s ist erforderlich."
 msgid "Please enter a valid value for %s."
 msgstr "Bitte einen gültigen Wert für %s eingeben."
 
-#: includes/admin/class-form-editor.php:1344
-#: includes/admin/class-form-editor.php:1388
+#: includes/admin/class-form-editor.php:1348
+#: includes/admin/class-form-editor.php:1392
 msgid "Insert smart tag"
 msgstr "Smart-Tag einfügen"
 
-#: includes/admin/class-form-editor.php:2205
+#: includes/admin/class-form-editor.php:2209
 msgid "Shown on the page after a successful submission. Leave empty to use the default message. Smart tags are replaced on submit."
 msgstr "Wird nach erfolgreichem Absenden auf der Seite angezeigt. Leer lassen für die Standardmeldung. Smart-Tags werden beim Absenden ersetzt."
 
-#: includes/admin/class-form-editor.php:2213
+#: includes/admin/class-form-editor.php:2217
 msgid "Smart tags in the URL are replaced on submit (use with care)."
 msgstr "Smart-Tags in der URL werden beim Absenden ersetzt (mit Bedacht verwenden)."
 
@@ -3387,57 +3387,57 @@ msgstr ""
 msgid "Show row select checkbox"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:473
-#: includes/fields/class-matrix-field.php:38
+#: includes/admin/class-form-editor.php:477
+#: includes/fields/class-matrix-field.php:48
 msgid "Rows"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:475
+#: includes/admin/class-form-editor.php:479
 msgid "Add row"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:476
+#: includes/admin/class-form-editor.php:480
 msgid "Add column"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:480
+#: includes/admin/class-form-editor.php:484
 msgid "Radio options (column headers)"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:481
+#: includes/admin/class-form-editor.php:485
 msgid "Row 1"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:482
+#: includes/admin/class-form-editor.php:486
 msgid "Row 2"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:483
+#: includes/admin/class-form-editor.php:487
 msgid "Choice"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:484
+#: includes/admin/class-form-editor.php:488
 msgid "Flag"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:485
+#: includes/admin/class-form-editor.php:489
 msgid "Option A"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:486
+#: includes/admin/class-form-editor.php:490
 msgid "Option B"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:487
+#: includes/admin/class-form-editor.php:491
 msgid "Option C"
 msgstr ""
 
-#: includes/class-frontend.php:727
+#: includes/class-frontend.php:728
 msgid "This matrix has no rows or columns yet."
 msgstr ""
 
 #. translators: %s: row label
-#: includes/class-frontend.php:825
+#: includes/class-frontend.php:826
 #, php-format
 msgid "Select %s"
 msgstr ""
@@ -3454,14 +3454,38 @@ msgstr ""
 msgid "Show a checkbox to mark each row as selected."
 msgstr ""
 
-#: includes/fields/class-matrix-field.php:395
+#: includes/fields/class-matrix-field.php:416
 msgid "selected"
 msgstr ""
 
-#: includes/fields/class-matrix-field.php:395
+#: includes/fields/class-matrix-field.php:416
 msgid "not selected"
 msgstr ""
 
-#: includes/admin/class-form-editor.php:477
+#: includes/admin/class-form-editor.php:481
 msgid "Drag the handle or use the arrows to reorder."
+msgstr ""
+
+#: includes/admin/class-form-editor.php:473
+#: includes/fields/class-matrix-field.php:38
+msgid "Row label alignment"
+msgstr ""
+
+#: includes/admin/class-form-editor.php:474
+#: includes/fields/class-matrix-field.php:41
+msgid "Left"
+msgstr ""
+
+#: includes/admin/class-form-editor.php:475
+#: includes/fields/class-matrix-field.php:42
+msgid "Center"
+msgstr ""
+
+#: includes/admin/class-form-editor.php:476
+#: includes/fields/class-matrix-field.php:43
+msgid "Right"
+msgstr ""
+
+#: includes/class-frontend.php:833
+msgid "Include this row"
 msgstr ""

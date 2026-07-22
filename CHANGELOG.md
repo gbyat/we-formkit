@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.8] - 2026-07-22
+
+- Enhance matrix field functionality by introducing row label alignment options in the admin form editor. Update CSS for improved layout and responsiveness of matrix elements, ensuring better user experience on narrow screens. Refactor PHP methods to support new alignment settings and maintain data integrity in form submissions.
 ## [0.6.7] - 2026-07-22
 
 - Enhance matrix field functionality by improving CSS styles for better layout and responsiveness. Update JavaScript to handle matrix row references more effectively, including recovery of corrupted references. Refactor PHP methods to support matrix condition references and ensure proper sanitization of field IDs. This update aims to improve user experience and maintain data integrity in form submissions.
