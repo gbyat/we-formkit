@@ -805,11 +805,12 @@ final class Form_Schema {
 	 */
 	public static function appearance_root_classes( $form_id ) {
 		$a       = self::get_appearance( $form_id );
+		// CSS modifiers use hyphens (help-below-label); stored keys use underscores (below_label).
 		$classes = array(
 			'we-formkit--label-' . $a['label_weight'],
 			'we-formkit--req-' . $a['required_mark'],
 			'we-formkit--opt-' . $a['optional_mark'],
-			'we-formkit--help-' . $a['help_placement'],
+			'we-formkit--help-' . str_replace( '_', '-', $a['help_placement'] ),
 			'we-formkit--help-style-' . $a['help_style'],
 		);
 		if ( 'off' !== $a['inline_validation'] ) {

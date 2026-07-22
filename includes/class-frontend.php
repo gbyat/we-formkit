@@ -645,26 +645,42 @@ final class Frontend {
 			aria-hidden="<?php echo $hidden ? 'true' : 'false'; ?>"
 		>
 			<?php if ( 'checkbox' === $type || 'consent' === $type ) : ?>
-				<div class="we-formkit__control we-formkit__control--choice">
+				<?php
+				$consent_privacy = '';
+				if ( 'consent' === $type ) {
+					$field_privacy   = isset( $field['type_options']['privacy_url'] ) ? trim( (string) $field['type_options']['privacy_url'] ) : '';
+					$consent_privacy = '' !== $field_privacy ? $field_privacy : (string) $privacy_url;
+				}
+				?>
+				<div class="we-formkit__control we-formkit__control--choice<?php echo 'consent' === $type ? ' we-formkit__control--consent' : ''; ?>">
 					<input
 						type="checkbox"
 						id="<?php echo esc_attr( $input_id ); ?>"
 						name="<?php echo esc_attr( $id ); ?>"
 						value="1"
 						<?php echo $req ? 'required' : ''; ?>
-						aria-describedby="<?php echo esc_attr( trim( $desc_id . ' ' . $error_id ) ); ?>"
+						aria-describedby="<?php echo esc_attr( trim( ( ( 'consent' === $type && $consent_privacy ) || ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
 					/>
-					<label for="<?php echo esc_attr( $input_id ); ?>">
-						<?php echo esc_html( $field['label'] ); ?>
-						<?php self::echo_requirement_mark( $req, $type ); ?>
-					</label>
+					<div class="we-formkit__consent-copy">
+						<label for="<?php echo esc_attr( $input_id ); ?>">
+							<?php echo esc_html( $field['label'] ); ?>
+							<?php self::echo_requirement_mark( $req, $type ); ?>
+						</label>
+						<?php if ( 'consent' === $type && $consent_privacy ) : ?>
+							<a
+								class="we-formkit__privacy-link"
+								id="<?php echo esc_attr( $desc_id ); ?>"
+								href="<?php echo esc_url( $consent_privacy ); ?>"
+								target="_blank"
+								rel="noopener noreferrer"
+							><?php esc_html_e( 'Privacy policy', 'we-formkit' ); ?></a>
+						<?php endif; ?>
+					</div>
 				</div>
-				<?php if ( 'consent' === $type && $privacy_url ) : ?>
-					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>">
-						<a href="<?php echo esc_url( $privacy_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Privacy policy', 'we-formkit' ); ?></a>
-					</p>
-				<?php elseif ( ! empty( $field['help'] ) ) : ?>
+				<?php if ( ! empty( $field['help'] ) && ! ( 'consent' === $type && $consent_privacy ) ) : ?>
 					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
+				<?php elseif ( ! empty( $field['help'] ) && 'consent' === $type && $consent_privacy ) : ?>
+					<p class="we-formkit__help"><?php echo esc_html( $field['help'] ); ?></p>
 				<?php endif; ?>
 			<?php elseif ( in_array( $type, array( 'radio', 'checkboxes' ), true ) ) : ?>
 				<?php

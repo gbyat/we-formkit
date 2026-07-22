@@ -147,11 +147,21 @@
 	margin-bottom: 0.35rem;
 }
 
-/* Native fieldsets default to min-width: min-content and overflow on narrow screens. */
+/*
+ * Native fieldsets shrink-wrap (min-inline-size: min-content) and ignore width in
+ * some engines — stretch explicitly so radio/checkbox groups match text inputs.
+ */
 .we-formkit__fieldset {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
 	min-width: 0;
+	min-inline-size: 0;
 	max-width: 100%;
 	width: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0;
 	box-sizing: border-box;
 	overflow-wrap: break-word;
 }
@@ -267,11 +277,7 @@
 
 .we-formkit--help-below-label .we-formkit__fieldset,
 .we-formkit--help-below-field .we-formkit__fieldset {
-	display: flex;
-	flex-direction: column;
-	border: 0;
-	margin: 0;
-	padding: 0;
+	/* Base fieldset already flex + borderless; keep selector for order rules below. */
 	min-width: 0;
 }
 
@@ -361,13 +367,16 @@
 
 .we-formkit__choices {
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 0.5rem;
 	width: 100%;
+	align-self: stretch;
 	box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
 	.we-formkit__choices {
+		/* Equal columns: minmax(0,1fr) avoids content-sized uneven tracks. */
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
@@ -382,8 +391,8 @@
 	border-radius: var(--wek-radius-input);
 	background: var(--wek-accent-soft);
 	cursor: pointer;
-	max-width: 100%;
 	width: 100%;
+	max-width: none;
 	box-sizing: border-box;
 	min-width: 0;
 	transition:
@@ -460,6 +469,39 @@
 	cursor: pointer;
 	overflow-wrap: break-word;
 	word-wrap: break-word;
+}
+
+.we-formkit__consent-copy {
+	flex: 1;
+	min-width: 0;
+	display: grid;
+	gap: 0.35rem;
+}
+
+.we-formkit__control--consent .we-formkit__consent-copy > label {
+	flex: none;
+	display: block;
+}
+
+.we-formkit__privacy-link {
+	display: inline-block;
+	font-size: var(--wek-font-help, 0.9rem);
+	font-weight: 600;
+	line-height: 1.35;
+	color: var(--wek-accent);
+	text-decoration: underline;
+	text-underline-offset: 0.12em;
+}
+
+.we-formkit__privacy-link:hover,
+.we-formkit__privacy-link:focus-visible {
+	color: color-mix(in srgb, var(--wek-accent) 75%, #000);
+	outline: none;
+}
+
+.we-formkit__privacy-link:focus-visible {
+	border-radius: 2px;
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--wek-accent) 22%, transparent);
 }
 
 .we-formkit--label-normal .we-formkit__choice span,
@@ -673,9 +715,11 @@
 .we-formkit__control-row > select,
 .we-formkit__control-row > .we-formkit__fieldset,
 .we-formkit__control-row > .we-formkit__control--choice {
-	flex: 1 1 auto;
+	/* 0% basis forces equal stretch next to the validity icon (fieldset quirk). */
+	flex: 1 1 0%;
 	min-width: 0;
-	width: 100%;
+	width: auto;
+	max-width: 100%;
 }
 
 .we-formkit__control-row--choices > .we-formkit__validity {
