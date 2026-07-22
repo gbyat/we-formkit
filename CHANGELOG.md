@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.12] - 2026-07-22
+
+- Enhance matrix field editor with collapsible panels for better organization. Introduce new CSS styles for sidebar elements and update JavaScript to support improved layout and functionality. Update localization files to reflect changes in field labels and options, ensuring a more intuitive user experience.
 ## [0.7.11] - 2026-07-22
 
 - Refactor matrix header label rendering to simplify markup. Consolidate label display logic into a single span element, improving accessibility and reducing code complexity.
