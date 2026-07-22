@@ -1725,6 +1725,72 @@
 		}
 	}
 
+	/**
+	 * Multipage deep link: ?wek_page=2 (1-based). Optional ?wek_page_form={id} when several forms.
+	 * Do not reuse ?wek_form — that is reserved for secret embed routing (slug + token).
+	 *
+	 * @param {number} formId Form post ID.
+	 * @param {number} maxPages Section count.
+	 * @return {number} Zero-based page index.
+	 */
+	function readMultipageIndexFromUrl( formId, maxPages ) {
+		try {
+			const params = new URLSearchParams( window.location.search );
+			const formFilter = params.get( 'wek_page_form' );
+			if ( formFilter && String( formId ) !== String( formFilter ) ) {
+				return 0;
+			}
+			const raw = params.get( 'wek_page' );
+			if ( null === raw || '' === raw ) {
+				return 0;
+			}
+			const oneBased = parseInt( raw, 10 );
+			if ( ! Number.isFinite( oneBased ) || oneBased < 1 ) {
+				return 0;
+			}
+			return Math.min( Math.max( maxPages, 1 ) - 1, oneBased - 1 );
+		} catch ( err ) {
+			return 0;
+		}
+	}
+
+	/**
+	 * Persist current step in the query string (replaceState — refresh-friendly, no history spam).
+	 *
+	 * @param {number} formId Form post ID.
+	 * @param {number} index Zero-based page index.
+	 * @return {void}
+	 */
+	function writeMultipageIndexToUrl( formId, index ) {
+		try {
+			const url = new URL( window.location.href );
+			const params = url.searchParams;
+			const formFilter = params.get( 'wek_page_form' );
+			if ( formFilter && String( formId ) !== String( formFilter ) ) {
+				return;
+			}
+			if ( index <= 0 ) {
+				params.delete( 'wek_page' );
+				if ( formFilter && String( formId ) === String( formFilter ) ) {
+					params.delete( 'wek_page_form' );
+				}
+			} else {
+				params.set( 'wek_page', String( index + 1 ) );
+				const multipageForms = document.querySelectorAll(
+					'[data-we-formkit][data-pagination="per_section"]'
+				);
+				if ( multipageForms.length > 1 && formId ) {
+					params.set( 'wek_page_form', String( formId ) );
+				}
+			}
+			const qs = params.toString();
+			const next = url.pathname + ( qs ? '?' + qs : '' ) + url.hash;
+			window.history.replaceState( null, '', next );
+		} catch ( err ) {
+			/* ignore */
+		}
+	}
+
 	function initPagination( root ) {
 		const mode = root.getAttribute( 'data-pagination' ) || ( window.weFormkit && window.weFormkit.pagination ) || 'single';
 		if ( mode !== 'per_section' ) {
@@ -1742,22 +1808,8 @@
 		const submitWrap = qs( form, '[data-wek-submit-wrap]' );
 		const progress = qs( root, '[data-wek-progress]' );
 		const i18n = ( window.weFormkit && window.weFormkit.i18n ) || {};
-		let index = 0;
-
-		function visibleSections() {
-			return sections.filter( function ( section ) {
-				return ! section.classList.contains( 'is-hidden' ) || section.getAttribute( 'data-wek-page-active' ) === '1';
-			} );
-		}
-
-		function pageList() {
-			// Pages = sections that are not conditionally hidden by show_when at paint time.
-			return sections.filter( function ( section ) {
-				const hiddenByRule = section.classList.contains( 'is-hidden' ) && section.getAttribute( 'data-wek-page-forced' ) !== '1';
-				// During multipage we manage visibility ourselves; ignore is-hidden from conditionals for counting when aria says visible candidate.
-				return true;
-			} );
-		}
+		const formId = parseInt( root.getAttribute( 'data-form-id' ) || '0', 10 ) || 0;
+		let index = readMultipageIndexFromUrl( formId, sections.length );
 
 		function sync() {
 			const pages = sections;
@@ -1788,6 +1840,7 @@
 					.replace( '%1$d', String( index + 1 ) )
 					.replace( '%2$d', String( pages.length ) );
 			}
+			writeMultipageIndexToUrl( formId, index );
 		}
 
 		function validatePage() {

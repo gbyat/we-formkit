@@ -330,6 +330,15 @@ Nonce: WordPress REST cookie nonce (`wp_rest`), sent as `X-WP-Nonce` and in the 
 | Meta prefix | `_wek_*` |
 | Hooks | `we_formkit_*` |
 
+## Frontend query params
+
+| Param | Purpose |
+|-------|---------|
+| `wek_page` | Multipage step (1-based). Updated via `history.replaceState` while navigating; refresh restores that step. |
+| `wek_page_form` | Form post ID when several multipage forms share the page (scopes `wek_page`). |
+| `wek_form` + `token` | Secret embed routing (form **slug** + token). Do not reuse for multipage. |
+| `wek_autofill` / `wek_autosubmit` | Cap-gated smoke helpers (`=1`). |
+
 ## Deferred modules
 
 Gravity Forms JSON import and AI PDF assist are intentionally out of core. Prefer separate plugins that register via `we_formkit_register_modules`.

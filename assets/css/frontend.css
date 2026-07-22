@@ -1301,7 +1301,14 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 	margin: 0.65rem 0 0;
 }
 
-/* Shared subtle “add” control (repeater rows, matrix custom rows). */
+/*
+ * Shared subtle “add” control (repeater / matrix custom rows).
+ * Secondary surface + accent text — never --wek-on-accent (theme hover
+ * often forces white button text; soft mixes would become unreadable).
+ */
+body .we-formkit .we-formkit__add-btn,
+body .we-formkit .we-formkit__repeater-add,
+body .we-formkit .we-formkit__matrix-add-row,
 .we-formkit__add-btn,
 .we-formkit__repeater-add,
 .we-formkit__matrix-add-row {
@@ -1314,14 +1321,20 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 	border: 1px dashed color-mix(in srgb, var(--wek-accent) 45%, var(--wek-line));
 	border-radius: var(--wek-radius-input, 8px);
 	background: color-mix(in srgb, var(--wek-accent) 6%, var(--wek-surface));
-	color: var(--wek-ink);
+	color: var(--wek-accent);
 	font: inherit;
 	font-size: var(--wek-font-input, 1rem);
-	font-weight: 500;
+	font-weight: 600;
 	line-height: 1.35;
 	cursor: pointer;
 }
 
+body .we-formkit .we-formkit__add-btn:hover,
+body .we-formkit .we-formkit__add-btn:focus-visible,
+body .we-formkit .we-formkit__repeater-add:hover,
+body .we-formkit .we-formkit__repeater-add:focus-visible,
+body .we-formkit .we-formkit__matrix-add-row:hover,
+body .we-formkit .we-formkit__matrix-add-row:focus-visible,
 .we-formkit__add-btn:hover,
 .we-formkit__add-btn:focus-visible,
 .we-formkit__repeater-add:hover,
@@ -1330,10 +1343,14 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 .we-formkit__matrix-add-row:focus-visible {
 	border-style: solid;
 	border-color: var(--wek-accent);
-	background: color-mix(in srgb, var(--wek-accent) 10%, var(--wek-surface));
+	background: color-mix(in srgb, var(--wek-accent) 12%, var(--wek-surface));
+	color: var(--wek-accent);
 	outline: none;
 }
 
+body .we-formkit .we-formkit__add-btn:disabled,
+body .we-formkit .we-formkit__repeater-add:disabled,
+body .we-formkit .we-formkit__matrix-add-row:disabled,
 .we-formkit__add-btn:disabled,
 .we-formkit__repeater-add:disabled,
 .we-formkit__matrix-add-row:disabled {
@@ -2278,4 +2295,29 @@ body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="che
 	top: 0 !important;
 	transform: none !important;
 	vertical-align: middle !important;
+}
+
+/*
+ * Late pin: secondary add buttons vs theme `button` / `button:hover`
+ * (Astra etc. often force white text + solid brand fill).
+ */
+body .we-formkit .we-formkit__add-btn,
+body .we-formkit .we-formkit__repeater-add,
+body .we-formkit .we-formkit__matrix-add-row {
+	background: color-mix(in srgb, var(--wek-accent) 6%, var(--wek-surface)) !important;
+	color: var(--wek-accent) !important;
+	border-color: color-mix(in srgb, var(--wek-accent) 45%, var(--wek-line)) !important;
+	border-style: dashed !important;
+}
+
+body .we-formkit .we-formkit__add-btn:hover,
+body .we-formkit .we-formkit__add-btn:focus-visible,
+body .we-formkit .we-formkit__repeater-add:hover,
+body .we-formkit .we-formkit__repeater-add:focus-visible,
+body .we-formkit .we-formkit__matrix-add-row:hover,
+body .we-formkit .we-formkit__matrix-add-row:focus-visible {
+	background: color-mix(in srgb, var(--wek-accent) 12%, var(--wek-surface)) !important;
+	color: var(--wek-accent) !important;
+	border-color: var(--wek-accent) !important;
+	border-style: solid !important;
 }

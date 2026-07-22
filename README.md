@@ -13,7 +13,7 @@ Modular WordPress form builder with typed fields, entries, and a developer modul
 - **Checkbox** — same split: optional field label + checkbox text beside the control
 - **Private uploads** — Formkit folder by default (not Media Library), gated download
 - **Confirmations** — message, redirect, or page
-- **Multipage** — section-based (`per_section`)
+- **Multipage** — section-based (`per_section`); current step stays in the URL as `?wek_page=2` (1-based) so refresh keeps you on that page. With several multipage forms on one page, also `wek_page_form={formId}` (not `wek_form` — that is for secret links)
 - **Save & Resume** — drafts, email link, optional calendar `.ics`, TTL / min-filled
 - **Entries** — list/detail, CSV + JSON export, print → PDF (browser print; server PDF later)
 - **Notifications** — templates with Smart Tags, delivery log, global email footer
