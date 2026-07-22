@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-22
+
+- Implement inline validation scope settings for forms, allowing configuration of validation behavior for required fields only or all fields. Update JavaScript to handle new validation logic and enhance the form schema and REST API to support these changes. Refactor admin settings to include inline scope options, improving user control over form validation feedback.
 ## [0.6.11] - 2026-07-22
 
 - Enhance inline validation features and improve form intro handling. Update CSS for matrix field styling and feedback icons, ensuring better visibility and layout. Refactor JavaScript to support new inline validation modes and integrate a WYSIWYG editor for the form intro text, allowing for basic formatting. Update PHP to sanitize intro content and adjust inline validation settings in the form schema and REST API.
