@@ -157,7 +157,7 @@ final class Rest_Form_Settings {
 		}
 
 		$slug    = isset( $params['slug'] ) ? sanitize_title( (string) $params['slug'] ) : '';
-		$intro   = isset( $params['intro'] ) ? sanitize_textarea_field( (string) $params['intro'] ) : '';
+		$intro   = isset( $params['intro'] ) ? wp_kses_post( (string) $params['intro'] ) : '';
 		$privacy = isset( $params['privacy_url'] ) ? esc_url_raw( (string) $params['privacy_url'] ) : '';
 		$secret  = ! empty( $params['secret_enabled'] );
 
@@ -202,7 +202,7 @@ final class Rest_Form_Settings {
 				'label_weight'      => isset( $params['label_weight'] ) ? (string) $params['label_weight'] : 'bold',
 				'required_mark'     => isset( $params['required_mark'] ) ? (string) $params['required_mark'] : 'asterisk',
 				'optional_mark'     => isset( $params['optional_mark'] ) ? (string) $params['optional_mark'] : 'text',
-				'inline_validation' => isset( $params['inline_validation'] ) ? (string) $params['inline_validation'] : 'on',
+				'inline_validation' => isset( $params['inline_validation'] ) ? (string) $params['inline_validation'] : 'both',
 				'help_placement'    => isset( $params['help_placement'] ) ? (string) $params['help_placement'] : 'below_label',
 				'help_style'        => isset( $params['help_style'] ) ? (string) $params['help_style'] : 'muted',
 				'font_family'       => isset( $params['font_family'] ) ? (string) $params['font_family'] : 'inherit',

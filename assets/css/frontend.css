@@ -138,6 +138,19 @@
 	overflow-wrap: break-word;
 }
 
+.we-formkit__fieldset--matrix {
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-section);
+	padding: 0.65rem 0.85rem 0.85rem;
+	margin: 0;
+}
+
+.we-formkit--help-below-label .we-formkit__fieldset--matrix,
+.we-formkit--help-below-field .we-formkit__fieldset--matrix {
+	border: 1px solid var(--wek-line);
+	padding: 0.65rem 0.85rem 0.85rem;
+}
+
 .we-formkit__fields,
 .we-formkit__field,
 .we-formkit__control-row,
@@ -623,17 +636,33 @@
 	box-sizing: border-box;
 }
 
-.we-formkit--inline-validation .we-formkit__field.is-valid .we-formkit__validity,
-.we-formkit--inline-validation .we-formkit__field.is-invalid .we-formkit__validity {
+/* Reserve icon slot so showing/hiding does not shift the layout. */
+.we-formkit--inline-feedback-icon .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__validity {
 	display: inline-flex;
+	visibility: hidden;
+	opacity: 0;
+	pointer-events: none;
+	background: transparent;
 }
 
-.we-formkit--inline-validation .we-formkit__field.is-valid .we-formkit__validity {
+.we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__validity,
+.we-formkit--inline-feedback-icon .we-formkit__field.is-invalid .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__validity {
+	visibility: visible;
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__validity {
 	background: var(--wek-accent);
 	color: var(--wek-on-accent);
 }
 
-.we-formkit--inline-validation .we-formkit__field.is-valid .we-formkit__validity::before {
+.we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__validity::before,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__validity::before {
 	content: "";
 	width: 0.35rem;
 	height: 0.65rem;
@@ -642,26 +671,74 @@
 	transform: rotate(45deg) translateY(-1px);
 }
 
-.we-formkit--inline-validation .we-formkit__field.is-invalid .we-formkit__validity {
+.we-formkit--inline-feedback-icon .we-formkit__field.is-invalid .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__validity {
 	background: var(--wek-danger);
 	color: #fff;
 }
 
-.we-formkit--inline-validation .we-formkit__field.is-invalid .we-formkit__validity::before {
+.we-formkit--inline-feedback-icon .we-formkit__field.is-invalid .we-formkit__validity::before,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__validity::before {
 	content: "×";
 	font-size: 0.95rem;
 	font-weight: 700;
 	line-height: 1;
 }
 
-.we-formkit--inline-validation .we-formkit__field.is-valid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
-.we-formkit--inline-validation .we-formkit__field.is-valid textarea,
-.we-formkit--inline-validation .we-formkit__field.is-valid select {
+.we-formkit--inline-feedback-border .we-formkit__field.is-valid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.we-formkit--inline-feedback-border .we-formkit__field.is-valid textarea,
+.we-formkit--inline-feedback-border .we-formkit__field.is-valid select,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid textarea,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid select {
 	border-color: var(--wek-accent);
 }
 
-.we-formkit--inline-validation .we-formkit__field.is-valid > .we-formkit__validity {
+.we-formkit--inline-feedback-border .we-formkit__field.is-invalid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.we-formkit--inline-feedback-border .we-formkit__field.is-invalid textarea,
+.we-formkit--inline-feedback-border .we-formkit__field.is-invalid select,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid textarea,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid select {
+	border-color: var(--wek-danger);
+}
+
+.we-formkit--inline-feedback-border .we-formkit__field.is-valid .we-formkit__fieldset,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__fieldset {
+	border-color: var(--wek-accent);
+}
+
+.we-formkit--inline-feedback-border .we-formkit__field.is-invalid .we-formkit__fieldset,
+.we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__fieldset {
+	border-color: var(--wek-danger);
+}
+
+/* Matrix: pin the badge so the wide table/cards never shift. */
+.we-formkit__field--matrix {
+	position: relative;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field--matrix .we-formkit__control-row--choices,
+.we-formkit--inline-feedback-both .we-formkit__field--matrix .we-formkit__control-row--choices {
+	display: block;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field--matrix .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field--matrix .we-formkit__validity {
+	position: absolute;
+	top: 0.15rem;
+	right: 0.15rem;
+	z-index: 2;
+	margin: 0;
+}
+
+.we-formkit--inline-feedback-icon .we-formkit__field.is-valid > .we-formkit__validity,
+.we-formkit--inline-feedback-both .we-formkit__field.is-valid > .we-formkit__validity {
 	margin-top: 0.35rem;
+}
+
+.we-formkit--inline-feedback-border .we-formkit__validity {
+	display: none !important;
 }
 
 .we-formkit__actions {

@@ -112,7 +112,7 @@ final class Form_Schema {
 		$normalized = array(
 			'version'  => 1,
 			'title'    => sanitize_text_field( (string) ( $schema['title'] ?? '' ) ),
-			'intro'    => sanitize_textarea_field( (string) ( $schema['intro'] ?? '' ) ),
+			'intro'    => wp_kses_post( (string) ( $schema['intro'] ?? '' ) ),
 			'sections' => $sections,
 		);
 
@@ -552,9 +552,13 @@ final class Form_Schema {
 			$optional = 'text';
 		}
 
-		$inline = isset( $data['inline_validation'] ) ? sanitize_key( (string) $data['inline_validation'] ) : 'on';
-		if ( ! in_array( $inline, array( 'on', 'off' ), true ) ) {
-			$inline = 'on';
+		$inline = isset( $data['inline_validation'] ) ? sanitize_key( (string) $data['inline_validation'] ) : 'both';
+		// Legacy: older saves used on/off only.
+		if ( 'on' === $inline ) {
+			$inline = 'both';
+		}
+		if ( ! in_array( $inline, array( 'off', 'icon', 'border', 'both' ), true ) ) {
+			$inline = 'both';
 		}
 
 		$placement = isset( $data['help_placement'] ) ? sanitize_key( (string) $data['help_placement'] ) : 'below_label';
@@ -778,8 +782,9 @@ final class Form_Schema {
 			'we-formkit--help-' . $a['help_placement'],
 			'we-formkit--help-style-' . $a['help_style'],
 		);
-		if ( 'on' === $a['inline_validation'] ) {
+		if ( 'off' !== $a['inline_validation'] ) {
 			$classes[] = 'we-formkit--inline-validation';
+			$classes[] = 'we-formkit--inline-feedback-' . $a['inline_validation'];
 		}
 		return implode( ' ', $classes );
 	}

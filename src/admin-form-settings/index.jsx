@@ -3,7 +3,7 @@
  *
  * @see https://developer.wordpress.org/news/2026/01/how-to-use-dataform-to-create-plugin-settings-pages/
  */
-import { createRoot, render, useCallback, useMemo, useState } from '@wordpress/element';
+import { createRoot, render, useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, Notice, Spinner } from '@wordpress/components';
@@ -15,6 +15,7 @@ const PANEL = boot.panel === 'design' ? 'design' : 'general';
 const DRAFT_TTL_DAYS = Array.isArray( boot.draftTtlDays ) && boot.draftTtlDays.length
 	? boot.draftTtlDays.map( ( day ) => Number( day ) ).filter( ( day ) => day > 0 )
 	: [ 7, 14, 30, 60, 90 ];
+const INTRO_EDITOR_ID = 'wek_form_settings_intro';
 
 function ttlDayElements() {
 	return DRAFT_TTL_DAYS.map( ( days ) => ( {
@@ -25,6 +26,69 @@ function ttlDayElements() {
 			days
 		),
 	} ) );
+}
+
+/**
+ * Classic TinyMCE (wp.editor) for form intro HTML.
+ *
+ * @param {{ data: Object, field: { id: string, label?: string }, onChange: Function }} props Props.
+ */
+function IntroWysiwygEdit( { data, field, onChange } ) {
+	const value = data[ field.id ] || '';
+	const onChangeRef = useRef( onChange );
+	const valueRef = useRef( value );
+	onChangeRef.current = onChange;
+	valueRef.current = value;
+
+	useEffect( () => {
+		const wpEditor = window.wp && window.wp.editor;
+		if ( ! wpEditor || typeof wpEditor.initialize !== 'function' ) {
+			return undefined;
+		}
+
+		wpEditor.initialize( INTRO_EDITOR_ID, {
+			tinymce: {
+				wpautop: true,
+				toolbar1:
+					'formatselect,bold,italic,bullist,numlist,link,unlink,undo,redo,removeformat',
+				toolbar2: '',
+				block_formats: 'Paragraph=p;Heading 3=h3',
+				setup( editor ) {
+					editor.on( 'init', () => {
+						if ( valueRef.current ) {
+							editor.setContent( valueRef.current );
+						}
+					} );
+					const push = () => {
+						onChangeRef.current( {
+							[ field.id ]: editor.getContent(),
+						} );
+					};
+					editor.on( 'change keyup SetContent Undo Redo', push );
+				},
+			},
+			quicktags: true,
+			mediaButtons: false,
+		} );
+
+		return () => {
+			if ( window.wp && window.wp.editor && typeof window.wp.editor.remove === 'function' ) {
+				window.wp.editor.remove( INTRO_EDITOR_ID );
+			}
+		};
+	}, [ field.id ] );
+
+	return (
+		<div className="wek-dataform-wysiwyg">
+			<textarea
+				id={ INTRO_EDITOR_ID }
+				className="wek-dataform-wysiwyg__textarea"
+				defaultValue={ value }
+				aria-label={ field.label }
+				rows={ 6 }
+			/>
+		</div>
+	);
 }
 
 const COLOR_ROLES = [
@@ -227,7 +291,15 @@ function ColorSchemePreview( { data } ) {
 	const labelClass =
 		'wek-scheme-preview__card' +
 		( data.label_weight === 'normal' ? ' is-label-normal' : '' );
-	const showInline = data.inline_validation !== 'off';
+	const showInline = data.inline_validation && data.inline_validation !== 'off';
+	const showInlineIcon =
+		data.inline_validation === 'icon' ||
+		data.inline_validation === 'both' ||
+		data.inline_validation === 'on';
+	const showInlineBorder =
+		data.inline_validation === 'border' ||
+		data.inline_validation === 'both' ||
+		data.inline_validation === 'on';
 
 	return (
 		<div className="wek-scheme-preview" aria-live="polite">
@@ -277,13 +349,17 @@ function ColorSchemePreview( { data } ) {
 					<div className="wek-scheme-preview__title">
 						{ data.title || __( 'Contact request', 'we-formkit' ) }
 					</div>
-					<div className="wek-scheme-preview__intro">
-						{ data.intro ||
-							__(
-								'We reply within one business day.',
-								'we-formkit'
-							) }
-					</div>
+					<div
+						className="wek-scheme-preview__intro"
+						dangerouslySetInnerHTML={ {
+							__html:
+								data.intro ||
+								__(
+									'We reply within one business day.',
+									'we-formkit'
+								),
+						} }
+					/>
 
 					<div className="wek-scheme-preview__section">
 						<div className="wek-scheme-preview__section-title">
@@ -305,7 +381,7 @@ function ColorSchemePreview( { data } ) {
 									<div className="wek-scheme-preview__input is-valid">
 										you@example.com
 									</div>
-									{ showInline ? (
+									{ showInlineIcon ? (
 										<span
 											className="wek-scheme-preview__validity is-valid"
 											aria-hidden="true"
@@ -336,7 +412,7 @@ function ColorSchemePreview( { data } ) {
 											{ __( 'Support', 'we-formkit' ) }
 										</option>
 									</select>
-									{ showInline ? (
+									{ showInlineIcon ? (
 										<span
 											className="wek-scheme-preview__validity is-valid"
 											aria-hidden="true"
@@ -409,7 +485,7 @@ function flattenSettings( payload ) {
 		label_weight: payload.label_weight || 'bold',
 		required_mark: payload.required_mark || 'asterisk',
 		optional_mark: payload.optional_mark || 'text',
-		inline_validation: payload.inline_validation || 'on',
+		inline_validation: payload.inline_validation || 'both',
 		help_placement: payload.help_placement || 'below_label',
 		help_style: payload.help_style || 'muted',
 		font_family: payload.font_family || 'inherit',
@@ -449,7 +525,7 @@ function toApiPayload( data ) {
 		label_weight: data.label_weight || 'bold',
 		required_mark: data.required_mark || 'asterisk',
 		optional_mark: data.optional_mark || 'text',
-		inline_validation: data.inline_validation || 'on',
+		inline_validation: data.inline_validation || 'both',
 		help_placement: data.help_placement || 'below_label',
 		help_style: data.help_style || 'muted',
 		font_family: data.font_family || 'inherit',
@@ -530,7 +606,11 @@ function FormSettingsApp() {
 				id: 'intro',
 				label: __( 'Intro text', 'we-formkit' ),
 				type: 'text',
-				Edit: 'textarea',
+				description: __(
+					'Shown under the form title. Supports basic formatting.',
+					'we-formkit'
+				),
+				Edit: IntroWysiwygEdit,
 			},
 			{
 				id: 'privacy_url',
@@ -636,12 +716,20 @@ function FormSettingsApp() {
 				label: __( 'Inline validation', 'we-formkit' ),
 				type: 'text',
 				description: __(
-					'Show a check or error icon beside fields after the visitor leaves the field.',
+					'Live feedback after the visitor leaves a field. Success marks appear on required fields only. Prefer Border on dense fields such as matrices.',
 					'we-formkit'
 				),
 				elements: [
-					{ value: 'on', label: __( 'On', 'we-formkit' ) },
 					{ value: 'off', label: __( 'Off', 'we-formkit' ) },
+					{
+						value: 'border',
+						label: __( 'Border color', 'we-formkit' ),
+					},
+					{ value: 'icon', label: __( 'Icons', 'we-formkit' ) },
+					{
+						value: 'both',
+						label: __( 'Icons and border', 'we-formkit' ),
+					},
 				],
 			},
 			{
@@ -933,6 +1021,15 @@ function FormSettingsApp() {
 	const saveSettings = useCallback( () => {
 		setSaving( true );
 		setNotice( null );
+		let payloadData = data;
+		if ( PANEL === 'general' && window.tinymce ) {
+			const ed = window.tinymce.get( INTRO_EDITOR_ID );
+			if ( ed ) {
+				const html = ed.getContent();
+				payloadData = { ...data, intro: html };
+				setData( payloadData );
+			}
+		}
 		const path =
 			formId > 0
 				? `/we-formkit/v1/forms/${ formId }/settings`
@@ -940,7 +1037,7 @@ function FormSettingsApp() {
 		apiFetch( {
 			path,
 			method: 'POST',
-			data: toApiPayload( data ),
+			data: toApiPayload( payloadData ),
 		} )
 			.then( ( response ) => {
 				if ( response.form_id ) {

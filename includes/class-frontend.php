@@ -355,13 +355,13 @@ final class Frontend {
 			data-we-formkit
 			data-form-id="<?php echo esc_attr( (string) $form_id ); ?>"
 			data-pagination="<?php echo esc_attr( $pagination ); ?>"
-			data-inline-validation="<?php echo ( 'on' === ( self::$appearance['inline_validation'] ?? 'on' ) ) ? '1' : '0'; ?>"
+			data-inline-validation="<?php echo esc_attr( (string) ( self::$appearance['inline_validation'] ?? 'both' ) ); ?>"
 			style="<?php echo esc_attr( Form_Style::css_variables_attr( $form_id ) ); ?>"
 		>
 			<header class="we-formkit__header">
 				<h2 class="we-formkit__title"><?php echo esc_html( $title ); ?></h2>
 				<?php if ( ! empty( $schema['intro'] ) ) : ?>
-					<p class="we-formkit__intro"><?php echo esc_html( $schema['intro'] ); ?></p>
+					<div class="we-formkit__intro"><?php echo wp_kses_post( $schema['intro'] ); ?></div>
 				<?php endif; ?>
 			</header>
 

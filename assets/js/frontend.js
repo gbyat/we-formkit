@@ -825,8 +825,30 @@
 		} );
 	}
 
+	function inlineValidationMode( root ) {
+		if ( ! root ) {
+			return 'off';
+		}
+		const raw = String( root.getAttribute( 'data-inline-validation' ) || 'off' );
+		if ( raw === '0' || raw === 'off' ) {
+			return 'off';
+		}
+		if ( raw === '1' || raw === 'on' ) {
+			return 'both';
+		}
+		if ( raw === 'icon' || raw === 'border' || raw === 'both' ) {
+			return raw;
+		}
+		return 'off';
+	}
+
 	function inlineValidationEnabled( root ) {
-		return root && root.getAttribute( 'data-inline-validation' ) === '1';
+		return inlineValidationMode( root ) !== 'off';
+	}
+
+	function inlineShowsIcons( root ) {
+		const mode = inlineValidationMode( root );
+		return mode === 'icon' || mode === 'both';
 	}
 
 	function applyFieldValidationResult( form, fieldEl, message, showSuccess ) {
@@ -835,7 +857,9 @@
 			showFieldError( form, id, message );
 			return false;
 		}
-		if ( showSuccess && fieldHasMeaningfulValue( fieldEl ) ) {
+		// Success chrome only for required fields — optional matrices stay quiet when partially filled.
+		const required = fieldEl.getAttribute( 'data-required' ) === '1';
+		if ( showSuccess && required && fieldHasMeaningfulValue( fieldEl ) ) {
 			showFieldValid( fieldEl );
 		} else {
 			clearFieldFeedback( fieldEl );
@@ -853,6 +877,8 @@
 	}
 
 	function prepareInlineControlRows( form ) {
+		const root = form.closest( '[data-we-formkit]' );
+		const showIcons = inlineShowsIcons( root );
 		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
 			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
 			if ( type === 'html' || type === 'hidden' ) {
@@ -860,6 +886,9 @@
 			}
 			const icon = qs( fieldEl, '[data-wek-validity]' );
 			if ( ! icon ) {
+				return;
+			}
+			if ( ! showIcons ) {
 				return;
 			}
 			if ( icon.parentElement && icon.parentElement.classList.contains( 'we-formkit__control-row' ) ) {

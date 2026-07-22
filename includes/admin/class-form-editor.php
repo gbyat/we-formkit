@@ -946,10 +946,15 @@ final class Form_Editor {
 		$deps  = isset( $asset['dependencies'] ) && is_array( $asset['dependencies'] ) ? $asset['dependencies'] : array();
 		$ver   = isset( $asset['version'] ) ? (string) $asset['version'] : WE_FORMKIT_VERSION;
 
+		if ( 'general' === $panel ) {
+			wp_enqueue_editor();
+			$deps[] = 'editor';
+		}
+
 		wp_enqueue_script(
 			'we-formkit-admin-form-settings',
 			$script,
-			$deps,
+			array_values( array_unique( $deps ) ),
 			$ver,
 			true
 		);
@@ -2392,7 +2397,7 @@ final class Form_Editor {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		$title          = isset( $_POST['wek_title'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['wek_title'] ) ) : '';
 		$slug           = isset( $_POST['wek_slug'] ) ? sanitize_title( wp_unslash( (string) $_POST['wek_slug'] ) ) : '';
-		$intro          = isset( $_POST['wek_intro'] ) ? sanitize_textarea_field( wp_unslash( (string) $_POST['wek_intro'] ) ) : '';
+		$intro          = isset( $_POST['wek_intro'] ) ? wp_kses_post( wp_unslash( (string) $_POST['wek_intro'] ) ) : '';
 		$privacy        = isset( $_POST['wek_privacy_url'] ) ? esc_url_raw( wp_unslash( (string) $_POST['wek_privacy_url'] ) ) : '';
 		$secret_enabled = ! empty( $_POST['wek_secret_enabled'] );
 		$style_input    = isset( $_POST['wek_style'] ) && is_array( $_POST['wek_style'] ) ? wp_unslash( $_POST['wek_style'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
