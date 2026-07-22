@@ -56,8 +56,8 @@ final class Admin {
 		}
 
 		add_menu_page(
-			__( 'Formkit', 'we-formkit' ),
-			__( 'Formkit', 'we-formkit' ),
+			__( 'WE Formkit', 'we-formkit' ),
+			__( 'WE Formkit', 'we-formkit' ),
 			'manage_options',
 			'we-formkit',
 			array( Form_Editor::class, 'render_list' ),
