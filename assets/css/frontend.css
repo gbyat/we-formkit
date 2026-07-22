@@ -56,10 +56,21 @@ body .we-formkit .we-formkit__matrix,
 body .we-formkit .we-formkit__choices,
 .we-formkit .we-formkit__choices {
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--wek-gap-y) var(--wek-gap-x);
 	float: none;
 	clear: none;
 	width: auto;
 	max-width: 100%;
+	box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+	body .we-formkit .we-formkit__choices,
+	.we-formkit .we-formkit__choices {
+		/* Two equal half-width columns (match side-by-side text fields). */
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
 }
 
 body .we-formkit .we-formkit__field label.we-formkit__choice,
@@ -89,9 +100,7 @@ body .we-formkit .we-formkit__field .we-formkit__control--choice,
 	text-decoration: none;
 	position: relative;
 	box-sizing: border-box;
-	min-height: calc(
-		(var(--wek-font-label) * 1.4) + (2 * var(--wek-control-pad-y)) + 2px
-	);
+	min-height: 0;
 }
 
 body .we-formkit .we-formkit__field label.we-formkit__choice span,
@@ -2161,23 +2170,56 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 }
 
 /*
- * Late theme re-assert (end of sheet): layout + ink for choice rows.
- * Helps when Autoptimize places Formkit before theme but specificity still ties.
+ * Late theme re-assert (end of sheet): choice grid + row geometry.
+ * Themes / Autoptimize often override grid-template-columns or label padding
+ * after us — pin half-width columns and choice padding here.
  */
+body .we-formkit .we-formkit__choices {
+	display: grid !important;
+	grid-template-columns: minmax(0, 1fr) !important;
+	gap: var(--wek-gap-y) var(--wek-gap-x) !important;
+	width: auto !important;
+	max-width: 100% !important;
+	box-sizing: border-box !important;
+}
+
+@media (min-width: 640px) {
+	body .we-formkit .we-formkit__choices {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+}
+
 body .we-formkit .we-formkit__field .we-formkit__choice,
 body .we-formkit .we-formkit__field label.we-formkit__choice,
 body .we-formkit .we-formkit__field .we-formkit__control--choice {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: 0.65rem;
-	padding: var(--wek-control-pad-y) var(--wek-control-pad-x);
-	box-sizing: border-box;
+	display: flex !important;
+	flex-direction: row !important;
+	align-items: center !important;
+	justify-self: stretch !important;
+	width: auto !important;
+	max-width: 100% !important;
+	min-width: 0 !important;
+	gap: 0.65rem !important;
+	padding-top: var(--wek-control-pad-y) !important;
+	padding-bottom: var(--wek-control-pad-y) !important;
+	padding-left: var(--wek-control-pad-x) !important;
+	padding-right: var(--wek-control-pad-x) !important;
+	box-sizing: border-box !important;
+	min-height: 0 !important;
 }
 
 body .we-formkit .we-formkit__choice > span,
 body .we-formkit label.we-formkit__choice span,
-body .we-formkit .we-formkit__control--choice label,
+body .we-formkit .we-formkit__control--choice label {
+	color: var(--wek-ink);
+	display: flex !important;
+	align-items: center !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	line-height: 1.25 !important;
+	min-height: 1.15rem;
+}
+
 body .we-formkit .we-formkit__fieldset > legend,
 body .we-formkit .we-formkit__label {
 	color: var(--wek-ink);
@@ -2185,8 +2227,17 @@ body .we-formkit .we-formkit__label {
 
 body .we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"],
 body .we-formkit .we-formkit__field .we-formkit__choice input[type="radio"],
+body .we-formkit .we-formkit__field label.we-formkit__choice input[type="checkbox"],
+body .we-formkit .we-formkit__field label.we-formkit__choice input[type="radio"],
 body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"] {
-	flex: 0 0 auto;
-	align-self: center;
-	margin: 0;
+	flex: 0 0 auto !important;
+	align-self: center !important;
+	margin: 0 !important;
+	margin-block: 0 !important;
+	margin-inline: 0 !important;
+	padding: 0 !important;
+	position: relative !important;
+	top: 0 !important;
+	transform: none !important;
+	vertical-align: middle !important;
 }
