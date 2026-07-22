@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.5] - 2026-07-22
+
+- Enhance matrix field rendering by adding support for option headers in the frontend. Update CSS styles for improved layout and visual consistency of matrix elements. Refactor HTML structure to accommodate new header options, ensuring better accessibility and usability.
 ## [0.6.4] - 2026-07-22
 
 - Enhance matrix field functionality by adding support for text and number column types, improving data handling in submissions. Update CSS for better styling and responsiveness of matrix elements. Refactor frontend and admin scripts to manage matrix row states and interactions more effectively. Update documentation to reflect new features and usage guidelines.
