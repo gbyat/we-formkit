@@ -191,7 +191,7 @@ msgstr "Feld"
 
 #: includes/admin/class-form-editor.php:407
 #: includes/admin/class-form-editor.php:560
-#: includes/class-frontend.php:305
+#: includes/class-frontend.php:310
 msgid "Remove"
 msgstr "Entfernen"
 
@@ -430,7 +430,7 @@ msgstr "Ungültiger Sicherheitstoken."
 #: includes/admin/class-form-editor.php:2323
 #: includes/admin/class-form-editor.php:2758
 #: includes/class-frontend.php:53
-#: includes/class-frontend.php:265
+#: includes/class-frontend.php:270
 #: includes/class-rest-api.php:96
 #: includes/class-rest-form-settings.php:80
 #: includes/class-rest-form-settings.php:94
@@ -525,7 +525,7 @@ msgstr "Nur Einträge zu diesem Formular."
 #: includes/admin/class-form-editor.php:393
 #: includes/admin/class-submissions.php:393
 #: includes/admin/class-submissions.php:941
-#: includes/class-frontend.php:136
+#: includes/class-frontend.php:141
 #: includes/class-merge-tags.php:66
 #: includes/class-merge-tags.php:72
 #: includes/class-post-types.php:42
@@ -573,64 +573,64 @@ msgstr "Antworten"
 msgid "Internal notes"
 msgstr "Interne Notizen"
 
-#: includes/class-frontend.php:134
-#: includes/class-frontend.php:180
+#: includes/class-frontend.php:139
+#: includes/class-frontend.php:185
 msgid "Formkit Form"
 msgstr "Formkit-Formular"
 
-#: includes/class-frontend.php:135
+#: includes/class-frontend.php:140
 msgid "Embed a form. Secret-link access is enforced on the front end when enabled for the form."
 msgstr "Formular einbinden. Geheim-Link-Zugriff wird im Frontend erzwungen, wenn für das Formular aktiviert."
 
-#: includes/class-frontend.php:137
+#: includes/class-frontend.php:142
 msgid "Select a form…"
 msgstr "Formular wählen…"
 
-#: includes/class-frontend.php:138
+#: includes/class-frontend.php:143
 msgid "No forms found. Create one under Formkit → Forms."
 msgstr "Keine Formulare gefunden. Lege eines unter Formkit → Formulare an."
 
-#: includes/class-frontend.php:139
+#: includes/class-frontend.php:144
 msgid "The selected form will render on the front end."
 msgstr "Das gewählte Formular wird im Frontend angezeigt."
 
-#: includes/class-frontend.php:140
+#: includes/class-frontend.php:145
 msgid "Select a form in the block sidebar."
 msgstr "Wähle ein Formular in der Block-Seitenleiste."
 
-#: includes/class-frontend.php:181
+#: includes/class-frontend.php:186
 msgid "Embed an editable form."
 msgstr "Ein bearbeitbares Formular einbinden."
 
-#: includes/class-frontend.php:271
+#: includes/class-frontend.php:276
 msgid "This form is only available via a private link."
 msgstr "Dieses Formular ist nur über einen privaten Link verfügbar."
 
-#: includes/class-frontend.php:299
+#: includes/class-frontend.php:304
 msgid "Submitting…"
 msgstr "Wird gesendet…"
 
-#: includes/class-frontend.php:301
+#: includes/class-frontend.php:306
 msgid "Something went wrong. Please try again."
 msgstr "Etwas ist schiefgelaufen. Bitte erneut versuchen."
 
-#: includes/class-frontend.php:302
+#: includes/class-frontend.php:307
 msgid "This field is required."
 msgstr "Dieses Feld ist erforderlich."
 
 #: includes/admin/class-form-editor.php:350
 #: includes/admin/class-form-editor.php:887
 #: includes/class-form-schema.php:499
-#: includes/class-frontend.php:300
+#: includes/class-frontend.php:305
 msgid "Submit form"
 msgstr "Formular absenden"
 
-#: includes/class-frontend.php:700
+#: includes/class-frontend.php:705
 msgid "Privacy policy"
 msgstr "Datenschutzerklärung"
 
-#: includes/class-frontend.php:1016
-#: includes/class-frontend.php:1481
+#: includes/class-frontend.php:1021
+#: includes/class-frontend.php:1486
 msgid "Please select…"
 msgstr "Bitte wählen…"
 
@@ -666,7 +666,7 @@ msgstr "Ungültiger Sicherheitstoken. Bitte die Seite neu laden."
 msgid "This form requires a valid access link."
 msgstr "Dieses Formular erfordert einen gültigen Zugangslink."
 
-#: includes/class-frontend.php:303
+#: includes/class-frontend.php:308
 #: includes/class-rest-api.php:136
 #: includes/class-rest-api.php:157
 #: includes/class-rest-api.php:422
@@ -903,7 +903,7 @@ msgstr "Optionen"
 msgid "Each option supports value, label, and an optional image (Media Library id or URL)."
 msgstr "Jede Option unterstützt Wert, Beschriftung und optional ein Bild (Mediathek-ID oder URL)."
 
-#: includes/class-frontend.php:896
+#: includes/class-frontend.php:901
 #: includes/fields/class-select-field.php:24
 msgid "Select"
 msgstr "Auswahl"
@@ -1030,19 +1030,19 @@ msgstr "Maximalzeilen"
 msgid "Add row button label"
 msgstr "Beschriftung „Zeile hinzufügen“"
 
-#: includes/class-frontend.php:304
-#: includes/class-frontend.php:1351
+#: includes/class-frontend.php:309
+#: includes/class-frontend.php:1356
 msgid "Add another"
 msgstr "Weitere hinzufügen"
 
 #. translators: %d: row number (1-based).
-#: includes/class-frontend.php:307
+#: includes/class-frontend.php:312
 #: includes/fields/class-repeater-field.php:384
 #, php-format
 msgid "Row %d"
 msgstr "Zeile %d"
 
-#: includes/class-frontend.php:1367
+#: includes/class-frontend.php:1372
 msgid "This repeater has no fields configured yet."
 msgstr "Dieser Repeater hat noch keine Felder."
 
@@ -1522,46 +1522,46 @@ msgstr "Du kannst dieses Formular nicht in der Vorschau anzeigen."
 msgid "Form preview"
 msgstr "Formularvorschau"
 
-#: includes/class-frontend.php:308
+#: includes/class-frontend.php:313
 msgid "Test fill applied. Submitting automatically…"
 msgstr "Testdaten übernommen. Wird automatisch gesendet…"
 
-#: includes/class-frontend.php:309
+#: includes/class-frontend.php:314
 msgid "Test fill applied. Click Submit form when ready."
 msgstr "Testdaten übernommen. „Formular absenden“ klicken, wenn bereit."
 
-#: includes/class-frontend.php:310
+#: includes/class-frontend.php:315
 msgid "Smoke test submitted. Check Formkit → Entries."
 msgstr "Smoke-Test gesendet. Prüfe Formkit → Einträge."
 
-#: includes/class-frontend.php:312
-#: includes/class-frontend.php:418
+#: includes/class-frontend.php:317
+#: includes/class-frontend.php:423
 msgid "Next"
 msgstr "Weiter"
 
-#: includes/class-frontend.php:313
-#: includes/class-frontend.php:417
+#: includes/class-frontend.php:318
+#: includes/class-frontend.php:422
 msgid "Previous"
 msgstr "Zurück"
 
 #. translators: 1: current page, 2: total pages.
-#: includes/class-frontend.php:315
+#: includes/class-frontend.php:320
 #, php-format
 msgid "Step %1$d of %2$d"
 msgstr "Schritt %1$d von %2$d"
 
-#: includes/class-frontend.php:316
-#: includes/class-frontend.php:481
+#: includes/class-frontend.php:321
+#: includes/class-frontend.php:486
 msgid "Save progress"
 msgstr "Fortschritt speichern"
 
-#: includes/class-frontend.php:324
+#: includes/class-frontend.php:329
 msgid "Your saved progress was restored."
 msgstr "Dein gespeicherter Fortschritt wurde wiederhergestellt."
 
 #: includes/admin/class-form-editor.php:1873
 #: includes/admin/class-submissions.php:371
-#: includes/class-frontend.php:1126
+#: includes/class-frontend.php:1131
 msgid "Clear"
 msgstr "Löschen"
 
@@ -1692,7 +1692,7 @@ msgstr "Einstellungen konnten nicht gespeichert werden."
 msgid "Secret token"
 msgstr "Geheim-Token"
 
-#: includes/class-frontend.php:318
+#: includes/class-frontend.php:323
 #: src/admin-form-settings/index.jsx:1239
 msgid "Saving…"
 msgstr "Speichern…"
@@ -1926,7 +1926,7 @@ msgstr "Neues Dokument"
 msgid "Document"
 msgstr "Dokument"
 
-#: includes/class-frontend.php:311
+#: includes/class-frontend.php:316
 msgid "Downloads"
 msgstr "Downloads"
 
@@ -2306,33 +2306,33 @@ msgid "Please select a file from the Media Library."
 msgstr "Bitte eine Datei aus der Mediathek auswählen."
 
 #. translators: 1: field label, 2: minimum number of selections.
-#: includes/class-frontend.php:328
+#: includes/class-frontend.php:333
 #: includes/fields/class-checkboxes-field.php:214
 #, php-format
 msgid "Please select at least %2$d option(s) for %1$s."
 msgstr "Bitte mindestens %2$d Option(en) für %1$s auswählen."
 
 #. translators: 1: field label, 2: maximum number of selections.
-#: includes/class-frontend.php:330
+#: includes/class-frontend.php:335
 #: includes/fields/class-checkboxes-field.php:226
 #, php-format
 msgid "Please select at most %2$d option(s) for %1$s."
 msgstr "Bitte höchstens %2$d Option(en) für %1$s auswählen."
 
 #. translators: 1: minimum selections, 2: maximum selections.
-#: includes/class-frontend.php:717
+#: includes/class-frontend.php:722
 #, php-format
 msgid "Select between %1$d and %2$d options."
 msgstr "Wählen Sie zwischen %1$d und %2$d Optionen."
 
 #. translators: %d: minimum selections.
-#: includes/class-frontend.php:724
+#: includes/class-frontend.php:729
 #, php-format
 msgid "Select at least %d option(s)."
 msgstr "Mindestens %d Option(en) auswählen."
 
 #. translators: %d: maximum selections.
-#: includes/class-frontend.php:730
+#: includes/class-frontend.php:735
 #, php-format
 msgid "Select at most %d option(s)."
 msgstr "Höchstens %d Option(en) auswählen."
@@ -2391,7 +2391,7 @@ msgstr "Inline-SVG einfügen (ohne Scripts). Leer lassen für nur Text."
 msgid "Edit submit button"
 msgstr "Absende-Button bearbeiten"
 
-#: includes/class-frontend.php:548
+#: includes/class-frontend.php:553
 #: src/admin-form-settings/index.jsx:313
 msgid "(required)"
 msgstr "(Pflichtfeld)"
@@ -2802,7 +2802,7 @@ msgstr "Button-Ecken"
 msgid "Section corners"
 msgstr "Section-Ecken"
 
-#: includes/class-frontend.php:559
+#: includes/class-frontend.php:564
 #: src/admin-form-settings/index.jsx:318
 msgid "(optional)"
 msgstr "(optional)"
@@ -2897,23 +2897,23 @@ msgstr "Dieser Link läuft am %1$s ab (ca. %2$d Tage)."
 msgid "If you did not request this, you can ignore this email."
 msgstr "Falls du das nicht angefordert hast, kannst du diese E-Mail ignorieren."
 
-#: includes/class-frontend.php:317
+#: includes/class-frontend.php:322
 msgid "Enter an email address to receive your resume link."
 msgstr "E-Mail-Adresse eingeben, um den Fortsetzungs-Link zu erhalten."
 
 #. translators: %s: email address.
-#: includes/class-frontend.php:320
+#: includes/class-frontend.php:325
 #, php-format
 msgid "Progress saved. We sent a resume link to %s."
 msgstr "Fortschritt gespeichert. Wir haben einen Fortsetzungs-Link an %s gesendet."
 
-#: includes/class-frontend.php:322
+#: includes/class-frontend.php:327
 msgid "Progress was saved, but the resume email could not be sent. Please try again or contact the site owner."
 msgstr "Fortschritt wurde gespeichert, aber die E-Mail konnte nicht gesendet werden. Bitte erneut versuchen oder die Website-Betreiber kontaktieren."
 
-#: includes/class-frontend.php:325
-#: includes/class-frontend.php:438
-#: includes/class-frontend.php:446
+#: includes/class-frontend.php:330
+#: includes/class-frontend.php:443
+#: includes/class-frontend.php:451
 msgid "Email for resume link"
 msgstr "E-Mail für Fortsetzungs-Link"
 
@@ -2922,7 +2922,7 @@ msgid "Allow calendar reminder"
 msgstr "Kalender-Erinnerung erlauben"
 
 #: includes/class-drafts.php:453
-#: includes/class-frontend.php:323
+#: includes/class-frontend.php:328
 msgid "Fill in a few fields before saving your progress."
 msgstr "Fülle zuerst ein paar Felder aus, bevor du deinen Fortschritt speicherst."
 
@@ -2946,17 +2946,17 @@ msgstr "Formular fertig ausfüllen: %s"
 msgid "Link expires: %s"
 msgstr "Link läuft ab: %s"
 
-#: includes/class-frontend.php:326
-#: includes/class-frontend.php:452
+#: includes/class-frontend.php:331
+#: includes/class-frontend.php:457
 msgid "Add a calendar reminder (.ics) before this link expires"
 msgstr "Kalender-Erinnerung (.ics) vor Ablauf dieses Links hinzufügen"
 
-#: includes/class-frontend.php:455
+#: includes/class-frontend.php:460
 msgid "Remind me"
 msgstr "Erinnere mich"
 
 #. translators: %d: number of days before the resume link expires.
-#: includes/class-frontend.php:463
+#: includes/class-frontend.php:468
 #, php-format
 msgid "%d day before expiry"
 msgid_plural "%d days before expiry"
@@ -2991,7 +2991,7 @@ msgstr "Mindestanzahl ausgefüllter Felder, bevor „Fortschritt speichern“ er
 msgid "Lets visitors attach an .ics calendar appointment to the resume email. No further reminder emails are sent."
 msgstr "Besucher können optional einen .ics-Kalendertermin an die Fortsetzungs-Mail anhängen. Es werden keine weiteren Reminder-Mails gesendet."
 
-#: includes/class-frontend.php:321
+#: includes/class-frontend.php:326
 msgid "Progress updated. Use the resume link from your earlier email."
 msgstr "Fortschritt aktualisiert. Nutze den Fortsetzungs-Link aus der früheren E-Mail."
 
@@ -3422,12 +3422,12 @@ msgstr "Option B"
 msgid "Option C"
 msgstr "Option C"
 
-#: includes/class-frontend.php:871
+#: includes/class-frontend.php:876
 msgid "This matrix has no rows or columns yet."
 msgstr "Diese Matrix hat noch keine Zeilen oder Spalten."
 
 #. translators: %s: row label
-#: includes/class-frontend.php:1232
+#: includes/class-frontend.php:1237
 #, php-format
 msgid "Select %s"
 msgstr "%s auswählen"
@@ -3613,33 +3613,33 @@ msgstr "Max. eigene Zeilen"
 msgid "+ Other"
 msgstr "+ Sonstiges"
 
-#: includes/class-frontend.php:332
-#: includes/class-frontend.php:1005
+#: includes/class-frontend.php:337
+#: includes/class-frontend.php:1010
 msgid "Add other row"
 msgstr "Weitere Zeile hinzufügen"
 
-#: includes/class-frontend.php:333
-#: includes/class-frontend.php:1212
-#: includes/class-frontend.php:1213
-#: includes/class-frontend.php:1421
-#: includes/class-frontend.php:1422
+#: includes/class-frontend.php:338
+#: includes/class-frontend.php:1217
+#: includes/class-frontend.php:1218
+#: includes/class-frontend.php:1426
+#: includes/class-frontend.php:1427
 msgid "Remove row"
 msgstr "Zeile entfernen"
 
-#: includes/class-frontend.php:334
-#: includes/class-frontend.php:1203
+#: includes/class-frontend.php:339
+#: includes/class-frontend.php:1208
 msgid "Your label"
 msgstr "Deine Beschriftung"
 
-#: includes/class-frontend.php:1197
+#: includes/class-frontend.php:1202
 msgid "Row label"
 msgstr "Zeilenbeschriftung"
 
-#: includes/class-frontend.php:1229
+#: includes/class-frontend.php:1234
 msgid "Select this row"
 msgstr "Diese Zeile auswählen"
 
-#: includes/class-frontend.php:1293
+#: includes/class-frontend.php:1298
 msgid "Custom row"
 msgstr "Eigene Zeile"
 
@@ -3668,16 +3668,16 @@ msgstr "Beschriftung „Sonstiges“"
 msgid "Other"
 msgstr "Sonstiges"
 
-#: includes/class-frontend.php:331
+#: includes/class-frontend.php:336
 msgid "Please enter text for Other."
 msgstr "Bitte Text für Sonstiges eingeben."
 
-#: includes/class-frontend.php:792
+#: includes/class-frontend.php:797
 msgid "Please specify…"
 msgstr "Bitte angeben…"
 
 #. translators: %s: Other option label
-#: includes/class-frontend.php:795
+#: includes/class-frontend.php:800
 #, php-format
 msgid "%s text"
 msgstr "%s Text"
@@ -3712,7 +3712,7 @@ msgstr "CSS-Klasse"
 msgid "Optional extra class on the field wrapper (space-separated)."
 msgstr "Optionale Zusatzklasse am Feld-Wrapper (durch Leerzeichen getrennt)."
 
-#: includes/class-frontend.php:335
-#: includes/class-frontend.php:568
+#: includes/class-frontend.php:340
+#: includes/class-frontend.php:573
 msgid "Clear selection"
 msgstr "Auswahl zurücksetzen"

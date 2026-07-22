@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-07-22
+
+- Refactor frontend CSS for improved layout and styling. Adjust fieldset and control row properties to enhance responsiveness and visual consistency. Update asset registration in PHP to use dynamic versioning based on file modification times.
 ## [0.8.2] - 2026-07-22
 
 - Add field reset functionality for radio and matrix selections. Introduce a reset button in the frontend PHP, enhance CSS for styling, and update JavaScript to manage button visibility and reset actions. Update localization files for new labels.
