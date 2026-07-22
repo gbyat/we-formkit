@@ -64,6 +64,8 @@
   "Required": "Pflichtfeld",
   "Show label": "Beschriftung anzeigen",
   "When off, the label stays available to screen readers but is hidden visually (useful for repeater item fields with placeholders).": "Wenn aus, bleibt die Beschriftung für Screenreader verfügbar, ist aber optisch ausgeblendet (nützlich für Repeater-Felder mit Platzhaltern).",
+  "CSS class": "CSS-Klasse",
+  "Optional extra class on the field wrapper (space-separated).": "Optionale Zusatzklasse am Feld-Wrapper (durch Leerzeichen getrennt).",
   "Help text": "Hilfetext",
   "Spam protection": "Spamschutz",
   "Reject submissions where this field contains links or an email address (helps against bots).": "Übermittlungen ablehnen, wenn dieses Feld Links oder eine E-Mail-Adresse enthält (hilft gegen Bots).",

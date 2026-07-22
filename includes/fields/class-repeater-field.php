@@ -7,6 +7,7 @@
 
 namespace Webentwicklerin\WeFormkit\Fields;
 
+use Webentwicklerin\WeFormkit\Form_Schema;
 use Webentwicklerin\WeFormkit\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -148,6 +149,7 @@ class Repeater_Field extends Abstract_Field_Type {
 			$child['show_when']  = array();
 			$child['width']      = 'full';
 			$child['show_label'] = ! array_key_exists( 'show_label', $child ) || ! empty( $child['show_label'] );
+			$child['css_class']  = Form_Schema::normalize_css_class( $child['css_class'] ?? '' );
 
 			$out[] = $child;
 		}

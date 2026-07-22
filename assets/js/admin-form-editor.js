@@ -669,6 +669,7 @@
 				help: '',
 				required: false,
 				show_label: true,
+				css_class: '',
 				placeholder: '',
 				messages: { required: '', invalid: '' },
 				default_value: '',
@@ -755,7 +756,7 @@
 				activeTab = tab;
 			} else if ( next && ( next.type === 'section' || next.type === 'submit' ) && activeTab === 'appearance' ) {
 				activeTab = 'general';
-			} else if ( next && next.type === 'nested' && ( activeTab === 'appearance' || activeTab === 'conditional' ) ) {
+			} else if ( next && next.type === 'nested' && activeTab === 'conditional' ) {
 				activeTab = 'general';
 			} else if ( next && next.type === 'submit' ) {
 				activeTab = 'general';
@@ -1530,6 +1531,99 @@
 				field.messages.invalid = '';
 			}
 			return field.messages;
+		}
+
+		/**
+		 * Appearance tab controls shared by top-level and nested fields.
+		 *
+		 * @param {HTMLElement} panel Target panel.
+		 * @param {Object}      field Field config.
+		 * @param {{isNested?:boolean}} options Options.
+		 * @return {void}
+		 */
+		function appendFieldAppearanceControls( panel, field, options ) {
+			const isNested = !!( options && options.isNested );
+			const canToggleLabel = [ 'checkbox', 'consent', 'html', 'hidden' ].indexOf( field.type ) === -1;
+
+			if ( canToggleLabel ) {
+				if ( typeof field.show_label === 'undefined' ) {
+					field.show_label = true;
+				}
+				const showLabel = el( 'input', { type: 'checkbox' } );
+				showLabel.checked = field.show_label !== false;
+				showLabel.addEventListener( 'change', function () {
+					field.show_label = !! showLabel.checked;
+					syncHidden();
+				} );
+				panel.appendChild( toggleRow( i18n.showLabel || 'Show label', showLabel ) );
+			}
+
+			if ( field.type === 'matrix' && ! isNested ) {
+				const opts = ensureMatrixOptions( field );
+				const alignSelect = el( 'select' );
+				alignSelect.className = 'wek-builder__select';
+				[
+					{ value: 'left', label: i18n.alignLeft || 'Left' },
+					{ value: 'center', label: i18n.alignCenter || 'Center' },
+					{ value: 'right', label: i18n.alignRight || 'Right' },
+				].forEach( function ( choice ) {
+					const opt = el( 'option', { value: choice.value, text: choice.label } );
+					if ( ( opts.row_label_align || 'left' ) === choice.value ) {
+						opt.selected = true;
+					}
+					alignSelect.appendChild( opt );
+				} );
+				alignSelect.addEventListener( 'change', function () {
+					opts.row_label_align = alignSelect.value || 'left';
+					syncHidden();
+				} );
+				panel.appendChild(
+					fieldRow( i18n.matrixRowLabelAlign || 'Row label alignment', alignSelect )
+				);
+			}
+
+			if ( ! isNested ) {
+				field.width = normalizeWidth( field.width );
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text: i18n.widthHint || 'Choose how many columns this field spans in the row.',
+					} )
+				);
+				panel.appendChild( el( 'label', { text: i18n.width || 'Columns' } ) );
+				panel.appendChild( renderColumnPicker( field ) );
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.resizeHint ||
+							'You can also drag the right edge of a field on the canvas to change its width.',
+					} )
+				);
+			}
+
+			if ( typeof field.css_class !== 'string' ) {
+				field.css_class = '';
+			}
+			panel.appendChild(
+				fieldRow(
+					i18n.cssClass || 'CSS class',
+					textInput( field.css_class || '', function ( v ) {
+						field.css_class = String( v || '' )
+							.trim()
+							.replace( /\s+/g, ' ' );
+						syncHidden();
+					} )
+				)
+			);
+			panel.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.cssClassHint ||
+						'Optional extra class on the field wrapper (space-separated).',
+				} )
+			);
 		}
 
 		function renderValidationMessagesEditor( field ) {
@@ -2427,26 +2521,6 @@
 				toggleRow( i18n.matrixRowSelect || 'Show row select checkbox', rowSelect )
 			);
 
-			const alignSelect = el( 'select' );
-			[
-				{ value: 'left', label: i18n.alignLeft || 'Left' },
-				{ value: 'center', label: i18n.alignCenter || 'Center' },
-				{ value: 'right', label: i18n.alignRight || 'Right' },
-			].forEach( function ( choice ) {
-				const opt = el( 'option', { value: choice.value, text: choice.label } );
-				if ( ( opts.row_label_align || 'left' ) === choice.value ) {
-					opt.selected = true;
-				}
-				alignSelect.appendChild( opt );
-			} );
-			alignSelect.addEventListener( 'change', function () {
-				opts.row_label_align = alignSelect.value || 'left';
-				syncHidden();
-			} );
-			wrap.appendChild(
-				fieldRow( i18n.matrixRowLabelAlign || 'Row label alignment', alignSelect )
-			);
-
 			const allowCustom = el( 'input', { type: 'checkbox' } );
 			allowCustom.checked = !! opts.allow_custom_rows;
 			const maxCustomInput = el( 'input', {
@@ -2827,7 +2901,10 @@
 			aside.appendChild( head );
 
 			const tabs = isNested
-				? [ { id: 'general', label: i18n.tabGeneral || 'General' } ]
+				? [
+						{ id: 'general', label: i18n.tabGeneral || 'General' },
+						{ id: 'appearance', label: i18n.tabAppearance || 'Appearance' },
+				  ]
 				: selected.kind === 'field'
 					? [
 							{ id: 'general', label: i18n.tabGeneral || 'General' },
@@ -2949,27 +3026,7 @@
 					updateCanvasFieldLabel( selected, field.label );
 					refreshSidebar();
 				} );
-
-				const canToggleLabel = [ 'checkbox', 'consent', 'html', 'hidden' ].indexOf( field.type ) === -1;
-				if ( canToggleLabel ) {
-					if ( typeof field.show_label === 'undefined' ) {
-						field.show_label = true;
-					}
-					const showLabel = el( 'input', { type: 'checkbox' } );
-					showLabel.checked = field.show_label !== false;
-					showLabel.addEventListener( 'change', function () {
-						field.show_label = !! showLabel.checked;
-						syncHidden();
-					} );
-					panel.appendChild(
-						togglePair( [
-							{ label: i18n.required || 'Required', input: req },
-							{ label: i18n.showLabel || 'Show label', input: showLabel },
-						] )
-					);
-				} else {
-					panel.appendChild( toggleRow( i18n.required || 'Required', req ) );
-				}
+				panel.appendChild( toggleRow( i18n.required || 'Required', req ) );
 
 				if ( shouldShowPlaceholder( field.type ) ) {
 					if ( field.placeholder == null ) {
@@ -2985,8 +3042,6 @@
 						)
 					);
 				}
-
-				panel.appendChild( renderValidationMessagesEditor( field ) );
 
 				if ( [ 'radio', 'checkboxes', 'select', 'radio_image' ].indexOf( field.type ) !== -1 ) {
 					panel.appendChild( renderOptionsEditor( field ) );
@@ -3027,25 +3082,10 @@
 				if ( field.type === 'text' || field.type === 'textarea' ) {
 					panel.appendChild( renderContentGuardEditor( field ) );
 				}
-			} else if ( selected.kind === 'field' && activeTab === 'appearance' ) {
-				const field = selected.field;
-				field.width = normalizeWidth( field.width );
-				panel.appendChild(
-					el( 'p', {
-						className: 'description',
-						text: i18n.widthHint || 'Choose how many columns this field spans in the row.',
-					} )
-				);
-				panel.appendChild( el( 'label', { text: i18n.width || 'Columns' } ) );
-				panel.appendChild( renderColumnPicker( field ) );
-				panel.appendChild(
-					el( 'p', {
-						className: 'description',
-						text:
-							i18n.resizeHint ||
-							'You can also drag the right edge of a field on the canvas to change its width.',
-					} )
-				);
+
+				panel.appendChild( renderValidationMessagesEditor( field ) );
+			} else if ( isField && activeTab === 'appearance' ) {
+				appendFieldAppearanceControls( panel, selected.field, { isNested: isNested } );
 			} else if ( selected.kind === 'field' && activeTab === 'conditional' ) {
 				panel.appendChild( renderConditional( selected.field, selected.field.id ) );
 			} else if ( selected.kind === 'section' && activeTab === 'general' ) {

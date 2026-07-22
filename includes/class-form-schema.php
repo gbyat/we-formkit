@@ -226,8 +226,31 @@ final class Form_Schema {
 		$field['width']      = self::normalize_width( $field['width'] ?? 'full' );
 		$field['show_when']  = self::normalize_rule( $field['show_when'] ?? null );
 		$field['show_label'] = ! array_key_exists( 'show_label', $field ) || ! empty( $field['show_label'] );
+		$field['css_class']  = self::normalize_css_class( $field['css_class'] ?? '' );
 
 		return $field;
+	}
+
+	/**
+	 * Sanitize optional space-separated CSS classes for a field wrapper.
+	 *
+	 * @param mixed $raw Raw class string.
+	 * @return string
+	 */
+	public static function normalize_css_class( $raw ): string {
+		$parts = preg_split( '/\s+/', trim( (string) $raw ) );
+		if ( ! is_array( $parts ) || empty( $parts ) ) {
+			return '';
+		}
+		$out = array();
+		foreach ( $parts as $part ) {
+			$class = sanitize_html_class( (string) $part );
+			if ( '' === $class ) {
+				continue;
+			}
+			$out[ $class ] = $class;
+		}
+		return implode( ' ', array_values( $out ) );
 	}
 
 	/**

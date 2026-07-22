@@ -612,9 +612,15 @@ final class Frontend {
 			$min_sel = $limits['min'];
 			$max_sel = $limits['max'];
 		}
+		$css_class = isset( $field['css_class'] ) ? trim( (string) $field['css_class'] ) : '';
+		$field_class = trim(
+			'we-formkit__field we-formkit__field--' . $type . ' we-formkit__field--width-' . $width .
+			( $hidden ? ' is-hidden' : '' ) .
+			( '' !== $css_class ? ' ' . $css_class : '' )
+		);
 		?>
 		<div
-			class="we-formkit__field we-formkit__field--<?php echo esc_attr( $type ); ?> we-formkit__field--width-<?php echo esc_attr( $width ); ?><?php echo $hidden ? ' is-hidden' : ''; ?>"
+			class="<?php echo esc_attr( $field_class ); ?>"
 			data-wek-field
 			data-field-id="<?php echo esc_attr( $id ); ?>"
 			data-field-type="<?php echo esc_attr( $type ); ?>"
@@ -1400,8 +1406,13 @@ final class Frontend {
 		$input_id = sprintf( 'wek-field-%s-%s-%s', $parent_id, $index, $cid );
 		$req      = ! empty( $child['required'] );
 		$label    = (string) ( $child['label'] ?? $cid );
+		$css_class = isset( $child['css_class'] ) ? trim( (string) $child['css_class'] ) : '';
+		$wrap_class = trim(
+			'we-formkit__repeater-control we-formkit__repeater-control--' . $ctype .
+			( '' !== $css_class ? ' ' . $css_class : '' )
+		);
 		?>
-		<div class="we-formkit__repeater-control we-formkit__repeater-control--<?php echo esc_attr( $ctype ); ?>">
+		<div class="<?php echo esc_attr( $wrap_class ); ?>">
 			<label class="<?php echo esc_attr( self::label_classes( $child, 'we-formkit__label--nested' ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 			<?php echo esc_html( $label ); ?>
 			<?php self::echo_requirement_mark( $req, $ctype ); ?>
