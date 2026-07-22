@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.5] - 2026-07-22
+
+- Refine frontend CSS for improved theme isolation and specificity. Update styles for form elements, including labels, choices, and inputs, to enhance visual consistency and integration. Introduce late theme re-assertion rules to ensure proper color application when Autoptimize processes CSS.
+- Implement secret query string functionality for forms. Add methods to generate and retrieve secret query strings based on form slug and token. Update REST API and admin form editor to utilize the new methods for improved security and URL handling. Enhance frontend settings to reflect changes in secret URL management.
 ## [0.8.4] - 2026-07-22
 
 - Enhance formkit styling in CSS for improved layout and consistency. Introduce new rules for matrix choices, checkboxes, and radio buttons, ensuring better visual integration. Update asset registration priority in PHP to avoid conflicts.

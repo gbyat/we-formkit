@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WE Formkit 0.8.4\n"
+"Project-Id-Version: WE Formkit 0.8.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/we-formkit\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-22T15:11:27+00:00\n"
+"POT-Creation-Date: 2026-07-22T16:10:21+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: we-formkit\n"
@@ -126,13 +126,13 @@ msgstr ""
 #: includes/admin/class-form-editor.php:252
 #: includes/admin/class-form-editor.php:395
 #: includes/admin/class-form-editor.php:537
-#: src/admin-form-settings/index.jsx:626
+#: src/admin-form-settings/index.jsx:638
 msgid "Title"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:253
 #: includes/admin/class-form-editor.php:398
-#: src/admin-form-settings/index.jsx:631
+#: src/admin-form-settings/index.jsx:643
 msgid "Slug"
 msgstr ""
 
@@ -772,7 +772,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:521
 #: src/admin-form-settings/index.jsx:437
-#: src/admin-form-settings/index.jsx:959
+#: src/admin-form-settings/index.jsx:971
 msgid "General"
 msgstr ""
 
@@ -1313,9 +1313,9 @@ msgstr ""
 #: includes/admin/class-settings-page.php:309
 #: src/admin-form-settings/index.jsx:258
 #: src/admin-form-settings/index.jsx:266
-#: src/admin-form-settings/index.jsx:728
-#: src/admin-form-settings/index.jsx:744
-#: src/admin-form-settings/index.jsx:858
+#: src/admin-form-settings/index.jsx:740
+#: src/admin-form-settings/index.jsx:756
+#: src/admin-form-settings/index.jsx:870
 msgid "None"
 msgstr ""
 
@@ -1365,7 +1365,7 @@ msgstr ""
 
 #: includes/admin/class-form-editor.php:1606
 #: includes/class-merge-tags.php:94
-#: src/admin-form-settings/index.jsx:783
+#: src/admin-form-settings/index.jsx:795
 msgid "All fields"
 msgstr ""
 
@@ -1670,7 +1670,7 @@ msgid "Formkit Settings"
 msgstr ""
 
 #: includes/admin/class-settings-page.php:117
-#: src/admin-form-settings/index.jsx:1125
+#: src/admin-form-settings/index.jsx:1152
 msgid "Settings saved."
 msgstr ""
 
@@ -1929,7 +1929,7 @@ msgid "Delete all forms and submissions when the plugin is uninstalled"
 msgstr ""
 
 #: includes/admin/class-settings-page.php:533
-#: src/admin-form-settings/index.jsx:1250
+#: src/admin-form-settings/index.jsx:1277
 msgid "Save settings"
 msgstr ""
 
@@ -2537,7 +2537,7 @@ msgid "Enter an email address to receive your resume link."
 msgstr ""
 
 #: includes/class-frontend.php:323
-#: src/admin-form-settings/index.jsx:1245
+#: src/admin-form-settings/index.jsx:1272
 msgid "Saving…"
 msgstr ""
 
@@ -3344,28 +3344,28 @@ msgstr[1] ""
 
 #: src/admin-form-settings/index.jsx:259
 #: src/admin-form-settings/index.jsx:267
-#: src/admin-form-settings/index.jsx:859
-#: src/admin-form-settings/index.jsx:886
-#: src/admin-form-settings/index.jsx:896
-#: src/admin-form-settings/index.jsx:906
+#: src/admin-form-settings/index.jsx:871
+#: src/admin-form-settings/index.jsx:898
+#: src/admin-form-settings/index.jsx:908
+#: src/admin-form-settings/index.jsx:918
 msgid "Small"
 msgstr ""
 
 #: src/admin-form-settings/index.jsx:260
 #: src/admin-form-settings/index.jsx:268
-#: src/admin-form-settings/index.jsx:860
-#: src/admin-form-settings/index.jsx:887
-#: src/admin-form-settings/index.jsx:897
-#: src/admin-form-settings/index.jsx:907
+#: src/admin-form-settings/index.jsx:872
+#: src/admin-form-settings/index.jsx:899
+#: src/admin-form-settings/index.jsx:909
+#: src/admin-form-settings/index.jsx:919
 msgid "Medium"
 msgstr ""
 
 #: src/admin-form-settings/index.jsx:261
 #: src/admin-form-settings/index.jsx:269
-#: src/admin-form-settings/index.jsx:861
-#: src/admin-form-settings/index.jsx:888
-#: src/admin-form-settings/index.jsx:898
-#: src/admin-form-settings/index.jsx:908
+#: src/admin-form-settings/index.jsx:873
+#: src/admin-form-settings/index.jsx:900
+#: src/admin-form-settings/index.jsx:910
+#: src/admin-form-settings/index.jsx:920
 msgid "Large"
 msgstr ""
 
@@ -3418,305 +3418,305 @@ msgstr ""
 msgid "Please enter a valid email."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:589
+#: src/admin-form-settings/index.jsx:601
 msgid "Match site theme"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:598
+#: src/admin-form-settings/index.jsx:610
 msgid "Custom (saved)"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:599
+#: src/admin-form-settings/index.jsx:611
 msgid "Custom"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:633
+#: src/admin-form-settings/index.jsx:645
 msgid "Used in secret links and as a stable form key."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:640
+#: src/admin-form-settings/index.jsx:652
 msgid "Intro text"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:642
+#: src/admin-form-settings/index.jsx:654
 msgid "Shown under the form title. Use the toolbar for basic formatting."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:650
+#: src/admin-form-settings/index.jsx:662
 msgid "Privacy policy URL"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:652
+#: src/admin-form-settings/index.jsx:664
 msgid "Optional. Falls back to the plugin default, then the site privacy policy."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:659
+#: src/admin-form-settings/index.jsx:671
 msgid "Require secret token in URL"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:665
+#: src/admin-form-settings/index.jsx:677
 msgid "Enable Save & Resume"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:668
+#: src/admin-form-settings/index.jsx:680
 msgid "Visitors can save progress and continue later via email link."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:675
+#: src/admin-form-settings/index.jsx:687
 msgid "Keep drafts for"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:678
+#: src/admin-form-settings/index.jsx:690
 msgid "How long a resume link stays valid."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:685
+#: src/admin-form-settings/index.jsx:697
 msgid "Show save after filled fields"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:687
+#: src/admin-form-settings/index.jsx:699
 msgid "Minimum filled fields before Save progress appears. 0 = always show."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:694
+#: src/admin-form-settings/index.jsx:706
 msgid "Allow calendar reminder"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:697
+#: src/admin-form-settings/index.jsx:709
 msgid "Lets visitors attach an .ics calendar appointment to the resume email. No further reminder emails are sent."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:704
+#: src/admin-form-settings/index.jsx:716
 msgid "Label weight"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:707
+#: src/admin-form-settings/index.jsx:719
 msgid "Normal"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:708
+#: src/admin-form-settings/index.jsx:720
 msgid "Bold"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:713
+#: src/admin-form-settings/index.jsx:725
 msgid "Required mark"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:715
+#: src/admin-form-settings/index.jsx:727
 msgid "Shown next to required field labels."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:722
+#: src/admin-form-settings/index.jsx:734
 msgid "Asterisk (*)"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:726
+#: src/admin-form-settings/index.jsx:738
 msgid "Text “(required)”"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:733
+#: src/admin-form-settings/index.jsx:745
 msgid "Optional mark"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:735
+#: src/admin-form-settings/index.jsx:747
 msgid "Shown next to optional field labels."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:742
+#: src/admin-form-settings/index.jsx:754
 msgid "Text “(optional)”"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:749
+#: src/admin-form-settings/index.jsx:761
 msgid "Inline validation"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:751
+#: src/admin-form-settings/index.jsx:763
 msgid "Live feedback after the visitor leaves a field. Prefer Border on dense fields such as matrices."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:756
+#: src/admin-form-settings/index.jsx:768
 msgid "Off"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:759
+#: src/admin-form-settings/index.jsx:771
 msgid "Border color"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:761
+#: src/admin-form-settings/index.jsx:773
 msgid "Icons"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:764
+#: src/admin-form-settings/index.jsx:776
 msgid "Icons and border"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:770
+#: src/admin-form-settings/index.jsx:782
 msgid "Inline validation applies to"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:772
+#: src/admin-form-settings/index.jsx:784
 msgid "Required only keeps optional fields (e.g. matrix) quiet until submit."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:779
+#: src/admin-form-settings/index.jsx:791
 msgid "Required fields only"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:789
+#: src/admin-form-settings/index.jsx:801
 msgid "Help text placement"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:794
+#: src/admin-form-settings/index.jsx:806
 msgid "Below label"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:798
+#: src/admin-form-settings/index.jsx:810
 msgid "Below field"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:804
+#: src/admin-form-settings/index.jsx:816
 msgid "Help text style"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:807
+#: src/admin-form-settings/index.jsx:819
 msgid "Muted"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:808
+#: src/admin-form-settings/index.jsx:820
 msgid "Boxed"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:813
+#: src/admin-form-settings/index.jsx:825
 msgid "Form font"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:815
+#: src/admin-form-settings/index.jsx:827
 msgid "Default inherits the theme / Site Editor typography. Optional choices come from theme.json and installed fonts."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:822
+#: src/admin-form-settings/index.jsx:834
 msgid "Theme default (inherit)"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:834
+#: src/admin-form-settings/index.jsx:846
 msgid "Field spacing"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:836
+#: src/admin-form-settings/index.jsx:848
 msgid "Vertical and horizontal gaps between fields and section padding."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:841
-#: src/admin-form-settings/index.jsx:873
+#: src/admin-form-settings/index.jsx:853
+#: src/admin-form-settings/index.jsx:885
 msgid "Compact"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:842
-#: src/admin-form-settings/index.jsx:874
+#: src/admin-form-settings/index.jsx:854
+#: src/admin-form-settings/index.jsx:886
 msgid "Cozy"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:845
-#: src/admin-form-settings/index.jsx:877
+#: src/admin-form-settings/index.jsx:857
+#: src/admin-form-settings/index.jsx:889
 msgid "Comfortable"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:851
+#: src/admin-form-settings/index.jsx:863
 msgid "Space below intro"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:853
+#: src/admin-form-settings/index.jsx:865
 msgid "Gap between the title/intro block and the first section (also below status messages)."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:866
+#: src/admin-form-settings/index.jsx:878
 msgid "Input padding"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:868
+#: src/admin-form-settings/index.jsx:880
 msgid "Inner padding for text inputs, selects, and radio/checkbox frames."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:883
+#: src/admin-form-settings/index.jsx:895
 msgid "Section title size"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:893
+#: src/admin-form-settings/index.jsx:905
 msgid "Label size"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:903
+#: src/admin-form-settings/index.jsx:915
 msgid "Input text size"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:913
+#: src/admin-form-settings/index.jsx:925
 msgid "Input corners"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:915
+#: src/admin-form-settings/index.jsx:927
 msgid "Applies to text fields, textareas, selects, and radio/checkbox frames."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:923
+#: src/admin-form-settings/index.jsx:935
 msgid "Button corners"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:929
+#: src/admin-form-settings/index.jsx:941
 msgid "Section corners"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:935
+#: src/admin-form-settings/index.jsx:947
 msgid "Color scheme"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:937
+#: src/admin-form-settings/index.jsx:949
 msgid "Match site theme follows the site palette. Edit a swatch to switch to Custom — save to lock it."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:972
+#: src/admin-form-settings/index.jsx:984
 msgid "Save & Resume"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:994
+#: src/admin-form-settings/index.jsx:1006
 msgid "Labels & help"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:1008
+#: src/admin-form-settings/index.jsx:1020
 msgid "Typography"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:1019
+#: src/admin-form-settings/index.jsx:1031
 msgid "Spacing & density"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:1032
+#: src/admin-form-settings/index.jsx:1044
 msgid "Colors"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:1124
+#: src/admin-form-settings/index.jsx:1151
 msgid "Design saved."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:1133
+#: src/admin-form-settings/index.jsx:1160
 msgid "Could not save settings."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:1173
+#: src/admin-form-settings/index.jsx:1200
 msgid "Secret token"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:1181
+#: src/admin-form-settings/index.jsx:1208
 msgid "Append to the URL of the page that embeds this form:"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:1197
+#: src/admin-form-settings/index.jsx:1224
 msgid "If that page URL already has a ?, replace the leading ? below with &."
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:1210
+#: src/admin-form-settings/index.jsx:1237
 msgid "Regenerate token"
 msgstr ""
 
-#: src/admin-form-settings/index.jsx:1248
+#: src/admin-form-settings/index.jsx:1275
 msgid "Save design"
 msgstr ""
