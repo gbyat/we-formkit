@@ -798,6 +798,7 @@ final class Frontend {
 				$row_label_align   = $matrix_cfg['row_label_align'];
 				$allow_custom_rows = ! empty( $matrix_cfg['allow_custom_rows'] );
 				$max_custom_rows   = (int) $matrix_cfg['max_custom_rows'];
+				$entries_label     = isset( $matrix_cfg['entries_label'] ) ? trim( (string) $matrix_cfg['entries_label'] ) : '';
 				$show_matrix_label = self::field_shows_label( $field );
 				?>
 				<fieldset class="we-formkit__fieldset we-formkit__fieldset--matrix">
@@ -833,10 +834,14 @@ final class Frontend {
 									?>
 									<tr class="we-formkit__matrix-head-groups">
 										<th scope="col" class="we-formkit__matrix-corner"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
-											<span class="we-formkit__matrix-corner-label<?php echo $show_matrix_label ? '' : ' screen-reader-text'; ?>">
-												<?php echo esc_html( $field['label'] ); ?>
-												<?php self::echo_requirement_mark( $req, $type ); ?>
-											</span>
+											<?php if ( '' !== $entries_label ) : ?>
+												<span class="we-formkit__matrix-corner-label"><?php echo esc_html( $entries_label ); ?></span>
+											<?php else : ?>
+												<span class="screen-reader-text">
+													<?php echo esc_html( $field['label'] ); ?>
+													<?php self::echo_requirement_mark( $req, $type ); ?>
+												</span>
+											<?php endif; ?>
 										</th>
 										<?php if ( $row_select ) : ?>
 											<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--select"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>

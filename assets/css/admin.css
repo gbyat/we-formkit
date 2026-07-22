@@ -1107,6 +1107,39 @@ body.wek-builder-is-resizing iframe {
 	color: var(--wek-ink);
 }
 
+.wek-admin .wek-builder-sidebar .wek-builder__row--toggle {
+	margin-bottom: 0.65rem;
+}
+
+.wek-admin .wek-builder-sidebar .wek-builder__row--toggle > label.wek-builder__toggle {
+	display: inline-flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: 600;
+	font-size: 12px;
+}
+
+.wek-admin .wek-builder-sidebar .wek-builder__row--toggle .wek-builder__toggle-label {
+	line-height: 1.25;
+	min-width: 0;
+}
+
+.wek-admin .wek-builder__pair,
+.wek-admin .wek-builder__toggle-pair {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.35rem 0.75rem;
+	margin: 0 0 0.85rem;
+	align-items: start;
+}
+
+.wek-admin .wek-builder__pair .wek-builder__row,
+.wek-admin .wek-builder__toggle-pair .wek-builder__row {
+	margin: 0;
+}
+
 .wek-admin .wek-builder-sidebar .wek-builder__row-heading {
 	display: block;
 	margin: 0 0 0.35rem;
@@ -1224,6 +1257,7 @@ body.wek-builder-is-resizing iframe {
 .wek-admin .wek-builder-sidebar input[type="number"],
 .wek-admin .wek-builder-sidebar input[type="url"],
 .wek-admin .wek-builder-sidebar select,
+.wek-admin .wek-builder__select,
 .wek-admin .wek-builder-sidebar textarea {
 	width: 100%;
 	max-width: 100%;
@@ -1231,7 +1265,19 @@ body.wek-builder-is-resizing iframe {
 	border-radius: var(--wek-radius-sm);
 	border-color: var(--wek-line);
 	box-shadow: none;
-	background: var(--wek-surface);
+	background-color: var(--wek-surface);
+}
+
+.wek-admin .wek-builder-sidebar select,
+.wek-admin .wek-builder__select {
+	appearance: none;
+	-webkit-appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23505a5f' d='M1.4 1.2 6 5.8l4.6-4.6 1.2 1.2L6 8.2.2 2.4z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 0.7rem center;
+	background-size: 12px 8px;
+	padding-right: 2rem;
+	cursor: pointer;
 }
 
 .wek-admin .wek-builder-sidebar input:focus,

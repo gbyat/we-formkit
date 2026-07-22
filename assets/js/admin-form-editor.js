@@ -774,13 +774,47 @@
 
 		function toggleRow( labelText, input ) {
 			input.className = ( input.className ? input.className + ' ' : '' ) + 'wek-builder__toggle-input';
-			return el( 'p', { className: 'wek-builder__row' }, [
+			return el( 'p', { className: 'wek-builder__row wek-builder__row--toggle' }, [
 				el( 'label', { className: 'wek-builder__toggle' }, [
 					input,
 					el( 'span', { className: 'wek-builder__toggle-ui', 'aria-hidden': 'true' } ),
 					el( 'span', { className: 'wek-builder__toggle-label', text: labelText } ),
 				] ),
 			] );
+		}
+
+		/**
+		 * Compact side-by-side field rows (e.g. min/max numbers).
+		 *
+		 * @param {Array<{label:string,control:HTMLElement}>} items Pair items.
+		 * @return {HTMLElement}
+		 */
+		function fieldPair( items ) {
+			const wrap = el( 'div', { className: 'wek-builder__pair' } );
+			( items || [] ).forEach( function ( item ) {
+				if ( ! item || ! item.control ) {
+					return;
+				}
+				wrap.appendChild( fieldRow( item.label, item.control ) );
+			} );
+			return wrap;
+		}
+
+		/**
+		 * Compact side-by-side toggles (e.g. Required + Show label).
+		 *
+		 * @param {Array<{label:string,input:HTMLInputElement}>} items Toggle items.
+		 * @return {HTMLElement}
+		 */
+		function togglePair( items ) {
+			const wrap = el( 'div', { className: 'wek-builder__pair wek-builder__toggle-pair' } );
+			( items || [] ).forEach( function ( item ) {
+				if ( ! item || ! item.input ) {
+					return;
+				}
+				wrap.appendChild( toggleRow( item.label, item.input ) );
+			} );
+			return wrap;
 		}
 
 		function listConditionFields( excludeId ) {
@@ -2016,6 +2050,9 @@
 			if ( typeof opts.allow_custom_rows === 'undefined' ) {
 				opts.allow_custom_rows = false;
 			}
+			if ( typeof opts.entries_label === 'undefined' ) {
+				opts.entries_label = '';
+			}
 			if ( typeof opts.max_custom_rows === 'undefined' || opts.max_custom_rows === '' ) {
 				opts.max_custom_rows = 2;
 			}
@@ -2413,6 +2450,16 @@
 				fieldRow( i18n.matrixRowLabelAlign || 'Row label alignment', alignSelect )
 			);
 
+			wrap.appendChild(
+				fieldRow(
+					i18n.matrixEntriesLabel || 'Entries label',
+					textInput( opts.entries_label || '', function ( v ) {
+						opts.entries_label = String( v || '' ).trim();
+						syncHidden();
+					} )
+				)
+			);
+
 			const allowCustom = el( 'input', { type: 'checkbox' } );
 			allowCustom.checked = !! opts.allow_custom_rows;
 			const maxCustomInput = el( 'input', {
@@ -2445,14 +2492,6 @@
 
 			wrap.appendChild(
 				toggleRow( i18n.matrixAllowCustomRows || 'Allow visitor-added rows', allowCustom )
-			);
-			wrap.appendChild(
-				el( 'p', {
-					className: 'description',
-					text:
-						i18n.matrixAllowCustomRowsHint ||
-						'Replaces a static “Other” row: visitors type their own label and answer the same columns.',
-				} )
 			);
 			wrap.appendChild( maxCustomRow );
 
@@ -2570,38 +2609,38 @@
 				} )
 			);
 			wrap.appendChild(
-				fieldRow(
-					i18n.minSelected || 'Minimum selections',
-					numberInput(
-						opts.min_selected,
-						function ( v ) {
-							const n = parseInt( v, 10 );
-							opts.min_selected = isNaN( n ) ? 0 : Math.max( 0, n );
-							if ( opts.max_selected > 0 && opts.min_selected > opts.max_selected ) {
-								opts.max_selected = opts.min_selected;
-							}
-							syncHidden();
-						},
-						{ min: '0' }
-					)
-				)
-			);
-			wrap.appendChild(
-				fieldRow(
-					i18n.maxSelected || 'Maximum selections',
-					numberInput(
-						opts.max_selected,
-						function ( v ) {
-							const n = parseInt( v, 10 );
-							opts.max_selected = isNaN( n ) ? 0 : Math.max( 0, n );
-							if ( opts.max_selected > 0 && opts.min_selected > opts.max_selected ) {
-								opts.min_selected = opts.max_selected;
-							}
-							syncHidden();
-						},
-						{ min: '0' }
-					)
-				)
+				fieldPair( [
+					{
+						label: i18n.minSelected || 'Minimum selections',
+						control: numberInput(
+							opts.min_selected,
+							function ( v ) {
+								const n = parseInt( v, 10 );
+								opts.min_selected = isNaN( n ) ? 0 : Math.max( 0, n );
+								if ( opts.max_selected > 0 && opts.min_selected > opts.max_selected ) {
+									opts.max_selected = opts.min_selected;
+								}
+								syncHidden();
+							},
+							{ min: '0' }
+						),
+					},
+					{
+						label: i18n.maxSelected || 'Maximum selections',
+						control: numberInput(
+							opts.max_selected,
+							function ( v ) {
+								const n = parseInt( v, 10 );
+								opts.max_selected = isNaN( n ) ? 0 : Math.max( 0, n );
+								if ( opts.max_selected > 0 && opts.min_selected > opts.max_selected ) {
+									opts.min_selected = opts.max_selected;
+								}
+								syncHidden();
+							},
+							{ min: '0' }
+						),
+					},
+				] )
 			);
 
 			if ( typeof opts.allow_other === 'undefined' ) {
@@ -2627,15 +2666,7 @@
 			} );
 
 			wrap.appendChild(
-				toggleRow( i18n.allowOther || 'Allow “Other” with free text', allowOther )
-			);
-			wrap.appendChild(
-				el( 'p', {
-					className: 'description',
-					text:
-						i18n.allowOtherHint ||
-						'Visitors can tick Other and type their own answer. Typing auto-checks Other. (Not available for radio fields.)',
-				} )
+				toggleRow( i18n.allowOther || 'Allow “Other”', allowOther )
 			);
 			wrap.appendChild( otherLabelRow );
 
@@ -2699,68 +2730,15 @@
 			renderFieldInspector( aside );
 		}
 
-		function appendFormQuickLinks( container ) {
-			const admin = window.weFormkitAdmin || {};
-			const formId = parseInt( admin.formId, 10 ) || 0;
-			const settingsUrl = String( admin.settingsUrl || '' );
-			const designUrl = String( admin.designUrl || '' );
-
-			if ( formId > 0 ) {
-				const shortcode = '[we_formkit id="' + formId + '"]';
-				const shortcodeInput = el( 'input', {
-					type: 'text',
-					className: 'regular-text code',
-					value: shortcode,
-					readonly: true,
-				} );
-				shortcodeInput.addEventListener( 'focus', function () {
-					shortcodeInput.select();
-				} );
-				container.appendChild( fieldRow( i18n.shortcode || 'Shortcode', shortcodeInput ) );
-			}
-
-			if ( settingsUrl ) {
-				container.appendChild(
-					el( 'p', { className: 'wek-builder__row' }, [
-						el( 'a', {
-							className: 'button button-secondary',
-							href: settingsUrl,
-							text: i18n.openFormSettings || 'Open Form Settings',
-						} ),
-					] )
-				);
-			}
-			if ( designUrl ) {
-				container.appendChild(
-					el( 'p', { className: 'wek-builder__row' }, [
-						el( 'a', {
-							className: 'button button-secondary',
-							href: designUrl,
-							text: i18n.openDesign || 'Open Design',
-						} ),
-					] )
-				);
-			}
-		}
-
 		function renderFieldInspector( aside ) {
 			const selected = getSelected();
 			if ( ! selected ) {
 				aside.appendChild(
-					el( 'div', { className: 'wek-builder-sidebar__head' }, [
-						el( 'h3', {
-							className: 'wek-builder-sidebar__title',
-							text: i18n.fieldSettings || 'Field settings',
-						} ),
-					] )
-				);
-				aside.appendChild(
 					el( 'p', {
 						className: 'wek-builder-sidebar__empty',
-						text: i18n.selectHint || 'Select a field or section to edit its settings.',
+						text: i18n.selectHint || 'Select a field, section, or the submit button to edit its settings.',
 					} )
 				);
-				appendFormQuickLinks( aside );
 				return;
 			}
 
@@ -2857,27 +2835,6 @@
 
 			const head = el( 'div', { className: 'wek-builder-sidebar__head' }, [
 				el( 'h3', { className: 'wek-builder-sidebar__title', id: 'wek-builder-sidebar-title', text: title } ),
-				el( 'button', {
-					type: 'button',
-					className: 'button-link-delete',
-					text: i18n.remove || 'Remove',
-					onClick: function () {
-						if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
-							return;
-						}
-						if ( isNested ) {
-							ensureRepeaterDefaults( selected.parent );
-							selected.parent.type_options.fields.splice( selected.nIndex, 1 );
-						} else if ( selected.kind === 'field' ) {
-							selected.section.fields.splice( selected.fIndex, 1 );
-						} else {
-							schema.sections.splice( selected.sIndex, 1 );
-						}
-						selection = null;
-						syncHidden();
-						render();
-					},
-				} ),
 			] );
 			aside.appendChild( head );
 
@@ -2926,6 +2883,39 @@
 
 			if ( isField && activeTab === 'general' ) {
 				const field = selected.field;
+
+				const typeChoices = isNested
+					? getRepeaterItemTypes().map( function ( item ) {
+							return { type: item.value, label: item.label };
+					  } )
+					: fieldTypes;
+				const typeSelect = el( 'select' );
+				typeChoices.forEach( function ( item ) {
+					const opt = el( 'option', { value: item.type, text: item.label || item.type } );
+					if ( field.type === item.type ) {
+						opt.selected = true;
+					}
+					typeSelect.appendChild( opt );
+				} );
+				if ( field.type && ! typeChoices.some( function ( item ) {
+					return item.type === field.type;
+				} ) ) {
+					const orphan = el( 'option', { value: field.type, text: field.type } );
+					orphan.selected = true;
+					typeSelect.appendChild( orphan );
+				}
+				typeSelect.className = 'wek-builder__select';
+				typeSelect.addEventListener( 'change', function () {
+					field.type = typeSelect.value;
+					ensureTypeOptions( field );
+					if ( field.type === 'repeater' ) {
+						ensureRepeaterDefaults( field );
+					}
+					syncHidden();
+					render();
+				} );
+				panel.appendChild( fieldRow( i18n.type || 'Type', typeSelect ) );
+
 				panel.appendChild(
 					fieldRow(
 						i18n.id || 'Field ID',
@@ -2953,37 +2943,15 @@
 						} )
 					)
 				);
-
-				const typeChoices = isNested
-					? getRepeaterItemTypes().map( function ( item ) {
-							return { type: item.value, label: item.label };
-					  } )
-					: fieldTypes;
-				const typeSelect = el( 'select' );
-				typeChoices.forEach( function ( item ) {
-					const opt = el( 'option', { value: item.type, text: item.label || item.type } );
-					if ( field.type === item.type ) {
-						opt.selected = true;
-					}
-					typeSelect.appendChild( opt );
-				} );
-				if ( field.type && ! typeChoices.some( function ( item ) {
-					return item.type === field.type;
-				} ) ) {
-					const orphan = el( 'option', { value: field.type, text: field.type } );
-					orphan.selected = true;
-					typeSelect.appendChild( orphan );
-				}
-				typeSelect.addEventListener( 'change', function () {
-					field.type = typeSelect.value;
-					ensureTypeOptions( field );
-					if ( field.type === 'repeater' ) {
-						ensureRepeaterDefaults( field );
-					}
-					syncHidden();
-					render();
-				} );
-				panel.appendChild( fieldRow( i18n.type || 'Type', typeSelect ) );
+				panel.appendChild(
+					fieldRow(
+						i18n.help || 'Help text',
+						textInput( field.help || '', function ( v ) {
+							field.help = v;
+							syncHidden();
+						} )
+					)
+				);
 
 				const req = el( 'input', { type: 'checkbox' } );
 				req.checked = !! field.required;
@@ -2993,7 +2961,6 @@
 					updateCanvasFieldLabel( selected, field.label );
 					refreshSidebar();
 				} );
-				panel.appendChild( toggleRow( i18n.required || 'Required', req ) );
 
 				const canToggleLabel = [ 'checkbox', 'consent', 'html', 'hidden' ].indexOf( field.type ) === -1;
 				if ( canToggleLabel ) {
@@ -3006,26 +2973,15 @@
 						field.show_label = !! showLabel.checked;
 						syncHidden();
 					} );
-					panel.appendChild( toggleRow( i18n.showLabel || 'Show label', showLabel ) );
 					panel.appendChild(
-						el( 'p', {
-							className: 'description',
-							text:
-								i18n.showLabelHint ||
-								'When off, the label stays available to screen readers but is hidden visually (useful for repeater item fields with placeholders).',
-						} )
+						togglePair( [
+							{ label: i18n.required || 'Required', input: req },
+							{ label: i18n.showLabel || 'Show label', input: showLabel },
+						] )
 					);
+				} else {
+					panel.appendChild( toggleRow( i18n.required || 'Required', req ) );
 				}
-
-				panel.appendChild(
-					fieldRow(
-						i18n.help || 'Help text',
-						textInput( field.help || '', function ( v ) {
-							field.help = v;
-							syncHidden();
-						} )
-					)
-				);
 
 				if ( shouldShowPlaceholder( field.type ) ) {
 					if ( field.placeholder == null ) {
@@ -4576,6 +4532,22 @@
 			);
 			downBtn.disabled = sIndex >= schema.sections.length - 1;
 			sectionToolbar.appendChild( downBtn );
+			sectionToolbar.appendChild(
+				toolbarIconButton(
+					'dashicons-trash',
+					i18n.remove || 'Remove',
+					function () {
+						if ( ! window.confirm( i18n.confirmDel || 'Remove this item?' ) ) {
+							return;
+						}
+						schema.sections.splice( sIndex, 1 );
+						selection = null;
+						syncHidden();
+						render();
+					},
+					'danger'
+				)
+			);
 			box.appendChild( sectionToolbar );
 
 			const introText = String( section.intro || '' ).trim();
