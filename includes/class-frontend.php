@@ -729,12 +729,23 @@ final class Frontend {
 						<div class="we-formkit__matrix-scroll" aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>">
 							<table class="we-formkit__matrix">
 								<thead>
-									<tr>
-										<th scope="col" class="we-formkit__matrix-corner">
+									<?php
+									$needs_option_headers = false;
+									foreach ( $columns as $col_check ) {
+										$col_type_check = (string) ( $col_check['type'] ?? 'radio' );
+										$opts_check     = isset( $col_check['options'] ) && is_array( $col_check['options'] ) ? $col_check['options'] : array();
+										if ( 'radio' === $col_type_check && count( $opts_check ) > 0 ) {
+											$needs_option_headers = true;
+											break;
+										}
+									}
+									?>
+									<tr class="we-formkit__matrix-head-groups">
+										<th scope="col" class="we-formkit__matrix-corner"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
 											<span class="screen-reader-text"><?php esc_html_e( 'Row', 'we-formkit' ); ?></span>
 										</th>
 										<?php if ( $row_select ) : ?>
-											<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--select">
+											<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--select"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
 												<span class="screen-reader-text"><?php esc_html_e( 'Select', 'we-formkit' ); ?></span>
 											</th>
 										<?php endif; ?>
@@ -742,28 +753,60 @@ final class Frontend {
 											<?php
 											$col_type = (string) ( $col['type'] ?? 'radio' );
 											$opts     = isset( $col['options'] ) && is_array( $col['options'] ) ? $col['options'] : array();
+											$col_lab  = (string) ( $col['label'] ?? $col['id'] ?? '' );
 											if ( 'radio' === $col_type && ! empty( $opts ) ) :
-												foreach ( $opts as $opt ) :
-													?>
-													<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--radio">
-														<span class="we-formkit__matrix-col-label"><?php echo esc_html( (string) ( $opt['label'] ?? $opt['value'] ) ); ?></span>
-														<?php if ( ! empty( $col['label'] ) ) : ?>
-															<span class="screen-reader-text"><?php echo esc_html( ' — ' . (string) $col['label'] ); ?></span>
-														<?php endif; ?>
-													</th>
-													<?php
-												endforeach;
+												$span = count( $opts );
+												?>
+												<th
+													scope="colgroup"
+													class="we-formkit__matrix-col we-formkit__matrix-col--group"
+													colspan="<?php echo esc_attr( (string) $span ); ?>"
+												>
+													<span class="we-formkit__matrix-col-label"><?php echo esc_html( $col_lab ); ?></span>
+												</th>
+												<?php
+											elseif ( $needs_option_headers ) :
+												$col_mod = in_array( $col_type, array( 'text', 'number', 'checkbox' ), true ) ? $col_type : 'checkbox';
+												?>
+												<th
+													scope="col"
+													class="we-formkit__matrix-col we-formkit__matrix-col--<?php echo esc_attr( $col_mod ); ?>"
+													rowspan="2"
+												>
+													<span class="we-formkit__matrix-col-label"><?php echo esc_html( $col_lab ); ?></span>
+												</th>
+												<?php
 											else :
 												$col_mod = in_array( $col_type, array( 'text', 'number' ), true ) ? $col_type : 'checkbox';
 												?>
 												<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--<?php echo esc_attr( $col_mod ); ?>">
-													<span class="we-formkit__matrix-col-label"><?php echo esc_html( (string) ( $col['label'] ?? $col['id'] ) ); ?></span>
+													<span class="we-formkit__matrix-col-label"><?php echo esc_html( $col_lab ); ?></span>
 												</th>
 												<?php
 											endif;
 											?>
 										<?php endforeach; ?>
 									</tr>
+									<?php if ( $needs_option_headers ) : ?>
+										<tr class="we-formkit__matrix-head-options">
+											<?php foreach ( $columns as $col ) : ?>
+												<?php
+												$col_type = (string) ( $col['type'] ?? 'radio' );
+												$opts     = isset( $col['options'] ) && is_array( $col['options'] ) ? $col['options'] : array();
+												if ( 'radio' !== $col_type || empty( $opts ) ) {
+													continue;
+												}
+												foreach ( $opts as $opt ) :
+													?>
+													<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--radio">
+														<span class="we-formkit__matrix-col-label"><?php echo esc_html( (string) ( $opt['label'] ?? $opt['value'] ) ); ?></span>
+													</th>
+													<?php
+												endforeach;
+												?>
+											<?php endforeach; ?>
+										</tr>
+									<?php endif; ?>
 								</thead>
 								<tbody>
 									<?php foreach ( $rows as $row ) : ?>

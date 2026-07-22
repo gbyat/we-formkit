@@ -1105,6 +1105,20 @@
 	max-width: 7rem;
 }
 
+.we-formkit__matrix thead .we-formkit__matrix-col--group {
+	max-width: none;
+	border-bottom-width: 1px;
+	background: var(--wek-accent-soft);
+	font-size: var(--wek-font-label);
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-head-options th {
+	font-weight: 500;
+	font-size: calc(var(--wek-font-label) * 0.92);
+	color: var(--wek-muted);
+	background: var(--wek-bg);
+}
+
 .we-formkit--label-normal .we-formkit__matrix thead th {
 	font-weight: 500;
 }
