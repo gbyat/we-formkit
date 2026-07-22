@@ -1912,14 +1912,101 @@
 		function renderMatrixListEditor( title, items, onChange, kind ) {
 			const wrap = el( 'div', { className: 'wek-builder__matrix-list' } );
 			wrap.appendChild( el( 'strong', { text: title } ) );
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text: i18n.matrixReorderHint || 'Drag the handle or use the arrows to reorder.',
+				} )
+			);
 			const list = el( 'div', { className: 'wek-builder__matrix-items' } );
 
 			function refresh() {
 				refreshSidebar();
 			}
 
+			function moveItem( from, to ) {
+				if ( to < 0 || to >= items.length || from === to ) {
+					return;
+				}
+				const moved = items.splice( from, 1 )[ 0 ];
+				items.splice( to, 0, moved );
+				syncHidden();
+				refresh();
+			}
+
 			items.forEach( function ( item, index ) {
-				const row = el( 'div', { className: 'wek-builder__matrix-item' } );
+				const row = el( 'div', {
+					className: 'wek-builder__matrix-item',
+					'data-matrix-index': String( index ),
+				} );
+
+				const toolbar = el( 'div', { className: 'wek-builder__matrix-item-toolbar' } );
+				const handle = el( 'span', {
+					className: 'wek-builder__matrix-item-handle dashicons dashicons-menu',
+					title: i18n.dragToReorder || 'Drag to reorder',
+					'aria-label': i18n.dragToReorder || 'Drag to reorder',
+					draggable: 'true',
+				} );
+				handle.addEventListener( 'dragstart', function ( event ) {
+					event.dataTransfer.setData( 'text/plain', String( index ) );
+					event.dataTransfer.effectAllowed = 'move';
+					row.classList.add( 'is-dragging' );
+				} );
+				handle.addEventListener( 'dragend', function () {
+					row.classList.remove( 'is-dragging' );
+					Array.prototype.forEach.call(
+						list.querySelectorAll( '.wek-builder__matrix-item' ),
+						function ( r ) {
+							r.classList.remove( 'is-drag-over' );
+						}
+					);
+				} );
+				row.addEventListener( 'dragover', function ( event ) {
+					event.preventDefault();
+					event.dataTransfer.dropEffect = 'move';
+					row.classList.add( 'is-drag-over' );
+				} );
+				row.addEventListener( 'dragleave', function () {
+					row.classList.remove( 'is-drag-over' );
+				} );
+				row.addEventListener( 'drop', function ( event ) {
+					event.preventDefault();
+					row.classList.remove( 'is-drag-over' );
+					const from = parseInt( event.dataTransfer.getData( 'text/plain' ), 10 );
+					if ( isNaN( from ) || from === index ) {
+						return;
+					}
+					moveItem( from, index );
+				} );
+
+				const upBtn = el( 'button', {
+					type: 'button',
+					className: 'button-link wek-builder__matrix-move',
+					title: i18n.moveUp || 'Move up',
+					'aria-label': i18n.moveUp || 'Move up',
+					text: '↑',
+					disabled: index === 0,
+				} );
+				upBtn.addEventListener( 'click', function () {
+					moveItem( index, index - 1 );
+				} );
+				const downBtn = el( 'button', {
+					type: 'button',
+					className: 'button-link wek-builder__matrix-move',
+					title: i18n.moveDown || 'Move down',
+					'aria-label': i18n.moveDown || 'Move down',
+					text: '↓',
+					disabled: index >= items.length - 1,
+				} );
+				downBtn.addEventListener( 'click', function () {
+					moveItem( index, index + 1 );
+				} );
+
+				toolbar.appendChild( handle );
+				toolbar.appendChild( upBtn );
+				toolbar.appendChild( downBtn );
+				row.appendChild( toolbar );
+
 				const labelInput = el( 'input', {
 					type: 'text',
 					className: 'regular-text',
@@ -2009,6 +2096,38 @@
 							}
 							syncHidden();
 						} );
+						const optUp = el( 'button', {
+							type: 'button',
+							className: 'button-link wek-builder__matrix-move',
+							title: i18n.moveUp || 'Move up',
+							text: '↑',
+							disabled: oIndex === 0,
+						} );
+						optUp.addEventListener( 'click', function () {
+							if ( oIndex <= 0 ) {
+								return;
+							}
+							const moved = item.options.splice( oIndex, 1 )[ 0 ];
+							item.options.splice( oIndex - 1, 0, moved );
+							syncHidden();
+							refresh();
+						} );
+						const optDown = el( 'button', {
+							type: 'button',
+							className: 'button-link wek-builder__matrix-move',
+							title: i18n.moveDown || 'Move down',
+							text: '↓',
+							disabled: oIndex >= item.options.length - 1,
+						} );
+						optDown.addEventListener( 'click', function () {
+							if ( oIndex >= item.options.length - 1 ) {
+								return;
+							}
+							const moved = item.options.splice( oIndex, 1 )[ 0 ];
+							item.options.splice( oIndex + 1, 0, moved );
+							syncHidden();
+							refresh();
+						} );
 						const optRemove = el( 'button', {
 							type: 'button',
 							className: 'button-link-delete',
@@ -2021,6 +2140,8 @@
 							refresh();
 						} );
 						optRow.appendChild( optLabel );
+						optRow.appendChild( optUp );
+						optRow.appendChild( optDown );
 						optRow.appendChild( optRemove );
 						optWrap.appendChild( optRow );
 					} );

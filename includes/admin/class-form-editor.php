@@ -474,6 +474,7 @@ final class Form_Editor {
 					'matrixColumns'           => __( 'Columns', 'we-formkit' ),
 					'matrixAddRow'            => __( 'Add row', 'we-formkit' ),
 					'matrixAddColumn'         => __( 'Add column', 'we-formkit' ),
+					'matrixReorderHint'       => __( 'Drag the handle or use the arrows to reorder.', 'we-formkit' ),
 					'matrixColRadio'          => __( 'Radio', 'we-formkit' ),
 					'matrixColCheckbox'       => __( 'Checkbox', 'we-formkit' ),
 					'matrixRadioOptions'      => __( 'Radio options (column headers)', 'we-formkit' ),

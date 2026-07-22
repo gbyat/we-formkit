@@ -2048,6 +2048,38 @@ body.wek-builder-is-resizing iframe {
 	background: #fff;
 }
 
+.wek-admin .wek-builder__matrix-item.is-dragging {
+	opacity: 0.55;
+}
+
+.wek-admin .wek-builder__matrix-item.is-drag-over {
+	border-color: var(--wek-accent);
+	box-shadow: 0 0 0 1px var(--wek-accent);
+}
+
+.wek-admin .wek-builder__matrix-item-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.wek-admin .wek-builder__matrix-item-handle {
+	cursor: grab;
+	color: #757575;
+}
+
+.wek-admin .wek-builder__matrix-move {
+	min-width: 1.5rem;
+	padding: 0 0.2rem;
+	line-height: 1.2;
+	text-decoration: none !important;
+}
+
+.wek-admin .wek-builder__matrix-move:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+
 .wek-admin .wek-builder__matrix-item > input.regular-text,
 .wek-admin .wek-builder__matrix-item > select {
 	max-width: 100%;
