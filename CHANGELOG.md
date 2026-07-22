@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-07-22
+
+- Enhance form styling and structure by updating CSS for fieldsets, choices, and consent controls. Introduce new classes for privacy links and improve layout consistency. Refactor PHP to streamline consent field rendering and ensure proper handling of privacy URLs.
 ## [0.8.0] - 2026-07-22
 
 - Refactor repeater row styling and functionality. Update CSS for improved layout and button design, including hover effects. Enhance JavaScript to manage visibility and state of remove buttons based on item count. Update PHP to render repeater fields within a dedicated container for better structure.
