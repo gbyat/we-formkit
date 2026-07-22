@@ -29,6 +29,7 @@ release_notes.txt
 *.zip
 releases/
 
-# Sighthound local SARIF output
+# Sighthound local scan output
 sighthound-*.sarif
+sighthound-*.json
 results.sarif

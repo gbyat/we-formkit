@@ -1,6 +1,9 @@
 # Sighthound SAST (dev / CI)
 # https://corgea.com/sighthound
 # Not shipped in the plugin ZIP — local + GitHub Actions only.
+#
+# Note: Sighthound 1.0 has no native SARIF (text|json|csv only). We emit JSON
+# and convert via scripts/sighthound-json-to-sarif.js for Code Scanning.
 
 name: Sighthound
 
@@ -29,6 +32,11 @@ jobs:
         uses: actions/checkout@v5
         with:
           persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -72,18 +80,19 @@ jobs:
           done
           exit $fail
 
-      - name: Run Sighthound (SARIF)
+      - name: Run Sighthound (JSON → SARIF)
         if: steps.targets.outputs.paths != ''
         run: |
           for d in ${{ steps.targets.outputs.paths }}; do
             safe=$(echo "$d" | tr '/' '-')
-            sighthound --output-format sarif "$d" > "sighthound-${safe}.sarif"
+            sighthound --output-format json "$d" > "sighthound-${safe}.json"
+            node scripts/sighthound-json-to-sarif.js "sighthound-${safe}.json" "sighthound-${safe}.sarif"
           done
 
       - name: Upload SARIF (includes)
         if: always() && hashFiles('sighthound-includes.sarif') != ''
         continue-on-error: true
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: sighthound-includes.sarif
           category: sighthound-includes
@@ -91,7 +100,7 @@ jobs:
       - name: Upload SARIF (src)
         if: always() && hashFiles('sighthound-src.sarif') != ''
         continue-on-error: true
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: sighthound-src.sarif
           category: sighthound-src

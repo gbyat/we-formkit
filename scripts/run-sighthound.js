@@ -15,6 +15,9 @@
  *   node scripts/run-sighthound.js includes src
  *
  * Default targets: existing of includes/, src/
+ *
+ * Note: Sighthound 1.0 has no native SARIF. `--sarif` runs JSON and converts
+ * via scripts/sighthound-json-to-sarif.js (same path as CI).
  */
 
 const fs = require('fs');
@@ -131,9 +134,10 @@ function main() {
 
 	existing.forEach((relative) => {
 		const target = path.join(rootDir, relative);
-		console.log(`Sighthound → ${relative} (format: ${format})`);
+		const cliFormat = 'sarif' === format ? 'json' : format;
+		console.log(`Sighthound → ${relative} (format: ${cliFormat}${format === 'sarif' ? ' → sarif' : ''})`);
 
-		const cliArgs = ['--output-format', format, target];
+		const cliArgs = ['--output-format', cliFormat, target];
 		const result = spawnSync(binary, cliArgs, {
 			cwd: rootDir,
 			encoding: 'utf8',
@@ -144,9 +148,28 @@ function main() {
 		const out = result.stdout || '';
 		const err = result.stderr || '';
 
-		if ('sarif' === format && existing.length > 1) {
+		if ('sarif' === format) {
 			const safeName = relative.replace(/[\\/]/g, '-');
-			const outFile = path.join(rootDir, `sighthound-${safeName}.sarif`);
+			const jsonFile = path.join(rootDir, `sighthound-${safeName}.json`);
+			const sarifFile = path.join(rootDir, `sighthound-${safeName}.sarif`);
+			fs.writeFileSync(jsonFile, out, 'utf8');
+			const convert = spawnSync(
+				process.execPath,
+				[path.join(rootDir, 'scripts', 'sighthound-json-to-sarif.js'), jsonFile, sarifFile],
+				{ cwd: rootDir, encoding: 'utf8', shell: false }
+			);
+			if (convert.stdout) {
+				process.stdout.write(convert.stdout);
+			}
+			if (convert.stderr) {
+				process.stderr.write(convert.stderr);
+			}
+			if (convert.status !== 0) {
+				exitCode = convert.status || 1;
+			}
+		} else if ('json' === format && existing.length > 1) {
+			const safeName = relative.replace(/[\\/]/g, '-');
+			const outFile = path.join(rootDir, `sighthound-${safeName}.json`);
 			fs.writeFileSync(outFile, out, 'utf8');
 			console.log(`Wrote ${path.basename(outFile)}`);
 		} else if (out) {
