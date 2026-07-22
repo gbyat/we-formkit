@@ -129,6 +129,54 @@
 		let sidebarScope = 'field'; // field | form | integrations
 		const live = { node: null };
 		const CHROME_KEY = 'wek_formkit_builder_chrome';
+		const SECTION_CLIP_KEY = 'we-formkit-section-clipboard';
+		const formIdForUi = parseInt( ( window.weFormkitAdmin && window.weFormkitAdmin.formId ) || 0, 10 ) || 0;
+		const COLLAPSE_KEY = 'wek_formkit_builder_collapsed_' + formIdForUi;
+		const collapsedSectionIds = ( function () {
+			const set = {};
+			try {
+				const raw = window.localStorage.getItem( COLLAPSE_KEY );
+				if ( raw ) {
+					const list = JSON.parse( raw );
+					if ( Array.isArray( list ) ) {
+						list.forEach( function ( id ) {
+							if ( id ) {
+								set[ String( id ) ] = true;
+							}
+						} );
+					}
+				}
+			} catch ( e ) {
+				// ignore
+			}
+			return set;
+		} )();
+
+		function saveCollapsedSections() {
+			try {
+				window.localStorage.setItem( COLLAPSE_KEY, JSON.stringify( Object.keys( collapsedSectionIds ) ) );
+			} catch ( e ) {
+				// ignore
+			}
+		}
+
+		function isSectionCollapsed( section ) {
+			return !!( section && section.id && collapsedSectionIds[ String( section.id ) ] );
+		}
+
+		function setSectionCollapsed( sectionId, collapsed ) {
+			const key = String( sectionId || '' );
+			if ( ! key ) {
+				return;
+			}
+			if ( collapsed ) {
+				collapsedSectionIds[ key ] = true;
+			} else {
+				delete collapsedSectionIds[ key ];
+			}
+			saveCollapsedSections();
+		}
+
 		const chrome = ( function () {
 			const defaults = {
 				libW: 280,
@@ -3657,13 +3705,204 @@
 
 		function cloneFieldDeep( field ) {
 			const copy = JSON.parse( JSON.stringify( field ) );
-			copy.id = ( copy.type || 'field' ) + '_' + Date.now().toString( 36 );
+			copy.id = ( copy.type || 'field' ) + '_' + Date.now().toString( 36 ) + Math.random().toString( 36 ).slice( 2, 6 );
 			if ( copy.type === 'repeater' && copy.type_options && Array.isArray( copy.type_options.fields ) ) {
 				copy.type_options.fields = copy.type_options.fields.map( function ( child ) {
 					return cloneFieldDeep( child );
 				} );
 			}
 			return copy;
+		}
+
+		function newBuilderUid( prefix ) {
+			return (
+				String( prefix || 'item' ) +
+				'_' +
+				Date.now().toString( 36 ) +
+				Math.random().toString( 36 ).slice( 2, 7 )
+			);
+		}
+
+		function remapConditionFieldRef( ref, idMap ) {
+			const raw = String( ref || '' );
+			if ( ! raw ) {
+				return '';
+			}
+			const dot = raw.indexOf( '.' );
+			const base = dot === -1 ? raw : raw.slice( 0, dot );
+			const rest = dot === -1 ? '' : raw.slice( dot );
+			if ( ! idMap[ base ] ) {
+				return '';
+			}
+			return idMap[ base ] + rest;
+		}
+
+		function remapShowWhenRules( showWhen, idMap ) {
+			if ( ! showWhen || typeof showWhen !== 'object' ) {
+				return null;
+			}
+			const rulesIn = Array.isArray( showWhen.rules ) ? showWhen.rules : [];
+			const rules = [];
+			rulesIn.forEach( function ( rule ) {
+				if ( ! rule || ! rule.field ) {
+					return;
+				}
+				const nextField = remapConditionFieldRef( rule.field, idMap );
+				if ( ! nextField ) {
+					return;
+				}
+				rules.push( {
+					field: nextField,
+					op: String( rule.op || 'equals' ),
+					value: rule.value != null ? String( rule.value ) : '',
+				} );
+			} );
+			if ( ! rules.length ) {
+				return null;
+			}
+			return {
+				relation: String( showWhen.relation || 'AND' ).toUpperCase() === 'OR' ? 'OR' : 'AND',
+				rules: rules,
+			};
+		}
+
+		function cloneSectionForPaste( section ) {
+			const copy = JSON.parse( JSON.stringify( section || {} ) );
+			const idMap = {};
+
+			function reIdField( field ) {
+				const oldId = field.id;
+				field.id = newBuilderUid( field.type || 'field' );
+				if ( oldId ) {
+					idMap[ String( oldId ) ] = field.id;
+				}
+				if (
+					field.type === 'repeater' &&
+					field.type_options &&
+					Array.isArray( field.type_options.fields )
+				) {
+					field.type_options.fields.forEach( reIdField );
+				}
+			}
+
+			copy.id = newBuilderUid( 'section' );
+			if ( ! Array.isArray( copy.fields ) ) {
+				copy.fields = [];
+			}
+			copy.fields.forEach( reIdField );
+
+			function remapTarget( target ) {
+				target.show_when = remapShowWhenRules( target.show_when, idMap );
+			}
+
+			remapTarget( copy );
+			( function walk( fields ) {
+				fields.forEach( function ( field ) {
+					remapTarget( field );
+					if (
+						field.type === 'repeater' &&
+						field.type_options &&
+						Array.isArray( field.type_options.fields )
+					) {
+						walk( field.type_options.fields );
+					}
+				} );
+			} )( copy.fields );
+
+			if ( typeof copy.show_title === 'undefined' ) {
+				copy.show_title = true;
+			}
+			if ( typeof copy.intro !== 'string' ) {
+				copy.intro = '';
+			}
+			return copy;
+		}
+
+		function buildSectionClipboardPayload( section ) {
+			return JSON.stringify( {
+				wek_formkit: 'section',
+				version: 1,
+				section: section,
+			} );
+		}
+
+		function parseSectionClipboardPayload( text ) {
+			if ( ! text || typeof text !== 'string' ) {
+				return null;
+			}
+			let data;
+			try {
+				data = JSON.parse( text );
+			} catch ( e ) {
+				return null;
+			}
+			if ( ! data || data.wek_formkit !== 'section' || ! data.section || typeof data.section !== 'object' ) {
+				return null;
+			}
+			return data.section;
+		}
+
+		function copySectionToClipboard( section ) {
+			const payload = buildSectionClipboardPayload( section );
+			try {
+				window.localStorage.setItem( SECTION_CLIP_KEY, payload );
+			} catch ( e ) {
+				// ignore
+			}
+			if ( navigator.clipboard && typeof navigator.clipboard.writeText === 'function' ) {
+				navigator.clipboard.writeText( payload ).catch( function () {
+					// localStorage fallback already set
+				} );
+			}
+			announce( i18n.sectionCopied || 'Section copied. Paste it in this or another form.' );
+		}
+
+		function readSectionClipboardText() {
+			if ( navigator.clipboard && typeof navigator.clipboard.readText === 'function' ) {
+				return navigator.clipboard.readText().catch( function () {
+					try {
+						return window.localStorage.getItem( SECTION_CLIP_KEY ) || '';
+					} catch ( e ) {
+						return '';
+					}
+				} );
+			}
+			try {
+				return Promise.resolve( window.localStorage.getItem( SECTION_CLIP_KEY ) || '' );
+			} catch ( e ) {
+				return Promise.resolve( '' );
+			}
+		}
+
+		function pasteSectionFromClipboard() {
+			readSectionClipboardText().then( function ( text ) {
+				let source = parseSectionClipboardPayload( text );
+				if ( ! source ) {
+					try {
+						source = parseSectionClipboardPayload(
+							window.localStorage.getItem( SECTION_CLIP_KEY ) || ''
+						);
+					} catch ( e ) {
+						source = null;
+					}
+				}
+				if ( ! source ) {
+					announce(
+						text
+							? i18n.sectionPasteInvalid || 'Clipboard does not contain a Formkit section.'
+							: i18n.sectionPasteEmpty || 'No section in the clipboard. Copy a section first.'
+					);
+					return;
+				}
+				const next = cloneSectionForPaste( source );
+				schema.sections.push( next );
+				setSectionCollapsed( next.id, false );
+				selection = { type: 'section', sIndex: schema.sections.length - 1 };
+				activeTab = 'general';
+				syncHidden();
+				render();
+				announce( i18n.sectionPasted || 'Section pasted. Review field IDs and conditions, then save.' );
+			} );
 		}
 
 		function toolbarIconButton( iconClass, title, onClick, tone ) {
@@ -4115,8 +4354,12 @@
 
 		function renderSectionCard( section, sIndex ) {
 			const selected = selection && selection.type === 'section' && selection.sIndex === sIndex;
+			const collapsed = isSectionCollapsed( section );
 			const box = el( 'div', {
-				className: 'wek-builder__section' + ( selected ? ' is-selected' : '' ),
+				className:
+					'wek-builder__section' +
+					( selected ? ' is-selected' : '' ) +
+					( collapsed ? ' is-collapsed' : '' ),
 				'data-s': String( sIndex ),
 			} );
 
@@ -4129,8 +4372,40 @@
 				text: '⋮⋮',
 			} );
 
+			const toggle = el( 'button', {
+				type: 'button',
+				className: 'wek-builder__section-toggle',
+				title: collapsed
+					? i18n.expandSection || 'Expand section'
+					: i18n.collapseSection || 'Collapse section',
+				'aria-label': collapsed
+					? i18n.expandSection || 'Expand section'
+					: i18n.collapseSection || 'Collapse section',
+				'aria-expanded': collapsed ? 'false' : 'true',
+			} );
+			toggle.appendChild(
+				el( 'span', {
+					className:
+						'dashicons ' +
+						( collapsed ? 'dashicons-arrow-right-alt2' : 'dashicons-arrow-down-alt2' ),
+					'aria-hidden': 'true',
+				} )
+			);
+			toggle.addEventListener( 'click', function ( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+				if ( ! section.id ) {
+					section.id = newBuilderUid( 'section' );
+					syncHidden();
+				}
+				setSectionCollapsed( section.id, ! collapsed );
+				refreshCanvas();
+			} );
+
+			const fieldCount = ( section.fields || [] ).length;
 			const head = el( 'div', { className: 'wek-builder__section-head' }, [
 				handle,
+				toggle,
 				el( 'strong', {
 					className:
 						'wek-builder__section-title' +
@@ -4146,13 +4421,93 @@
 					} )
 				);
 			}
+			if ( collapsed && fieldCount > 0 ) {
+				head.appendChild(
+					el( 'span', {
+						className: 'wek-builder__section-count',
+						text: String( fieldCount ),
+						title: String( fieldCount ),
+					} )
+				);
+			}
 			head.addEventListener( 'click', function ( e ) {
-				if ( e.target.closest( '.wek-builder__handle' ) ) {
+				if (
+					e.target.closest( '.wek-builder__handle' ) ||
+					e.target.closest( '.wek-builder__section-toggle' ) ||
+					e.target.closest( '.wek-builder__section-toolbar' )
+				) {
 					return;
 				}
 				selectItem( { type: 'section', sIndex: sIndex } );
 			} );
 			box.appendChild( head );
+
+			const sectionToolbar = el( 'div', {
+				className: 'wek-builder__section-toolbar',
+				role: 'toolbar',
+				'aria-label': i18n.sectionActions || 'Section actions',
+			} );
+			sectionToolbar.appendChild(
+				toolbarIconButton(
+					'dashicons-edit',
+					i18n.edit || 'Edit',
+					function () {
+						selectItem( { type: 'section', sIndex: sIndex }, 'general' );
+					},
+					'edit'
+				)
+			);
+			sectionToolbar.appendChild(
+				toolbarIconButton(
+					'dashicons-clipboard',
+					i18n.copySection || 'Copy section',
+					function () {
+						copySectionToClipboard( section );
+					}
+				)
+			);
+			sectionToolbar.appendChild(
+				toolbarIconButton(
+					'dashicons-admin-page',
+					i18n.duplicate || 'Duplicate',
+					function () {
+						const next = cloneSectionForPaste( section );
+						schema.sections.splice( sIndex + 1, 0, next );
+						setSectionCollapsed( next.id, false );
+						selection = { type: 'section', sIndex: sIndex + 1 };
+						activeTab = 'general';
+						syncHidden();
+						render();
+					}
+				)
+			);
+			const upBtn = toolbarIconButton(
+				'dashicons-arrow-up-alt2',
+				i18n.moveUp || 'Move up',
+				function () {
+					const next = moveInArray( schema.sections, sIndex, sIndex - 1 );
+					selection = { type: 'section', sIndex: next };
+					announce( i18n.moved || 'Item moved.' );
+					syncHidden();
+					render();
+				}
+			);
+			upBtn.disabled = sIndex <= 0;
+			sectionToolbar.appendChild( upBtn );
+			const downBtn = toolbarIconButton(
+				'dashicons-arrow-down-alt2',
+				i18n.moveDown || 'Move down',
+				function () {
+					const next = moveInArray( schema.sections, sIndex, sIndex + 1 );
+					selection = { type: 'section', sIndex: next };
+					announce( i18n.moved || 'Item moved.' );
+					syncHidden();
+					render();
+				}
+			);
+			downBtn.disabled = sIndex >= schema.sections.length - 1;
+			sectionToolbar.appendChild( downBtn );
+			box.appendChild( sectionToolbar );
 
 			const introText = String( section.intro || '' ).trim();
 			const introEl = el( 'p', {
@@ -4228,6 +4583,9 @@
 			if ( dropLoc.scope === 'section' && schema.sections[ dropLoc.s ] ) {
 				const section = schema.sections[ dropLoc.s ];
 				section.fields = section.fields || [];
+				if ( section.id ) {
+					setSectionCollapsed( section.id, false );
+				}
 				let at = typeof dropLoc.index === 'number' ? dropLoc.index : section.fields.length;
 				at = Math.max( 0, Math.min( at, section.fields.length ) );
 				section.fields.splice( at, 0, createBlankField( typeId ) );
@@ -4603,6 +4961,40 @@
 							activeTab = 'general';
 							syncHidden();
 							render();
+						},
+					} ),
+					el( 'button', {
+						type: 'button',
+						className: 'button button-secondary',
+						text: i18n.pasteSection || 'Paste section',
+						onClick: function () {
+							pasteSectionFromClipboard();
+						},
+					} ),
+					el( 'button', {
+						type: 'button',
+						className: 'button button-link',
+						text: i18n.collapseAllSections || 'Collapse all',
+						onClick: function () {
+							( schema.sections || [] ).forEach( function ( section ) {
+								if ( section && section.id ) {
+									setSectionCollapsed( section.id, true );
+								}
+							} );
+							refreshCanvas();
+						},
+					} ),
+					el( 'button', {
+						type: 'button',
+						className: 'button button-link',
+						text: i18n.expandAllSections || 'Expand all',
+						onClick: function () {
+							( schema.sections || [] ).forEach( function ( section ) {
+								if ( section && section.id ) {
+									setSectionCollapsed( section.id, false );
+								}
+							} );
+							refreshCanvas();
 						},
 					} ),
 				] )
