@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.8] - 2026-07-22
+
+- Enhance matrix field functionality by introducing an 'entries_label' option for improved row labeling. Update frontend rendering to conditionally display the entries label based on user input. Refactor JavaScript to support new field pairing for toggles and compact layouts. Improve CSS for better styling of admin sidebar components and form fields, ensuring a more cohesive user experience.
 ## [0.7.7] - 2026-07-22
 
 - Refactor form field label visibility settings. Introduce 'show_label' option for fields, allowing control over label display. Update frontend rendering logic to respect this setting, enhancing accessibility. Clean up unused sidebar scope code in the admin form editor. Improve CSS for repeater and matrix components to align with new label visibility features.
