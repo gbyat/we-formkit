@@ -1210,6 +1210,23 @@
 			return ( field && ( field.label || field.id ) ) || i18n.field || 'Field';
 		}
 
+		/**
+		 * Checkbox/consent use the field label as the control copy — no separate title row.
+		 *
+		 * @param {string} type Field type.
+		 * @return {boolean}
+		 */
+		function usesLabelAsControl( type ) {
+			return type === 'checkbox' || type === 'consent';
+		}
+
+		function consentPreviewLabel( field, labelText ) {
+			const opts = field && field.type_options && typeof field.type_options === 'object' ? field.type_options : {};
+			const linkText = String( opts.link_text || '' ).trim() || ( i18n.privacyPolicy || 'Privacy policy' );
+			const raw = fieldLabelText( field, labelText );
+			return String( raw ).replace( /\{link\}/g, linkText );
+		}
+
 		function buildFieldLabelEl( field, labelText ) {
 			const wrap = el( 'span', {
 				className:
@@ -1243,6 +1260,18 @@
 			if ( ! body ) {
 				return;
 			}
+
+			if ( usesLabelAsControl( selected.field.type ) ) {
+				const choice = body.querySelector( '.wek-builder__choice-label' );
+				if ( choice ) {
+					choice.textContent =
+						selected.field.type === 'consent'
+							? consentPreviewLabel( selected.field, labelText )
+							: fieldLabelText( selected.field, labelText );
+				}
+				return;
+			}
+
 			const oldLabel = body.querySelector( '.wek-builder__field-label' );
 			const nextLabel = buildFieldLabelEl( selected.field, labelText );
 			if ( oldLabel ) {
@@ -3816,14 +3845,24 @@
 			return list;
 		}
 
+		function fieldBodyChildren( field ) {
+			const kids = [];
+			if ( ! usesLabelAsControl( field.type ) ) {
+				kids.push( buildFieldLabelEl( field ) );
+			}
+			kids.push( renderFieldPreview( field ) );
+			return kids;
+		}
+
 		function renderFieldPreview( field ) {
 			const type = field.type || 'text';
 			const hint = field.placeholder || field.help || '';
 
 			if ( type === 'checkbox' || type === 'consent' ) {
-				const opts = field.type_options && typeof field.type_options === 'object' ? field.type_options : {};
-				const linkText = String( opts.link_text || '' ).trim() || ( i18n.privacyPolicy || 'Privacy policy' );
-				const labelText = String( field.label || '' ).replace( /\{link\}/g, linkText );
+				const labelText =
+					type === 'consent'
+						? consentPreviewLabel( field )
+						: fieldLabelText( field );
 				return el( 'div', {
 					className: 'wek-builder__field-preview wek-builder__field-preview--toggle',
 					'aria-hidden': 'true',
@@ -4232,10 +4271,7 @@
 			card.appendChild(
 				el( 'div', { className: 'wek-builder__field-main' }, [
 					handle,
-					el( 'div', { className: 'wek-builder__field-body' }, [
-						buildFieldLabelEl( child ),
-						renderFieldPreview( child ),
-					] ),
+					el( 'div', { className: 'wek-builder__field-body' }, fieldBodyChildren( child ) ),
 				] )
 			);
 
@@ -4482,10 +4518,7 @@
 
 			const main = el( 'div', { className: 'wek-builder__field-main' }, [
 				handle,
-				el( 'div', { className: 'wek-builder__field-body' }, [
-					buildFieldLabelEl( field ),
-					renderFieldPreview( field ),
-				] ),
+				el( 'div', { className: 'wek-builder__field-body' }, fieldBodyChildren( field ) ),
 			] );
 			card.appendChild( main );
 

@@ -712,9 +712,17 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 	gap: 0.35rem;
 }
 
+.we-formkit__control--consent {
+	align-items: flex-start;
+}
+
 .we-formkit__control--consent .we-formkit__consent-copy > label {
 	flex: none;
 	display: block;
+	/* Keep {link} + required mark in normal inline flow (not flex items). */
+	white-space: normal;
+	overflow-wrap: anywhere;
+	word-break: normal;
 }
 
 .we-formkit__privacy-link {
@@ -2228,6 +2236,26 @@ body .we-formkit .we-formkit__control--choice label {
 	padding: 0 !important;
 	line-height: 1.25 !important;
 	min-height: 1.15rem;
+}
+
+/* Consent: label is multi-line copy with inline {link} — must not be a flex row. */
+body .we-formkit .we-formkit__control--consent {
+	align-items: flex-start !important;
+}
+
+body .we-formkit .we-formkit__control--consent .we-formkit__consent-copy > label {
+	display: block !important;
+	align-items: unset !important;
+	gap: 0 !important;
+	line-height: 1.4 !important;
+	min-height: 0 !important;
+	font-weight: 600 !important;
+}
+
+body .we-formkit .we-formkit__control--consent .we-formkit__privacy-link,
+body .we-formkit .we-formkit__control--consent .we-formkit__req,
+body .we-formkit .we-formkit__control--consent .we-formkit__opt {
+	display: inline !important;
 }
 
 body .we-formkit .we-formkit__fieldset > legend,
