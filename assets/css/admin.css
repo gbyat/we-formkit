@@ -2152,6 +2152,13 @@ body.wek-builder-is-resizing iframe {
 	opacity: 0.7;
 }
 
+.wek-admin .wek-builder__matrix-preview-custom {
+	font-size: 0.75rem;
+	font-style: italic;
+	opacity: 0.85;
+	color: var(--wek-muted);
+}
+
 .wek-admin .wek-builder__matrix-editor {
 	display: grid;
 	gap: 1rem;

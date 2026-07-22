@@ -54,6 +54,13 @@
 						return;
 					}
 					const entry = {};
+					const labelInput = qs( row, '[data-wek-matrix-label]' );
+					if ( labelInput ) {
+						const label = String( labelInput.value || '' ).trim();
+						if ( label !== '' ) {
+							entry.label = label;
+						}
+					}
 					const onBox = qs( row, '[data-wek-matrix-on]' );
 					if ( onBox ) {
 						entry.on = !! onBox.checked;
@@ -267,6 +274,8 @@
 				return normalize( current ).indexOf( normalize( ruleValue ) ) !== -1;
 			case 'is_checked':
 				return isTruthy( current );
+			case 'is_not_checked':
+				return ! isTruthy( current );
 			case 'is_not_empty':
 				if ( Array.isArray( current ) ) {
 					return current.filter( function ( item ) {
@@ -280,6 +289,19 @@
 					return Object.keys( current ).length > 0;
 				}
 				return normalize( current ) !== '';
+			case 'is_empty':
+				if ( Array.isArray( current ) ) {
+					return current.filter( function ( item ) {
+						if ( item && typeof item === 'object' ) {
+							return Object.keys( item ).length > 0;
+						}
+						return normalize( item ) !== '';
+					} ).length === 0;
+				}
+				if ( current && typeof current === 'object' ) {
+					return Object.keys( current ).length === 0;
+				}
+				return normalize( current ) === '';
 			default:
 				return true;
 		}
@@ -697,23 +719,174 @@
 		setMatrixRowEnabled( row, on );
 	}
 
+	function bindMatrixRowSelect( row ) {
+		const onBox = qs( row, '[data-wek-matrix-on]' );
+		if ( ! onBox || onBox.getAttribute( 'data-wek-matrix-bound' ) ) {
+			return;
+		}
+		onBox.setAttribute( 'data-wek-matrix-bound', '1' );
+		syncMatrixRowSelect( row );
+		onBox.addEventListener( 'change', function () {
+			syncMatrixRowSelect( row );
+			const form = row.closest( '[data-wek-form]' );
+			if ( form ) {
+				form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+			}
+		} );
+	}
+
+	function matrixCustomRowCount( fieldEl ) {
+		return qsa( fieldEl, '[data-wek-matrix-custom-row]' ).length;
+	}
+
+	function matrixMaxCustomRows( fieldEl ) {
+		const raw =
+			fieldEl.getAttribute( 'data-max-custom-rows' ) ||
+			( qs( fieldEl, '[data-wek-matrix-add-row]' ) &&
+				qs( fieldEl, '[data-wek-matrix-add-row]' ).getAttribute( 'data-max-custom-rows' ) ) ||
+			'2';
+		const n = parseInt( raw, 10 );
+		return Number.isFinite( n ) && n > 0 ? Math.min( 5, n ) : 2;
+	}
+
+	function syncMatrixAddButton( fieldEl ) {
+		const addBtn = qs( fieldEl, '[data-wek-matrix-add-row]' );
+		if ( ! addBtn ) {
+			return;
+		}
+		const atCap = matrixCustomRowCount( fieldEl ) >= matrixMaxCustomRows( fieldEl );
+		addBtn.disabled = atCap;
+		addBtn.setAttribute( 'aria-disabled', atCap ? 'true' : 'false' );
+	}
+
+	function replaceMatrixCustomId( node, customId ) {
+		const attrs = [ 'name', 'id', 'for', 'data-wek-matrix-row' ];
+		attrs.forEach( function ( attr ) {
+			const val = node.getAttribute && node.getAttribute( attr );
+			if ( val && val.indexOf( '__CUSTOM_ID__' ) !== -1 ) {
+				node.setAttribute( attr, val.split( '__CUSTOM_ID__' ).join( customId ) );
+			}
+		} );
+		if ( node.children && node.children.length ) {
+			Array.prototype.forEach.call( node.children, function ( child ) {
+				replaceMatrixCustomId( child, customId );
+			} );
+		}
+	}
+
+	function newMatrixCustomId() {
+		return (
+			'custom_' +
+			Math.random()
+				.toString( 36 )
+				.slice( 2, 8 )
+		);
+	}
+
+	function addMatrixCustomRow( fieldEl, preferredId ) {
+		if ( fieldEl.getAttribute( 'data-wek-matrix-custom' ) !== '1' ) {
+			return null;
+		}
+		if ( matrixCustomRowCount( fieldEl ) >= matrixMaxCustomRows( fieldEl ) ) {
+			syncMatrixAddButton( fieldEl );
+			return null;
+		}
+		const tpl = qs( fieldEl, '[data-wek-matrix-custom-template]' );
+		const body = qs( fieldEl, '[data-wek-matrix-body]' );
+		if ( ! tpl || ! body || ! tpl.content ) {
+			return null;
+		}
+		const customId = preferredId && /^custom_[a-z0-9]+$/.test( preferredId ) ? preferredId : newMatrixCustomId();
+		if ( qs( fieldEl, '[data-wek-matrix-row="' + customId + '"]' ) ) {
+			return qs( fieldEl, '[data-wek-matrix-row="' + customId + '"]' );
+		}
+		const frag = document.importNode( tpl.content, true );
+		const row = frag.querySelector( '[data-wek-matrix-row]' );
+		if ( ! row ) {
+			return null;
+		}
+		replaceMatrixCustomId( row, customId );
+		body.appendChild( row );
+		bindMatrixRowSelect( row );
+		const removeBtn = qs( row, '[data-wek-matrix-remove-row]' );
+		if ( removeBtn && ! removeBtn.getAttribute( 'data-wek-matrix-remove-bound' ) ) {
+			removeBtn.setAttribute( 'data-wek-matrix-remove-bound', '1' );
+			removeBtn.addEventListener( 'click', function () {
+				row.remove();
+				syncMatrixAddButton( fieldEl );
+				const form = fieldEl.closest( '[data-wek-form]' );
+				if ( form ) {
+					form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+			} );
+		}
+		syncMatrixAddButton( fieldEl );
+		return row;
+	}
+
 	function bindMatrixRows( root ) {
 		qsa( root, '[data-field-type="matrix"]' ).forEach( function ( fieldEl ) {
-			qsa( fieldEl, '[data-wek-matrix-row]' ).forEach( function ( row ) {
-				const onBox = qs( row, '[data-wek-matrix-on]' );
-				if ( ! onBox || onBox.getAttribute( 'data-wek-matrix-bound' ) ) {
+			qsa( fieldEl, '[data-wek-matrix-row]' ).forEach( bindMatrixRowSelect );
+
+			if ( fieldEl.getAttribute( 'data-wek-matrix-custom' ) !== '1' ) {
+				return;
+			}
+			if ( fieldEl.getAttribute( 'data-wek-matrix-custom-bound' ) ) {
+				syncMatrixAddButton( fieldEl );
+				return;
+			}
+			fieldEl.setAttribute( 'data-wek-matrix-custom-bound', '1' );
+
+			const addBtn = qs( fieldEl, '[data-wek-matrix-add-row]' );
+			if ( addBtn ) {
+				addBtn.addEventListener( 'click', function () {
+					const row = addMatrixCustomRow( fieldEl );
+					if ( row ) {
+						const label = qs( row, '[data-wek-matrix-label]' );
+						if ( label ) {
+							label.focus();
+						}
+						const form = fieldEl.closest( '[data-wek-form]' );
+						if ( form ) {
+							form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+						}
+					}
+				} );
+			}
+
+			qsa( fieldEl, '[data-wek-matrix-remove-row]' ).forEach( function ( btn ) {
+				if ( btn.getAttribute( 'data-wek-matrix-remove-bound' ) ) {
 					return;
 				}
-				onBox.setAttribute( 'data-wek-matrix-bound', '1' );
-				syncMatrixRowSelect( row );
-				onBox.addEventListener( 'change', function () {
-					syncMatrixRowSelect( row );
-					const form = row.closest( '[data-wek-form]' );
+				btn.setAttribute( 'data-wek-matrix-remove-bound', '1' );
+				btn.addEventListener( 'click', function () {
+					const row = btn.closest( '[data-wek-matrix-row]' );
+					if ( row ) {
+						row.remove();
+					}
+					syncMatrixAddButton( fieldEl );
+					const form = fieldEl.closest( '[data-wek-form]' );
 					if ( form ) {
 						form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 					}
 				} );
 			} );
+
+			syncMatrixAddButton( fieldEl );
+		} );
+	}
+
+	function ensureMatrixCustomRowsFromValues( fieldEl, val ) {
+		if ( ! val || typeof val !== 'object' || Array.isArray( val ) ) {
+			return;
+		}
+		Object.keys( val ).forEach( function ( rowId ) {
+			if ( ! /^custom_[a-z0-9]+$/.test( rowId ) ) {
+				return;
+			}
+			if ( ! qs( fieldEl, '[data-wek-matrix-row="' + rowId + '"]' ) ) {
+				addMatrixCustomRow( fieldEl, rowId );
+			}
 		} );
 	}
 
@@ -722,6 +895,10 @@
 			const onBox = qs( row, '[data-wek-matrix-on]' );
 			if ( onBox ) {
 				return !! onBox.checked;
+			}
+			const labelInput = qs( row, '[data-wek-matrix-label]' );
+			if ( labelInput && String( labelInput.value || '' ).trim() !== '' ) {
+				return true;
 			}
 			if ( qs( row, 'input[type="radio"]:checked' ) ) {
 				return true;
@@ -733,7 +910,10 @@
 			) {
 				return true;
 			}
-			return qsa( row, 'input[type="text"], input[type="number"]' ).some( function ( input ) {
+			return qsa( row, '[data-wek-matrix-col]' ).some( function ( input ) {
+				if ( input.type === 'checkbox' || input.type === 'radio' ) {
+					return false;
+				}
 				return String( input.value || '' ).trim() !== '';
 			} );
 		} );
@@ -1670,9 +1850,14 @@
 					return;
 				}
 				if ( type === 'matrix' && val && typeof val === 'object' && ! Array.isArray( val ) ) {
+					ensureMatrixCustomRowsFromValues( fieldEl, val );
 					qsa( fieldEl, '[data-wek-matrix-row]' ).forEach( function ( row ) {
 						const rowId = row.getAttribute( 'data-wek-matrix-row' );
 						const rowVal = rowId && val[ rowId ] ? val[ rowId ] : null;
+						const labelInput = qs( row, '[data-wek-matrix-label]' );
+						if ( labelInput ) {
+							labelInput.value = rowVal && rowVal.label != null ? String( rowVal.label ) : '';
+						}
 						const onBox = qs( row, '[data-wek-matrix-on]' );
 						if ( onBox ) {
 							onBox.checked = !!( rowVal && rowVal.on );

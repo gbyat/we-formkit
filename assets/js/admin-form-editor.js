@@ -264,15 +264,105 @@
 			} );
 		}
 
-		const ops = [
+		const opsNoValue = {
+			is_checked: true,
+			is_not_checked: true,
+			is_not_empty: true,
+			is_empty: true,
+		};
+
+		const allOps = [
 			{ value: 'equals', label: i18n.opEquals || 'equals' },
 			{ value: 'not_equals', label: i18n.opNotEquals || 'not equals' },
 			{ value: 'contains', label: i18n.opContains || 'contains' },
 			{ value: 'is_checked', label: i18n.opIsChecked || 'is checked' },
+			{ value: 'is_not_checked', label: i18n.opIsNotChecked || 'is not checked' },
 			{ value: 'is_not_empty', label: i18n.opIsNotEmpty || 'is not empty' },
+			{ value: 'is_empty', label: i18n.opIsEmpty || 'is empty' },
 		];
 
-		const opsNoValue = { is_checked: true, is_not_empty: true };
+		function opsForConditionField( meta ) {
+			const kind = meta && meta.kind ? meta.kind : 'field';
+			const type = meta && meta.type ? meta.type : '';
+			if ( kind === 'matrix_row' ) {
+				return allOps.filter( function ( op ) {
+					return op.value === 'is_checked' || op.value === 'is_not_checked';
+				} );
+			}
+			if ( type === 'checkbox' || type === 'consent' ) {
+				return allOps.filter( function ( op ) {
+					return op.value === 'is_checked' || op.value === 'is_not_checked';
+				} );
+			}
+			if ( type === 'checkboxes' ) {
+				return allOps.filter( function ( op ) {
+					return (
+						op.value === 'contains' ||
+						op.value === 'equals' ||
+						op.value === 'not_equals' ||
+						op.value === 'is_not_empty' ||
+						op.value === 'is_empty'
+					);
+				} );
+			}
+			if ( type === 'radio' || type === 'radio_image' || type === 'select' ) {
+				return allOps.filter( function ( op ) {
+					return (
+						op.value === 'equals' ||
+						op.value === 'not_equals' ||
+						op.value === 'is_not_empty' ||
+						op.value === 'is_empty'
+					);
+				} );
+			}
+			if ( type === 'matrix' ) {
+				return allOps.filter( function ( op ) {
+					return op.value === 'is_not_empty' || op.value === 'is_empty';
+				} );
+			}
+			if ( type === 'upload' || type === 'signature' || type === 'repeater' ) {
+				return allOps.filter( function ( op ) {
+					return op.value === 'is_not_empty' || op.value === 'is_empty';
+				} );
+			}
+			// Text-like and fallback.
+			return allOps.filter( function ( op ) {
+				return (
+					op.value === 'equals' ||
+					op.value === 'not_equals' ||
+					op.value === 'contains' ||
+					op.value === 'is_not_empty' ||
+					op.value === 'is_empty'
+				);
+			} );
+		}
+
+		function defaultOpForConditionField( meta ) {
+			const allowed = opsForConditionField( meta );
+			if ( ! allowed.length ) {
+				return 'equals';
+			}
+			const preferred =
+				meta && ( meta.type === 'checkbox' || meta.type === 'consent' || meta.kind === 'matrix_row' )
+					? 'is_checked'
+					: allowed[ 0 ].value;
+			const hit = allowed.find( function ( op ) {
+				return op.value === preferred;
+			} );
+			return hit ? hit.value : allowed[ 0 ].value;
+		}
+
+		function ensureRuleOpForField( rule, meta ) {
+			const allowed = opsForConditionField( meta ).map( function ( op ) {
+				return op.value;
+			} );
+			if ( allowed.indexOf( rule.op ) === -1 ) {
+				rule.op = defaultOpForConditionField( meta );
+			}
+			if ( opsNoValue[ rule.op ] ) {
+				rule.value = '';
+			}
+		}
 
 		function el( tag, attrs, children ) {
 			const node = document.createElement( tag );
@@ -712,6 +802,7 @@
 						label: label,
 						options: Array.isArray( field.options ) ? field.options : [],
 						kind: field.type === 'matrix' ? 'matrix' : 'field',
+						type: String( field.type || 'text' ),
 					} );
 					if ( field.type !== 'matrix' ) {
 						return;
@@ -728,6 +819,7 @@
 							label: label + ' › ' + rowLabel,
 							options: [],
 							kind: 'matrix_row',
+							type: 'matrix_row',
 						} );
 					} );
 				} );
@@ -933,17 +1025,32 @@
 					} );
 					fillFieldSelect( fieldSelect, fields, rule.field );
 
+					const metaForRule = fields.find( function ( f ) {
+						return f.id === rule.field;
+					} ) || ( fields[ 0 ] || null );
+					ensureRuleOpForField( rule, metaForRule );
+
 					const opSelect = el( 'select', {
 						className: 'wek-builder__condition-op',
 						'aria-label': i18n.showOp || 'Operator',
 					} );
-					ops.forEach( function ( op ) {
-						const opt = el( 'option', { value: op.value, text: op.label } );
-						if ( ( rule.op || 'equals' ) === op.value ) {
-							opt.selected = true;
+					function refillOps( selectedOp ) {
+						opSelect.innerHTML = '';
+						const meta = fields.find( function ( f ) {
+							return f.id === fieldSelect.value;
+						} );
+						opsForConditionField( meta ).forEach( function ( op ) {
+							const opt = el( 'option', { value: op.value, text: op.label } );
+							if ( selectedOp === op.value ) {
+								opt.selected = true;
+							}
+							opSelect.appendChild( opt );
+						} );
+						if ( ! opSelect.value && opSelect.options.length ) {
+							opSelect.selectedIndex = 0;
 						}
-						opSelect.appendChild( opt );
-					} );
+					}
+					refillOps( rule.op || 'equals' );
 
 					const valueWrap = el( 'div', { className: 'wek-builder__condition-value' } );
 
@@ -952,11 +1059,9 @@
 						const meta = fields.find( function ( f ) {
 							return f.id === fieldSelect.value;
 						} );
-						if ( meta && meta.kind === 'matrix_row' ) {
-							rule.op = 'is_checked';
-							opSelect.value = 'is_checked';
-							rule.value = '';
-						}
+						ensureRuleOpForField( rule, meta );
+						refillOps( rule.op );
+						rule.op = opSelect.value || defaultOpForConditionField( meta );
 						paintValueControl( valueWrap, rule, fieldSelect, opSelect );
 						commitShowWhen( target, container );
 					} );
@@ -995,9 +1100,10 @@
 					className: 'button button-secondary',
 					text: i18n.addCondition || 'Add condition',
 					onClick: function () {
+						const first = fields[ 0 ] || null;
 						container.rules.push( {
-							field: fields[ 0 ] ? fields[ 0 ].id : '',
-							op: 'equals',
+							field: first ? first.id : '',
+							op: defaultOpForConditionField( first ),
 							value: '',
 						} );
 						commitShowWhen( target, container );
@@ -1910,6 +2016,17 @@
 			if ( typeof opts.row_label_align === 'undefined' ) {
 				opts.row_label_align = 'left';
 			}
+			if ( typeof opts.allow_custom_rows === 'undefined' ) {
+				opts.allow_custom_rows = false;
+			}
+			if ( typeof opts.max_custom_rows === 'undefined' || opts.max_custom_rows === '' ) {
+				opts.max_custom_rows = 2;
+			}
+			let maxCustom = parseInt( opts.max_custom_rows, 10 );
+			if ( ! Number.isFinite( maxCustom ) || maxCustom < 1 ) {
+				maxCustom = 2;
+			}
+			opts.max_custom_rows = Math.min( 5, maxCustom );
 			if ( ! Array.isArray( opts.rows ) ) {
 				opts.rows = [];
 			}
@@ -1954,6 +2071,14 @@
 					el( 'div', {
 						className: 'wek-builder__matrix-preview-more',
 						text: '+' + ( opts.rows.length - 3 ),
+					} )
+				);
+			}
+			if ( opts.allow_custom_rows ) {
+				wrap.appendChild(
+					el( 'div', {
+						className: 'wek-builder__matrix-preview-custom',
+						text: i18n.matrixPreviewCustom || '+ Other',
 					} )
 				);
 			}
@@ -2290,6 +2415,49 @@
 			wrap.appendChild(
 				fieldRow( i18n.matrixRowLabelAlign || 'Row label alignment', alignSelect )
 			);
+
+			const allowCustom = el( 'input', { type: 'checkbox' } );
+			allowCustom.checked = !! opts.allow_custom_rows;
+			const maxCustomInput = el( 'input', {
+				type: 'number',
+				min: '1',
+				max: '5',
+				step: '1',
+				value: String( opts.max_custom_rows || 2 ),
+			} );
+			maxCustomInput.disabled = ! allowCustom.checked;
+			const maxCustomRow = fieldRow( i18n.matrixMaxCustomRows || 'Max custom rows', maxCustomInput );
+			maxCustomRow.hidden = ! allowCustom.checked;
+
+			function syncCustomRowsUi() {
+				opts.allow_custom_rows = allowCustom.checked;
+				maxCustomInput.disabled = ! allowCustom.checked;
+				maxCustomRow.hidden = ! allowCustom.checked;
+				let n = parseInt( maxCustomInput.value, 10 );
+				if ( ! Number.isFinite( n ) || n < 1 ) {
+					n = 2;
+				}
+				opts.max_custom_rows = Math.min( 5, n );
+				maxCustomInput.value = String( opts.max_custom_rows );
+				syncHidden();
+			}
+
+			allowCustom.addEventListener( 'change', syncCustomRowsUi );
+			maxCustomInput.addEventListener( 'change', syncCustomRowsUi );
+			maxCustomInput.addEventListener( 'blur', syncCustomRowsUi );
+
+			wrap.appendChild(
+				toggleRow( i18n.matrixAllowCustomRows || 'Allow visitor-added rows', allowCustom )
+			);
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.matrixAllowCustomRowsHint ||
+						'Replaces a static “Other” row: visitors type their own label and answer the same columns.',
+				} )
+			);
+			wrap.appendChild( maxCustomRow );
 
 			wrap.appendChild(
 				renderMatrixListEditor( i18n.matrixRows || 'Rows', opts.rows, null, 'row' )

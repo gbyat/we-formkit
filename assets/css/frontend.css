@@ -1429,6 +1429,85 @@
 	text-align: center;
 }
 
+.we-formkit__matrix-custom-label-wrap {
+	display: block;
+	margin: 0;
+	width: 100%;
+}
+
+.we-formkit__matrix-custom-label {
+	width: 100%;
+	min-width: 7rem;
+	max-width: 14rem;
+	margin: 0;
+	padding: 0.3rem 0.45rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input, 8px);
+	background: var(--wek-input);
+	color: var(--wek-ink);
+	font: inherit;
+	font-size: var(--wek-font-input);
+	box-sizing: border-box;
+}
+
+.we-formkit__matrix-col--actions,
+.we-formkit__matrix-cell--actions {
+	width: 1%;
+	white-space: nowrap;
+	text-align: center;
+	vertical-align: middle;
+	padding-left: 0.35rem;
+	padding-right: 0.35rem;
+	background: transparent;
+}
+
+.we-formkit__matrix-remove-row {
+	margin: 0;
+	padding: 0.2rem 0.45rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-input, 8px);
+	background: var(--wek-surface);
+	color: var(--wek-ink);
+	font: inherit;
+	font-size: 0.85em;
+	line-height: 1.2;
+	cursor: pointer;
+}
+
+.we-formkit__matrix-remove-row:hover,
+.we-formkit__matrix-remove-row:focus-visible {
+	border-color: var(--wek-accent);
+	outline: none;
+}
+
+.we-formkit__matrix-custom-actions {
+	margin: 0.65rem 0 0;
+}
+
+.we-formkit__matrix-add-row {
+	margin: 0;
+	padding: 0.4rem 0.75rem;
+	border: 1px dashed color-mix(in srgb, var(--wek-accent) 55%, var(--wek-line));
+	border-radius: var(--wek-radius-input, 8px);
+	background: color-mix(in srgb, var(--wek-accent) 8%, var(--wek-surface));
+	color: var(--wek-ink);
+	font: inherit;
+	font-size: var(--wek-font-input);
+	cursor: pointer;
+}
+
+.we-formkit__matrix-add-row:hover,
+.we-formkit__matrix-add-row:focus-visible {
+	border-style: solid;
+	border-color: var(--wek-accent);
+	outline: none;
+}
+
+.we-formkit__matrix-add-row:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
 /*
  * Narrow screens: one card per matrix row.
  * Table stays in the DOM for a11y / JS; presentation becomes stacked forms.
@@ -1541,6 +1620,26 @@
 		padding: 0 0 0.45rem;
 		border-bottom: 1px solid var(--wek-line);
 		margin: 0;
+	}
+
+	.we-formkit__matrix th.we-formkit__matrix-row-label--custom {
+		flex: 1 1 100%;
+		order: -1;
+	}
+
+	.we-formkit__matrix-custom-label {
+		max-width: none;
+		min-width: 0;
+		font-size: 1rem;
+		font-weight: 600;
+	}
+
+	.we-formkit__matrix-cell--actions {
+		order: 50;
+		flex: 1 1 100%;
+		text-align: right;
+		padding-top: 0.35rem;
+		border-top: 1px solid var(--wek-line);
 	}
 
 	.we-formkit__matrix--row-labels-center th.we-formkit__matrix-row-label,

@@ -95,6 +95,8 @@ final class Conditional {
 				return false !== strpos( self::normalize( $current ), $needle );
 			case 'is_checked':
 				return self::is_truthy( $current );
+			case 'is_not_checked':
+				return ! self::is_truthy( $current );
 			case 'is_not_empty':
 				if ( is_array( $current ) ) {
 					return count(
@@ -110,6 +112,21 @@ final class Conditional {
 					) > 0;
 				}
 				return '' !== self::normalize( $current );
+			case 'is_empty':
+				if ( is_array( $current ) ) {
+					return count(
+						array_filter(
+							$current,
+							static function ( $item ) {
+								if ( is_array( $item ) ) {
+									return ! empty( $item );
+								}
+								return '' !== self::normalize( $item );
+							}
+						)
+					) === 0;
+				}
+				return '' === self::normalize( $current );
 			default:
 				return true;
 		}

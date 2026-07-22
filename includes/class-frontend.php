@@ -296,38 +296,41 @@ final class Frontend {
 				'saveMinFilled' => Drafts::get_min_filled( $form_id ),
 				'draftUrl'      => esc_url_raw( rest_url( Rest_Api::NAMESPACE . '/drafts' ) ),
 				'i18n'          => array(
-					'submitting'      => __( 'Submitting…', 'we-formkit' ),
-					'submit'          => __( 'Submit form', 'we-formkit' ),
-					'error'           => __( 'Something went wrong. Please try again.', 'we-formkit' ),
-					'required'        => __( 'This field is required.', 'we-formkit' ),
-					'correctFields'   => __( 'Please correct the highlighted fields.', 'we-formkit' ),
-					'addRow'          => __( 'Add another', 'we-formkit' ),
-					'removeRow'       => __( 'Remove', 'we-formkit' ),
+					'submitting'       => __( 'Submitting…', 'we-formkit' ),
+					'submit'           => __( 'Submit form', 'we-formkit' ),
+					'error'            => __( 'Something went wrong. Please try again.', 'we-formkit' ),
+					'required'         => __( 'This field is required.', 'we-formkit' ),
+					'correctFields'    => __( 'Please correct the highlighted fields.', 'we-formkit' ),
+					'addRow'           => __( 'Add another', 'we-formkit' ),
+					'removeRow'        => __( 'Remove', 'we-formkit' ),
 					/* translators: %d: row number (1-based). */
-					'rowLabel'        => __( 'Row %d', 'we-formkit' ),
-					'autofillReady'   => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
-					'autofillManual'  => __( 'Test fill applied. Click Submit form when ready.', 'we-formkit' ),
-					'autofillDone'    => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
-					'infoDocuments'   => __( 'Downloads', 'we-formkit' ),
-					'next'            => __( 'Next', 'we-formkit' ),
-					'previous'        => __( 'Previous', 'we-formkit' ),
+					'rowLabel'         => __( 'Row %d', 'we-formkit' ),
+					'autofillReady'    => __( 'Test fill applied. Submitting automatically…', 'we-formkit' ),
+					'autofillManual'   => __( 'Test fill applied. Click Submit form when ready.', 'we-formkit' ),
+					'autofillDone'     => __( 'Smoke test submitted. Check Formkit → Entries.', 'we-formkit' ),
+					'infoDocuments'    => __( 'Downloads', 'we-formkit' ),
+					'next'             => __( 'Next', 'we-formkit' ),
+					'previous'         => __( 'Previous', 'we-formkit' ),
 					/* translators: 1: current page, 2: total pages. */
-					'pageOf'          => __( 'Step %1$d of %2$d', 'we-formkit' ),
-					'saveProgress'    => __( 'Save progress', 'we-formkit' ),
-					'saveEmailNeeded' => __( 'Enter an email address to receive your resume link.', 'we-formkit' ),
-					'savingProgress'  => __( 'Saving…', 'we-formkit' ),
+					'pageOf'           => __( 'Step %1$d of %2$d', 'we-formkit' ),
+					'saveProgress'     => __( 'Save progress', 'we-formkit' ),
+					'saveEmailNeeded'  => __( 'Enter an email address to receive your resume link.', 'we-formkit' ),
+					'savingProgress'   => __( 'Saving…', 'we-formkit' ),
 					/* translators: %s: email address. */
-					'savedProgress'   => __( 'Progress saved. We sent a resume link to %s.', 'we-formkit' ),
-					'saveUpdated'     => __( 'Progress updated. Use the resume link from your earlier email.', 'we-formkit' ),
-					'saveMailFailed'  => __( 'Progress was saved, but the resume email could not be sent. Please try again or contact the site owner.', 'we-formkit' ),
-					'saveTooEarly'    => __( 'Fill in a few fields before saving your progress.', 'we-formkit' ),
-					'resumeLoaded'    => __( 'Your saved progress was restored.', 'we-formkit' ),
-					'saveEmailPh'     => __( 'Email for resume link', 'we-formkit' ),
-					'saveRemind'      => __( 'Add a calendar reminder (.ics) before this link expires', 'we-formkit' ),
+					'savedProgress'    => __( 'Progress saved. We sent a resume link to %s.', 'we-formkit' ),
+					'saveUpdated'      => __( 'Progress updated. Use the resume link from your earlier email.', 'we-formkit' ),
+					'saveMailFailed'   => __( 'Progress was saved, but the resume email could not be sent. Please try again or contact the site owner.', 'we-formkit' ),
+					'saveTooEarly'     => __( 'Fill in a few fields before saving your progress.', 'we-formkit' ),
+					'resumeLoaded'     => __( 'Your saved progress was restored.', 'we-formkit' ),
+					'saveEmailPh'      => __( 'Email for resume link', 'we-formkit' ),
+					'saveRemind'       => __( 'Add a calendar reminder (.ics) before this link expires', 'we-formkit' ),
 					/* translators: 1: field label, 2: minimum number of selections. */
-					'checkboxesMin'   => __( 'Please select at least %2$d option(s) for %1$s.', 'we-formkit' ),
+					'checkboxesMin'    => __( 'Please select at least %2$d option(s) for %1$s.', 'we-formkit' ),
 					/* translators: 1: field label, 2: maximum number of selections. */
-					'checkboxesMax'   => __( 'Please select at most %2$d option(s) for %1$s.', 'we-formkit' ),
+					'checkboxesMax'    => __( 'Please select at most %2$d option(s) for %1$s.', 'we-formkit' ),
+					'matrixAddRow'     => __( 'Add other row', 'we-formkit' ),
+					'matrixRemoveRow'  => __( 'Remove row', 'we-formkit' ),
+					'matrixRowLabelPh' => __( 'Your label', 'we-formkit' ),
 				),
 				'validation'    => Validation_Messages::global_templates_for_js(),
 			)
@@ -585,6 +588,15 @@ final class Frontend {
 				data-min-selected="<?php echo esc_attr( (string) $min_sel ); ?>"
 				data-max-selected="<?php echo esc_attr( (string) $max_sel ); ?>"
 			<?php endif; ?>
+			<?php if ( 'matrix' === $type ) : ?>
+				<?php
+				$matrix_field_cfg = Fields\Matrix_Field::config( $field );
+				if ( ! empty( $matrix_field_cfg['allow_custom_rows'] ) ) :
+					?>
+					data-wek-matrix-custom="1"
+					data-max-custom-rows="<?php echo esc_attr( (string) $matrix_field_cfg['max_custom_rows'] ); ?>"
+				<?php endif; ?>
+			<?php endif; ?>
 			<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			aria-hidden="<?php echo $hidden ? 'true' : 'false'; ?>"
 		>
@@ -711,11 +723,13 @@ final class Frontend {
 				</fieldset>
 			<?php elseif ( 'matrix' === $type ) : ?>
 				<?php
-				$matrix_cfg      = Fields\Matrix_Field::config( $field );
-				$rows            = $matrix_cfg['rows'];
-				$columns         = $matrix_cfg['columns'];
-				$row_select      = $matrix_cfg['row_select'];
-				$row_label_align = $matrix_cfg['row_label_align'];
+				$matrix_cfg        = Fields\Matrix_Field::config( $field );
+				$rows              = $matrix_cfg['rows'];
+				$columns           = $matrix_cfg['columns'];
+				$row_select        = $matrix_cfg['row_select'];
+				$row_label_align   = $matrix_cfg['row_label_align'];
+				$allow_custom_rows = ! empty( $matrix_cfg['allow_custom_rows'] );
+				$max_custom_rows   = (int) $matrix_cfg['max_custom_rows'];
 				?>
 				<fieldset class="we-formkit__fieldset we-formkit__fieldset--matrix">
 					<legend class="screen-reader-text">
@@ -795,6 +809,11 @@ final class Frontend {
 											endif;
 											?>
 										<?php endforeach; ?>
+										<?php if ( $allow_custom_rows ) : ?>
+											<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--actions"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
+												<span class="screen-reader-text"><?php esc_html_e( 'Row actions', 'we-formkit' ); ?></span>
+											</th>
+										<?php endif; ?>
 									</tr>
 									<?php if ( $needs_option_headers ) : ?>
 										<tr class="we-formkit__matrix-head-options">
@@ -820,114 +839,56 @@ final class Frontend {
 										</tr>
 									<?php endif; ?>
 								</thead>
-								<tbody>
+								<tbody data-wek-matrix-body>
 									<?php foreach ( $rows as $row ) : ?>
 										<?php
-										$row_id    = (string) $row['value'];
-										$row_label = (string) ( $row['label'] ?? $row_id );
+										self::render_matrix_row(
+											array(
+												'field_id' => $id,
+												'input_id' => $input_id,
+												'row_id'   => (string) $row['value'],
+												'row_label' => (string) ( $row['label'] ?? $row['value'] ),
+												'row_select' => $row_select,
+												'columns'  => $columns,
+												'is_custom' => false,
+												'allow_custom' => $allow_custom_rows,
+											)
+										);
 										?>
-										<tr data-wek-matrix-row="<?php echo esc_attr( $row_id ); ?>">
-											<th scope="row" class="we-formkit__matrix-row-label"><?php echo esc_html( $row_label ); ?></th>
-											<?php if ( $row_select ) : ?>
-												<td class="we-formkit__matrix-cell we-formkit__matrix-cell--select">
-													<label class="we-formkit__matrix-choice we-formkit__matrix-choice--select">
-														<span class="screen-reader-text"><?php echo esc_html( sprintf( /* translators: %s: row label */ __( 'Select %s', 'we-formkit' ), $row_label ) ); ?></span>
-														<input
-															type="checkbox"
-															name="<?php echo esc_attr( $id . '[' . $row_id . '][on]' ); ?>"
-															value="1"
-															data-wek-matrix-on
-														/>
-													</label>
-												</td>
-											<?php endif; ?>
-											<?php foreach ( $columns as $col ) : ?>
-												<?php
-												$col_id   = (string) ( $col['id'] ?? '' );
-												$col_type = (string) ( $col['type'] ?? 'radio' );
-												$col_lab  = (string) ( $col['label'] ?? $col_id );
-												$opts     = isset( $col['options'] ) && is_array( $col['options'] ) ? $col['options'] : array();
-												if ( 'radio' === $col_type && ! empty( $opts ) ) :
-													$opt_i = 0;
-													foreach ( $opts as $opt ) :
-														$oval      = (string) ( $opt['value'] ?? '' );
-														$olab      = (string) ( $opt['label'] ?? $oval );
-														$oid       = $input_id . '-' . $row_id . '-' . $col_id . '-' . $oval;
-														$opt_block = 0 === $opt_i ? ' we-formkit__matrix-cell--block-start we-formkit__matrix-cell--group-start' : '';
-														++$opt_i;
-														?>
-														<td
-															class="we-formkit__matrix-cell we-formkit__matrix-cell--radio<?php echo esc_attr( $opt_block ); ?>"
-															data-wek-col-label="<?php echo esc_attr( $col_lab ); ?>"
-															data-wek-opt-label="<?php echo esc_attr( $olab ); ?>"
-														>
-															<?php if ( '' !== $opt_block ) : ?>
-																<span class="we-formkit__matrix-mobile-group" aria-hidden="true"><?php echo esc_html( $col_lab ); ?></span>
-															<?php endif; ?>
-															<label class="we-formkit__matrix-choice" for="<?php echo esc_attr( $oid ); ?>">
-																<span class="screen-reader-text"><?php echo esc_html( $olab ); ?></span>
-																<input
-																	type="radio"
-																	id="<?php echo esc_attr( $oid ); ?>"
-																	name="<?php echo esc_attr( $id . '[' . $row_id . '][' . $col_id . ']' ); ?>"
-																	value="<?php echo esc_attr( $oval ); ?>"
-																	data-wek-matrix-col="<?php echo esc_attr( $col_id ); ?>"
-																/>
-																<span class="we-formkit__matrix-mobile-opt" aria-hidden="true"><?php echo esc_html( $olab ); ?></span>
-															</label>
-														</td>
-														<?php
-													endforeach;
-												elseif ( 'text' === $col_type || 'number' === $col_type ) :
-													$oid = $input_id . '-' . $row_id . '-' . $col_id;
-													?>
-													<td
-														class="we-formkit__matrix-cell we-formkit__matrix-cell--<?php echo esc_attr( $col_type ); ?> we-formkit__matrix-cell--block-start"
-														data-wek-col-label="<?php echo esc_attr( $col_lab ); ?>"
-													>
-														<label class="we-formkit__matrix-input-wrap" for="<?php echo esc_attr( $oid ); ?>">
-															<span class="we-formkit__matrix-mobile-label" aria-hidden="true"><?php echo esc_html( $col_lab ); ?></span>
-															<span class="screen-reader-text"><?php echo esc_html( $row_label . ' — ' . $col_lab ); ?></span>
-															<input
-																type="<?php echo esc_attr( $col_type ); ?>"
-																id="<?php echo esc_attr( $oid ); ?>"
-																class="we-formkit__matrix-input"
-																name="<?php echo esc_attr( $id . '[' . $row_id . '][' . $col_id . ']' ); ?>"
-																value=""
-																<?php echo 'number' === $col_type ? 'inputmode="decimal" step="any"' : ''; ?>
-																data-wek-matrix-col="<?php echo esc_attr( $col_id ); ?>"
-															/>
-														</label>
-													</td>
-													<?php
-												else :
-													$oid = $input_id . '-' . $row_id . '-' . $col_id;
-													?>
-													<td
-														class="we-formkit__matrix-cell we-formkit__matrix-cell--checkbox we-formkit__matrix-cell--block-start"
-														data-wek-col-label="<?php echo esc_attr( $col_lab ); ?>"
-													>
-														<label class="we-formkit__matrix-choice" for="<?php echo esc_attr( $oid ); ?>">
-															<span class="screen-reader-text"><?php echo esc_html( $col_lab ); ?></span>
-															<input
-																type="checkbox"
-																id="<?php echo esc_attr( $oid ); ?>"
-																name="<?php echo esc_attr( $id . '[' . $row_id . '][' . $col_id . ']' ); ?>"
-																value="1"
-																data-wek-matrix-col="<?php echo esc_attr( $col_id ); ?>"
-															/>
-															<span class="we-formkit__matrix-mobile-opt" aria-hidden="true"><?php echo esc_html( $col_lab ); ?></span>
-														</label>
-													</td>
-													<?php
-												endif;
-												?>
-											<?php endforeach; ?>
-										</tr>
 									<?php endforeach; ?>
 								</tbody>
+								<?php if ( $allow_custom_rows ) : ?>
+									<template data-wek-matrix-custom-template>
+										<?php
+										self::render_matrix_row(
+											array(
+												'field_id' => $id,
+												'input_id' => $input_id,
+												'row_id'   => '__CUSTOM_ID__',
+												'row_label' => '',
+												'row_select' => $row_select,
+												'columns'  => $columns,
+												'is_custom' => true,
+												'allow_custom' => true,
+											)
+										);
+										?>
+									</template>
+								<?php endif; ?>
 							</table>
 						</div>
+						<?php if ( $allow_custom_rows ) : ?>
+							<p class="we-formkit__matrix-custom-actions">
+								<button
+									type="button"
+									class="we-formkit__matrix-add-row"
+									data-wek-matrix-add-row
+									data-max-custom-rows="<?php echo esc_attr( (string) $max_custom_rows ); ?>"
+								>
+									<?php esc_html_e( 'Add other row', 'we-formkit' ); ?>
+								</button>
+							</p>
+						<?php endif; ?>
 					<?php endif; ?>
 				</fieldset>
 			<?php elseif ( 'select' === $type ) : ?>
@@ -1081,6 +1042,179 @@ final class Frontend {
 				</p>
 			<?php endif; ?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Render one matrix table row (fixed or custom template).
+	 *
+	 * @param array{
+	 *   field_id:string,
+	 *   input_id:string,
+	 *   row_id:string,
+	 *   row_label:string,
+	 *   row_select:bool,
+	 *   columns:array<int,array<string,mixed>>,
+	 *   is_custom:bool,
+	 *   allow_custom:bool
+	 * } $args Row args.
+	 * @return void
+	 */
+	private static function render_matrix_row( array $args ) {
+		$field_id     = (string) $args['field_id'];
+		$input_id     = (string) $args['input_id'];
+		$row_id       = (string) $args['row_id'];
+		$row_label    = (string) $args['row_label'];
+		$row_select   = ! empty( $args['row_select'] );
+		$columns      = isset( $args['columns'] ) && is_array( $args['columns'] ) ? $args['columns'] : array();
+		$is_custom    = ! empty( $args['is_custom'] );
+		$allow_custom = ! empty( $args['allow_custom'] );
+		$row_attrs    = 'data-wek-matrix-row="' . esc_attr( $row_id ) . '"';
+		if ( $is_custom ) {
+			$row_attrs .= ' data-wek-matrix-custom-row="1"';
+		}
+		?>
+		<tr <?php echo $row_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
+			<th scope="row" class="we-formkit__matrix-row-label<?php echo $is_custom ? ' we-formkit__matrix-row-label--custom' : ''; ?>">
+				<?php if ( $is_custom ) : ?>
+					<label class="we-formkit__matrix-custom-label-wrap">
+						<span class="screen-reader-text"><?php esc_html_e( 'Row label', 'we-formkit' ); ?></span>
+						<input
+							type="text"
+							class="we-formkit__matrix-custom-label"
+							name="<?php echo esc_attr( $field_id . '[' . $row_id . '][label]' ); ?>"
+							value=""
+							placeholder="<?php echo esc_attr__( 'Your label', 'we-formkit' ); ?>"
+							autocomplete="off"
+							data-wek-matrix-label
+						/>
+					</label>
+				<?php else : ?>
+					<?php echo esc_html( $row_label ); ?>
+				<?php endif; ?>
+			</th>
+			<?php if ( $row_select ) : ?>
+				<td class="we-formkit__matrix-cell we-formkit__matrix-cell--select">
+					<label class="we-formkit__matrix-choice we-formkit__matrix-choice--select">
+						<span class="screen-reader-text">
+							<?php
+							echo esc_html(
+								$is_custom
+									? __( 'Select this row', 'we-formkit' )
+									: sprintf(
+										/* translators: %s: row label */
+										__( 'Select %s', 'we-formkit' ),
+										$row_label
+									)
+							);
+							?>
+						</span>
+						<input
+							type="checkbox"
+							name="<?php echo esc_attr( $field_id . '[' . $row_id . '][on]' ); ?>"
+							value="1"
+							data-wek-matrix-on
+						/>
+					</label>
+				</td>
+			<?php endif; ?>
+			<?php foreach ( $columns as $col ) : ?>
+				<?php
+				$col_id   = (string) ( $col['id'] ?? '' );
+				$col_type = (string) ( $col['type'] ?? 'radio' );
+				$col_lab  = (string) ( $col['label'] ?? $col_id );
+				$opts     = isset( $col['options'] ) && is_array( $col['options'] ) ? $col['options'] : array();
+				if ( 'radio' === $col_type && ! empty( $opts ) ) :
+					$opt_i = 0;
+					foreach ( $opts as $opt ) :
+						$oval      = (string) ( $opt['value'] ?? '' );
+						$olab      = (string) ( $opt['label'] ?? $oval );
+						$oid       = $input_id . '-' . $row_id . '-' . $col_id . '-' . $oval;
+						$opt_block = 0 === $opt_i ? ' we-formkit__matrix-cell--block-start we-formkit__matrix-cell--group-start' : '';
+						++$opt_i;
+						?>
+						<td
+							class="we-formkit__matrix-cell we-formkit__matrix-cell--radio<?php echo esc_attr( $opt_block ); ?>"
+							data-wek-col-label="<?php echo esc_attr( $col_lab ); ?>"
+							data-wek-opt-label="<?php echo esc_attr( $olab ); ?>"
+						>
+							<?php if ( '' !== $opt_block ) : ?>
+								<span class="we-formkit__matrix-mobile-group" aria-hidden="true"><?php echo esc_html( $col_lab ); ?></span>
+							<?php endif; ?>
+							<label class="we-formkit__matrix-choice" for="<?php echo esc_attr( $oid ); ?>">
+								<span class="screen-reader-text"><?php echo esc_html( $olab ); ?></span>
+								<input
+									type="radio"
+									id="<?php echo esc_attr( $oid ); ?>"
+									name="<?php echo esc_attr( $field_id . '[' . $row_id . '][' . $col_id . ']' ); ?>"
+									value="<?php echo esc_attr( $oval ); ?>"
+									data-wek-matrix-col="<?php echo esc_attr( $col_id ); ?>"
+								/>
+								<span class="we-formkit__matrix-mobile-opt" aria-hidden="true"><?php echo esc_html( $olab ); ?></span>
+							</label>
+						</td>
+						<?php
+					endforeach;
+				elseif ( 'text' === $col_type || 'number' === $col_type ) :
+					$oid = $input_id . '-' . $row_id . '-' . $col_id;
+					?>
+					<td
+						class="we-formkit__matrix-cell we-formkit__matrix-cell--<?php echo esc_attr( $col_type ); ?> we-formkit__matrix-cell--block-start"
+						data-wek-col-label="<?php echo esc_attr( $col_lab ); ?>"
+					>
+						<label class="we-formkit__matrix-input-wrap" for="<?php echo esc_attr( $oid ); ?>">
+							<span class="we-formkit__matrix-mobile-label" aria-hidden="true"><?php echo esc_html( $col_lab ); ?></span>
+							<span class="screen-reader-text"><?php echo esc_html( ( $is_custom ? __( 'Custom row', 'we-formkit' ) : $row_label ) . ' — ' . $col_lab ); ?></span>
+							<input
+								type="<?php echo esc_attr( $col_type ); ?>"
+								id="<?php echo esc_attr( $oid ); ?>"
+								class="we-formkit__matrix-input"
+								name="<?php echo esc_attr( $field_id . '[' . $row_id . '][' . $col_id . ']' ); ?>"
+								value=""
+								<?php echo 'number' === $col_type ? 'inputmode="decimal" step="any"' : ''; ?>
+								data-wek-matrix-col="<?php echo esc_attr( $col_id ); ?>"
+							/>
+						</label>
+					</td>
+					<?php
+				else :
+					$oid = $input_id . '-' . $row_id . '-' . $col_id;
+					?>
+					<td
+						class="we-formkit__matrix-cell we-formkit__matrix-cell--checkbox we-formkit__matrix-cell--block-start"
+						data-wek-col-label="<?php echo esc_attr( $col_lab ); ?>"
+					>
+						<label class="we-formkit__matrix-choice" for="<?php echo esc_attr( $oid ); ?>">
+							<span class="screen-reader-text"><?php echo esc_html( $col_lab ); ?></span>
+							<input
+								type="checkbox"
+								id="<?php echo esc_attr( $oid ); ?>"
+								name="<?php echo esc_attr( $field_id . '[' . $row_id . '][' . $col_id . ']' ); ?>"
+								value="1"
+								data-wek-matrix-col="<?php echo esc_attr( $col_id ); ?>"
+							/>
+							<span class="we-formkit__matrix-mobile-opt" aria-hidden="true"><?php echo esc_html( $col_lab ); ?></span>
+						</label>
+					</td>
+					<?php
+				endif;
+				?>
+			<?php endforeach; ?>
+			<?php if ( $allow_custom ) : ?>
+				<td class="we-formkit__matrix-cell we-formkit__matrix-cell--actions">
+					<?php if ( $is_custom ) : ?>
+						<button
+							type="button"
+							class="we-formkit__matrix-remove-row"
+							data-wek-matrix-remove-row
+							aria-label="<?php echo esc_attr__( 'Remove row', 'we-formkit' ); ?>"
+						>
+							<?php esc_html_e( 'Remove', 'we-formkit' ); ?>
+						</button>
+					<?php endif; ?>
+				</td>
+			<?php endif; ?>
+		</tr>
 		<?php
 	}
 

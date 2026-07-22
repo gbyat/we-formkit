@@ -328,7 +328,7 @@ final class Form_Schema {
 			return null;
 		}
 		$op      = sanitize_key( (string) ( $rule['op'] ?? 'equals' ) );
-		$allowed = array( 'equals', 'not_equals', 'contains', 'is_checked', 'is_not_empty' );
+		$allowed = array( 'equals', 'not_equals', 'contains', 'is_checked', 'is_not_checked', 'is_not_empty', 'is_empty' );
 		if ( ! in_array( $op, $allowed, true ) ) {
 			$op = 'equals';
 		}
