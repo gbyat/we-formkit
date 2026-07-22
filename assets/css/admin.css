@@ -1099,6 +1099,32 @@ body.wek-builder-is-resizing iframe {
 	margin-top: 0.65rem;
 }
 
+.wek-admin .wek-builder-sidebar .wek-builder__fold {
+	margin: 0.5rem 0 1rem;
+	padding: 0.5rem 0.65rem;
+	border: 1px solid var(--wek-line, #dcdcde);
+	border-radius: 6px;
+	background: var(--wek-soft, #f6f7f7);
+}
+
+.wek-admin .wek-builder-sidebar .wek-builder__fold > summary {
+	cursor: pointer;
+	font-weight: 600;
+	list-style-position: outside;
+}
+
+.wek-admin .wek-builder-sidebar .wek-builder__fold-body {
+	margin-top: 0.65rem;
+}
+
+.wek-admin .wek-builder-sidebar .wek-builder__options-fold .wek-builder__options,
+.wek-admin .wek-builder-sidebar .wek-builder__matrix-list-fold .wek-builder__matrix-list {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+}
+
 .wek-admin .wek-builder-sidebar .wek-builder__row label {
 	display: grid;
 	gap: 0.35rem;
@@ -2179,6 +2205,29 @@ body.wek-builder-is-resizing iframe {
 	background: #fff;
 }
 
+.wek-admin .wek-builder__matrix-item > summary {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	cursor: pointer;
+	font-weight: 600;
+	list-style-position: outside;
+}
+
+.wek-admin .wek-builder__matrix-item-title {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 12px;
+}
+
+.wek-admin .wek-builder__matrix-item-body {
+	display: grid;
+	gap: 0.35rem;
+}
+
 .wek-admin .wek-builder__matrix-item.is-dragging {
 	opacity: 0.55;
 }
@@ -2192,6 +2241,7 @@ body.wek-builder-is-resizing iframe {
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
+	flex: 0 0 auto;
 }
 
 .wek-admin .wek-builder__matrix-item-handle {
@@ -2211,16 +2261,20 @@ body.wek-builder-is-resizing iframe {
 	cursor: default;
 }
 
-.wek-admin .wek-builder__matrix-item > input.regular-text,
-.wek-admin .wek-builder__matrix-item > select {
+.wek-admin .wek-builder__matrix-item-body > input.regular-text,
+.wek-admin .wek-builder__matrix-item-body > select {
 	max-width: 100%;
+}
+
+.wek-admin .wek-builder__matrix-col-options-fold {
+	margin: 0.35rem 0 0;
 }
 
 .wek-admin .wek-builder__matrix-col-options {
 	display: grid;
 	gap: 0.25rem;
-	padding-top: 0.25rem;
-	border-top: 1px dashed var(--wek-line);
+	padding-top: 0;
+	border-top: 0;
 }
 
 .wek-admin .wek-builder__matrix-opt-row {

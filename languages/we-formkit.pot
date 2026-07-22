@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-22T13:27:27+00:00\n"
+"POT-Creation-Date: 2026-07-22T13:36:12+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: we-formkit\n"
@@ -702,23 +702,28 @@ msgid "Checkbox"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:504
-msgid "Radio options (column headers)"
+#: includes/class-form-style.php:35
+#: includes/fields/class-text-field.php:24
+#: includes/fields/class-upload-field.php:229
+#: src/admin-form-settings/index.jsx:134
+msgid "Text"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:505
-msgid "Row 1"
+#: includes/fields/class-number-field.php:24
+msgid "Number"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:506
-msgid "Row 2"
+msgid "Radio options (column headers)"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:507
-msgid "Choice"
+msgid "Row 1"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:508
-msgid "Flag"
+msgid "Row 2"
 msgstr ""
 
 #: includes/admin/class-form-editor.php:509
@@ -2356,13 +2361,6 @@ msgstr ""
 msgid "Background"
 msgstr ""
 
-#: includes/class-form-style.php:35
-#: includes/fields/class-text-field.php:24
-#: includes/fields/class-upload-field.php:229
-#: src/admin-form-settings/index.jsx:134
-msgid "Text"
-msgstr ""
-
 #: includes/class-form-style.php:36
 #: src/admin-form-settings/index.jsx:135
 msgid "Muted text"
@@ -3142,10 +3140,6 @@ msgstr ""
 
 #: includes/fields/class-matrix-field.php:561
 msgid "not selected"
-msgstr ""
-
-#: includes/fields/class-number-field.php:24
-msgid "Number"
 msgstr ""
 
 #: includes/fields/class-number-field.php:30

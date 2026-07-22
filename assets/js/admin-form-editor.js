@@ -639,25 +639,33 @@
 			}
 			if ( typeId === 'matrix' ) {
 				typeOptions.row_select = true;
+				typeOptions.row_label_align = 'left';
+				typeOptions.allow_custom_rows = false;
+				typeOptions.max_custom_rows = 2;
 				typeOptions.rows = [
 					{ value: 'row_1', label: i18n.matrixRowSample1 || 'Row 1' },
 					{ value: 'row_2', label: i18n.matrixRowSample2 || 'Row 2' },
 				];
 				typeOptions.columns = [
 					{
-						id: 'choice',
+						id: 'radio',
 						type: 'radio',
-						label: i18n.matrixColSampleRadio || 'Choice',
+						label: i18n.matrixColRadio || 'Radio',
 						options: [
 							{ value: 'a', label: i18n.matrixOptA || 'Option A' },
 							{ value: 'b', label: i18n.matrixOptB || 'Option B' },
-							{ value: 'c', label: i18n.matrixOptC || 'Option C' },
 						],
 					},
 					{
-						id: 'flag',
+						id: 'text',
+						type: 'text',
+						label: i18n.matrixColText || 'Text',
+						options: [],
+					},
+					{
+						id: 'checkbox',
 						type: 'checkbox',
-						label: i18n.matrixColSampleCheck || 'Flag',
+						label: i18n.matrixColCheckbox || 'Checkbox',
 						options: [],
 					},
 				];
@@ -1305,9 +1313,8 @@
 				field.default_value = '';
 			}
 			const isRadioImage = field.type === 'radio_image';
-			const wrap = el( 'div', { className: 'wek-builder__options' } );
-			wrap.appendChild( el( 'strong', { text: i18n.options || 'Options' } ) );
-			wrap.appendChild(
+			const body = el( 'div', { className: 'wek-builder__options' } );
+			body.appendChild(
 				el( 'p', {
 					className: 'description',
 					text:
@@ -1475,7 +1482,7 @@
 				list.appendChild( row );
 			} );
 
-			wrap.appendChild( list );
+			body.appendChild( list );
 
 			const clearDefault = el( 'button', {
 				type: 'button',
@@ -1489,9 +1496,9 @@
 			if ( ! field.default_value ) {
 				clearDefault.disabled = true;
 			}
-			wrap.appendChild( clearDefault );
+			body.appendChild( clearDefault );
 
-			wrap.appendChild(
+			body.appendChild(
 				el( 'button', {
 					type: 'button',
 					className: 'button',
@@ -1510,7 +1517,11 @@
 					},
 				} )
 			);
-			return wrap;
+
+			const count = Array.isArray( field.options ) ? field.options.length : 0;
+			const summary =
+				( i18n.options || 'Options' ) + ( count ? ' (' + count + ')' : '' );
+			return collapsiblePanel( summary, body, 'wek-builder__options-fold', true );
 		}
 
 		function ensureTypeOptions( field ) {
@@ -1624,6 +1635,29 @@
 						'Optional extra class on the field wrapper (space-separated).',
 				} )
 			);
+		}
+
+		/**
+		 * Collapsible sidebar panel (same pattern as validation messages).
+		 *
+		 * @param {string}      summaryText Summary label.
+		 * @param {HTMLElement} body        Panel body.
+		 * @param {string}      className   Extra class.
+		 * @param {boolean}     startOpen   Whether open by default.
+		 * @return {HTMLElement}
+		 */
+		function collapsiblePanel( summaryText, body, className, startOpen ) {
+			const details = el( 'details', {
+				className: 'wek-builder__fold' + ( className ? ' ' + className : '' ),
+			} );
+			if ( startOpen ) {
+				details.open = true;
+			}
+			details.appendChild( el( 'summary', { text: summaryText } ) );
+			body.className =
+				( body.className ? body.className + ' ' : '' ) + 'wek-builder__fold-body';
+			details.appendChild( body );
+			return details;
 		}
 
 		function renderValidationMessagesEditor( field ) {
@@ -2211,9 +2245,8 @@
 		}
 
 		function renderMatrixListEditor( title, items, onChange, kind ) {
-			const wrap = el( 'div', { className: 'wek-builder__matrix-list' } );
-			wrap.appendChild( el( 'strong', { text: title } ) );
-			wrap.appendChild(
+			const body = el( 'div', { className: 'wek-builder__matrix-list' } );
+			body.appendChild(
 				el( 'p', {
 					className: 'description',
 					text: i18n.matrixReorderHint || 'Drag the handle or use the arrows to reorder.',
@@ -2235,12 +2268,19 @@
 				refresh();
 			}
 
+			function stopSummaryToggle( event ) {
+				event.preventDefault();
+				event.stopPropagation();
+			}
+
 			items.forEach( function ( item, index ) {
-				const row = el( 'div', {
+				const row = el( 'details', {
 					className: 'wek-builder__matrix-item',
 					'data-matrix-index': String( index ),
 				} );
+				row.open = true;
 
+				const summary = el( 'summary', { className: 'wek-builder__matrix-item-summary' } );
 				const toolbar = el( 'div', { className: 'wek-builder__matrix-item-toolbar' } );
 				const handle = el( 'span', {
 					className: 'wek-builder__matrix-item-handle dashicons dashicons-menu',
@@ -2248,6 +2288,7 @@
 					'aria-label': i18n.dragToReorder || 'Drag to reorder',
 					draggable: 'true',
 				} );
+				handle.addEventListener( 'click', stopSummaryToggle );
 				handle.addEventListener( 'dragstart', function ( event ) {
 					event.dataTransfer.setData( 'text/plain', String( index ) );
 					event.dataTransfer.effectAllowed = 'move';
@@ -2288,7 +2329,8 @@
 					text: '↑',
 					disabled: index === 0,
 				} );
-				upBtn.addEventListener( 'click', function () {
+				upBtn.addEventListener( 'click', function ( event ) {
+					stopSummaryToggle( event );
 					moveItem( index, index - 1 );
 				} );
 				const downBtn = el( 'button', {
@@ -2299,14 +2341,35 @@
 					text: '↓',
 					disabled: index >= items.length - 1,
 				} );
-				downBtn.addEventListener( 'click', function () {
+				downBtn.addEventListener( 'click', function ( event ) {
+					stopSummaryToggle( event );
 					moveItem( index, index + 1 );
 				} );
 
 				toolbar.appendChild( handle );
 				toolbar.appendChild( upBtn );
 				toolbar.appendChild( downBtn );
-				row.appendChild( toolbar );
+				summary.appendChild( toolbar );
+
+				let typeLabel = '';
+				if ( kind === 'column' && item.type ) {
+					const typeMap = {
+						radio: i18n.matrixColRadio || 'Radio',
+						checkbox: i18n.matrixColCheckbox || 'Checkbox',
+						text: i18n.matrixColText || 'Text',
+						number: i18n.matrixColNumber || 'Number',
+					};
+					typeLabel = ' · ' + ( typeMap[ item.type ] || item.type );
+				}
+				const itemTitle =
+					( item.label || item.value || item.id || ( kind === 'row' ? 'Row' : 'Column' ) ) +
+					typeLabel;
+				summary.appendChild(
+					el( 'span', { className: 'wek-builder__matrix-item-title', text: itemTitle } )
+				);
+				row.appendChild( summary );
+
+				const itemBody = el( 'div', { className: 'wek-builder__matrix-item-body' } );
 
 				const labelInput = el( 'input', {
 					type: 'text',
@@ -2324,10 +2387,11 @@
 					}
 					syncHidden();
 				} );
-				row.appendChild( labelInput );
+				itemBody.appendChild( labelInput );
 
 				if ( kind === 'column' ) {
 					const typeSelect = el( 'select' );
+					typeSelect.className = 'wek-builder__select';
 					const typeChoices = [
 						{ value: 'radio', label: i18n.matrixColRadio || 'Radio' },
 						{ value: 'checkbox', label: i18n.matrixColCheckbox || 'Checkbox' },
@@ -2356,7 +2420,7 @@
 						syncHidden();
 						refresh();
 					} );
-					row.appendChild( typeSelect );
+					itemBody.appendChild( typeSelect );
 				}
 
 				const remove = el( 'button', {
@@ -2369,19 +2433,13 @@
 					syncHidden();
 					refresh();
 				} );
-				row.appendChild( remove );
+				itemBody.appendChild( remove );
 
 				if ( kind === 'column' && item.type === 'radio' ) {
 					if ( ! Array.isArray( item.options ) ) {
 						item.options = [];
 					}
-					const optWrap = el( 'div', { className: 'wek-builder__matrix-col-options' } );
-					optWrap.appendChild(
-						el( 'span', {
-							className: 'description',
-							text: i18n.matrixRadioOptions || 'Radio options (column headers)',
-						} )
-					);
+					const optBody = el( 'div', { className: 'wek-builder__matrix-col-options' } );
 					item.options.forEach( function ( opt, oIndex ) {
 						const optRow = el( 'div', { className: 'wek-builder__matrix-opt-row' } );
 						const optLabel = el( 'input', {
@@ -2444,7 +2502,7 @@
 						optRow.appendChild( optUp );
 						optRow.appendChild( optDown );
 						optRow.appendChild( optRemove );
-						optWrap.appendChild( optRow );
+						optBody.appendChild( optRow );
 					} );
 					const addOpt = el( 'button', {
 						type: 'button',
@@ -2460,14 +2518,25 @@
 						syncHidden();
 						refresh();
 					} );
-					optWrap.appendChild( addOpt );
-					row.appendChild( optWrap );
+					optBody.appendChild( addOpt );
+					itemBody.appendChild(
+						collapsiblePanel(
+							( i18n.matrixRadioOptions || 'Radio options (column headers)' ) +
+								' (' +
+								item.options.length +
+								')',
+							optBody,
+							'wek-builder__matrix-col-options-fold',
+							true
+						)
+					);
 				}
 
+				row.appendChild( itemBody );
 				list.appendChild( row );
 			} );
 
-			wrap.appendChild( list );
+			body.appendChild( list );
 			const addBtn = el( 'button', {
 				type: 'button',
 				className: 'button',
@@ -2485,7 +2554,7 @@
 					items.push( {
 						id: 'col_' + n,
 						type: 'radio',
-						label: ( i18n.matrixColSampleRadio || 'Choice' ) + ' ' + n,
+						label: ( i18n.matrixColRadio || 'Radio' ) + ' ' + n,
 						options: [
 							{ value: 'a', label: i18n.matrixOptA || 'Option A' },
 							{ value: 'b', label: i18n.matrixOptB || 'Option B' },
@@ -2495,8 +2564,15 @@
 				syncHidden();
 				refresh();
 			} );
-			wrap.appendChild( addBtn );
-			return wrap;
+			body.appendChild( addBtn );
+
+			const count = items.length;
+			return collapsiblePanel(
+				title + ( count ? ' (' + count + ')' : '' ),
+				body,
+				'wek-builder__matrix-list-fold',
+				true
+			);
 		}
 
 		function renderMatrixEditor( field ) {
@@ -3027,6 +3103,7 @@
 					refreshSidebar();
 				} );
 				panel.appendChild( toggleRow( i18n.required || 'Required', req ) );
+				panel.appendChild( renderValidationMessagesEditor( field ) );
 
 				if ( shouldShowPlaceholder( field.type ) ) {
 					if ( field.placeholder == null ) {
@@ -3082,8 +3159,6 @@
 				if ( field.type === 'text' || field.type === 'textarea' ) {
 					panel.appendChild( renderContentGuardEditor( field ) );
 				}
-
-				panel.appendChild( renderValidationMessagesEditor( field ) );
 			} else if ( isField && activeTab === 'appearance' ) {
 				appendFieldAppearanceControls( panel, selected.field, { isNested: isNested } );
 			} else if ( selected.kind === 'field' && activeTab === 'conditional' ) {

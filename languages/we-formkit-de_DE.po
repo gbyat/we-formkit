@@ -848,6 +848,7 @@ msgstr "HTML / Hinweis"
 msgid "HTML content"
 msgstr "HTML-Inhalt"
 
+#: includes/admin/class-form-editor.php:505
 #: includes/fields/class-number-field.php:24
 msgid "Number"
 msgstr "Zahl"
@@ -912,6 +913,7 @@ msgstr "Auswahl"
 msgid "Phone"
 msgstr "Telefon"
 
+#: includes/admin/class-form-editor.php:504
 #: includes/class-form-style.php:35
 #: includes/fields/class-text-field.php:24
 #: includes/fields/class-upload-field.php:229
@@ -3396,25 +3398,17 @@ msgstr "Zeile hinzufügen"
 msgid "Add column"
 msgstr "Spalte hinzufügen"
 
-#: includes/admin/class-form-editor.php:504
+#: includes/admin/class-form-editor.php:506
 msgid "Radio options (column headers)"
 msgstr "Radio-Optionen (Spaltenköpfe)"
 
-#: includes/admin/class-form-editor.php:505
+#: includes/admin/class-form-editor.php:507
 msgid "Row 1"
 msgstr "Zeile 1"
 
-#: includes/admin/class-form-editor.php:506
+#: includes/admin/class-form-editor.php:508
 msgid "Row 2"
 msgstr "Zeile 2"
-
-#: includes/admin/class-form-editor.php:507
-msgid "Choice"
-msgstr "Auswahl"
-
-#: includes/admin/class-form-editor.php:508
-msgid "Flag"
-msgstr "Kennzeichnung"
 
 #: includes/admin/class-form-editor.php:509
 msgid "Option A"
