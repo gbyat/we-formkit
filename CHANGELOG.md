@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-22
+
+- Refactor repeater row styling and functionality. Update CSS for improved layout and button design, including hover effects. Enhance JavaScript to manage visibility and state of remove buttons based on item count. Update PHP to render repeater fields within a dedicated container for better structure.
 ## [0.7.12] - 2026-07-22
 
 - Enhance matrix field editor with collapsible panels for better organization. Introduce new CSS styles for sidebar elements and update JavaScript to support improved layout and functionality. Update localization files to reflect changes in field labels and options, ensuring a more intuitive user experience.

@@ -630,7 +630,7 @@ msgid "Privacy policy"
 msgstr "Datenschutzerklärung"
 
 #: includes/class-frontend.php:969
-#: includes/class-frontend.php:1428
+#: includes/class-frontend.php:1434
 msgid "Please select…"
 msgstr "Bitte wählen…"
 
@@ -3621,8 +3621,8 @@ msgstr "Weitere Zeile hinzufügen"
 #: includes/class-frontend.php:333
 #: includes/class-frontend.php:1165
 #: includes/class-frontend.php:1166
-#: includes/class-frontend.php:1369
-#: includes/class-frontend.php:1370
+#: includes/class-frontend.php:1374
+#: includes/class-frontend.php:1375
 msgid "Remove row"
 msgstr "Zeile entfernen"
 
