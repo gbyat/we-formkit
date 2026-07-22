@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.9] - 2026-07-22
+
+- Refine consent field handling in form editor and frontend. Update CSS for consent control layout and label rendering, ensuring multi-line support and improved alignment. Enhance JavaScript functions to manage consent label display and link integration dynamically.
 ## [0.8.8] - 2026-07-22
 
 - Implement consent field enhancements in form editor and frontend. Introduce link text and URL options for consent fields, allowing dynamic privacy policy links in labels. Update CSS for privacy link styling and improve consent label rendering in the frontend. Add German translations for new consent-related strings.
