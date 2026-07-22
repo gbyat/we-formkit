@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.6] - 2026-07-22
+
+- Enhance frontend CSS layout for form elements. Adjust flex properties for choice controls, labels, and inputs to improve alignment and spacing. Update late theme re-assertion rules for better visual consistency across form components.
 ## [0.8.5] - 2026-07-22
 
 - Refine frontend CSS for improved theme isolation and specificity. Update styles for form elements, including labels, choices, and inputs, to enhance visual consistency and integration. Introduce late theme re-assertion rules to ensure proper color application when Autoptimize processes CSS.
