@@ -629,8 +629,8 @@ msgstr "Formular absenden"
 msgid "Privacy policy"
 msgstr "Datenschutzerklärung"
 
-#: includes/class-frontend.php:976
-#: includes/class-frontend.php:1435
+#: includes/class-frontend.php:969
+#: includes/class-frontend.php:1428
 msgid "Please select…"
 msgstr "Bitte wählen…"
 
@@ -902,7 +902,7 @@ msgstr "Optionen"
 msgid "Each option supports value, label, and an optional image (Media Library id or URL)."
 msgstr "Jede Option unterstützt Wert, Beschriftung und optional ein Bild (Mediathek-ID oder URL)."
 
-#: includes/class-frontend.php:856
+#: includes/class-frontend.php:849
 #: includes/fields/class-select-field.php:24
 msgid "Select"
 msgstr "Auswahl"
@@ -1029,7 +1029,7 @@ msgid "Add row button label"
 msgstr "Beschriftung „Zeile hinzufügen“"
 
 #: includes/class-frontend.php:304
-#: includes/class-frontend.php:1311
+#: includes/class-frontend.php:1304
 msgid "Add another"
 msgstr "Weitere hinzufügen"
 
@@ -1040,7 +1040,7 @@ msgstr "Weitere hinzufügen"
 msgid "Row %d"
 msgstr "Zeile %d"
 
-#: includes/class-frontend.php:1327
+#: includes/class-frontend.php:1320
 msgid "This repeater has no fields configured yet."
 msgstr "Dieser Repeater hat noch keine Felder."
 
@@ -1559,7 +1559,7 @@ msgstr "Dein gespeicherter Fortschritt wurde wiederhergestellt."
 
 #: includes/admin/class-form-editor.php:1873
 #: includes/admin/class-submissions.php:371
-#: includes/class-frontend.php:1086
+#: includes/class-frontend.php:1079
 msgid "Clear"
 msgstr "Löschen"
 
@@ -3433,7 +3433,7 @@ msgid "This matrix has no rows or columns yet."
 msgstr "Diese Matrix hat noch keine Zeilen oder Spalten."
 
 #. translators: %s: row label
-#: includes/class-frontend.php:1192
+#: includes/class-frontend.php:1185
 #, php-format
 msgid "Select %s"
 msgstr "%s auswählen"
@@ -3620,32 +3620,32 @@ msgid "+ Other"
 msgstr "+ Sonstiges"
 
 #: includes/class-frontend.php:332
-#: includes/class-frontend.php:965
+#: includes/class-frontend.php:958
 msgid "Add other row"
 msgstr "Weitere Zeile hinzufügen"
 
 #: includes/class-frontend.php:333
-#: includes/class-frontend.php:1172
-#: includes/class-frontend.php:1173
-#: includes/class-frontend.php:1376
-#: includes/class-frontend.php:1377
+#: includes/class-frontend.php:1165
+#: includes/class-frontend.php:1166
+#: includes/class-frontend.php:1369
+#: includes/class-frontend.php:1370
 msgid "Remove row"
 msgstr "Zeile entfernen"
 
 #: includes/class-frontend.php:334
-#: includes/class-frontend.php:1163
+#: includes/class-frontend.php:1156
 msgid "Your label"
 msgstr "Deine Beschriftung"
 
-#: includes/class-frontend.php:1157
+#: includes/class-frontend.php:1150
 msgid "Row label"
 msgstr "Zeilenbeschriftung"
 
-#: includes/class-frontend.php:1189
+#: includes/class-frontend.php:1182
 msgid "Select this row"
 msgstr "Diese Zeile auswählen"
 
-#: includes/class-frontend.php:1253
+#: includes/class-frontend.php:1246
 msgid "Custom row"
 msgstr "Eigene Zeile"
 

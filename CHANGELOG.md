@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.11] - 2026-07-22
+
+- Refactor matrix header label rendering to simplify markup. Consolidate label display logic into a single span element, improving accessibility and reducing code complexity.
 ## [0.7.10] - 2026-07-22
 
 - Add CSS class support for form fields. Introduce 'css_class' option in field configuration, allowing users to specify additional CSS classes for field wrappers. Update JavaScript and PHP to handle this new option, enhancing customization capabilities. Improve admin UI to reflect changes and ensure consistent styling across components.

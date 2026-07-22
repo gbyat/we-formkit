@@ -1,6 +1,6 @@
 {
 	"name": "we-formkit",
-	"version": "0.7.10",
+	"version": "0.7.11",
 	"description": "Modular WordPress form builder with typed fields, entries, and a developer module API.",
 	"scripts": {
 		"build": "npm run zip",
