@@ -46,6 +46,45 @@
 				} );
 				return;
 			}
+			if ( type === 'matrix' ) {
+				const matrix = {};
+				qsa( fieldEl, '[data-wek-matrix-row]' ).forEach( function ( row ) {
+					const rowId = row.getAttribute( 'data-wek-matrix-row' );
+					if ( ! rowId ) {
+						return;
+					}
+					const entry = {};
+					const onBox = qs( row, '[data-wek-matrix-on]' );
+					if ( onBox ) {
+						entry.on = !! onBox.checked;
+					}
+					qsa( row, '[data-wek-matrix-col]' ).forEach( function ( input ) {
+						const colId = input.getAttribute( 'data-wek-matrix-col' );
+						if ( ! colId ) {
+							return;
+						}
+						if ( input.type === 'checkbox' ) {
+							if ( input.checked ) {
+								entry[ colId ] = true;
+							}
+							return;
+						}
+						if ( input.type === 'radio' && input.checked ) {
+							entry[ colId ] = input.value;
+						}
+					} );
+					const keys = Object.keys( entry );
+					if ( ! keys.length ) {
+						return;
+					}
+					if ( keys.length === 1 && Object.prototype.hasOwnProperty.call( entry, 'on' ) && ! entry.on ) {
+						return;
+					}
+					matrix[ rowId ] = entry;
+				} );
+				values[ id ] = matrix;
+				return;
+			}
 			if ( type === 'checkboxes' ) {
 				values[ id ] = qsa( fieldEl, 'input[type="checkbox"]:checked' ).map( function ( el ) {
 					return el.value;
@@ -510,8 +549,31 @@
 			const sig = qs( fieldEl, '[data-wek-signature-input]' );
 			return ! sig || ! String( sig.value || '' ).trim();
 		}
+		if ( type === 'matrix' ) {
+			return ! matrixFieldHasAnswer( fieldEl );
+		}
+		if ( type === 'repeater' ) {
+			return ! qsa( fieldEl, '[data-wek-repeater-input]' ).some( function ( input ) {
+				return String( input.value || '' ).trim() !== '';
+			} );
+		}
 		const input = qs( fieldEl, 'input, textarea, select' );
 		return ! input || ! String( input.value || '' ).trim();
+	}
+
+	function matrixFieldHasAnswer( fieldEl ) {
+		return qsa( fieldEl, '[data-wek-matrix-row]' ).some( function ( row ) {
+			const onBox = qs( row, '[data-wek-matrix-on]' );
+			if ( onBox && onBox.checked ) {
+				return true;
+			}
+			if ( qs( row, 'input[type="radio"]:checked' ) ) {
+				return true;
+			}
+			return qsa( row, 'input[type="checkbox"]:checked' ).some( function ( box ) {
+				return ! box.hasAttribute( 'data-wek-matrix-on' );
+			} );
+		} );
 	}
 
 	function fieldHasMeaningfulValue( fieldEl ) {
@@ -644,7 +706,7 @@
 			let control = null;
 			let rowMod = '';
 
-			if ( type === 'radio' || type === 'checkboxes' || type === 'radio_image' ) {
+			if ( type === 'radio' || type === 'checkboxes' || type === 'radio_image' || type === 'matrix' ) {
 				control = qs( fieldEl, '.we-formkit__fieldset' );
 				rowMod = ' we-formkit__control-row--choices';
 			} else if ( type === 'checkbox' || type === 'consent' ) {
@@ -965,6 +1027,23 @@
 				return;
 			}
 
+			if ( type === 'matrix' ) {
+				const firstRow = qs( fieldEl, '[data-wek-matrix-row]' );
+				if ( firstRow ) {
+					const onBox = qs( firstRow, '[data-wek-matrix-on]' );
+					if ( onBox ) {
+						onBox.checked = true;
+						onBox.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+					}
+					const firstRadio = qs( firstRow, 'input[type="radio"]' );
+					if ( firstRadio ) {
+						firstRadio.checked = true;
+						firstRadio.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+					}
+				}
+				return;
+			}
+
 			if ( type === 'repeater' ) {
 				qsa( fieldEl, '[data-wek-repeater-input]' ).forEach( function ( input ) {
 					if ( input.type === 'checkbox' ) {
@@ -1012,7 +1091,7 @@
 				return;
 			}
 			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
-			if ( type === 'html' || type === 'upload' || type === 'checkbox' || type === 'consent' || type === 'radio' || type === 'radio_image' || type === 'checkboxes' || type === 'repeater' ) {
+			if ( type === 'html' || type === 'upload' || type === 'checkbox' || type === 'consent' || type === 'radio' || type === 'radio_image' || type === 'checkboxes' || type === 'repeater' || type === 'matrix' ) {
 				return;
 			}
 			const input = qs( fieldEl, 'input:not([type="file"]), textarea, select' );
@@ -1238,6 +1317,9 @@
 					return String( input.value || '' ).trim() !== '';
 				} );
 			}
+			if ( type === 'matrix' ) {
+				return matrixFieldHasAnswer( fieldEl );
+			}
 			const input = qs( fieldEl, 'input, textarea, select' );
 			if ( ! input || input.type === 'file' ) {
 				return false;
@@ -1376,6 +1458,31 @@
 					return;
 				}
 				if ( type === 'signature' || type === 'upload' || type === 'repeater' ) {
+					return;
+				}
+				if ( type === 'matrix' && val && typeof val === 'object' && ! Array.isArray( val ) ) {
+					qsa( fieldEl, '[data-wek-matrix-row]' ).forEach( function ( row ) {
+						const rowId = row.getAttribute( 'data-wek-matrix-row' );
+						const rowVal = rowId && val[ rowId ] ? val[ rowId ] : null;
+						const onBox = qs( row, '[data-wek-matrix-on]' );
+						if ( onBox ) {
+							onBox.checked = !!( rowVal && rowVal.on );
+						}
+						qsa( row, '[data-wek-matrix-col]' ).forEach( function ( input ) {
+							const colId = input.getAttribute( 'data-wek-matrix-col' );
+							if ( ! colId ) {
+								return;
+							}
+							const cell = rowVal && Object.prototype.hasOwnProperty.call( rowVal, colId ) ? rowVal[ colId ] : null;
+							if ( input.type === 'checkbox' ) {
+								input.checked = !! cell;
+								return;
+							}
+							if ( input.type === 'radio' ) {
+								input.checked = cell != null && String( cell ) === String( input.value );
+							}
+						} );
+					} );
 					return;
 				}
 				const input = qs( fieldEl, 'input, textarea, select' );

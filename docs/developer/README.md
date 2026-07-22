@@ -15,6 +15,16 @@ add_action(
 
 Your class must extend `Webentwicklerin\WeFormkit\Fields\Abstract_Field_Type` and implement at least `get_type()` and `get_label()`. Override `normalize_config()`, `sanitize()`, `validate()`, and `render_attributes()` as needed.
 
+### Matrix field
+
+Type id: `matrix`. Config in `type_options`:
+
+- `row_select` (bool) — checkbox to mark a row as selected (`on`)
+- `rows` — `{ value, label }[]`
+- `columns` — `{ id, type: radio|checkbox, label, options? }[]` (`options` for radio column headers)
+
+Stored value: `{ row_id: { on?: bool, col_id?: string|bool, … }, … }`.
+
 ## Register a module
 
 ```php

@@ -2010,6 +2010,62 @@ body.wek-builder-is-resizing iframe {
 	font-style: italic;
 }
 
+.wek-admin .wek-builder__field-preview--matrix {
+	display: grid;
+	gap: 0.25rem;
+	padding: 0.4rem 0.5rem;
+	border-style: dashed;
+	background: var(--wek-panel);
+}
+
+.wek-admin .wek-builder__matrix-preview-row {
+	font-size: 0.8rem;
+	color: var(--wek-muted);
+}
+
+.wek-admin .wek-builder__matrix-preview-more {
+	font-size: 0.75rem;
+	opacity: 0.7;
+}
+
+.wek-admin .wek-builder__matrix-editor {
+	display: grid;
+	gap: 1rem;
+	margin-top: 0.75rem;
+}
+
+.wek-admin .wek-builder__matrix-list {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.wek-admin .wek-builder__matrix-item {
+	display: grid;
+	gap: 0.35rem;
+	padding: 0.5rem;
+	border: 1px solid var(--wek-line);
+	border-radius: 4px;
+	background: #fff;
+}
+
+.wek-admin .wek-builder__matrix-item > input.regular-text,
+.wek-admin .wek-builder__matrix-item > select {
+	max-width: 100%;
+}
+
+.wek-admin .wek-builder__matrix-col-options {
+	display: grid;
+	gap: 0.25rem;
+	padding-top: 0.25rem;
+	border-top: 1px dashed var(--wek-line);
+}
+
+.wek-admin .wek-builder__matrix-opt-row {
+	display: flex;
+	gap: 0.35rem;
+	align-items: center;
+}
+
 .wek-admin .wek-builder__handle,
 .wek-admin .wek-builder__resize {
 	appearance: none;

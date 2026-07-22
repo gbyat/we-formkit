@@ -16,6 +16,7 @@
 		'radio_image',
 		'checkbox',
 		'checkboxes',
+		'matrix',
 		'date',
 		'time',
 		'datetime',
@@ -38,6 +39,7 @@
 		radio_image: 'dashicons-format-image',
 		checkbox: 'dashicons-yes',
 		checkboxes: 'dashicons-yes-alt',
+		matrix: 'dashicons-grid-view',
 		date: 'dashicons-calendar-alt',
 		time: 'dashicons-clock',
 		datetime: 'dashicons-calendar',
@@ -497,6 +499,31 @@
 				typeOptions.max_file_size_mb = 5;
 				typeOptions.allowed_mime_types = 'image/jpeg, image/png, application/pdf';
 				typeOptions.storage_mode = 'uploads_only';
+			}
+			if ( typeId === 'matrix' ) {
+				typeOptions.row_select = true;
+				typeOptions.rows = [
+					{ value: 'row_1', label: i18n.matrixRowSample1 || 'Row 1' },
+					{ value: 'row_2', label: i18n.matrixRowSample2 || 'Row 2' },
+				];
+				typeOptions.columns = [
+					{
+						id: 'choice',
+						type: 'radio',
+						label: i18n.matrixColSampleRadio || 'Choice',
+						options: [
+							{ value: 'a', label: i18n.matrixOptA || 'Option A' },
+							{ value: 'b', label: i18n.matrixOptB || 'Option B' },
+							{ value: 'c', label: i18n.matrixOptC || 'Option C' },
+						],
+					},
+					{
+						id: 'flag',
+						type: 'checkbox',
+						label: i18n.matrixColSampleCheck || 'Flag',
+						options: [],
+					},
+				];
 			}
 			return {
 				id: ( typeId || 'field' ) + '_' + Date.now().toString( 36 ),
@@ -1800,6 +1827,252 @@
 			return wrap;
 		}
 
+		function ensureMatrixOptions( field ) {
+			const opts = ensureTypeOptions( field );
+			if ( typeof opts.row_select === 'undefined' ) {
+				opts.row_select = true;
+			}
+			if ( ! Array.isArray( opts.rows ) ) {
+				opts.rows = [];
+			}
+			if ( ! Array.isArray( opts.columns ) ) {
+				opts.columns = [];
+			}
+			return opts;
+		}
+
+		function slugifyMatrixKey( label, fallback ) {
+			let key = String( label || '' )
+				.toLowerCase()
+				.replace( /[^a-z0-9]+/g, '_' )
+				.replace( /^_+|_+$/g, '' );
+			if ( ! key ) {
+				key = fallback || 'item';
+			}
+			return key.slice( 0, 40 );
+		}
+
+		function renderMatrixPreview( field ) {
+			const opts = ensureMatrixOptions( field );
+			const rows = opts.rows.slice( 0, 3 );
+			const wrap = el( 'div', {
+				className: 'wek-builder__field-preview wek-builder__field-preview--matrix',
+				'aria-hidden': 'true',
+			} );
+			if ( ! rows.length ) {
+				wrap.textContent = i18n.matrixPreviewEmpty || 'Matrix — add rows and columns';
+				return wrap;
+			}
+			rows.forEach( function ( row ) {
+				wrap.appendChild(
+					el( 'div', {
+						className: 'wek-builder__matrix-preview-row',
+						text: ( row && row.label ) || ( row && row.value ) || '—',
+					} )
+				);
+			} );
+			if ( opts.rows.length > 3 ) {
+				wrap.appendChild(
+					el( 'div', {
+						className: 'wek-builder__matrix-preview-more',
+						text: '+' + ( opts.rows.length - 3 ),
+					} )
+				);
+			}
+			return wrap;
+		}
+
+		function renderMatrixListEditor( title, items, onChange, kind ) {
+			const wrap = el( 'div', { className: 'wek-builder__matrix-list' } );
+			wrap.appendChild( el( 'strong', { text: title } ) );
+			const list = el( 'div', { className: 'wek-builder__matrix-items' } );
+
+			function refresh() {
+				refreshSidebar();
+			}
+
+			items.forEach( function ( item, index ) {
+				const row = el( 'div', { className: 'wek-builder__matrix-item' } );
+				const labelInput = el( 'input', {
+					type: 'text',
+					className: 'regular-text',
+					value: item.label || '',
+					placeholder: i18n.optionLabel || 'Label',
+				} );
+				labelInput.addEventListener( 'input', function () {
+					item.label = labelInput.value;
+					if ( kind === 'row' && ! item._valueLocked ) {
+						item.value = slugifyMatrixKey( item.label, 'row_' + ( index + 1 ) );
+					}
+					if ( kind === 'column' && ! item._idLocked ) {
+						item.id = slugifyMatrixKey( item.label, 'col_' + ( index + 1 ) );
+					}
+					syncHidden();
+				} );
+				row.appendChild( labelInput );
+
+				if ( kind === 'column' ) {
+					const typeSelect = el( 'select' );
+					[ 'radio', 'checkbox' ].forEach( function ( t ) {
+						const opt = el( 'option', { value: t, text: t === 'radio' ? ( i18n.matrixColRadio || 'Radio' ) : ( i18n.matrixColCheckbox || 'Checkbox' ) } );
+						if ( item.type === t ) {
+							opt.selected = true;
+						}
+						typeSelect.appendChild( opt );
+					} );
+					typeSelect.addEventListener( 'change', function () {
+						item.type = typeSelect.value;
+						if ( item.type === 'checkbox' ) {
+							item.options = [];
+						} else if ( ! Array.isArray( item.options ) || ! item.options.length ) {
+							item.options = [
+								{ value: 'a', label: i18n.matrixOptA || 'Option A' },
+								{ value: 'b', label: i18n.matrixOptB || 'Option B' },
+							];
+						}
+						syncHidden();
+						refresh();
+					} );
+					row.appendChild( typeSelect );
+				}
+
+				const remove = el( 'button', {
+					type: 'button',
+					className: 'button-link-delete',
+					text: i18n.remove || 'Remove',
+				} );
+				remove.addEventListener( 'click', function () {
+					items.splice( index, 1 );
+					syncHidden();
+					refresh();
+				} );
+				row.appendChild( remove );
+
+				if ( kind === 'column' && item.type === 'radio' ) {
+					if ( ! Array.isArray( item.options ) ) {
+						item.options = [];
+					}
+					const optWrap = el( 'div', { className: 'wek-builder__matrix-col-options' } );
+					optWrap.appendChild(
+						el( 'span', {
+							className: 'description',
+							text: i18n.matrixRadioOptions || 'Radio options (column headers)',
+						} )
+					);
+					item.options.forEach( function ( opt, oIndex ) {
+						const optRow = el( 'div', { className: 'wek-builder__matrix-opt-row' } );
+						const optLabel = el( 'input', {
+							type: 'text',
+							className: 'regular-text',
+							value: opt.label || '',
+							placeholder: i18n.optionLabel || 'Label',
+						} );
+						optLabel.addEventListener( 'input', function () {
+							opt.label = optLabel.value;
+							if ( ! opt._valueLocked ) {
+								opt.value = slugifyMatrixKey( opt.label, 'opt_' + ( oIndex + 1 ) );
+							}
+							syncHidden();
+						} );
+						const optRemove = el( 'button', {
+							type: 'button',
+							className: 'button-link-delete',
+							text: '×',
+							title: i18n.remove || 'Remove',
+						} );
+						optRemove.addEventListener( 'click', function () {
+							item.options.splice( oIndex, 1 );
+							syncHidden();
+							refresh();
+						} );
+						optRow.appendChild( optLabel );
+						optRow.appendChild( optRemove );
+						optWrap.appendChild( optRow );
+					} );
+					const addOpt = el( 'button', {
+						type: 'button',
+						className: 'button button-small',
+						text: i18n.addOption || 'Add option',
+					} );
+					addOpt.addEventListener( 'click', function () {
+						const n = item.options.length + 1;
+						item.options.push( {
+							value: 'opt_' + n,
+							label: ( i18n.optionPreview || 'Option' ) + ' ' + n,
+						} );
+						syncHidden();
+						refresh();
+					} );
+					optWrap.appendChild( addOpt );
+					row.appendChild( optWrap );
+				}
+
+				list.appendChild( row );
+			} );
+
+			wrap.appendChild( list );
+			const addBtn = el( 'button', {
+				type: 'button',
+				className: 'button',
+				text: kind === 'row' ? ( i18n.matrixAddRow || 'Add row' ) : ( i18n.matrixAddColumn || 'Add column' ),
+			} );
+			addBtn.addEventListener( 'click', function () {
+				if ( kind === 'row' ) {
+					const n = items.length + 1;
+					items.push( {
+						value: 'row_' + n,
+						label: ( i18n.matrixRowSample1 || 'Row' ).replace( /1$/, '' ).trim() + ' ' + n,
+					} );
+				} else {
+					const n = items.length + 1;
+					items.push( {
+						id: 'col_' + n,
+						type: 'radio',
+						label: ( i18n.matrixColSampleRadio || 'Choice' ) + ' ' + n,
+						options: [
+							{ value: 'a', label: i18n.matrixOptA || 'Option A' },
+							{ value: 'b', label: i18n.matrixOptB || 'Option B' },
+						],
+					} );
+				}
+				syncHidden();
+				refresh();
+			} );
+			wrap.appendChild( addBtn );
+			return wrap;
+		}
+
+		function renderMatrixEditor( field ) {
+			const opts = ensureMatrixOptions( field );
+			const wrap = el( 'div', { className: 'wek-builder__matrix-editor' } );
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.matrixHint ||
+						'Define fixed rows and columns. Radio columns become multiple choice headers; checkbox columns are a single flag per row.',
+				} )
+			);
+
+			const rowSelect = el( 'input', { type: 'checkbox' } );
+			rowSelect.checked = !! opts.row_select;
+			rowSelect.addEventListener( 'change', function () {
+				opts.row_select = rowSelect.checked;
+				syncHidden();
+			} );
+			wrap.appendChild(
+				toggleRow( i18n.matrixRowSelect || 'Show row select checkbox', rowSelect )
+			);
+
+			wrap.appendChild(
+				renderMatrixListEditor( i18n.matrixRows || 'Rows', opts.rows, null, 'row' )
+			);
+			wrap.appendChild(
+				renderMatrixListEditor( i18n.matrixColumns || 'Columns', opts.columns, null, 'column' )
+			);
+			return wrap;
+		}
+
 		function ensureCheckboxesLimits( field ) {
 			const opts = ensureTypeOptions( field );
 			if ( opts.min_selected == null ) {
@@ -2399,6 +2672,10 @@
 
 				if ( field.type === 'checkboxes' ) {
 					panel.appendChild( renderCheckboxesLimitsEditor( field ) );
+				}
+
+				if ( field.type === 'matrix' ) {
+					panel.appendChild( renderMatrixEditor( field ) );
 				}
 
 				if ( field.type === 'date' || field.type === 'datetime' ) {
@@ -3009,6 +3286,9 @@
 
 			if ( type === 'checkboxes' ) {
 				return previewChoiceRows( field, 'checkbox' );
+			}
+			if ( type === 'matrix' ) {
+				return renderMatrixPreview( field );
 			}
 			if ( type === 'radio' || type === 'radio_image' ) {
 				return previewChoiceRows( field, 'radio' );

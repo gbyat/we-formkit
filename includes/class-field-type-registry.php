@@ -40,6 +40,7 @@ final class Field_Type_Registry {
 		$this->register( new Fields\Radio_Image_Field() );
 		$this->register( new Fields\Checkbox_Field() );
 		$this->register( new Fields\Checkboxes_Field() );
+		$this->register( new Fields\Matrix_Field() );
 		$this->register( new Fields\Date_Field() );
 		$this->register( new Fields\Time_Field() );
 		$this->register( new Fields\Datetime_Field() );

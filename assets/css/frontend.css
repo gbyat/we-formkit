@@ -1053,3 +1053,67 @@
 	color: var(--wek-danger);
 	font-weight: 600;
 }
+
+.we-formkit__matrix-scroll {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	margin-top: 0.5rem;
+}
+
+.we-formkit__matrix {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+}
+
+.we-formkit__matrix th,
+.we-formkit__matrix td {
+	border: 1px solid var(--wek-line);
+	padding: 0.4rem 0.45rem;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.we-formkit__matrix-corner,
+.we-formkit__matrix-row-label {
+	text-align: left;
+	font-weight: 600;
+	background: var(--wek-accent-soft);
+	color: var(--wek-ink);
+	white-space: nowrap;
+}
+
+.we-formkit__matrix thead th {
+	font-weight: 600;
+	background: var(--wek-bg);
+	color: var(--wek-muted);
+	font-size: 0.8rem;
+	line-height: 1.25;
+	max-width: 5.5rem;
+}
+
+.we-formkit__matrix-col-label {
+	display: inline-block;
+	hyphens: auto;
+}
+
+.we-formkit__matrix-choice {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	cursor: pointer;
+}
+
+.we-formkit__matrix-choice input {
+	margin: 0;
+	accent-color: var(--wek-accent);
+}
+
+@media (max-width: 640px) {
+	.we-formkit__matrix thead th {
+		font-size: 0.72rem;
+		max-width: 4rem;
+		padding: 0.3rem 0.25rem;
+	}
+}
