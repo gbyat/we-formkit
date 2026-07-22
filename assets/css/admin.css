@@ -1635,6 +1635,19 @@ body.wek-builder-is-resizing iframe {
 	background: var(--wek-surface);
 }
 
+.wek-admin .wek-builder__section-intro {
+	margin: -0.35rem 0 0.85rem;
+	padding: 0 0.15rem;
+	font-size: 13px;
+	line-height: 1.4;
+	color: var(--wek-muted);
+	font-style: italic;
+}
+
+.wek-admin .wek-builder__section-intro[hidden] {
+	display: none;
+}
+
 .wek-admin .wek-builder__fields {
 	display: grid;
 	grid-template-columns: repeat(6, minmax(0, 1fr));

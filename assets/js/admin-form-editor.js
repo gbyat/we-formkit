@@ -2906,6 +2906,9 @@
 				if ( typeof section.show_title === 'undefined' ) {
 					section.show_title = true;
 				}
+				if ( typeof section.intro !== 'string' ) {
+					section.intro = '';
+				}
 				panel.appendChild(
 					fieldRow(
 						i18n.sectionTitle || 'Title',
@@ -2937,6 +2940,34 @@
 						text:
 							i18n.showSectionTitleHint ||
 							'When off, the title stays in the builder for reference but is hidden on the front end.',
+					} )
+				);
+				const introArea = el( 'textarea', {
+					className: 'large-text',
+					rows: '3',
+				} );
+				introArea.value = section.intro || '';
+				introArea.addEventListener( 'input', function () {
+					section.intro = introArea.value;
+					syncHidden();
+					const preview = root.querySelector(
+						'.wek-builder__section[data-s="' + selected.sIndex + '"] .wek-builder__section-intro'
+					);
+					if ( preview ) {
+						const text = ( section.intro || '' ).trim();
+						preview.textContent = text;
+						preview.hidden = ! text;
+					} else if ( ( section.intro || '' ).trim() ) {
+						refreshCanvas();
+					}
+				} );
+				panel.appendChild( fieldRow( i18n.sectionIntro || 'Section intro', introArea ) );
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.sectionIntroHint ||
+							'Optional text under the section title. Use this for a question or short explanation — not a second title.',
 					} )
 				);
 				panel.appendChild(
@@ -4028,6 +4059,16 @@
 				selectItem( { type: 'section', sIndex: sIndex } );
 			} );
 			box.appendChild( head );
+
+			const introText = String( section.intro || '' ).trim();
+			const introEl = el( 'p', {
+				className: 'wek-builder__section-intro',
+				text: introText,
+			} );
+			if ( ! introText ) {
+				introEl.hidden = true;
+			}
+			box.appendChild( introEl );
 
 			const grid = el( 'div', { className: 'wek-builder__fields' } );
 			const fields = section.fields || [];

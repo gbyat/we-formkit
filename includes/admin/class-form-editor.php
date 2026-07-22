@@ -517,6 +517,8 @@ final class Form_Editor {
 					'sectionTitle'            => __( 'Title', 'we-formkit' ),
 					'showSectionTitle'        => __( 'Show title on form', 'we-formkit' ),
 					'showSectionTitleHint'    => __( 'When off, the title stays in the builder for reference but is hidden on the front end.', 'we-formkit' ),
+					'sectionIntro'            => __( 'Section intro', 'we-formkit' ),
+					'sectionIntroHint'        => __( 'Optional text under the section title. Use this for a question or short explanation — not a second title.', 'we-formkit' ),
 					'titleHiddenBadge'        => __( 'Hidden on form', 'we-formkit' ),
 					'sectionId'               => __( 'Section ID', 'we-formkit' ),
 					'moved'                   => __( 'Item moved.', 'we-formkit' ),
