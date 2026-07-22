@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-07-22
+
+- Add section intro feature in form editor
+- Refactor CSS and PHP for matrix field styling and accessibility. Update styles to remove borders and padding for a cleaner look, enhance inline feedback with color indicators for valid and invalid states, and improve mobile responsiveness. Adjust PHP to include screen reader text for better accessibility and streamline matrix header labels.
 ## [0.7.0] - 2026-07-22
 
 - Implement inline validation scope settings for forms, allowing configuration of validation behavior for required fields only or all fields. Update JavaScript to handle new validation logic and enhance the form schema and REST API to support these changes. Refactor admin settings to include inline scope options, improving user control over form validation feedback.
