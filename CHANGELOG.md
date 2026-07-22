@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.7] - 2026-07-22
+
+- Refactor form field label visibility settings. Introduce 'show_label' option for fields, allowing control over label display. Update frontend rendering logic to respect this setting, enhancing accessibility. Clean up unused sidebar scope code in the admin form editor. Improve CSS for repeater and matrix components to align with new label visibility features.
 ## [0.7.6] - 2026-07-22
 
 - Add "Other" option for checkboxes in form fields. Implement functionality to allow users to specify custom text when selecting "Other." Update JavaScript to handle input validation and synchronization with checkbox states. Enhance CSS for improved styling of the "Other" input field. Update PHP to support new options in the form editor.
