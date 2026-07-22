@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.6] - 2026-07-22
+
+- Implement drag-and-drop functionality for matrix items in the admin form editor. Enhance user experience with visual cues during item movement and add buttons for reordering options. Update CSS styles for improved layout and interaction feedback.
 ## [0.6.5] - 2026-07-22
 
 - Enhance matrix field rendering by adding support for option headers in the frontend. Update CSS styles for improved layout and visual consistency of matrix elements. Refactor HTML structure to accommodate new header options, ensuring better accessibility and usability.
