@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.10] - 2026-07-22
+
+- Add CSS class support for form fields. Introduce 'css_class' option in field configuration, allowing users to specify additional CSS classes for field wrappers. Update JavaScript and PHP to handle this new option, enhancing customization capabilities. Improve admin UI to reflect changes and ensure consistent styling across components.
 ## [0.7.9] - 2026-07-22
 
 - Refactor matrix field configuration by removing the 'entries_label' option to streamline the setup process. Update JavaScript to enhance the UI for custom row management, including improved layout for toggles. Adjust CSS for better styling of admin components and ensure consistent design across the admin interface.
