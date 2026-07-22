@@ -486,7 +486,6 @@ final class Form_Editor {
 					'matrixHint'                => __( 'Define fixed rows and columns. Radio columns become multiple choice headers; checkbox columns are a single flag per row.', 'we-formkit' ),
 					'matrixRowSelect'           => __( 'Show row select checkbox', 'we-formkit' ),
 					'matrixRowLabelAlign'       => __( 'Row label alignment', 'we-formkit' ),
-					'matrixEntriesLabel'        => __( 'Entries label', 'we-formkit' ),
 					'matrixAllowCustomRows'     => __( 'Allow visitor-added rows', 'we-formkit' ),
 					'matrixMaxCustomRows'       => __( 'Max custom rows', 'we-formkit' ),
 					'matrixPreviewCustom'       => __( '+ Other', 'we-formkit' ),

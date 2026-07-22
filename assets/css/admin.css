@@ -70,7 +70,7 @@
 	opacity: 1;
 }
 
-.wek-admin .wek-builder__option-row input,
+.wek-admin .wek-builder__option-row input:not([type="radio"]):not([type="checkbox"]),
 .wek-admin .wek-builder__option-row select,
 .wek-admin .wek-doc-rule select,
 .wek-admin .wek-doc-rule input,
@@ -1491,7 +1491,18 @@ body.wek-builder-is-resizing iframe {
 	align-items: center;
 	justify-content: center;
 	margin: 0;
+	min-width: 1.5rem;
+	min-height: 1.5rem;
 	cursor: pointer;
+}
+
+.wek-admin .wek-builder__option-default input[type="radio"] {
+	width: 1.1rem;
+	height: 1.1rem;
+	min-width: 1.1rem;
+	margin: 0;
+	flex-shrink: 0;
+	accent-color: var(--wek-accent);
 }
 
 .wek-admin .wek-builder__clear-default {

@@ -48,12 +48,6 @@ class Matrix_Field extends Abstract_Field_Type {
 				),
 				'default' => 'left',
 			),
-			'entries_label'     => array(
-				'label'       => __( 'Entries label', 'we-formkit' ),
-				'type'        => 'text',
-				'description' => __( 'Optional header for the row labels column.', 'we-formkit' ),
-				'default'     => '',
-			),
 			'allow_custom_rows' => array(
 				'label'       => __( 'Allow visitor-added rows', 'we-formkit' ),
 				'type'        => 'boolean',
@@ -82,11 +76,11 @@ class Matrix_Field extends Abstract_Field_Type {
 
 		$field['type_options']['row_select']        = ! array_key_exists( 'row_select', $opts ) || ! empty( $opts['row_select'] );
 		$field['type_options']['row_label_align']   = self::normalize_row_label_align( $opts['row_label_align'] ?? 'left' );
-		$field['type_options']['entries_label']     = isset( $opts['entries_label'] ) ? sanitize_text_field( (string) $opts['entries_label'] ) : '';
 		$field['type_options']['allow_custom_rows'] = ! empty( $opts['allow_custom_rows'] );
 		$field['type_options']['max_custom_rows']   = self::normalize_max_custom_rows( $opts['max_custom_rows'] ?? 2 );
 		$field['type_options']['rows']              = $this->normalize_rows( $opts['rows'] ?? array() );
 		$field['type_options']['columns']           = $this->normalize_columns( $opts['columns'] ?? array() );
+		unset( $field['type_options']['entries_label'] );
 
 		return $field;
 	}
@@ -223,14 +217,13 @@ class Matrix_Field extends Abstract_Field_Type {
 
 	/**
 	 * @param array<string, mixed> $field Field config.
-	 * @return array{row_select:bool,row_label_align:string,entries_label:string,allow_custom_rows:bool,max_custom_rows:int,rows:array<int,array{value:string,label:string}>,columns:array<int,array{id:string,type:string,label:string,options:array}>}
+	 * @return array{row_select:bool,row_label_align:string,allow_custom_rows:bool,max_custom_rows:int,rows:array<int,array{value:string,label:string}>,columns:array<int,array{id:string,type:string,label:string,options:array}>}
 	 */
 	public static function config( array $field ): array {
 		$opts = isset( $field['type_options'] ) && is_array( $field['type_options'] ) ? $field['type_options'] : array();
 		return array(
 			'row_select'        => ! array_key_exists( 'row_select', $opts ) || ! empty( $opts['row_select'] ),
 			'row_label_align'   => self::normalize_row_label_align( $opts['row_label_align'] ?? 'left' ),
-			'entries_label'     => isset( $opts['entries_label'] ) ? sanitize_text_field( (string) $opts['entries_label'] ) : '',
 			'allow_custom_rows' => ! empty( $opts['allow_custom_rows'] ),
 			'max_custom_rows'   => self::normalize_max_custom_rows( $opts['max_custom_rows'] ?? 2 ),
 			'rows'              => isset( $opts['rows'] ) && is_array( $opts['rows'] ) ? $opts['rows'] : array(),

@@ -2050,9 +2050,6 @@
 			if ( typeof opts.allow_custom_rows === 'undefined' ) {
 				opts.allow_custom_rows = false;
 			}
-			if ( typeof opts.entries_label === 'undefined' ) {
-				opts.entries_label = '';
-			}
 			if ( typeof opts.max_custom_rows === 'undefined' || opts.max_custom_rows === '' ) {
 				opts.max_custom_rows = 2;
 			}
@@ -2450,16 +2447,6 @@
 				fieldRow( i18n.matrixRowLabelAlign || 'Row label alignment', alignSelect )
 			);
 
-			wrap.appendChild(
-				fieldRow(
-					i18n.matrixEntriesLabel || 'Entries label',
-					textInput( opts.entries_label || '', function ( v ) {
-						opts.entries_label = String( v || '' ).trim();
-						syncHidden();
-					} )
-				)
-			);
-
 			const allowCustom = el( 'input', { type: 'checkbox' } );
 			allowCustom.checked = !! opts.allow_custom_rows;
 			const maxCustomInput = el( 'input', {
@@ -2470,13 +2457,10 @@
 				value: String( opts.max_custom_rows || 2 ),
 			} );
 			maxCustomInput.disabled = ! allowCustom.checked;
-			const maxCustomRow = fieldRow( i18n.matrixMaxCustomRows || 'Max custom rows', maxCustomInput );
-			maxCustomRow.hidden = ! allowCustom.checked;
 
 			function syncCustomRowsUi() {
 				opts.allow_custom_rows = allowCustom.checked;
 				maxCustomInput.disabled = ! allowCustom.checked;
-				maxCustomRow.hidden = ! allowCustom.checked;
 				let n = parseInt( maxCustomInput.value, 10 );
 				if ( ! Number.isFinite( n ) || n < 1 ) {
 					n = 2;
@@ -2490,10 +2474,14 @@
 			maxCustomInput.addEventListener( 'change', syncCustomRowsUi );
 			maxCustomInput.addEventListener( 'blur', syncCustomRowsUi );
 
-			wrap.appendChild(
+			const customPair = el( 'div', { className: 'wek-builder__pair' } );
+			customPair.appendChild(
 				toggleRow( i18n.matrixAllowCustomRows || 'Allow visitor-added rows', allowCustom )
 			);
-			wrap.appendChild( maxCustomRow );
+			customPair.appendChild(
+				fieldRow( i18n.matrixMaxCustomRows || 'Max custom rows', maxCustomInput )
+			);
+			wrap.appendChild( customPair );
 
 			wrap.appendChild(
 				renderMatrixListEditor( i18n.matrixRows || 'Rows', opts.rows, null, 'row' )
