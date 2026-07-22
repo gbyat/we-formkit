@@ -28,17 +28,27 @@ class Matrix_Field extends Abstract_Field_Type {
 
 	public function get_admin_schema(): array {
 		return array(
-			'row_select' => array(
+			'row_select'      => array(
 				'label'       => __( 'Row select checkbox', 'we-formkit' ),
 				'type'        => 'boolean',
 				'description' => __( 'Show a checkbox to mark each row as selected.', 'we-formkit' ),
 				'default'     => true,
 			),
-			'rows'       => array(
+			'row_label_align' => array(
+				'label'   => __( 'Row label alignment', 'we-formkit' ),
+				'type'    => 'select',
+				'options' => array(
+					'left'   => __( 'Left', 'we-formkit' ),
+					'center' => __( 'Center', 'we-formkit' ),
+					'right'  => __( 'Right', 'we-formkit' ),
+				),
+				'default' => 'left',
+			),
+			'rows'            => array(
 				'label' => __( 'Rows', 'we-formkit' ),
 				'type'  => 'matrix_rows',
 			),
-			'columns'    => array(
+			'columns'         => array(
 				'label' => __( 'Columns', 'we-formkit' ),
 				'type'  => 'matrix_columns',
 			),
@@ -49,11 +59,21 @@ class Matrix_Field extends Abstract_Field_Type {
 		$field = parent::normalize_config( $field );
 		$opts  = isset( $field['type_options'] ) && is_array( $field['type_options'] ) ? $field['type_options'] : array();
 
-		$field['type_options']['row_select'] = ! array_key_exists( 'row_select', $opts ) || ! empty( $opts['row_select'] );
-		$field['type_options']['rows']       = $this->normalize_rows( $opts['rows'] ?? array() );
-		$field['type_options']['columns']    = $this->normalize_columns( $opts['columns'] ?? array() );
+		$field['type_options']['row_select']      = ! array_key_exists( 'row_select', $opts ) || ! empty( $opts['row_select'] );
+		$field['type_options']['row_label_align'] = self::normalize_row_label_align( $opts['row_label_align'] ?? 'left' );
+		$field['type_options']['rows']            = $this->normalize_rows( $opts['rows'] ?? array() );
+		$field['type_options']['columns']         = $this->normalize_columns( $opts['columns'] ?? array() );
 
 		return $field;
+	}
+
+	/**
+	 * @param mixed $raw Alignment token.
+	 * @return string left|center|right
+	 */
+	public static function normalize_row_label_align( $raw ): string {
+		$align = sanitize_key( (string) $raw );
+		return in_array( $align, array( 'left', 'center', 'right' ), true ) ? $align : 'left';
 	}
 
 	/**
@@ -154,14 +174,15 @@ class Matrix_Field extends Abstract_Field_Type {
 
 	/**
 	 * @param array<string, mixed> $field Field config.
-	 * @return array{row_select:bool,rows:array<int,array{value:string,label:string}>,columns:array<int,array{id:string,type:string,label:string,options:array}>}
+	 * @return array{row_select:bool,row_label_align:string,rows:array<int,array{value:string,label:string}>,columns:array<int,array{id:string,type:string,label:string,options:array}>}
 	 */
 	public static function config( array $field ): array {
 		$opts = isset( $field['type_options'] ) && is_array( $field['type_options'] ) ? $field['type_options'] : array();
 		return array(
-			'row_select' => ! array_key_exists( 'row_select', $opts ) || ! empty( $opts['row_select'] ),
-			'rows'       => isset( $opts['rows'] ) && is_array( $opts['rows'] ) ? $opts['rows'] : array(),
-			'columns'    => isset( $opts['columns'] ) && is_array( $opts['columns'] ) ? $opts['columns'] : array(),
+			'row_select'      => ! array_key_exists( 'row_select', $opts ) || ! empty( $opts['row_select'] ),
+			'row_label_align' => self::normalize_row_label_align( $opts['row_label_align'] ?? 'left' ),
+			'rows'            => isset( $opts['rows'] ) && is_array( $opts['rows'] ) ? $opts['rows'] : array(),
+			'columns'         => isset( $opts['columns'] ) && is_array( $opts['columns'] ) ? $opts['columns'] : array(),
 		);
 	}
 

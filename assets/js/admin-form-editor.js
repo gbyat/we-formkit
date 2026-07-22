@@ -1859,6 +1859,9 @@
 			if ( typeof opts.row_select === 'undefined' ) {
 				opts.row_select = true;
 			}
+			if ( typeof opts.row_label_align === 'undefined' ) {
+				opts.row_label_align = 'left';
+			}
 			if ( ! Array.isArray( opts.rows ) ) {
 				opts.rows = [];
 			}
@@ -2218,6 +2221,26 @@
 			} );
 			wrap.appendChild(
 				toggleRow( i18n.matrixRowSelect || 'Show row select checkbox', rowSelect )
+			);
+
+			const alignSelect = el( 'select' );
+			[
+				{ value: 'left', label: i18n.alignLeft || 'Left' },
+				{ value: 'center', label: i18n.alignCenter || 'Center' },
+				{ value: 'right', label: i18n.alignRight || 'Right' },
+			].forEach( function ( choice ) {
+				const opt = el( 'option', { value: choice.value, text: choice.label } );
+				if ( ( opts.row_label_align || 'left' ) === choice.value ) {
+					opt.selected = true;
+				}
+				alignSelect.appendChild( opt );
+			} );
+			alignSelect.addEventListener( 'change', function () {
+				opts.row_label_align = alignSelect.value || 'left';
+				syncHidden();
+			} );
+			wrap.appendChild(
+				fieldRow( i18n.matrixRowLabelAlign || 'Row label alignment', alignSelect )
 			);
 
 			wrap.appendChild(

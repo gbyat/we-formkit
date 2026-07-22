@@ -710,10 +710,11 @@ final class Frontend {
 				</fieldset>
 			<?php elseif ( 'matrix' === $type ) : ?>
 				<?php
-				$matrix_cfg = Fields\Matrix_Field::config( $field );
-				$rows       = $matrix_cfg['rows'];
-				$columns    = $matrix_cfg['columns'];
-				$row_select = $matrix_cfg['row_select'];
+				$matrix_cfg      = Fields\Matrix_Field::config( $field );
+				$rows            = $matrix_cfg['rows'];
+				$columns         = $matrix_cfg['columns'];
+				$row_select      = $matrix_cfg['row_select'];
+				$row_label_align = $matrix_cfg['row_label_align'];
 				?>
 				<fieldset class="we-formkit__fieldset we-formkit__fieldset--matrix">
 					<legend class="we-formkit__label">
@@ -727,7 +728,7 @@ final class Frontend {
 						<p class="we-formkit__help"><?php esc_html_e( 'This matrix has no rows or columns yet.', 'we-formkit' ); ?></p>
 					<?php else : ?>
 						<div class="we-formkit__matrix-scroll" aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>">
-							<table class="we-formkit__matrix">
+							<table class="we-formkit__matrix we-formkit__matrix--row-labels-<?php echo esc_attr( $row_label_align ); ?>">
 								<thead>
 									<?php
 									$needs_option_headers = false;
@@ -821,7 +822,7 @@ final class Frontend {
 											<th scope="row" class="we-formkit__matrix-row-label"><?php echo esc_html( $row_label ); ?></th>
 											<?php if ( $row_select ) : ?>
 												<td class="we-formkit__matrix-cell we-formkit__matrix-cell--select we-formkit__matrix-cell--block-start">
-													<label class="we-formkit__matrix-choice">
+													<label class="we-formkit__matrix-choice we-formkit__matrix-choice--select">
 														<span class="screen-reader-text"><?php echo esc_html( sprintf( /* translators: %s: row label */ __( 'Select %s', 'we-formkit' ), $row_label ) ); ?></span>
 														<input
 															type="checkbox"
@@ -829,6 +830,7 @@ final class Frontend {
 															value="1"
 															data-wek-matrix-on
 														/>
+														<span class="we-formkit__matrix-mobile-select-label" aria-hidden="true"><?php esc_html_e( 'Include this row', 'we-formkit' ); ?></span>
 													</label>
 												</td>
 											<?php endif; ?>
@@ -836,18 +838,27 @@ final class Frontend {
 												<?php
 												$col_id   = (string) ( $col['id'] ?? '' );
 												$col_type = (string) ( $col['type'] ?? 'radio' );
+												$col_lab  = (string) ( $col['label'] ?? $col_id );
 												$opts     = isset( $col['options'] ) && is_array( $col['options'] ) ? $col['options'] : array();
 												if ( 'radio' === $col_type && ! empty( $opts ) ) :
 													$opt_i = 0;
 													foreach ( $opts as $opt ) :
 														$oval      = (string) ( $opt['value'] ?? '' );
+														$olab      = (string) ( $opt['label'] ?? $oval );
 														$oid       = $input_id . '-' . $row_id . '-' . $col_id . '-' . $oval;
-														$opt_block = 0 === $opt_i ? ' we-formkit__matrix-cell--block-start' : '';
+														$opt_block = 0 === $opt_i ? ' we-formkit__matrix-cell--block-start we-formkit__matrix-cell--group-start' : '';
 														++$opt_i;
 														?>
-														<td class="we-formkit__matrix-cell we-formkit__matrix-cell--radio<?php echo esc_attr( $opt_block ); ?>">
+														<td
+															class="we-formkit__matrix-cell we-formkit__matrix-cell--radio<?php echo esc_attr( $opt_block ); ?>"
+															data-wek-col-label="<?php echo esc_attr( $col_lab ); ?>"
+															data-wek-opt-label="<?php echo esc_attr( $olab ); ?>"
+														>
+															<?php if ( '' !== $opt_block ) : ?>
+																<span class="we-formkit__matrix-mobile-group" aria-hidden="true"><?php echo esc_html( $col_lab ); ?></span>
+															<?php endif; ?>
 															<label class="we-formkit__matrix-choice" for="<?php echo esc_attr( $oid ); ?>">
-																<span class="screen-reader-text"><?php echo esc_html( (string) ( $opt['label'] ?? $oval ) ); ?></span>
+																<span class="screen-reader-text"><?php echo esc_html( $olab ); ?></span>
 																<input
 																	type="radio"
 																	id="<?php echo esc_attr( $oid ); ?>"
@@ -855,6 +866,7 @@ final class Frontend {
 																	value="<?php echo esc_attr( $oval ); ?>"
 																	data-wek-matrix-col="<?php echo esc_attr( $col_id ); ?>"
 																/>
+																<span class="we-formkit__matrix-mobile-opt" aria-hidden="true"><?php echo esc_html( $olab ); ?></span>
 															</label>
 														</td>
 														<?php
@@ -862,9 +874,13 @@ final class Frontend {
 												elseif ( 'text' === $col_type || 'number' === $col_type ) :
 													$oid = $input_id . '-' . $row_id . '-' . $col_id;
 													?>
-													<td class="we-formkit__matrix-cell we-formkit__matrix-cell--<?php echo esc_attr( $col_type ); ?> we-formkit__matrix-cell--block-start">
+													<td
+														class="we-formkit__matrix-cell we-formkit__matrix-cell--<?php echo esc_attr( $col_type ); ?> we-formkit__matrix-cell--block-start"
+														data-wek-col-label="<?php echo esc_attr( $col_lab ); ?>"
+													>
 														<label class="we-formkit__matrix-input-wrap" for="<?php echo esc_attr( $oid ); ?>">
-															<span class="screen-reader-text"><?php echo esc_html( $row_label . ' — ' . (string) ( $col['label'] ?? $col_id ) ); ?></span>
+															<span class="we-formkit__matrix-mobile-label" aria-hidden="true"><?php echo esc_html( $col_lab ); ?></span>
+															<span class="screen-reader-text"><?php echo esc_html( $row_label . ' — ' . $col_lab ); ?></span>
 															<input
 																type="<?php echo esc_attr( $col_type ); ?>"
 																id="<?php echo esc_attr( $oid ); ?>"
@@ -880,9 +896,12 @@ final class Frontend {
 												else :
 													$oid = $input_id . '-' . $row_id . '-' . $col_id;
 													?>
-													<td class="we-formkit__matrix-cell we-formkit__matrix-cell--checkbox we-formkit__matrix-cell--block-start">
+													<td
+														class="we-formkit__matrix-cell we-formkit__matrix-cell--checkbox we-formkit__matrix-cell--block-start"
+														data-wek-col-label="<?php echo esc_attr( $col_lab ); ?>"
+													>
 														<label class="we-formkit__matrix-choice" for="<?php echo esc_attr( $oid ); ?>">
-															<span class="screen-reader-text"><?php echo esc_html( (string) ( $col['label'] ?? $col_id ) ); ?></span>
+															<span class="screen-reader-text"><?php echo esc_html( $col_lab ); ?></span>
 															<input
 																type="checkbox"
 																id="<?php echo esc_attr( $oid ); ?>"
@@ -890,6 +909,7 @@ final class Frontend {
 																value="1"
 																data-wek-matrix-col="<?php echo esc_attr( $col_id ); ?>"
 															/>
+															<span class="we-formkit__matrix-mobile-opt" aria-hidden="true"><?php echo esc_html( $col_lab ); ?></span>
 														</label>
 													</td>
 													<?php
