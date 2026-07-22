@@ -1362,6 +1362,11 @@ final class Frontend {
 		$index_str = (string) $index;
 		?>
 		<div class="we-formkit__repeater-row" data-wek-repeater-row>
+			<div class="we-formkit__repeater-fields">
+				<?php foreach ( $item_fields as $child ) : ?>
+					<?php self::render_repeater_control( $parent_id, $child, $index_str ); ?>
+				<?php endforeach; ?>
+			</div>
 			<button
 				type="button"
 				class="we-formkit__repeater-remove"
@@ -1369,13 +1374,14 @@ final class Frontend {
 				aria-label="<?php echo esc_attr__( 'Remove row', 'we-formkit' ); ?>"
 				title="<?php echo esc_attr__( 'Remove row', 'we-formkit' ); ?>"
 			>
-				<span class="we-formkit__remove-icon" aria-hidden="true">×</span>
+				<svg class="we-formkit__remove-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+					<path d="M4 7h16" />
+					<path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+					<path d="M10 11v6" />
+					<path d="M14 11v6" />
+					<path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+				</svg>
 			</button>
-			<div class="we-formkit__repeater-fields">
-					<?php foreach ( $item_fields as $child ) : ?>
-						<?php self::render_repeater_control( $parent_id, $child, $index_str ); ?>
-				<?php endforeach; ?>
-			</div>
 		</div>
 			<?php
 	}

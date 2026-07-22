@@ -1362,7 +1362,10 @@
 		rows.forEach( function ( row ) {
 			const removeBtn = qs( row, '[data-wek-repeater-remove]' );
 			if ( removeBtn ) {
-				removeBtn.disabled = rows.length <= Math.max( 1, minItems || 1 );
+				const canRemove = rows.length > Math.max( 1, minItems || 1 );
+				removeBtn.hidden = ! canRemove;
+				removeBtn.disabled = ! canRemove;
+				row.classList.toggle( 'has-remove', canRemove );
 			}
 		} );
 	}

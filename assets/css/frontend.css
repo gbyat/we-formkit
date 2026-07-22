@@ -917,36 +917,43 @@
 }
 
 .we-formkit__repeater-row {
-	position: relative;
+	display: flex;
+	align-items: flex-end;
+	gap: 0.45rem;
 	border: 1px solid var(--wek-line);
 	border-radius: var(--wek-radius);
 	background: var(--wek-accent-soft);
 	padding: 0.85rem 1rem;
-	padding-top: 2.15rem;
 }
 
 .we-formkit__repeater-remove {
-	position: absolute;
-	top: 0.45rem;
-	inset-inline-end: 0.45rem;
 	flex: 0 0 auto;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 1.75rem;
-	height: 1.75rem;
+	width: 2rem;
+	height: 2rem;
 	margin: 0;
 	padding: 0;
 	border: 1px solid transparent;
 	border-radius: var(--wek-radius-input, 8px);
 	background: transparent;
-	color: color-mix(in srgb, var(--wek-ink) 55%, transparent);
+	color: var(--wek-danger, #b32d2e);
 	font: inherit;
 	line-height: 1;
 	cursor: pointer;
 }
 
-.we-formkit__repeater-remove .we-formkit__remove-icon,
+.we-formkit__repeater-remove[hidden] {
+	display: none !important;
+}
+
+.we-formkit__repeater-remove .we-formkit__remove-icon {
+	display: block;
+	width: 1rem;
+	height: 1rem;
+}
+
 .we-formkit__matrix-remove-row .we-formkit__matrix-remove-icon {
 	display: block;
 	font-size: 1.35rem;
@@ -956,9 +963,9 @@
 
 .we-formkit__repeater-remove:hover,
 .we-formkit__repeater-remove:focus-visible {
-	border-color: var(--wek-line);
-	color: var(--wek-ink);
-	background: color-mix(in srgb, var(--wek-ink) 6%, var(--wek-surface));
+	border-color: color-mix(in srgb, var(--wek-danger, #b32d2e) 35%, var(--wek-line));
+	color: color-mix(in srgb, var(--wek-danger, #b32d2e) 85%, #000);
+	background: color-mix(in srgb, var(--wek-danger, #b32d2e) 10%, var(--wek-surface));
 	outline: none;
 }
 
@@ -968,6 +975,8 @@
 }
 
 .we-formkit__repeater-fields {
+	flex: 1 1 auto;
+	min-width: 0;
 	display: grid;
 	gap: 0.75rem;
 }
@@ -1379,6 +1388,10 @@
 .we-formkit__matrix thead .we-formkit__matrix-col--select,
 .we-formkit__matrix tbody .we-formkit__matrix-cell--select {
 	background: var(--wek-accent-soft);
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-corner {
+	vertical-align: middle;
 }
 
 .we-formkit__matrix thead .we-formkit__matrix-col--group {
