@@ -139,16 +139,17 @@
 }
 
 .we-formkit__fieldset--matrix {
-	border: 1px solid var(--wek-line);
-	border-radius: var(--wek-radius-section);
-	padding: 0.65rem 0.85rem 0.85rem;
+	border: 0;
+	border-radius: 0;
+	padding: 0;
 	margin: 0;
+	min-inline-size: 0;
 }
 
 .we-formkit--help-below-label .we-formkit__fieldset--matrix,
 .we-formkit--help-below-field .we-formkit__fieldset--matrix {
-	border: 1px solid var(--wek-line);
-	padding: 0.65rem 0.85rem 0.85rem;
+	border: 0;
+	padding: 0;
 }
 
 .we-formkit__fields,
@@ -713,6 +714,16 @@
 	border-color: var(--wek-danger);
 }
 
+.we-formkit--inline-feedback-border .we-formkit__field--matrix.is-valid .we-formkit__matrix-scroll,
+.we-formkit--inline-feedback-both .we-formkit__field--matrix.is-valid .we-formkit__matrix-scroll {
+	border-color: var(--wek-accent);
+}
+
+.we-formkit--inline-feedback-border .we-formkit__field--matrix.is-invalid .we-formkit__matrix-scroll,
+.we-formkit--inline-feedback-both .we-formkit__field--matrix.is-invalid .we-formkit__matrix-scroll {
+	border-color: var(--wek-danger);
+}
+
 /* Matrix: pin the badge so the wide table/cards never shift. */
 .we-formkit__field--matrix {
 	position: relative;
@@ -1165,7 +1176,19 @@
 .we-formkit__matrix-scroll {
 	overflow-x: auto;
 	-webkit-overflow-scrolling: touch;
-	margin-top: 0.5rem;
+	margin-top: 0;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-section);
+	background: var(--wek-surface);
+}
+
+.we-formkit__fieldset--matrix > .we-formkit__help + .we-formkit__matrix-scroll {
+	margin-top: 0.35rem;
+}
+
+/* Desktop: field name lives in the corner header cell. */
+.we-formkit__matrix-field-label {
+	display: none;
 }
 
 .we-formkit__matrix {
@@ -1184,11 +1207,11 @@
 	text-align: center;
 }
 
-/* Stronger separators between top-level column blocks (Age | Usage | Tolerance). */
+/* Soft separators between labeled column blocks (Age | Usage | Tolerance). */
 .we-formkit__matrix thead .we-formkit__matrix-col--block-start,
 .we-formkit__matrix tbody .we-formkit__matrix-cell--block-start {
-	border-left-width: 3px;
-	border-left-color: color-mix(in srgb, var(--wek-ink) 28%, var(--wek-line));
+	border-left-width: 2px;
+	border-left-color: color-mix(in srgb, var(--wek-ink) 22%, var(--wek-line));
 }
 
 .we-formkit__matrix-corner,
@@ -1199,6 +1222,36 @@
 	background: var(--wek-accent-soft);
 	color: var(--wek-ink);
 	white-space: nowrap;
+}
+
+.we-formkit__matrix-corner {
+	white-space: normal;
+	max-width: 10rem;
+	vertical-align: middle;
+	line-height: 1.25;
+}
+
+.we-formkit__matrix-corner-label {
+	display: block;
+	overflow-wrap: break-word;
+}
+
+/* Row-select column has no visible header — drop vertical rules so it merges with labels. */
+.we-formkit__matrix-corner:has(+ .we-formkit__matrix-col--select),
+.we-formkit__matrix th.we-formkit__matrix-row-label:has(+ .we-formkit__matrix-cell--select) {
+	border-right: none;
+}
+
+.we-formkit__matrix thead .we-formkit__matrix-col--select,
+.we-formkit__matrix tbody .we-formkit__matrix-cell--select {
+	border-left: none;
+	border-right: none;
+	width: 2.1rem;
+	min-width: 2.1rem;
+	max-width: 2.5rem;
+	padding-left: 0.15rem;
+	padding-right: 0.35rem;
+	background: var(--wek-accent-soft);
 }
 
 .we-formkit__matrix--row-labels-center th.we-formkit__matrix-row-label {
@@ -1356,9 +1409,28 @@
  * Table stays in the DOM for a11y / JS; presentation becomes stacked forms.
  */
 @media (max-width: 720px) {
+	.we-formkit__matrix-field-label {
+		display: block;
+		margin: 0 0 0.5rem;
+		font-weight: 600;
+		font-size: var(--wek-font-label);
+		color: var(--wek-ink);
+	}
+
+	.we-formkit--label-normal .we-formkit__matrix-field-label {
+		font-weight: 500;
+	}
+
+	.we-formkit--label-bold .we-formkit__matrix-field-label {
+		font-weight: 700;
+	}
+
 	.we-formkit__matrix-scroll {
 		overflow: visible;
-		margin-top: 0.65rem;
+		margin-top: 0.35rem;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
 	}
 
 	.we-formkit__matrix,

@@ -718,10 +718,14 @@ final class Frontend {
 				$row_label_align = $matrix_cfg['row_label_align'];
 				?>
 				<fieldset class="we-formkit__fieldset we-formkit__fieldset--matrix">
-					<legend class="we-formkit__label">
+					<legend class="screen-reader-text">
 						<?php echo esc_html( $field['label'] ); ?>
 						<?php self::echo_requirement_mark( $req, $type ); ?>
 					</legend>
+					<p class="we-formkit__matrix-field-label" aria-hidden="true">
+						<?php echo esc_html( $field['label'] ); ?>
+						<?php self::echo_requirement_mark( $req, $type ); ?>
+					</p>
 					<?php if ( ! empty( $field['help'] ) ) : ?>
 						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 					<?php endif; ?>
@@ -744,10 +748,13 @@ final class Frontend {
 									?>
 									<tr class="we-formkit__matrix-head-groups">
 										<th scope="col" class="we-formkit__matrix-corner"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
-											<span class="screen-reader-text"><?php esc_html_e( 'Row', 'we-formkit' ); ?></span>
+											<span class="we-formkit__matrix-corner-label">
+												<?php echo esc_html( $field['label'] ); ?>
+												<?php self::echo_requirement_mark( $req, $type ); ?>
+											</span>
 										</th>
 										<?php if ( $row_select ) : ?>
-											<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--select we-formkit__matrix-col--block-start"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
+											<th scope="col" class="we-formkit__matrix-col we-formkit__matrix-col--select"<?php echo $needs_option_headers ? ' rowspan="2"' : ''; ?>>
 												<span class="screen-reader-text"><?php esc_html_e( 'Select', 'we-formkit' ); ?></span>
 											</th>
 										<?php endif; ?>
@@ -822,7 +829,7 @@ final class Frontend {
 										<tr data-wek-matrix-row="<?php echo esc_attr( $row_id ); ?>">
 											<th scope="row" class="we-formkit__matrix-row-label"><?php echo esc_html( $row_label ); ?></th>
 											<?php if ( $row_select ) : ?>
-												<td class="we-formkit__matrix-cell we-formkit__matrix-cell--select we-formkit__matrix-cell--block-start">
+												<td class="we-formkit__matrix-cell we-formkit__matrix-cell--select">
 													<label class="we-formkit__matrix-choice we-formkit__matrix-choice--select">
 														<span class="screen-reader-text"><?php echo esc_html( sprintf( /* translators: %s: row label */ __( 'Select %s', 'we-formkit' ), $row_label ) ); ?></span>
 														<input
