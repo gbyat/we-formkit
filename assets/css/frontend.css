@@ -1286,6 +1286,13 @@
 	white-space: normal;
 }
 
+/* Keep corner + row-select band on accent-soft (overrides thead th). */
+.we-formkit__matrix thead .we-formkit__matrix-corner,
+.we-formkit__matrix thead .we-formkit__matrix-col--select,
+.we-formkit__matrix tbody .we-formkit__matrix-cell--select {
+	background: var(--wek-accent-soft);
+}
+
 .we-formkit__matrix thead .we-formkit__matrix-col--group {
 	max-width: none;
 	border-bottom-width: 1px;

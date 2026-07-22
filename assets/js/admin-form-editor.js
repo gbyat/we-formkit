@@ -2252,6 +2252,88 @@
 			return wrap;
 		}
 
+		function ensureNumberOptions( field ) {
+			const opts = ensureTypeOptions( field );
+			if ( opts.min == null ) {
+				opts.min = '';
+			}
+			if ( opts.max == null ) {
+				opts.max = '';
+			}
+			if ( opts.step == null ) {
+				opts.step = '';
+			}
+			if ( opts.decimals == null ) {
+				opts.decimals = '';
+			}
+			return opts;
+		}
+
+		function renderNumberOptionsEditor( field ) {
+			const opts = ensureNumberOptions( field );
+			const wrap = el( 'div', { className: 'wek-builder__number-options' } );
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.numberOptionsHint ||
+						'Optional limits for the number input. Decimal places set the step when Step is left empty (0 → 1, 2 → 0.01).',
+				} )
+			);
+			wrap.appendChild(
+				fieldRow(
+					i18n.numberMin || 'Minimum',
+					textInput( opts.min === 0 || opts.min ? String( opts.min ) : '', function ( v ) {
+						opts.min = String( v || '' ).trim();
+						syncHidden();
+					} )
+				)
+			);
+			wrap.appendChild(
+				fieldRow(
+					i18n.numberMax || 'Maximum',
+					textInput( opts.max === 0 || opts.max ? String( opts.max ) : '', function ( v ) {
+						opts.max = String( v || '' ).trim();
+						syncHidden();
+					} )
+				)
+			);
+			wrap.appendChild(
+				fieldRow(
+					i18n.numberStep || 'Step',
+					textInput( opts.step ? String( opts.step ) : '', function ( v ) {
+						opts.step = String( v || '' ).trim();
+						syncHidden();
+					} )
+				)
+			);
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text: i18n.numberStepHint || 'Examples: any, 1, 0.5, 0.01. Leave empty to use decimal places.',
+				} )
+			);
+			wrap.appendChild(
+				fieldRow(
+					i18n.numberDecimals || 'Decimal places',
+					numberInput(
+						opts.decimals === '' || opts.decimals == null ? '' : opts.decimals,
+						function ( v ) {
+							if ( v === '' ) {
+								opts.decimals = '';
+							} else {
+								const n = parseInt( v, 10 );
+								opts.decimals = isNaN( n ) ? '' : Math.max( 0, Math.min( 6, n ) );
+							}
+							syncHidden();
+						},
+						{ min: '0', max: '6' }
+					)
+				)
+			);
+			return wrap;
+		}
+
 		function ensureCheckboxesLimits( field ) {
 			const opts = ensureTypeOptions( field );
 			if ( opts.min_selected == null ) {
@@ -2851,6 +2933,10 @@
 
 				if ( field.type === 'checkboxes' ) {
 					panel.appendChild( renderCheckboxesLimitsEditor( field ) );
+				}
+
+				if ( field.type === 'number' ) {
+					panel.appendChild( renderNumberOptionsEditor( field ) );
 				}
 
 				if ( field.type === 'matrix' ) {
@@ -3519,6 +3605,14 @@
 					className: 'wek-builder__field-preview wek-builder__field-preview--textarea',
 					'aria-hidden': 'true',
 					text: hint,
+				} );
+			}
+
+			if ( type === 'number' ) {
+				return el( 'div', {
+					className: 'wek-builder__field-preview wek-builder__field-preview--number',
+					'aria-hidden': 'true',
+					text: hint || '0',
 				} );
 			}
 

@@ -1869,20 +1869,23 @@ body.wek-builder-is-resizing iframe {
 }
 
 .wek-admin .wek-builder__field-label {
-	display: inline-flex;
+	display: flex;
 	align-items: baseline;
 	gap: 0.2rem;
 	max-width: 100%;
+	min-width: 0;
 	font-weight: 600;
 	font-size: 13px;
 	color: var(--wek-ink);
+	line-height: 1.35;
 }
 
 .wek-admin .wek-builder__field-label-text {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	flex: 1 1 auto;
 	min-width: 0;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+	white-space: normal;
 }
 
 .wek-admin .wek-builder__field-required {
@@ -1916,6 +1919,36 @@ body.wek-builder-is-resizing iframe {
 	line-height: 1.4;
 	padding: 0.55rem 0.75rem;
 	white-space: normal;
+}
+
+.wek-admin .wek-builder__field-preview--number {
+	position: relative;
+	max-width: 7.5rem;
+	padding-right: 1.65rem;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+}
+
+.wek-admin .wek-builder__field-preview--number::before,
+.wek-admin .wek-builder__field-preview--number::after {
+	content: "";
+	position: absolute;
+	right: 0.55rem;
+	width: 0;
+	height: 0;
+	border-left: 3.5px solid transparent;
+	border-right: 3.5px solid transparent;
+	opacity: 0.55;
+}
+
+.wek-admin .wek-builder__field-preview--number::before {
+	top: 0.45rem;
+	border-bottom: 4px solid var(--wek-muted);
+}
+
+.wek-admin .wek-builder__field-preview--number::after {
+	bottom: 0.45rem;
+	border-top: 4px solid var(--wek-muted);
 }
 
 .wek-admin .wek-builder__field-preview--select {
