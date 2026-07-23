@@ -113,6 +113,7 @@
   "— Select field —": "— Feld wählen —",
   "— Select value —": "— Wert wählen —",
   "No conditions — this item is always visible. Add a rule to show it only when…": "Keine Bedingungen — dieses Element ist immer sichtbar. Regel hinzufügen, um es nur anzuzeigen wenn…",
+  "Choose a value to activate this rule. To check for an empty field, use \"is empty\".": "Wert wählen, damit die Regel aktiv wird. Für leere Felder den Operator „ist leer“ verwenden.",
   "Add other fields first — conditions depend on another field’s value.": "Zuerst andere Felder hinzufügen — Bedingungen hängen vom Wert eines anderen Feldes ab.",
   "Single checkbox": "Einzelnes Kontrollkästchen",
   "Consent checkbox": "Einwilligungs-Kontrollkästchen",

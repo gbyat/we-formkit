@@ -943,10 +943,26 @@
 			};
 		}
 
+		/**
+		 * Rules that need a compare value (equals / not_equals / contains) stay
+		 * incomplete until a value is set — do not activate them on the front end.
+		 * (Bare equals+"" used to mean “is empty” and hid fields by accident.)
+		 *
+		 * @param {Object} rule Rule row.
+		 * @return {boolean}
+		 */
+		function isCompleteShowWhenRule( rule ) {
+			if ( ! rule || ! rule.field || ! rule.op ) {
+				return false;
+			}
+			if ( opsNoValue[ rule.op ] ) {
+				return true;
+			}
+			return String( rule.value != null ? rule.value : '' ).trim() !== '';
+		}
+
 		function commitShowWhen( target, container ) {
-			const rules = ( container.rules || [] ).filter( function ( r ) {
-				return r && r.field && r.op;
-			} );
+			const rules = ( container.rules || [] ).filter( isCompleteShowWhenRule );
 			if ( ! rules.length ) {
 				target.show_when = null;
 			} else {
@@ -956,7 +972,7 @@
 						return {
 							field: r.field,
 							op: r.op,
-							value: opsNoValue[ r.op ] ? '' : r.value || '',
+							value: opsNoValue[ r.op ] ? '' : String( r.value || '' ).trim(),
 						};
 					} ),
 				};
@@ -995,6 +1011,8 @@
 
 		function renderConditional( target, excludeFieldId ) {
 			const container = normalizeShowWhen( target.show_when );
+			// Scrub incomplete drafts from the saved schema (UI keeps them in container.rules).
+			commitShowWhen( target, container );
 			const fields = listConditionFields( excludeFieldId );
 			const panel = el( 'div', { className: 'wek-builder__conditions' } );
 
@@ -1064,6 +1082,7 @@
 					sel.addEventListener( 'change', function () {
 						rule.value = sel.value;
 						commitShowWhen( target, container );
+						syncRuleCompleteUi( valueWrap.closest( '.wek-builder__condition-rule' ), rule );
 					} );
 					valueWrap.appendChild( sel );
 					return;
@@ -1077,8 +1096,33 @@
 				input.addEventListener( 'input', function () {
 					rule.value = input.value;
 					commitShowWhen( target, container );
+					syncRuleCompleteUi( valueWrap.closest( '.wek-builder__condition-rule' ), rule );
 				} );
 				valueWrap.appendChild( input );
+			}
+
+			function syncRuleCompleteUi( card, rule ) {
+				if ( ! card ) {
+					return;
+				}
+				const complete = isCompleteShowWhenRule( rule );
+				card.classList.toggle( 'is-incomplete', ! complete );
+				let hint = card.querySelector( '.wek-builder__condition-incomplete' );
+				if ( complete ) {
+					if ( hint ) {
+						hint.remove();
+					}
+					return;
+				}
+				if ( ! hint ) {
+					hint = el( 'p', {
+						className: 'wek-builder__condition-incomplete description',
+						text:
+							i18n.conditionIncomplete ||
+							'Choose a value to activate this rule. To check for an empty field, use "is empty".',
+					} );
+					card.appendChild( hint );
+				}
 			}
 
 			function redrawRules() {
@@ -1096,7 +1140,11 @@
 				}
 
 				container.rules.forEach( function ( rule, index ) {
-					const card = el( 'div', { className: 'wek-builder__condition-rule' } );
+					const complete = isCompleteShowWhenRule( rule );
+					const card = el( 'div', {
+						className:
+							'wek-builder__condition-rule' + ( complete ? '' : ' is-incomplete' ),
+					} );
 					card.appendChild(
 						el( 'span', {
 							className: 'wek-builder__condition-badge',
@@ -1149,11 +1197,13 @@
 						rule.op = opSelect.value || defaultOpForConditionField( meta );
 						paintValueControl( valueWrap, rule, fieldSelect, opSelect );
 						commitShowWhen( target, container );
+						syncRuleCompleteUi( card, rule );
 					} );
 					opSelect.addEventListener( 'change', function () {
 						rule.op = opSelect.value || 'equals';
 						paintValueControl( valueWrap, rule, fieldSelect, opSelect );
 						commitShowWhen( target, container );
+						syncRuleCompleteUi( card, rule );
 					} );
 
 					card.appendChild( fieldSelect );
@@ -1172,6 +1222,7 @@
 						} )
 					);
 					paintValueControl( valueWrap, rule, fieldSelect, opSelect );
+					syncRuleCompleteUi( card, rule );
 					list.appendChild( card );
 				} );
 			}

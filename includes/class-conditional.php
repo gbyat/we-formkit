@@ -33,10 +33,21 @@ final class Conditional {
 
 		// Legacy single rule.
 		if ( isset( $rule['field'] ) && ! isset( $rule['rules'] ) ) {
+			if ( ! self::is_complete_rule( $rule ) ) {
+				return true;
+			}
 			return self::match_one( $rule, $values );
 		}
 
 		$rules = isset( $rule['rules'] ) && is_array( $rule['rules'] ) ? $rule['rules'] : array();
+		$rules = array_values(
+			array_filter(
+				$rules,
+				static function ( $one ) {
+					return is_array( $one ) && self::is_complete_rule( $one );
+				}
+			)
+		);
 		if ( empty( $rules ) ) {
 			return true;
 		}
@@ -44,9 +55,6 @@ final class Conditional {
 		$relation = isset( $rule['relation'] ) && 'OR' === strtoupper( (string) $rule['relation'] ) ? 'OR' : 'AND';
 
 		foreach ( $rules as $one ) {
-			if ( ! is_array( $one ) ) {
-				continue;
-			}
 			$ok = self::match_one( $one, $values );
 			if ( 'OR' === $relation && $ok ) {
 				return true;
@@ -57,6 +65,25 @@ final class Conditional {
 		}
 
 		return 'AND' === $relation;
+	}
+
+	/**
+	 * Whether a rule is ready to evaluate (value-required ops need a non-empty value).
+	 *
+	 * @param array<string, mixed> $rule Single rule.
+	 * @return bool
+	 */
+	private static function is_complete_rule( array $rule ) {
+		$field = isset( $rule['field'] ) ? trim( (string) $rule['field'] ) : '';
+		if ( '' === $field ) {
+			return false;
+		}
+		$op = isset( $rule['op'] ) ? (string) $rule['op'] : 'equals';
+		if ( in_array( $op, array( 'is_checked', 'is_not_checked', 'is_empty', 'is_not_empty' ), true ) ) {
+			return true;
+		}
+		$value = array_key_exists( 'value', $rule ) ? $rule['value'] : '';
+		return '' !== trim( (string) ( null === $value ? '' : $value ) );
 	}
 
 	/**

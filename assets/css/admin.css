@@ -1460,6 +1460,19 @@ body.wek-builder-is-resizing iframe {
 	background: var(--wek-surface);
 }
 
+.wek-admin .wek-builder__condition-rule.is-incomplete {
+	border-color: #c4a35a;
+	background: #fffbeb;
+}
+
+.wek-admin .wek-builder__condition-incomplete {
+	flex: 1 1 100%;
+	margin: 0.15rem 0 0;
+	font-size: 12px;
+	line-height: 1.4;
+	color: #6b5a2e;
+}
+
 .wek-admin .wek-builder__condition-badge {
 	display: inline-flex;
 	align-items: center;

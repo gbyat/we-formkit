@@ -318,6 +318,25 @@
 		}
 	}
 
+	function isCompleteShowWhenRule( rule ) {
+		if ( ! rule || typeof rule !== 'object' ) {
+			return false;
+		}
+		if ( ! rule.field || ! rule.op ) {
+			return false;
+		}
+		const op = String( rule.op );
+		if (
+			op === 'is_checked' ||
+			op === 'is_not_checked' ||
+			op === 'is_empty' ||
+			op === 'is_not_empty'
+		) {
+			return true;
+		}
+		return String( rule.value != null ? rule.value : '' ).trim() !== '';
+	}
+
 	function matchOneRule( rule, values ) {
 		if ( ! rule || typeof rule !== 'object' ) {
 			return true;
@@ -342,9 +361,14 @@
 		}
 		// Legacy single rule.
 		if ( container.field && ! container.rules ) {
+			if ( ! isCompleteShowWhenRule( container ) ) {
+				return true;
+			}
 			return matchOneRule( container, values );
 		}
-		const rules = Array.isArray( container.rules ) ? container.rules : [];
+		const rules = ( Array.isArray( container.rules ) ? container.rules : [] ).filter(
+			isCompleteShowWhenRule
+		);
 		if ( ! rules.length ) {
 			return true;
 		}

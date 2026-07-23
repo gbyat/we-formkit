@@ -471,6 +471,7 @@ final class Form_Editor {
 					'selectField'               => __( '— Select field —', 'we-formkit' ),
 					'selectValue'               => __( '— Select value —', 'we-formkit' ),
 					'conditionsEmpty'           => __( 'No conditions — this item is always visible. Add a rule to show it only when…', 'we-formkit' ),
+					'conditionIncomplete'       => __( 'Choose a value to activate this rule. To check for an empty field, use "is empty".', 'we-formkit' ),
 					'conditionsNoFields'        => __( 'Add other fields first — conditions depend on another field’s value.', 'we-formkit' ),
 					'checkboxPreview'           => __( 'Single checkbox', 'we-formkit' ),
 					'consentPreview'            => __( 'Consent checkbox', 'we-formkit' ),

@@ -358,10 +358,19 @@ final class Form_Schema {
 		if ( ! in_array( $op, $allowed, true ) ) {
 			$op = 'equals';
 		}
+		$value = isset( $rule['value'] ) ? sanitize_text_field( (string) $rule['value'] ) : '';
+
+		// equals / not_equals / contains without a value are incomplete drafts — drop them
+		// (bare equals+"" used to act like “is empty” and hide fields by accident).
+		$needs_value = in_array( $op, array( 'equals', 'not_equals', 'contains' ), true );
+		if ( $needs_value && '' === trim( $value ) ) {
+			return null;
+		}
+
 		return array(
 			'field' => $field,
 			'op'    => $op,
-			'value' => isset( $rule['value'] ) ? sanitize_text_field( (string) $rule['value'] ) : '',
+			'value' => $needs_value ? $value : '',
 		);
 	}
 
