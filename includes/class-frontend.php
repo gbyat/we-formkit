@@ -333,7 +333,7 @@ final class Frontend {
 					'checkboxesMin'     => __( 'Please select at least %2$d option(s) for %1$s.', 'we-formkit' ),
 					/* translators: 1: field label, 2: maximum number of selections. */
 					'checkboxesMax'     => __( 'Please select at most %2$d option(s) for %1$s.', 'we-formkit' ),
-					'otherTextRequired' => __( 'Please enter text for Other.', 'we-formkit' ),
+					'otherTextRequired' => __( 'Please enter text for each custom option.', 'we-formkit' ),
 					'matrixAddRow'      => __( 'Add other row', 'we-formkit' ),
 					'matrixRemoveRow'   => __( 'Remove row', 'we-formkit' ),
 					'matrixRowLabelPh'  => __( 'Your label', 'we-formkit' ),
@@ -787,11 +787,21 @@ final class Frontend {
 					<?php if ( '' !== $help_text ) : ?>
 						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $help_text ); ?></p>
 					<?php endif; ?>
-					<div class="we-formkit__choices" role="group" aria-describedby="<?php echo esc_attr( trim( ( '' !== $help_text ? $desc_id . ' ' : '' ) . $error_id ) ); ?>">
+					<div
+						class="we-formkit__choices"
+						role="group"
+						aria-describedby="<?php echo esc_attr( trim( ( '' !== $help_text ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
 						<?php
-						$default     = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
 						$allow_other = 'checkboxes' === $type && Fields\Checkboxes_Field::allows_other( $field );
 						$other_label = $allow_other ? Fields\Checkboxes_Field::other_label( $field ) : '';
+						$max_other   = $allow_other ? Fields\Checkboxes_Field::max_other( $field ) : 0;
+						if ( $allow_other ) {
+							echo ' data-wek-checkboxes-custom="1" data-max-other="' . esc_attr( (string) $max_other ) . '"';
+						}
+						?>
+					>
+						<?php
+						$default = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
 						foreach ( $field['options'] as $option ) :
 							$oid    = $input_id . '-' . $option['value'];
 							$iname  = 'checkboxes' === $type ? $id . '[]' : $id;
@@ -810,35 +820,54 @@ final class Frontend {
 							</label>
 						<?php endforeach; ?>
 						<?php if ( $allow_other ) : ?>
-							<?php
-							$other_oid     = $input_id . '-other';
-							$other_text_id = $input_id . '-other-text';
-							?>
-							<div class="we-formkit__choice we-formkit__choice--other">
-								<label class="we-formkit__choice-main" for="<?php echo esc_attr( $other_oid ); ?>">
+							<template data-wek-checkboxes-other-template>
+								<div class="we-formkit__choice we-formkit__choice--custom" data-wek-checkboxes-custom-item>
+									<label class="we-formkit__choice-main we-formkit__choice-main--custom" for="__OTHER_OID__">
+										<input
+											type="checkbox"
+											id="__OTHER_OID__"
+											name="<?php echo esc_attr( $id . '[]' ); ?>"
+											value="<?php echo esc_attr( Fields\Checkboxes_Field::OTHER_TOKEN ); ?>"
+											data-wek-other
+											checked
+										/>
+										<span class="screen-reader-text"><?php echo esc_html( $other_label ); ?></span>
+									</label>
 									<input
-										type="checkbox"
-										id="<?php echo esc_attr( $other_oid ); ?>"
-										name="<?php echo esc_attr( $id . '[]' ); ?>"
-										value="<?php echo esc_attr( Fields\Checkboxes_Field::OTHER_TOKEN ); ?>"
-										data-wek-other
+										type="text"
+										id="__OTHER_TID__"
+										class="we-formkit__other-text"
+										value=""
+										placeholder="<?php echo esc_attr__( 'Please specify…', 'we-formkit' ); ?>"
+										autocomplete="off"
+										data-wek-other-text
+										aria-label="<?php echo esc_attr__( 'Custom option text', 'we-formkit' ); ?>"
 									/>
-									<span><?php echo esc_html( $other_label ); ?></span>
-								</label>
-								<input
-									type="text"
-									id="<?php echo esc_attr( $other_text_id ); ?>"
-									class="we-formkit__other-text"
-									value=""
-									placeholder="<?php echo esc_attr__( 'Please specify…', 'we-formkit' ); ?>"
-									autocomplete="off"
-									hidden
-									data-wek-other-text
-									aria-label="<?php echo esc_attr( sprintf( /* translators: %s: Other option label */ __( '%s text', 'we-formkit' ), $other_label ) ); ?>"
-								/>
-							</div>
+									<button
+										type="button"
+										class="we-formkit__matrix-remove-row"
+										data-wek-checkboxes-remove-other
+										aria-label="<?php echo esc_attr__( 'Remove custom option', 'we-formkit' ); ?>"
+										title="<?php echo esc_attr__( 'Remove custom option', 'we-formkit' ); ?>"
+									>
+										<span class="we-formkit__matrix-remove-icon" aria-hidden="true">×</span>
+									</button>
+								</div>
+							</template>
 						<?php endif; ?>
 					</div>
+					<?php if ( $allow_other ) : ?>
+						<p class="we-formkit__checkboxes-custom-actions we-formkit__matrix-custom-actions">
+							<button
+								type="button"
+								class="we-formkit__add-btn we-formkit__checkboxes-add-other"
+								data-wek-checkboxes-add-other
+								data-max-other="<?php echo esc_attr( (string) $max_other ); ?>"
+							>
+								<?php echo esc_html( $other_label ); ?>
+							</button>
+						</p>
+					<?php endif; ?>
 				</fieldset>
 			<?php elseif ( 'radio_image' === $type ) : ?>
 				<fieldset class="we-formkit__fieldset">

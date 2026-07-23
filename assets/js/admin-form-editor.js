@@ -2840,28 +2840,53 @@
 				opts.allow_other = false;
 			}
 			if ( typeof opts.other_label !== 'string' || ! opts.other_label ) {
-				opts.other_label = i18n.otherLabelDefault || 'Other';
+				opts.other_label = i18n.otherLabelDefault || 'Add other';
 			}
+			if ( typeof opts.max_other === 'undefined' || opts.max_other === '' ) {
+				opts.max_other = 2;
+			}
+			let maxOther = parseInt( opts.max_other, 10 );
+			if ( isNaN( maxOther ) || maxOther < 1 ) {
+				maxOther = 2;
+			}
+			opts.max_other = Math.min( 5, maxOther );
 
 			const allowOther = el( 'input', { type: 'checkbox' } );
 			allowOther.checked = !! opts.allow_other;
 			const otherLabelInput = textInput( opts.other_label, function ( v ) {
-				opts.other_label = String( v || '' ).trim() || ( i18n.otherLabelDefault || 'Other' );
+				opts.other_label = String( v || '' ).trim() || ( i18n.otherLabelDefault || 'Add other' );
 				syncHidden();
 			} );
-			const otherLabelRow = fieldRow( i18n.otherLabel || 'Other label', otherLabelInput );
+			const maxOtherInput = numberInput(
+				String( opts.max_other ),
+				function ( v ) {
+					let n = parseInt( v, 10 );
+					if ( isNaN( n ) || n < 1 ) {
+						n = 2;
+					}
+					opts.max_other = Math.min( 5, n );
+					maxOtherInput.value = String( opts.max_other );
+					syncHidden();
+				},
+				{ min: '1', max: '5' }
+			);
+			const otherLabelRow = fieldRow( i18n.otherLabel || 'Add button label', otherLabelInput );
+			const maxOtherRow = fieldRow( i18n.maxOther || 'Max custom options', maxOtherInput );
 			otherLabelRow.hidden = ! allowOther.checked;
+			maxOtherRow.hidden = ! allowOther.checked;
 
 			allowOther.addEventListener( 'change', function () {
 				opts.allow_other = allowOther.checked;
 				otherLabelRow.hidden = ! allowOther.checked;
+				maxOtherRow.hidden = ! allowOther.checked;
 				syncHidden();
 			} );
 
 			wrap.appendChild(
-				toggleRow( i18n.allowOther || 'Allow “Other”', allowOther )
+				toggleRow( i18n.allowOther || 'Allow custom options', allowOther )
 			);
 			wrap.appendChild( otherLabelRow );
+			wrap.appendChild( maxOtherRow );
 
 			return wrap;
 		}

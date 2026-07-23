@@ -106,7 +106,10 @@
 				const selected = [];
 				qsa( fieldEl, 'input[type="checkbox"]:checked' ).forEach( function ( box ) {
 					if ( box.hasAttribute( 'data-wek-other' ) ) {
-						const textEl = qs( fieldEl, '[data-wek-other-text]' );
+						const wrap = box.closest( '[data-wek-checkboxes-custom-item]' );
+						const textEl = wrap
+							? qs( wrap, '[data-wek-other-text]' )
+							: qs( fieldEl, '[data-wek-other-text]' );
 						const text = textEl ? String( textEl.value || '' ).trim() : '';
 						selected.push( text !== '' ? 'other:' + text : '__other__' );
 						return;
@@ -642,14 +645,18 @@
 		if ( max > 0 && count > max ) {
 			return checkboxesLimitMessage( fieldEl, 'max', max );
 		}
-		const otherBox = qs( fieldEl, 'input[type="checkbox"][data-wek-other]' );
-		const otherText = qs( fieldEl, '[data-wek-other-text]' );
-		if ( otherBox && otherBox.checked && otherText && String( otherText.value || '' ).trim() === '' ) {
-			return (
-				fieldInvalidMessage( fieldEl ) ||
-				( ( window.weFormkit && window.weFormkit.i18n && window.weFormkit.i18n.otherTextRequired ) ||
-					'Please enter text for Other.' )
-			);
+		const otherItems = qsa( fieldEl, '[data-wek-checkboxes-custom-item]' );
+		for ( let i = 0; i < otherItems.length; i += 1 ) {
+			const wrap = otherItems[ i ];
+			const otherBox = qs( wrap, 'input[type="checkbox"][data-wek-other]' );
+			const otherText = qs( wrap, '[data-wek-other-text]' );
+			if ( otherBox && otherBox.checked && otherText && String( otherText.value || '' ).trim() === '' ) {
+				return (
+					fieldInvalidMessage( fieldEl ) ||
+					( ( window.weFormkit && window.weFormkit.i18n && window.weFormkit.i18n.otherTextRequired ) ||
+						'Please enter text for each custom option.' )
+				);
+			}
 		}
 		return '';
 	}
@@ -675,47 +682,142 @@
 		} );
 	}
 
-	function syncCheckboxesOtherVisibility( fieldEl ) {
-		const otherBox = qs( fieldEl, 'input[type="checkbox"][data-wek-other]' );
-		const otherText = qs( fieldEl, '[data-wek-other-text]' );
-		if ( ! otherBox || ! otherText ) {
+	function checkboxesCustomCount( fieldEl ) {
+		return qsa( fieldEl, '[data-wek-checkboxes-custom-item]' ).length;
+	}
+
+	function checkboxesMaxOther( fieldEl ) {
+		const fromField = parseInt( fieldEl.getAttribute( 'data-max-other' ) || '0', 10 );
+		if ( fromField > 0 ) {
+			return fromField;
+		}
+		const addBtn = qs( fieldEl, '[data-wek-checkboxes-add-other]' );
+		const fromBtn = addBtn ? parseInt( addBtn.getAttribute( 'data-max-other' ) || '0', 10 ) : 0;
+		return fromBtn > 0 ? fromBtn : 2;
+	}
+
+	function syncCheckboxesAddButton( fieldEl ) {
+		const addBtn = qs( fieldEl, '[data-wek-checkboxes-add-other]' );
+		if ( ! addBtn ) {
 			return;
 		}
-		const on = !! otherBox.checked;
-		otherText.hidden = ! on;
-		if ( ! on ) {
-			return;
+		const atCap = checkboxesCustomCount( fieldEl ) >= checkboxesMaxOther( fieldEl );
+		addBtn.disabled = atCap;
+		addBtn.setAttribute( 'aria-disabled', atCap ? 'true' : 'false' );
+	}
+
+	function newCheckboxesOtherIds() {
+		const suffix = Math.random().toString( 36 ).slice( 2, 8 );
+		return {
+			oid: 'wek-other-' + suffix,
+			tid: 'wek-other-text-' + suffix,
+		};
+	}
+
+	function bindCheckboxesCustomItem( fieldEl, item ) {
+		const removeBtn = qs( item, '[data-wek-checkboxes-remove-other]' );
+		if ( removeBtn && ! removeBtn.getAttribute( 'data-wek-checkboxes-remove-bound' ) ) {
+			removeBtn.setAttribute( 'data-wek-checkboxes-remove-bound', '1' );
+			removeBtn.addEventListener( 'click', function () {
+				item.remove();
+				syncCheckboxesAddButton( fieldEl );
+				syncCheckboxesMaxLock( fieldEl );
+				const form = fieldEl.closest( '[data-wek-form]' );
+				if ( form ) {
+					form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+			} );
 		}
-		if ( String( otherText.value || '' ).trim() === '' ) {
-			window.setTimeout( function () {
-				otherText.focus();
-			}, 0 );
+		const otherBox = qs( item, 'input[type="checkbox"][data-wek-other]' );
+		const otherText = qs( item, '[data-wek-other-text]' );
+		if ( otherText && otherBox && ! otherText.getAttribute( 'data-wek-other-input-bound' ) ) {
+			otherText.setAttribute( 'data-wek-other-input-bound', '1' );
+			otherText.addEventListener( 'input', function () {
+				if ( String( otherText.value || '' ).trim() !== '' && ! otherBox.checked ) {
+					otherBox.checked = true;
+					otherBox.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+			} );
 		}
+	}
+
+	function addCheckboxesCustomItem( fieldEl, preferredText ) {
+		const choices = qs( fieldEl, '.we-formkit__choices' );
+		const tpl = qs( fieldEl, '[data-wek-checkboxes-other-template]' );
+		if ( ! choices || ! tpl || ! tpl.content ) {
+			return null;
+		}
+		if ( checkboxesCustomCount( fieldEl ) >= checkboxesMaxOther( fieldEl ) ) {
+			syncCheckboxesAddButton( fieldEl );
+			return null;
+		}
+		const frag = document.importNode( tpl.content, true );
+		const item = frag.querySelector( '[data-wek-checkboxes-custom-item]' );
+		if ( ! item ) {
+			return null;
+		}
+		const ids = newCheckboxesOtherIds();
+		qsa( item, '[id], [for]' ).forEach( function ( node ) {
+			[ 'id', 'for' ].forEach( function ( attr ) {
+				const val = node.getAttribute( attr );
+				if ( ! val ) {
+					return;
+				}
+				if ( val.indexOf( '__OTHER_OID__' ) !== -1 ) {
+					node.setAttribute( attr, val.split( '__OTHER_OID__' ).join( ids.oid ) );
+				}
+				if ( val.indexOf( '__OTHER_TID__' ) !== -1 ) {
+					node.setAttribute( attr, val.split( '__OTHER_TID__' ).join( ids.tid ) );
+				}
+			} );
+		} );
+		const otherBox = qs( item, 'input[type="checkbox"][data-wek-other]' );
+		const otherText = qs( item, '[data-wek-other-text]' );
+		if ( otherBox ) {
+			otherBox.checked = true;
+		}
+		if ( otherText && preferredText ) {
+			otherText.value = String( preferredText );
+		}
+		choices.appendChild( item );
+		bindCheckboxesCustomItem( fieldEl, item );
+		syncCheckboxesAddButton( fieldEl );
+		syncCheckboxesMaxLock( fieldEl );
+		return item;
 	}
 
 	function bindCheckboxesOther( root ) {
 		qsa( root, '[data-field-type="checkboxes"]' ).forEach( function ( fieldEl ) {
-			const otherBox = qs( fieldEl, 'input[type="checkbox"][data-wek-other]' );
-			const otherText = qs( fieldEl, '[data-wek-other-text]' );
-			if ( ! otherBox || ! otherText || otherBox.getAttribute( 'data-wek-other-bound' ) ) {
+			if ( fieldEl.getAttribute( 'data-wek-checkboxes-custom' ) !== '1' && ! qs( fieldEl, '[data-wek-checkboxes-add-other]' ) ) {
 				return;
 			}
-			otherBox.setAttribute( 'data-wek-other-bound', '1' );
+			if ( fieldEl.getAttribute( 'data-wek-checkboxes-custom-bound' ) ) {
+				syncCheckboxesAddButton( fieldEl );
+				return;
+			}
+			fieldEl.setAttribute( 'data-wek-checkboxes-custom-bound', '1' );
 
-			syncCheckboxesOtherVisibility( fieldEl );
+			const addBtn = qs( fieldEl, '[data-wek-checkboxes-add-other]' );
+			if ( addBtn ) {
+				addBtn.addEventListener( 'click', function () {
+					const item = addCheckboxesCustomItem( fieldEl );
+					if ( item ) {
+						const text = qs( item, '[data-wek-other-text]' );
+						if ( text ) {
+							text.focus();
+						}
+						const form = fieldEl.closest( '[data-wek-form]' );
+						if ( form ) {
+							form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+						}
+					}
+				} );
+			}
 
-			otherText.addEventListener( 'input', function () {
-				const hasText = String( otherText.value || '' ).trim() !== '';
-				if ( hasText && ! otherBox.checked ) {
-					otherBox.checked = true;
-					syncCheckboxesOtherVisibility( fieldEl );
-					otherBox.dispatchEvent( new Event( 'change', { bubbles: true } ) );
-				}
+			qsa( fieldEl, '[data-wek-checkboxes-custom-item]' ).forEach( function ( item ) {
+				bindCheckboxesCustomItem( fieldEl, item );
 			} );
-
-			otherBox.addEventListener( 'change', function () {
-				syncCheckboxesOtherVisibility( fieldEl );
-			} );
+			syncCheckboxesAddButton( fieldEl );
 		} );
 	}
 
@@ -2091,29 +2193,26 @@
 					return;
 				}
 				if ( type === 'checkboxes' && Array.isArray( val ) ) {
-					const otherBox = qs( fieldEl, 'input[type="checkbox"][data-wek-other]' );
-					const otherText = qs( fieldEl, '[data-wek-other-text]' );
-					let otherEntry = '';
+					const otherTexts = [];
 					qsa( fieldEl, 'input[type="checkbox"]' ).forEach( function ( box ) {
 						if ( box.hasAttribute( 'data-wek-other' ) ) {
 							return;
 						}
 						box.checked = val.indexOf( box.value ) !== -1;
 					} );
+					qsa( fieldEl, '[data-wek-checkboxes-custom-item]' ).forEach( function ( item ) {
+						item.remove();
+					} );
 					val.forEach( function ( item ) {
 						const s = String( item || '' );
 						if ( s === '__other__' || s.indexOf( 'other:' ) === 0 ) {
-							otherEntry = s;
+							otherTexts.push( s.indexOf( 'other:' ) === 0 ? s.slice( 6 ) : '' );
 						}
 					} );
-					if ( otherBox ) {
-						otherBox.checked = otherEntry !== '';
-					}
-					if ( otherText ) {
-						otherText.value =
-							otherEntry.indexOf( 'other:' ) === 0 ? otherEntry.slice( 6 ) : '';
-					}
-					syncCheckboxesOtherVisibility( fieldEl );
+					otherTexts.forEach( function ( text ) {
+						addCheckboxesCustomItem( fieldEl, text );
+					} );
+					syncCheckboxesAddButton( fieldEl );
 					return;
 				}
 				if ( ( type === 'radio' || type === 'radio_image' ) && val ) {

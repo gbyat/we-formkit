@@ -44,14 +44,20 @@ class Checkboxes_Field extends Abstract_Field_Type {
 			),
 			'allow_other'  => array(
 				'type'        => 'boolean',
-				'label'       => __( 'Allow “Other” with free text', 'we-formkit' ),
-				'description' => __( 'Visitors can tick Other and type their own answer. Typing auto-checks Other.', 'we-formkit' ),
+				'label'       => __( 'Allow custom options', 'we-formkit' ),
+				'description' => __( 'Visitors can add their own options via a button (like matrix custom rows). New items start checked and can be removed.', 'we-formkit' ),
 				'default'     => false,
 			),
 			'other_label'  => array(
 				'type'    => 'string',
-				'label'   => __( 'Other label', 'we-formkit' ),
-				'default' => 'Other',
+				'label'   => __( 'Add button label', 'we-formkit' ),
+				'default' => 'Add other',
+			),
+			'max_other'    => array(
+				'type'        => 'integer',
+				'label'       => __( 'Max custom options', 'we-formkit' ),
+				'description' => __( '1–5. How many visitor-added options are allowed.', 'we-formkit' ),
+				'default'     => 2,
 			),
 		);
 	}
@@ -85,7 +91,8 @@ class Checkboxes_Field extends Abstract_Field_Type {
 		$field['type_options']['max_selected'] = $max;
 		$field['type_options']['allow_other']  = ! empty( $opts['allow_other'] );
 		$other_label                           = isset( $opts['other_label'] ) ? sanitize_text_field( (string) $opts['other_label'] ) : '';
-		$field['type_options']['other_label']  = '' !== $other_label ? $other_label : __( 'Other', 'we-formkit' );
+		$field['type_options']['other_label']  = '' !== $other_label ? $other_label : __( 'Add other', 'we-formkit' );
+		$field['type_options']['max_other']    = self::normalize_max_other( $opts['max_other'] ?? 2 );
 
 		return $field;
 	}
@@ -120,14 +127,37 @@ class Checkboxes_Field extends Abstract_Field_Type {
 	}
 
 	/**
-	 * Label for the Other choice.
+	 * Label for the “add custom option” button.
 	 *
 	 * @param array<string, mixed> $field Field.
 	 */
 	public static function other_label( array $field ): string {
 		$opts  = isset( $field['type_options'] ) && is_array( $field['type_options'] ) ? $field['type_options'] : array();
 		$label = isset( $opts['other_label'] ) ? sanitize_text_field( (string) $opts['other_label'] ) : '';
-		return '' !== $label ? $label : __( 'Other', 'we-formkit' );
+		return '' !== $label ? $label : __( 'Add other', 'we-formkit' );
+	}
+
+	/**
+	 * Max visitor-added custom options (1–5).
+	 *
+	 * @param mixed $raw Raw value.
+	 */
+	public static function normalize_max_other( $raw ): int {
+		$n = (int) $raw;
+		if ( $n < 1 ) {
+			$n = 2;
+		}
+		return min( 5, $n );
+	}
+
+	/**
+	 * Max custom options for a field.
+	 *
+	 * @param array<string, mixed> $field Field.
+	 */
+	public static function max_other( array $field ): int {
+		$opts = isset( $field['type_options'] ) && is_array( $field['type_options'] ) ? $field['type_options'] : array();
+		return self::normalize_max_other( $opts['max_other'] ?? 2 );
 	}
 
 	/**
@@ -170,21 +200,26 @@ class Checkboxes_Field extends Abstract_Field_Type {
 
 		$valid       = $this->get_valid_option_values( $field );
 		$allow_other = self::allows_other( $field );
+		$max_other   = self::max_other( $field );
 		$out         = array();
-		$saw_other   = false;
+		$other_count = 0;
 
 		foreach ( $value as $item ) {
 			$item = (string) $item;
 			if ( $allow_other && self::is_other_entry( $item ) ) {
-				if ( $saw_other ) {
+				if ( $other_count >= $max_other ) {
 					continue;
 				}
-				$saw_other = true;
-				$text      = self::other_text_from_entry( $item );
-				if ( '' === $text && self::OTHER_TOKEN !== $item ) {
+				$text = self::other_text_from_entry( $item );
+				if ( '' === $text ) {
 					continue;
 				}
-				$out[] = '' !== $text ? self::OTHER_PREFIX . sanitize_text_field( $text ) : self::OTHER_TOKEN;
+				$entry = self::OTHER_PREFIX . sanitize_text_field( $text );
+				if ( in_array( $entry, $out, true ) ) {
+					continue;
+				}
+				$out[] = $entry;
+				++$other_count;
 				continue;
 			}
 
@@ -236,16 +271,30 @@ class Checkboxes_Field extends Abstract_Field_Type {
 
 		$valid       = $this->get_valid_option_values( $field );
 		$allow_other = self::allows_other( $field );
+		$max_other   = self::max_other( $field );
+		$other_count = 0;
 
 		foreach ( $selected as $item ) {
 			$item = (string) $item;
 			if ( $allow_other && self::is_other_entry( $item ) ) {
+				++$other_count;
+				if ( $other_count > $max_other ) {
+					return new \WP_Error(
+						'we_formkit_checkboxes_too_many_other',
+						sprintf(
+							/* translators: 1: field label, 2: max custom options. */
+							__( '%1$s: please add at most %2$d custom option(s).', 'we-formkit' ),
+							(string) ( $field['label'] ?? '' ),
+							$max_other
+						)
+					);
+				}
 				if ( '' === self::other_text_from_entry( $item ) ) {
 					return new \WP_Error(
 						'we_formkit_checkboxes_other_label',
 						sprintf(
 							/* translators: %s: field label. */
-							__( '%s: please enter text for Other.', 'we-formkit' ),
+							__( '%s: please enter text for each custom option.', 'we-formkit' ),
 							(string) ( $field['label'] ?? '' )
 						)
 					);
@@ -272,9 +321,8 @@ class Checkboxes_Field extends Abstract_Field_Type {
 			return '';
 		}
 
-		$labels      = $this->get_option_label_map( $field );
-		$other_label = self::other_label( $field );
-		$parts       = array();
+		$labels = $this->get_option_label_map( $field );
+		$parts  = array();
 
 		foreach ( $value as $item ) {
 			$item = (string) $item;
@@ -283,7 +331,7 @@ class Checkboxes_Field extends Abstract_Field_Type {
 				if ( '' === $text ) {
 					continue;
 				}
-				$parts[] = esc_html( $other_label . ': ' . $text );
+				$parts[] = esc_html( $text );
 				continue;
 			}
 			$parts[] = esc_html( $labels[ $item ] ?? $item );
