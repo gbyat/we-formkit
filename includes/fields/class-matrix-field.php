@@ -51,13 +51,19 @@ class Matrix_Field extends Abstract_Field_Type {
 			'allow_custom_rows' => array(
 				'label'       => __( 'Allow visitor-added rows', 'we-formkit' ),
 				'type'        => 'boolean',
-				'description' => __( 'Visitors can add their own rows with a typed label (e.g. instead of a static “Other” row).', 'we-formkit' ),
-				'default'     => false,
+				'description' => __( 'Visitors add their own rows (typed label). With no preset rows, an inactive example row shows the grid until they add one.', 'we-formkit' ),
+				'default'     => true,
 			),
 			'max_custom_rows'   => array(
 				'label'   => __( 'Max custom rows', 'we-formkit' ),
 				'type'    => 'number',
 				'default' => 2,
+			),
+			'min_answered_rows' => array(
+				'label'       => __( 'Minimum answered rows', 'we-formkit' ),
+				'type'        => 'number',
+				'description' => __( 'How many rows must be fully answered (0 = optional). Replaces the generic Required toggle for matrix fields.', 'we-formkit' ),
+				'default'     => 0,
 			),
 			'rows'              => array(
 				'label' => __( 'Rows', 'we-formkit' ),
@@ -81,6 +87,19 @@ class Matrix_Field extends Abstract_Field_Type {
 		$field['type_options']['rows']              = $this->normalize_rows( $opts['rows'] ?? array() );
 		$field['type_options']['columns']           = $this->normalize_columns( $opts['columns'] ?? array() );
 		unset( $field['type_options']['entries_label'] );
+
+		// Migrate legacy field.required → min_answered_rows = 1 when min was never set.
+		if ( array_key_exists( 'min_answered_rows', $opts ) ) {
+			$min = max( 0, absint( $opts['min_answered_rows'] ) );
+		} elseif ( ! empty( $field['required'] ) ) {
+			$min = 1;
+		} else {
+			$min = 0;
+		}
+		$field['type_options']['min_answered_rows'] = $min;
+
+		// Keep field.required in sync for canvas / data-required / inline scope.
+		$field['required'] = $min > 0 || self::has_row_or_column_required_flags( $field );
 
 		return $field;
 	}
@@ -117,7 +136,7 @@ class Matrix_Field extends Abstract_Field_Type {
 
 	/**
 	 * @param mixed $raw Raw rows.
-	 * @return array<int, array{value:string,label:string}>
+	 * @return array<int, array{value:string,label:string,required:bool}>
 	 */
 	private function normalize_rows( $raw ): array {
 		if ( ! is_array( $raw ) ) {
@@ -154,8 +173,9 @@ class Matrix_Field extends Abstract_Field_Type {
 				$label = $value;
 			}
 			$out[] = array(
-				'value' => $value,
-				'label' => $label,
+				'value'    => $value,
+				'label'    => $label,
+				'required' => ! empty( $row['required'] ),
 			);
 		}
 		return $out;
@@ -163,7 +183,7 @@ class Matrix_Field extends Abstract_Field_Type {
 
 	/**
 	 * @param mixed $raw Raw columns.
-	 * @return array<int, array{id:string,type:string,label:string,options:array<int,array{value:string,label:string}>}>
+	 * @return array<int, array{id:string,type:string,label:string,required:bool,options:array<int,array{value:string,label:string}>}>
 	 */
 	private function normalize_columns( $raw ): array {
 		if ( ! is_array( $raw ) ) {
@@ -206,10 +226,11 @@ class Matrix_Field extends Abstract_Field_Type {
 			}
 
 			$out[] = array(
-				'id'      => $id,
-				'type'    => $type,
-				'label'   => '' !== $label ? $label : $id,
-				'options' => $options,
+				'id'       => $id,
+				'type'     => $type,
+				'label'    => '' !== $label ? $label : $id,
+				'required' => ! empty( $col['required'] ),
+				'options'  => $options,
 			);
 		}
 		return $out;
@@ -217,18 +238,43 @@ class Matrix_Field extends Abstract_Field_Type {
 
 	/**
 	 * @param array<string, mixed> $field Field config.
-	 * @return array{row_select:bool,row_label_align:string,allow_custom_rows:bool,max_custom_rows:int,rows:array<int,array{value:string,label:string}>,columns:array<int,array{id:string,type:string,label:string,options:array}>}
+	 * @return array{row_select:bool,row_label_align:string,allow_custom_rows:bool,max_custom_rows:int,min_answered_rows:int,rows:array<int,array{value:string,label:string,required?:bool}>,columns:array<int,array{id:string,type:string,label:string,required?:bool,options:array}>}
 	 */
 	public static function config( array $field ): array {
 		$opts = isset( $field['type_options'] ) && is_array( $field['type_options'] ) ? $field['type_options'] : array();
+		$min  = isset( $opts['min_answered_rows'] ) ? max( 0, absint( $opts['min_answered_rows'] ) ) : 0;
+		if ( 0 === $min && ! array_key_exists( 'min_answered_rows', $opts ) && ! empty( $field['required'] ) ) {
+			$min = 1;
+		}
 		return array(
 			'row_select'        => ! array_key_exists( 'row_select', $opts ) || ! empty( $opts['row_select'] ),
 			'row_label_align'   => self::normalize_row_label_align( $opts['row_label_align'] ?? 'left' ),
 			'allow_custom_rows' => ! empty( $opts['allow_custom_rows'] ),
 			'max_custom_rows'   => self::normalize_max_custom_rows( $opts['max_custom_rows'] ?? 2 ),
+			'min_answered_rows' => $min,
 			'rows'              => isset( $opts['rows'] ) && is_array( $opts['rows'] ) ? $opts['rows'] : array(),
 			'columns'           => isset( $opts['columns'] ) && is_array( $opts['columns'] ) ? $opts['columns'] : array(),
 		);
+	}
+
+	/**
+	 * Whether any catalog row or column is flagged required.
+	 *
+	 * @param array<string, mixed> $field Field config.
+	 */
+	public static function has_row_or_column_required_flags( array $field ): bool {
+		$cfg = self::config( $field );
+		foreach ( $cfg['rows'] as $row ) {
+			if ( ! empty( $row['required'] ) ) {
+				return true;
+			}
+		}
+		foreach ( $cfg['columns'] as $col ) {
+			if ( ! empty( $col['required'] ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -264,7 +310,7 @@ class Matrix_Field extends Abstract_Field_Type {
 
 	/**
 	 * @param array<string, mixed> $field Field config.
-	 * @return array<string, array{type:string,label:string,options:array<string,string>}>
+	 * @return array<string, array{type:string,label:string,required:bool,options:array<string,string>}>
 	 */
 	public static function column_map( array $field ): array {
 		$map = array();
@@ -281,12 +327,143 @@ class Matrix_Field extends Abstract_Field_Type {
 				$opt_map[ (string) $opt['value'] ] = (string) ( $opt['label'] ?? $opt['value'] );
 			}
 			$map[ $id ] = array(
-				'type'    => (string) ( $col['type'] ?? 'radio' ),
-				'label'   => (string) ( $col['label'] ?? $id ),
-				'options' => $opt_map,
+				'type'     => (string) ( $col['type'] ?? 'radio' ),
+				'label'    => (string) ( $col['label'] ?? $id ),
+				'required' => ! empty( $col['required'] ),
+				'options'  => $opt_map,
 			);
 		}
 		return $map;
+	}
+
+	/**
+	 * Catalog row id => required flag.
+	 *
+	 * @param array<string, mixed> $field Field config.
+	 * @return array<string, bool>
+	 */
+	public static function required_row_map( array $field ): array {
+		$map = array();
+		foreach ( self::config( $field )['rows'] as $row ) {
+			$id = (string) ( $row['value'] ?? '' );
+			if ( '' === $id ) {
+				continue;
+			}
+			$map[ $id ] = ! empty( $row['required'] );
+		}
+		return $map;
+	}
+
+	/**
+	 * Whether a stored row cell value satisfies a required column.
+	 *
+	 * @param array<string, mixed>                                                          $row_val Row value.
+	 * @param string                                                                        $col_id  Column id.
+	 * @param array{type:string,label:string,required:bool,options:array<string,string>} $col     Column meta.
+	 */
+	public static function column_value_present( array $row_val, $col_id, array $col ): bool {
+		if ( ! array_key_exists( $col_id, $row_val ) ) {
+			return false;
+		}
+		$raw = $row_val[ $col_id ];
+		if ( 'checkbox' === $col['type'] ) {
+			return ! empty( $raw ) && '0' !== (string) $raw;
+		}
+		if ( 'radio' === $col['type'] ) {
+			$choice = sanitize_key( (string) $raw );
+			return '' !== $choice && isset( $col['options'][ $choice ] );
+		}
+		return '' !== trim( (string) $raw );
+	}
+
+	/**
+	 * Whether required columns for a row are all filled.
+	 *
+	 * @param array<string, mixed>                                                          $row_val Row value.
+	 * @param array<string, array{type:string,label:string,required:bool,options:array}> $col_map Columns.
+	 */
+	public static function required_columns_satisfied( array $row_val, array $col_map ): bool {
+		foreach ( $col_map as $col_id => $col ) {
+			if ( empty( $col['required'] ) ) {
+				continue;
+			}
+			if ( ! self::column_value_present( $row_val, $col_id, $col ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Whether a row is active (selected / partially filled / required preset).
+	 *
+	 * @param array<string, mixed>                                                          $row_val          Row value.
+	 * @param array<string, mixed>                                                          $cfg              Matrix config.
+	 * @param array<string, array{type:string,label:string,required:bool,options:array}> $col_map          Columns.
+	 * @param bool                                                                          $is_custom        Custom row.
+	 * @param bool                                                                          $catalog_required Preset row required flag.
+	 */
+	public static function is_row_active( array $row_val, array $cfg, array $col_map, $is_custom, $catalog_required ): bool {
+		if ( $cfg['row_select'] ) {
+			return ! empty( $row_val['on'] ) && '0' !== (string) $row_val['on'];
+		}
+		if ( $catalog_required && ! $is_custom ) {
+			return true;
+		}
+		if ( $is_custom && ! empty( $row_val['label'] ) && '' !== trim( (string) $row_val['label'] ) ) {
+			return true;
+		}
+		return ! self::row_answers_empty( $row_val, $col_map );
+	}
+
+	/**
+	 * Whether a row counts as fully answered (active + required cols + custom label).
+	 *
+	 * @param string                                                                        $row_id           Row id.
+	 * @param array<string, mixed>                                                          $row_val          Row value.
+	 * @param array<string, mixed>                                                          $cfg              Matrix config.
+	 * @param array<string, array{type:string,label:string,required:bool,options:array}> $col_map          Columns.
+	 * @param bool                                                                          $catalog_required Preset required.
+	 */
+	public static function is_row_answered( $row_id, array $row_val, array $cfg, array $col_map, $catalog_required ): bool {
+		$is_custom = self::is_custom_row_id( (string) $row_id );
+		if ( ! self::is_row_active( $row_val, $cfg, $col_map, $is_custom, $catalog_required ) ) {
+			return false;
+		}
+		if ( $is_custom ) {
+			$label = isset( $row_val['label'] ) ? trim( (string) $row_val['label'] ) : '';
+			if ( '' === $label ) {
+				return false;
+			}
+		}
+		return self::required_columns_satisfied( $row_val, $col_map );
+	}
+
+	/**
+	 * Count fully answered rows in a sanitized matrix value.
+	 *
+	 * @param mixed                $value Sanitized value.
+	 * @param array<string, mixed> $field Field config.
+	 */
+	public static function count_answered_rows( $value, array $field ): int {
+		if ( ! is_array( $value ) || empty( $value ) ) {
+			return 0;
+		}
+		$cfg      = self::config( $field );
+		$col_map  = self::column_map( $field );
+		$req_rows = self::required_row_map( $field );
+		$count    = 0;
+		foreach ( $value as $row_id => $row_val ) {
+			if ( ! is_array( $row_val ) ) {
+				continue;
+			}
+			$row_id  = (string) $row_id;
+			$cat_req = ! empty( $req_rows[ $row_id ] );
+			if ( self::is_row_answered( $row_id, $row_val, $cfg, $col_map, $cat_req ) ) {
+				++$count;
+			}
+		}
+		return $count;
 	}
 
 	public function sanitize( $value, array $field ) {
@@ -436,59 +613,89 @@ class Matrix_Field extends Abstract_Field_Type {
 	 * @param array<string, mixed> $field Field config.
 	 */
 	public static function has_answer( $value, array $field ): bool {
-		if ( ! is_array( $value ) || empty( $value ) ) {
-			return false;
-		}
-		$cfg     = self::config( $field );
-		$col_map = self::column_map( $field );
-		foreach ( $value as $row_id => $row_val ) {
-			if ( ! is_array( $row_val ) ) {
-				continue;
-			}
-			if ( self::is_custom_row_id( (string) $row_id ) && ! empty( $row_val['label'] ) ) {
-				return true;
-			}
-			if ( $cfg['row_select'] && ! empty( $row_val['on'] ) ) {
-				return true;
-			}
-			if ( ! self::row_answers_empty( $row_val, $col_map ) ) {
-				return true;
-			}
-		}
-		return false;
+		return self::count_answered_rows( $value, $field ) > 0;
 	}
 
 	public function validate( $value, array $field ) {
-		$data = is_array( $value ) ? $value : array();
+		$data     = is_array( $value ) ? $value : array();
+		$cfg      = self::config( $field );
+		$col_map  = self::column_map( $field );
+		$req_rows = self::required_row_map( $field );
+		$min      = (int) $cfg['min_answered_rows'];
+		$label    = (string) ( $field['label'] ?? '' );
 
-		if ( ! empty( $field['required'] ) && ! self::has_answer( $data, $field ) ) {
+		$answered = self::count_answered_rows( $data, $field );
+		if ( $min > 0 && $answered < $min ) {
 			return new \WP_Error(
-				'we_formkit_matrix_required',
-				Validation_Messages::required_for_field( $field )
+				'we_formkit_matrix_min_rows',
+				sprintf(
+					/* translators: 1: field label, 2: minimum number of rows. */
+					__( '%1$s: please answer at least %2$d row(s).', 'we-formkit' ),
+					$label,
+					$min
+				)
 			);
 		}
 
-		$col_map = self::column_map( $field );
-		$cfg     = self::config( $field );
+		foreach ( $req_rows as $row_id => $is_req ) {
+			if ( ! $is_req ) {
+				continue;
+			}
+			$row_val = isset( $data[ $row_id ] ) && is_array( $data[ $row_id ] ) ? $data[ $row_id ] : array();
+			if ( ! self::is_row_answered( $row_id, $row_val, $cfg, $col_map, true ) ) {
+				$row_label = self::row_label_map( $field )[ $row_id ] ?? $row_id;
+				return new \WP_Error(
+					'we_formkit_matrix_row_required',
+					sprintf(
+						/* translators: 1: field label, 2: row label. */
+						__( '%1$s: please complete the required row “%2$s”.', 'we-formkit' ),
+						$label,
+						$row_label
+					)
+				);
+			}
+		}
 
 		foreach ( $data as $row_id => $row_val ) {
 			if ( ! is_array( $row_val ) ) {
 				continue;
 			}
+			$row_id    = (string) $row_id;
+			$is_custom = self::is_custom_row_id( $row_id );
+			$cat_req   = ! empty( $req_rows[ $row_id ] );
 
-			if ( self::is_custom_row_id( (string) $row_id ) ) {
-				$label     = isset( $row_val['label'] ) ? trim( (string) $row_val['label'] ) : '';
-				$has_cells = ! self::row_answers_empty( $row_val, $col_map );
-				$selected  = ! empty( $cfg['row_select'] ) && ! empty( $row_val['on'] );
-				if ( ( $selected || $has_cells ) && '' === $label ) {
+			if ( $is_custom ) {
+				$custom_label = isset( $row_val['label'] ) ? trim( (string) $row_val['label'] ) : '';
+				$has_cells    = ! self::row_answers_empty( $row_val, $col_map );
+				$selected     = ! empty( $cfg['row_select'] ) && ! empty( $row_val['on'] );
+				if ( ( $selected || $has_cells ) && '' === $custom_label ) {
 					return new \WP_Error(
 						'we_formkit_matrix_custom_label',
 						sprintf(
 							/* translators: %s: field label. */
 							__( '%s: please enter a label for each added row.', 'we-formkit' ),
-							(string) ( $field['label'] ?? '' )
+							$label
 						)
 					);
+				}
+			}
+
+			if ( self::is_row_active( $row_val, $cfg, $col_map, $is_custom, $cat_req ) ) {
+				foreach ( $col_map as $col_id => $col ) {
+					if ( empty( $col['required'] ) ) {
+						continue;
+					}
+					if ( ! self::column_value_present( $row_val, $col_id, $col ) ) {
+						return new \WP_Error(
+							'we_formkit_matrix_col_required',
+							sprintf(
+								/* translators: 1: field label, 2: column label. */
+								__( '%1$s: please fill in “%2$s” for each selected row.', 'we-formkit' ),
+								$label,
+								(string) ( $col['label'] ?? $col_id )
+							)
+						);
+					}
 				}
 			}
 

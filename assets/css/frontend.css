@@ -1909,6 +1909,22 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 	opacity: 0.45;
 }
 
+.we-formkit__matrix-example-row {
+	pointer-events: none;
+	user-select: none;
+}
+
+.we-formkit__matrix-example-row .we-formkit__matrix-custom-label,
+.we-formkit__matrix-example-row .we-formkit__matrix-input {
+	opacity: 0.7;
+	background: color-mix(in srgb, var(--wek-bg) 55%, var(--wek-input));
+	color: var(--wek-muted);
+}
+
+.we-formkit__matrix-example-row[hidden] {
+	display: none !important;
+}
+
 .we-formkit__matrix-cell--number {
 	width: 4.25rem;
 	max-width: 5rem;
@@ -2068,7 +2084,8 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 		gap: 0.75rem;
 	}
 
-	.we-formkit__matrix tbody tr[data-wek-matrix-row] {
+	.we-formkit__matrix tbody tr[data-wek-matrix-row],
+	.we-formkit__matrix tbody tr[data-wek-matrix-example] {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
@@ -2080,7 +2097,8 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 		box-shadow: 0 1px 0 color-mix(in srgb, var(--wek-ink) 4%, transparent);
 	}
 
-	.we-formkit__matrix tbody tr[data-wek-matrix-row].is-row-off {
+	.we-formkit__matrix tbody tr[data-wek-matrix-row].is-row-off,
+	.we-formkit__matrix tbody tr[data-wek-matrix-example] {
 		background: color-mix(in srgb, var(--wek-bg) 70%, var(--wek-surface));
 	}
 

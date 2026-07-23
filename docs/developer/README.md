@@ -20,10 +20,13 @@ Your class must extend `Webentwicklerin\WeFormkit\Fields\Abstract_Field_Type` an
 Type id: `matrix`. Config in `type_options`:
 
 - `row_select` (bool) — checkbox to mark each row as selected (`on`); unchecking clears that row’s answers
-- `rows` — `{ value, label }[]`
-- `columns` — `{ id, type: radio|checkbox|text|number, label, options? }[]` (`options` for radio column headers)
+- `min_answered_rows` (int, default `0`) — minimum fully answered rows (`0` = optional). Replaces the generic field `required` toggle for matrix (legacy `required: true` migrates to `min_answered_rows: 1`)
+- `rows` — `{ value, label, required? }[]` (`required` = that catalog row must be answered)
+- `columns` — `{ id, type: radio|checkbox|text|number, label, required?, options? }[]` (`required` enforced only on **active** rows: selected via row checkbox, or filled / required preset when no row select)
 
 Stored value: `{ row_id: { on?: bool, col_id?: string|bool|number, … }, … }`.
+
+**Answered row:** active, custom label present if custom, and all required columns filled.
 
 **Conditionals:** pick `Matrix label › Row label` in the Depends-on list (field key `matrix_id.row_id`) with operator **is checked**.
 

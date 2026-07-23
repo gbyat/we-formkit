@@ -648,17 +648,16 @@
 			if ( typeId === 'matrix' ) {
 				typeOptions.row_select = true;
 				typeOptions.row_label_align = 'left';
-				typeOptions.allow_custom_rows = false;
+				typeOptions.allow_custom_rows = true;
 				typeOptions.max_custom_rows = 2;
-				typeOptions.rows = [
-					{ value: 'row_1', label: i18n.matrixRowSample1 || 'Row 1' },
-					{ value: 'row_2', label: i18n.matrixRowSample2 || 'Row 2' },
-				];
+				typeOptions.min_answered_rows = 0;
+				typeOptions.rows = [];
 				typeOptions.columns = [
 					{
 						id: 'radio',
 						type: 'radio',
 						label: i18n.matrixColRadio || 'Radio',
+						required: false,
 						options: [
 							{ value: 'a', label: i18n.matrixOptA || 'Option A' },
 							{ value: 'b', label: i18n.matrixOptB || 'Option B' },
@@ -668,12 +667,14 @@
 						id: 'text',
 						type: 'text',
 						label: i18n.matrixColText || 'Text',
+						required: false,
 						options: [],
 					},
 					{
 						id: 'checkbox',
 						type: 'checkbox',
 						label: i18n.matrixColCheckbox || 'Checkbox',
+						required: false,
 						options: [],
 					},
 				];
@@ -2241,13 +2242,43 @@
 				maxCustom = 2;
 			}
 			opts.max_custom_rows = Math.min( 5, maxCustom );
+			if ( typeof opts.min_answered_rows === 'undefined' || opts.min_answered_rows === '' ) {
+				opts.min_answered_rows = field.required ? 1 : 0;
+			}
+			let minAns = parseInt( opts.min_answered_rows, 10 );
+			if ( ! Number.isFinite( minAns ) || minAns < 0 ) {
+				minAns = 0;
+			}
+			opts.min_answered_rows = minAns;
 			if ( ! Array.isArray( opts.rows ) ) {
 				opts.rows = [];
 			}
 			if ( ! Array.isArray( opts.columns ) ) {
 				opts.columns = [];
 			}
+			opts.rows.forEach( function ( row ) {
+				if ( row && typeof row.required === 'undefined' ) {
+					row.required = false;
+				}
+			} );
+			opts.columns.forEach( function ( col ) {
+				if ( col && typeof col.required === 'undefined' ) {
+					col.required = false;
+				}
+			} );
 			return opts;
+		}
+
+		function syncMatrixRequiredFlag( field ) {
+			const opts = ensureMatrixOptions( field );
+			const min = parseInt( opts.min_answered_rows, 10 ) || 0;
+			const rowReq = ( opts.rows || [] ).some( function ( row ) {
+				return !!( row && row.required );
+			} );
+			const colReq = ( opts.columns || [] ).some( function ( col ) {
+				return !!( col && col.required );
+			} );
+			field.required = min > 0 || rowReq || colReq;
 		}
 
 		function slugifyMatrixKey( label, fallback ) {
@@ -2269,7 +2300,9 @@
 				'aria-hidden': 'true',
 			} );
 			if ( ! rows.length ) {
-				wrap.textContent = i18n.matrixPreviewEmpty || 'Matrix — add rows and columns';
+				wrap.textContent = opts.allow_custom_rows
+					? i18n.matrixPreviewSelfFill || 'Matrix — visitors add their own rows'
+					: i18n.matrixPreviewEmpty || 'Matrix — add rows and columns';
 				return wrap;
 			}
 			rows.forEach( function ( row ) {
@@ -2299,7 +2332,7 @@
 			return wrap;
 		}
 
-		function renderMatrixListEditor( title, items, onChange, kind ) {
+		function renderMatrixListEditor( title, items, onChange, kind, onRequiredChange ) {
 			const body = el( 'div', { className: 'wek-builder__matrix-list' } );
 			body.appendChild(
 				el( 'p', {
@@ -2444,6 +2477,21 @@
 				} );
 				itemBody.appendChild( labelInput );
 
+				if ( kind === 'row' ) {
+					const rowReq = el( 'input', { type: 'checkbox' } );
+					rowReq.checked = !! item.required;
+					rowReq.addEventListener( 'change', function () {
+						item.required = !! rowReq.checked;
+						if ( typeof onRequiredChange === 'function' ) {
+							onRequiredChange();
+						}
+						syncHidden();
+					} );
+					itemBody.appendChild(
+						toggleRow( i18n.required || 'Required', rowReq )
+					);
+				}
+
 				if ( kind === 'column' ) {
 					const typeSelect = el( 'select' );
 					typeSelect.className = 'wek-builder__select';
@@ -2476,6 +2524,27 @@
 						refresh();
 					} );
 					itemBody.appendChild( typeSelect );
+
+					const colReq = el( 'input', { type: 'checkbox' } );
+					colReq.checked = !! item.required;
+					colReq.addEventListener( 'change', function () {
+						item.required = !! colReq.checked;
+						if ( typeof onRequiredChange === 'function' ) {
+							onRequiredChange();
+						}
+						syncHidden();
+					} );
+					itemBody.appendChild(
+						toggleRow( i18n.required || 'Required', colReq )
+					);
+					itemBody.appendChild(
+						el( 'p', {
+							className: 'description',
+							text:
+								i18n.matrixColRequiredHint ||
+								'Only when the row is selected or filled.',
+						} )
+					);
 				}
 
 				const remove = el( 'button', {
@@ -2485,6 +2554,9 @@
 				} );
 				remove.addEventListener( 'click', function () {
 					items.splice( index, 1 );
+					if ( typeof onRequiredChange === 'function' ) {
+						onRequiredChange();
+					}
 					syncHidden();
 					refresh();
 				} );
@@ -2603,6 +2675,7 @@
 					items.push( {
 						value: 'row_' + n,
 						label: ( i18n.matrixRowSample1 || 'Row' ).replace( /1$/, '' ).trim() + ' ' + n,
+						required: false,
 					} );
 				} else {
 					const n = items.length + 1;
@@ -2610,6 +2683,7 @@
 						id: 'col_' + n,
 						type: 'radio',
 						label: ( i18n.matrixColRadio || 'Radio' ) + ' ' + n,
+						required: false,
 						options: [
 							{ value: 'a', label: i18n.matrixOptA || 'Option A' },
 							{ value: 'b', label: i18n.matrixOptB || 'Option B' },
@@ -2638,7 +2712,41 @@
 					className: 'description',
 					text:
 						i18n.matrixHint ||
-						'Define fixed rows and columns. Radio columns become multiple choice headers; checkbox columns are a single flag per row.',
+						'Add preset rows and/or allow visitor-added rows. With no presets, an inactive example row shows the grid until visitors add their own.',
+				} )
+			);
+
+			const minRowsInput = el( 'input', {
+				type: 'number',
+				min: '0',
+				step: '1',
+				value: String( opts.min_answered_rows || 0 ),
+			} );
+			function syncMinRows() {
+				let n = parseInt( minRowsInput.value, 10 );
+				if ( ! Number.isFinite( n ) || n < 0 ) {
+					n = 0;
+				}
+				opts.min_answered_rows = n;
+				minRowsInput.value = String( n );
+				syncMatrixRequiredFlag( field );
+				syncHidden();
+				updateCanvasFieldLabel( selected, field.label );
+			}
+			minRowsInput.addEventListener( 'change', syncMinRows );
+			minRowsInput.addEventListener( 'blur', syncMinRows );
+			wrap.appendChild(
+				fieldRow(
+					i18n.matrixMinAnsweredRows || 'Minimum answered rows',
+					minRowsInput
+				)
+			);
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.matrixMinAnsweredRowsHint ||
+						'0 = optional. Replaces the generic Required toggle for this field.',
 				} )
 			);
 
@@ -2688,11 +2796,38 @@
 			);
 			wrap.appendChild( customPair );
 
+			function onMatrixRequiredChange() {
+				syncMatrixRequiredFlag( field );
+				updateCanvasFieldLabel( selected, field.label );
+			}
+
+			if ( ! opts.rows.length ) {
+				wrap.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.matrixRowsSelfFillHint ||
+							'No preset rows — visitors add their own (self-fill). Per-row Required applies only to catalog rows you add below.',
+					} )
+				);
+			}
 			wrap.appendChild(
-				renderMatrixListEditor( i18n.matrixRows || 'Rows', opts.rows, null, 'row' )
+				renderMatrixListEditor(
+					i18n.matrixRows || 'Rows',
+					opts.rows,
+					null,
+					'row',
+					onMatrixRequiredChange
+				)
 			);
 			wrap.appendChild(
-				renderMatrixListEditor( i18n.matrixColumns || 'Columns', opts.columns, null, 'column' )
+				renderMatrixListEditor(
+					i18n.matrixColumns || 'Columns',
+					opts.columns,
+					null,
+					'column',
+					onMatrixRequiredChange
+				)
 			);
 			return wrap;
 		}
@@ -3311,7 +3446,12 @@
 					updateCanvasFieldLabel( selected, field.label );
 					refreshSidebar();
 				} );
-				panel.appendChild( toggleRow( i18n.required || 'Required', req ) );
+				if ( field.type !== 'matrix' ) {
+					panel.appendChild( toggleRow( i18n.required || 'Required', req ) );
+				} else {
+					ensureMatrixOptions( field );
+					syncMatrixRequiredFlag( field );
+				}
 				panel.appendChild( renderValidationMessagesEditor( field ) );
 
 				if ( shouldShowPlaceholder( field.type ) ) {

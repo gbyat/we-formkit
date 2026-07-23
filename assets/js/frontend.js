@@ -1069,6 +1069,18 @@
 		addBtn.setAttribute( 'aria-disabled', atCap ? 'true' : 'false' );
 	}
 
+	/**
+	 * Self-fill matrices (no catalog rows): show inactive example until the visitor adds a real row.
+	 */
+	function syncMatrixExampleRow( fieldEl ) {
+		const example = qs( fieldEl, '[data-wek-matrix-example]' );
+		if ( ! example ) {
+			return;
+		}
+		const hasReal = qsa( fieldEl, '[data-wek-matrix-body] > [data-wek-matrix-row]' ).length > 0;
+		example.hidden = hasReal;
+	}
+
 	function replaceMatrixCustomId( node, customId ) {
 		const attrs = [ 'name', 'id', 'for', 'data-wek-matrix-row' ];
 		attrs.forEach( function ( attr ) {
@@ -1126,6 +1138,7 @@
 			removeBtn.addEventListener( 'click', function () {
 				row.remove();
 				syncMatrixAddButton( fieldEl );
+				syncMatrixExampleRow( fieldEl );
 				const form = fieldEl.closest( '[data-wek-form]' );
 				if ( form ) {
 					form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
@@ -1133,6 +1146,7 @@
 			} );
 		}
 		syncMatrixAddButton( fieldEl );
+		syncMatrixExampleRow( fieldEl );
 		return row;
 	}
 
@@ -1141,10 +1155,12 @@
 			qsa( fieldEl, '[data-wek-matrix-row]' ).forEach( bindMatrixRowSelect );
 
 			if ( fieldEl.getAttribute( 'data-wek-matrix-custom' ) !== '1' ) {
+				syncMatrixExampleRow( fieldEl );
 				return;
 			}
 			if ( fieldEl.getAttribute( 'data-wek-matrix-custom-bound' ) ) {
 				syncMatrixAddButton( fieldEl );
+				syncMatrixExampleRow( fieldEl );
 				return;
 			}
 			fieldEl.setAttribute( 'data-wek-matrix-custom-bound', '1' );
@@ -1177,6 +1193,7 @@
 						row.remove();
 					}
 					syncMatrixAddButton( fieldEl );
+					syncMatrixExampleRow( fieldEl );
 					const form = fieldEl.closest( '[data-wek-form]' );
 					if ( form ) {
 						form.dispatchEvent( new Event( 'change', { bubbles: true } ) );
@@ -1185,6 +1202,7 @@
 			} );
 
 			syncMatrixAddButton( fieldEl );
+			syncMatrixExampleRow( fieldEl );
 		} );
 	}
 
@@ -1200,35 +1218,181 @@
 				addMatrixCustomRow( fieldEl, rowId );
 			}
 		} );
+		syncMatrixExampleRow( fieldEl );
 	}
 
 	function matrixFieldHasAnswer( fieldEl ) {
-		return qsa( fieldEl, '[data-wek-matrix-row]' ).some( function ( row ) {
-			const onBox = qs( row, '[data-wek-matrix-on]' );
-			if ( onBox ) {
-				return !! onBox.checked;
+		return matrixCountAnsweredRows( fieldEl ) > 0;
+	}
+
+	function matrixParseIdList( fieldEl, attr ) {
+		try {
+			const raw = fieldEl.getAttribute( attr ) || '[]';
+			const parsed = JSON.parse( raw );
+			return Array.isArray( parsed ) ? parsed.map( String ) : [];
+		} catch ( e ) {
+			return [];
+		}
+	}
+
+	function matrixRowHasCellAnswers( row ) {
+		if ( qs( row, 'input[type="radio"]:checked' ) ) {
+			return true;
+		}
+		if (
+			qsa( row, 'input[type="checkbox"]:checked' ).some( function ( box ) {
+				return ! box.hasAttribute( 'data-wek-matrix-on' );
+			} )
+		) {
+			return true;
+		}
+		return qsa( row, '[data-wek-matrix-col]' ).some( function ( input ) {
+			if ( input.type === 'checkbox' || input.type === 'radio' ) {
+				return false;
+			}
+			return String( input.value || '' ).trim() !== '';
+		} );
+	}
+
+	function matrixRowIsActive( fieldEl, row ) {
+		const onBox = qs( row, '[data-wek-matrix-on]' );
+		if ( onBox ) {
+			return !! onBox.checked;
+		}
+		if ( row.getAttribute( 'data-wek-matrix-row-required' ) === '1' ) {
+			return true;
+		}
+		const labelInput = qs( row, '[data-wek-matrix-label]' );
+		if ( labelInput && String( labelInput.value || '' ).trim() !== '' ) {
+			return true;
+		}
+		return matrixRowHasCellAnswers( row );
+	}
+
+	function matrixColumnFilled( row, colId ) {
+		const inputs = qsa( row, '[data-wek-matrix-col="' + colId + '"]' );
+		if ( ! inputs.length ) {
+			return false;
+		}
+		return inputs.some( function ( input ) {
+			if ( input.type === 'checkbox' ) {
+				return !! input.checked;
+			}
+			if ( input.type === 'radio' ) {
+				return !! input.checked;
+			}
+			return String( input.value || '' ).trim() !== '';
+		} );
+	}
+
+	function matrixRequiredColumnsSatisfied( fieldEl, row ) {
+		const cols = matrixParseIdList( fieldEl, 'data-matrix-required-cols' );
+		for ( let i = 0; i < cols.length; i++ ) {
+			if ( ! matrixColumnFilled( row, cols[ i ] ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function matrixRowIsAnswered( fieldEl, row ) {
+		if ( ! matrixRowIsActive( fieldEl, row ) ) {
+			return false;
+		}
+		if ( row.hasAttribute( 'data-wek-matrix-custom-row' ) ) {
+			const labelInput = qs( row, '[data-wek-matrix-label]' );
+			if ( ! labelInput || String( labelInput.value || '' ).trim() === '' ) {
+				return false;
+			}
+		}
+		return matrixRequiredColumnsSatisfied( fieldEl, row );
+	}
+
+	function matrixCountAnsweredRows( fieldEl ) {
+		return qsa( fieldEl, '[data-wek-matrix-row]' ).filter( function ( row ) {
+			return matrixRowIsAnswered( fieldEl, row );
+		} ).length;
+	}
+
+	function matrixColumnLabel( fieldEl, colId ) {
+		const cell = qs( fieldEl, '[data-wek-matrix-col="' + colId + '"]' );
+		const td = cell ? cell.closest( 'td' ) : null;
+		if ( td && td.getAttribute( 'data-wek-col-label' ) ) {
+			return td.getAttribute( 'data-wek-col-label' );
+		}
+		const reqCols = matrixParseIdList( fieldEl, 'data-matrix-required-cols' );
+		const idx = reqCols.indexOf( colId );
+		const headers = qsa( fieldEl, '.we-formkit__matrix-col.is-required .we-formkit__matrix-col-label' );
+		if ( idx >= 0 && headers[ idx ] ) {
+			return headers[ idx ].textContent.replace( /\*/g, '' ).trim() || colId;
+		}
+		return colId;
+	}
+
+	function validateMatrixField( fieldEl ) {
+		if ( ( fieldEl.getAttribute( 'data-field-type' ) || '' ) !== 'matrix' ) {
+			return '';
+		}
+		const i18n = ( window.weFormkit && window.weFormkit.i18n ) || {};
+		const fieldLabel = ( fieldEl.getAttribute( 'data-field-label' ) || '' ).trim() || 'Field';
+		const min = parseInt( fieldEl.getAttribute( 'data-min-answered-rows' ) || '0', 10 ) || 0;
+		const answered = matrixCountAnsweredRows( fieldEl );
+
+		const rows = qsa( fieldEl, '[data-wek-matrix-row]' );
+		for ( let r = 0; r < rows.length; r++ ) {
+			const row = rows[ r ];
+			if ( ! row.hasAttribute( 'data-wek-matrix-custom-row' ) ) {
+				continue;
 			}
 			const labelInput = qs( row, '[data-wek-matrix-label]' );
-			if ( labelInput && String( labelInput.value || '' ).trim() !== '' ) {
-				return true;
+			const label = labelInput ? String( labelInput.value || '' ).trim() : '';
+			const onBox = qs( row, '[data-wek-matrix-on]' );
+			const selected = onBox ? !! onBox.checked : false;
+			if ( ( selected || matrixRowHasCellAnswers( row ) ) && label === '' ) {
+				const tpl = i18n.matrixCustomLabel || '%s: please enter a label for each added row.';
+				return tpl.replace( '%s', fieldLabel );
 			}
-			if ( qs( row, 'input[type="radio"]:checked' ) ) {
-				return true;
+		}
+
+		if ( min > 0 && answered < min ) {
+			const tpl = i18n.matrixMinRows || '%1$s: please answer at least %2$d row(s).';
+			return tpl.replace( '%1$s', fieldLabel ).replace( '%2$d', String( min ) );
+		}
+
+		const requiredRows = matrixParseIdList( fieldEl, 'data-matrix-required-rows' );
+		for ( let i = 0; i < requiredRows.length; i++ ) {
+			const rowId = requiredRows[ i ];
+			const row = qs( fieldEl, '[data-wek-matrix-row="' + rowId + '"]' );
+			if ( ! row || ! matrixRowIsAnswered( fieldEl, row ) ) {
+				const rowLab = row
+					? ( qs( row, '.we-formkit__matrix-row-label' ) || row )
+							.textContent.replace( /\*/g, '' )
+							.trim()
+					: rowId;
+				const tpl = i18n.matrixRowRequired || '%1$s: please complete the required row “%2$s”.';
+				return tpl.replace( '%1$s', fieldLabel ).replace( '%2$s', rowLab || rowId );
 			}
-			if (
-				qsa( row, 'input[type="checkbox"]:checked' ).some( function ( box ) {
-					return ! box.hasAttribute( 'data-wek-matrix-on' );
-				} )
-			) {
-				return true;
+		}
+
+		const reqCols = matrixParseIdList( fieldEl, 'data-matrix-required-cols' );
+		for ( let r = 0; r < rows.length; r++ ) {
+			const row = rows[ r ];
+			if ( ! matrixRowIsActive( fieldEl, row ) ) {
+				continue;
 			}
-			return qsa( row, '[data-wek-matrix-col]' ).some( function ( input ) {
-				if ( input.type === 'checkbox' || input.type === 'radio' ) {
-					return false;
+			for ( let c = 0; c < reqCols.length; c++ ) {
+				const colId = reqCols[ c ];
+				if ( ! matrixColumnFilled( row, colId ) ) {
+					const colLab = matrixColumnLabel( fieldEl, colId );
+					const tpl =
+						i18n.matrixColRequired ||
+						'%1$s: please fill in “%2$s” for each selected row.';
+					return tpl.replace( '%1$s', fieldLabel ).replace( '%2$s', colLab );
 				}
-				return String( input.value || '' ).trim() !== '';
-			} );
-		} );
+			}
+		}
+
+		return '';
 	}
 
 	function fieldHasMeaningfulValue( fieldEl ) {
@@ -1261,6 +1425,10 @@
 		const cbMsg = validateCheckboxesField( fieldEl );
 		if ( cbMsg ) {
 			return cbMsg;
+		}
+		const matrixMsg = validateMatrixField( fieldEl );
+		if ( matrixMsg ) {
+			return matrixMsg;
 		}
 		if ( fieldEl.getAttribute( 'data-required' ) === '1' && fieldIsEmpty( fieldEl ) ) {
 			return fieldRequiredMessage( fieldEl );
