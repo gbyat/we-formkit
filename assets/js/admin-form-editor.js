@@ -620,6 +620,25 @@
 			} );
 		}
 
+		/**
+		 * Build "Column 1" / "Row 2" style labels from a "%d" template.
+		 *
+		 * @param {string} template e.g. "Column %d" or legacy "Row 1".
+		 * @param {number} n        1-based index.
+		 * @return {string}
+		 */
+		function formatMatrixIndexLabel( template, n ) {
+			const t = String( template || '' );
+			const num = String( n );
+			if ( t.indexOf( '%d' ) !== -1 ) {
+				return t.replace( /%d/g, num );
+			}
+			if ( /1\s*$/.test( t ) ) {
+				return t.replace( /1\s*$/, num );
+			}
+			return ( t.replace( /\s+\d+\s*$/, '' ).trim() || t || 'Item' ) + ' ' + num;
+		}
+
 		function createBlankField( typeId ) {
 			const typeMeta = fieldTypes.find( function ( item ) {
 				return item.type === typeId;
@@ -656,7 +675,7 @@
 					{
 						id: 'radio',
 						type: 'radio',
-						label: i18n.matrixColRadio || 'Radio',
+						label: formatMatrixIndexLabel( i18n.matrixColumnSample || 'Column %d', 1 ),
 						required: false,
 						options: [
 							{ value: 'a', label: i18n.matrixOptA || 'Option A' },
@@ -666,14 +685,14 @@
 					{
 						id: 'text',
 						type: 'text',
-						label: i18n.matrixColText || 'Text',
+						label: formatMatrixIndexLabel( i18n.matrixColumnSample || 'Column %d', 2 ),
 						required: false,
 						options: [],
 					},
 					{
 						id: 'checkbox',
 						type: 'checkbox',
-						label: i18n.matrixColCheckbox || 'Checkbox',
+						label: formatMatrixIndexLabel( i18n.matrixColumnSample || 'Column %d', 3 ),
 						required: false,
 						options: [],
 					},
@@ -2689,7 +2708,10 @@
 					const n = items.length + 1;
 					items.push( {
 						value: 'row_' + n,
-						label: ( i18n.matrixRowSample1 || 'Row' ).replace( /1$/, '' ).trim() + ' ' + n,
+						label: formatMatrixIndexLabel(
+							i18n.matrixRowSample || i18n.matrixRowSample1 || 'Row %d',
+							n
+						),
 						required: false,
 					} );
 				} else {
@@ -2697,7 +2719,7 @@
 					items.push( {
 						id: 'col_' + n,
 						type: 'radio',
-						label: ( i18n.matrixColRadio || 'Radio' ) + ' ' + n,
+						label: formatMatrixIndexLabel( i18n.matrixColumnSample || 'Column %d', n ),
 						required: false,
 						options: [
 							{ value: 'a', label: i18n.matrixOptA || 'Option A' },
@@ -2781,48 +2803,101 @@
 				min: '1',
 				max: '20',
 				step: '1',
+				className: 'small-text',
 				value: String( opts.max_custom_rows || 2 ),
 			} );
-			maxCustomInput.disabled = ! allowCustom.checked;
 
-			function syncCustomRowsUi() {
+			function applyMaxCustomRows( fromBlur ) {
 				opts.allow_custom_rows = allowCustom.checked;
 				maxCustomInput.disabled = ! allowCustom.checked;
-				let n = parseInt( maxCustomInput.value, 10 );
-				if ( ! Number.isFinite( n ) || n < 1 ) {
-					n = 2;
+				const raw = String( maxCustomInput.value || '' ).trim();
+				if ( raw === '' ) {
+					if ( fromBlur ) {
+						opts.max_custom_rows = 2;
+						maxCustomInput.value = '2';
+						flushSyncHidden();
+					}
+					updateExampleStatus();
+					return;
 				}
-				opts.max_custom_rows = Math.min( 20, n );
-				maxCustomInput.value = String( opts.max_custom_rows );
-				syncHidden();
+				let n = parseInt( raw, 10 );
+				if ( ! Number.isFinite( n ) ) {
+					if ( fromBlur ) {
+						opts.max_custom_rows = 2;
+						maxCustomInput.value = '2';
+						flushSyncHidden();
+					}
+					updateExampleStatus();
+					return;
+				}
+				// While typing, store only in-range values; do not rewrite the input
+				// (rewriting "2" while aiming for "20" blocks higher numbers).
+				if ( ! fromBlur ) {
+					if ( n >= 1 && n <= 20 ) {
+						opts.max_custom_rows = n;
+						flushSyncHidden();
+					}
+					updateExampleStatus();
+					return;
+				}
+				n = Math.min( 20, Math.max( 1, n ) );
+				opts.max_custom_rows = n;
+				maxCustomInput.value = String( n );
+				flushSyncHidden();
+				updateExampleStatus();
 			}
 
-			allowCustom.addEventListener( 'change', syncCustomRowsUi );
-			maxCustomInput.addEventListener( 'change', syncCustomRowsUi );
-			maxCustomInput.addEventListener( 'blur', syncCustomRowsUi );
+			const exampleStatus = el( 'p', {
+				className: 'description wek-builder__matrix-example-status',
+			} );
+
+			function updateExampleStatus() {
+				const selfFill = allowCustom.checked && ! ( opts.rows && opts.rows.length );
+				if ( selfFill ) {
+					exampleStatus.textContent =
+						i18n.matrixExampleOn ||
+						'Inactive example row: on. Front end shows a non-editable Example row until the visitor adds a real row. Clear all preset rows under “Rows” to keep this mode.';
+				} else if ( allowCustom.checked ) {
+					exampleStatus.textContent =
+						i18n.matrixExampleOffPresets ||
+						'Inactive example row: off. You still have preset rows. Delete every catalog row under “Rows” if you want a self-fill matrix with an example row only.';
+				} else {
+					exampleStatus.textContent =
+						i18n.matrixExampleOff ||
+						'Inactive example row: off. Turn on “Allow visitor-added rows” (and clear preset rows) to show a non-editable Example row.';
+				}
+			}
+
+			allowCustom.addEventListener( 'change', function () {
+				applyMaxCustomRows( true );
+			} );
+			maxCustomInput.addEventListener( 'input', function () {
+				applyMaxCustomRows( false );
+			} );
+			maxCustomInput.addEventListener( 'change', function () {
+				applyMaxCustomRows( true );
+			} );
+			maxCustomInput.addEventListener( 'blur', function () {
+				applyMaxCustomRows( true );
+			} );
+			maxCustomInput.disabled = ! allowCustom.checked;
 
 			visitor.appendChild(
 				toggleRow( i18n.matrixAllowCustomRows || 'Allow visitor-added rows', allowCustom )
 			);
 			visitor.appendChild(
-				fieldRow( i18n.matrixMaxCustomRows || 'Max custom rows', maxCustomInput )
+				fieldRow( i18n.matrixMaxCustomRows || 'Max visitor-added rows', maxCustomInput )
 			);
 			visitor.appendChild(
 				el( 'p', {
 					className: 'description',
-					text: i18n.matrixMaxCustomRowsHint || '1–20. How many rows visitors may add.',
+					text:
+						i18n.matrixMaxCustomRowsHint ||
+						'1–20. How many rows visitors may add on the form (not the catalog “Rows” list above).',
 				} )
 			);
-			if ( ! opts.rows.length ) {
-				visitor.appendChild(
-					el( 'p', {
-						className: 'description',
-						text:
-							i18n.matrixRowsSelfFillHint ||
-							'No preset rows — visitors fill the matrix themselves (example row until they add one).',
-					} )
-				);
-			}
+			visitor.appendChild( exampleStatus );
+			updateExampleStatus();
 			wrap.appendChild( visitor );
 
 			const validation = el( 'div', { className: 'wek-builder__matrix-section' } );

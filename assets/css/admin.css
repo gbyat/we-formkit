@@ -2322,13 +2322,11 @@ body.wek-builder-is-resizing iframe {
 	border-top: 1px solid var(--wek-line, #d9d3c8);
 }
 
-.wek-admin .wek-builder__matrix-section-title {
-	margin: 0 0 0.5rem;
-	font-size: 12px;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.03em;
-	color: var(--wek-muted, #5c574f);
+.wek-admin .wek-builder__matrix-example-status {
+	margin-top: 0.5rem;
+	padding: 0.55rem 0.65rem;
+	border-left: 3px solid var(--wek-accent, #0f5c4c);
+	background: color-mix(in srgb, var(--wek-accent-soft, #e4f2ee) 70%, #fff);
 }
 
 .wek-admin .wek-builder__handle,
