@@ -20,9 +20,14 @@ Your class must extend `Webentwicklerin\WeFormkit\Fields\Abstract_Field_Type` an
 Type id: `matrix`. Config in `type_options`:
 
 - `row_select` (bool) — checkbox to mark each row as selected (`on`); unchecking clears that row’s answers
+- `row_label_align` — `left` | `center` | `right`
+- `allow_custom_rows` (bool) — visitors may add their own rows
+- `max_custom_rows` (int, 1–20, default `2`) — cap for visitor-added rows
 - `min_answered_rows` (int, default `0`) — minimum fully answered rows (`0` = optional). Replaces the generic field `required` toggle for matrix (legacy `required: true` migrates to `min_answered_rows: 1`)
-- `rows` — `{ value, label, required? }[]` (`required` = that catalog row must be answered)
-- `columns` — `{ id, type: radio|checkbox|text|number, label, required?, options? }[]` (`required` enforced only on **active** rows: selected via row checkbox, or filled / required preset when no row select)
+- `rows` — `{ value, label, required? }[]` (`required` = that catalog row must be answered). New matrices default to **empty** rows + `allow_custom_rows: true` (self-fill)
+- `columns` — `{ id, type: radio|checkbox|text|number, label, required?, options? }[]` (`required` enforced only on **active** rows: selected via row checkbox, or filled / required preset when no row select). Default labels use `Column %d` (type stays in the builder summary)
+
+**Self-fill / example row:** When `allow_custom_rows` is on and the catalog `rows` list is empty, the front end shows a non-editable Example row until the visitor adds a real row. No separate toggle — clear catalog rows to enable.
 
 Stored value: `{ row_id: { on?: bool, col_id?: string|bool|number, … }, … }`.
 

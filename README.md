@@ -8,9 +8,10 @@ Modular WordPress form builder with typed fields, entries, and a developer modul
 
 - **Block + shortcode** — Gutenberg block `we-formkit/form`, shortcodes `[we_formkit]` / `[we-formkit]` (`id` or `slug`)
 - **Field types** — text, email, tel, url, textarea, number, select, radio, radio image, checkbox, checkboxes, **matrix**, date/time/datetime, **consent**, html, hidden, upload, signature, repeater
-- **Matrix** — rows × radio / checkbox / text / number columns, optional row select, visitor-added rows, conditionals per row
+- **Matrix** — rows × radio / checkbox / text / number columns; optional row select; visitor-added rows (max 1–20); self-fill mode with inactive example row when the catalog is empty; validation via minimum answered rows plus per-row / per-column required; conditionals per row
 - **Consent** — field label (optional) + consent text beside the checkbox; optional inline `{link}` (link text + URL; empty URL → form privacy URL, then site default)
 - **Checkbox** — same split: optional field label + checkbox text beside the control
+- **Submit button** — label, optional SVG icon, width (auto / full / two thirds / half / third)
 - **Private uploads** — Formkit folder by default (not Media Library), gated download
 - **Confirmations** — message, redirect, or page
 - **Multipage** — section-based (`per_section`); current step stays in the URL as `?wek_page=2` (1-based) so refresh keeps you on that page. With several multipage forms on one page, also `wek_page_form={formId}` (not `wek_form` — that is for secret links)
