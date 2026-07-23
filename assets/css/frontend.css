@@ -543,6 +543,17 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 	order: 3;
 }
 
+/* Add-actions must stay after choices (default order:0 would jump above ordered siblings). */
+.we-formkit__fieldset > .we-formkit__checkboxes-custom-actions,
+.we-formkit__fieldset > .we-formkit__matrix-custom-actions {
+	order: 10;
+}
+
+.we-formkit__checkboxes-custom-actions,
+.we-formkit__matrix-custom-actions {
+	margin: 0.65rem 0 0;
+}
+
 .we-formkit input[type="text"],
 .we-formkit input[type="email"],
 .we-formkit input[type="tel"],
@@ -698,8 +709,10 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--wek-accent) 22%, transparent);
 }
 
-.we-formkit__checkboxes-custom-actions {
-	margin: 0.65rem 0 0;
+body .we-formkit p.we-formkit__checkboxes-custom-actions,
+body .we-formkit .we-formkit__checkboxes-custom-actions {
+	margin-top: 0.65rem;
+	margin-bottom: 0;
 }
 
 .we-formkit__choice span,
