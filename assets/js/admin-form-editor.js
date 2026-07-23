@@ -672,7 +672,7 @@
 				typeOptions.max_length = 200;
 			}
 			if ( typeId === 'textarea' ) {
-				typeOptions.rows = 4;
+				typeOptions.rows = 3;
 				typeOptions.max_length = 5000;
 			}
 			if ( typeId === 'upload' ) {
@@ -3446,7 +3446,7 @@
 				opts.max_length = field.type === 'textarea' ? 5000 : 200;
 			}
 			if ( field.type === 'textarea' && ( opts.rows == null || opts.rows === '' ) ) {
-				opts.rows = 4;
+				opts.rows = 3;
 			}
 			return opts;
 		}
@@ -3457,13 +3457,22 @@
 			if ( field.type === 'textarea' ) {
 				wrap.appendChild(
 					fieldRow(
-						i18n.textareaRows || 'Visible rows',
-						numberInput( opts.rows || 4, function ( v ) {
+						i18n.textareaRows || 'Height (rows)',
+						numberInput( opts.rows || 3, function ( v ) {
 							const n = parseInt( v, 10 );
-							opts.rows = ! isNaN( n ) && n > 0 ? Math.min( 40, n ) : 4;
+							opts.rows = ! isNaN( n ) && n > 0 ? Math.min( 40, n ) : 3;
 							syncHidden();
+							refreshCanvas();
 						}, { min: '1', max: '40' } )
 					)
+				);
+				wrap.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.textareaRowsHint ||
+							'Visible height of the box. Independent of maximum characters.',
+					} )
 				);
 			}
 			wrap.appendChild(
@@ -3862,7 +3871,6 @@
 					'hidden',
 					'radio',
 					'checkboxes',
-					'select',
 					'radio_image',
 					'upload',
 					'repeater',
@@ -4145,9 +4153,20 @@
 							textInput( field.placeholder || '', function ( v ) {
 								field.placeholder = v;
 								syncHidden();
+								refreshCanvas();
 							} )
 						)
 					);
+					if ( field.type === 'select' ) {
+						panel.appendChild(
+							el( 'p', {
+								className: 'description',
+								text:
+									i18n.selectPlaceholderHint ||
+									'Shown as the first empty choice (empty value) when no default option is selected. Leave blank to use “Please select…”.',
+							} )
+						);
+					}
 				}
 
 				if ( [ 'radio', 'checkboxes', 'select', 'radio_image' ].indexOf( field.type ) !== -1 ) {
@@ -4830,18 +4849,38 @@
 
 			if ( type === 'select' ) {
 				const options = Array.isArray( field.options ) ? field.options : [];
-				const first = options[ 0 ];
+				const defaultVal = String( field.default_value || '' );
+				let previewText =
+					hint || i18n.pleaseSelect || i18n.selectPreview || 'Please select…';
+				if ( defaultVal ) {
+					const match = options.filter( function ( opt ) {
+						return String( ( opt && opt.value ) || '' ) === defaultVal;
+					} )[ 0 ];
+					previewText =
+						( match && ( match.label || match.value ) ) || previewText;
+				}
 				return el( 'div', {
 					className: 'wek-builder__field-preview wek-builder__field-preview--select',
 					'aria-hidden': 'true',
-					text: ( first && ( first.label || first.value ) ) || hint || i18n.selectPreview || 'Select…',
+					text: previewText,
 				} );
 			}
 
 			if ( type === 'textarea' ) {
+				const taRows = Math.min(
+					40,
+					Math.max(
+						1,
+						parseInt(
+							( field.type_options && field.type_options.rows ) || 3,
+							10
+						) || 3
+					)
+				);
 				return el( 'div', {
 					className: 'wek-builder__field-preview wek-builder__field-preview--textarea',
 					'aria-hidden': 'true',
+					style: '--wek-ta-rows: ' + taRows,
 					text: hint,
 				} );
 			}

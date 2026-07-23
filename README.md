@@ -9,6 +9,7 @@ Modular WordPress form builder with typed fields, entries, and a developer modul
 - **Block + shortcode** — Gutenberg block `we-formkit/form`, shortcodes `[we_formkit]` / `[we-formkit]` (`id` or `slug`; optional `prefill="anliegen:angebot,email:a@b.c"`)
 - **URL prefill** — query params match Field ID (or custom param): `?anliegen=angebot&email=name@example.com`; Select/Radio copy-links in the builder; works with page cache via JS
 - **Field types** — text, email, tel, url, textarea, number, select, radio, radio image, checkbox, checkboxes, **matrix**, date/time/datetime, **consent**, html, hidden, upload, signature, repeater
+- **Choice options** — enter labels; keys auto-slug from the label (ä→ae, ß→ss, …); override only when you need a custom value
 - **Matrix** — rows × radio / checkbox / text / number columns; optional row select; visitor-added rows (max 1–20); self-fill mode with inactive example row when the catalog is empty; validation via minimum answered rows plus per-row / per-column required; conditionals per row
 - **Consent** — field label (optional) + consent text beside the checkbox; optional inline `{link}` (link text + URL; empty URL → form privacy URL, then site default)
 - **Checkbox** — same split: optional field label + checkbox text beside the control

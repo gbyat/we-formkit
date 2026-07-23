@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Text / Textarea: maximum character limit (builder + HTML maxlength + server validate); new text defaults to 200, textarea to 5000.
 - Required validation skips fields that are hidden by field or section conditions (front-end + server).
 - Choice options: label-first editing; optional keys auto-generated with German-friendly transliteration (ä→ae, ß→ss, …); unique keys on clash.
+- Textarea: height (rows) actually applied on the front end (CSS); default 3; independent of max characters; builder preview updates live.
+- Select: Placeholder setting in the builder (empty first option with custom label; default “Please select…”).
 - Align readme “Requires at least” / requirements with plugin header (WordPress 6.9); “Tested up to” 7.1; sync wordpress.org changelog through 1.0.3.
 
 ## [1.0.3] - 2026-07-23

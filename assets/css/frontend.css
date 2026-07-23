@@ -616,9 +616,11 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 }
 
 .we-formkit textarea {
+	/* Honor field “Height (rows)” via --wek-ta-rows (set in markup); fall back to 3. */
 	min-height: calc(
-		(var(--wek-font-input) * 1.4 * 3) + (2 * var(--wek-control-pad-y)) + 2px
+		(var(--wek-font-input) * 1.4 * var(--wek-ta-rows, 3)) + (2 * var(--wek-control-pad-y)) + 2px
 	);
+	height: auto;
 	resize: vertical;
 }
 

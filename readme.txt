@@ -14,7 +14,7 @@ Modular WordPress form builder with typed fields, entries, and a developer modul
 
 WE Formkit is a modular form builder for the Block Editor (plus shortcode). It includes a visual fields canvas, Form Settings and Design, notifications with Smart Tags, entries with CSV/JSON export and print, private uploads, Save & Resume, multipage sections (step deep link via ?wek_page=N), URL field prefill (query params / shortcode), spam controls, and an optional Modules API (e.g. Akismet).
 
-Field types include text, email, select, radio, checkboxes, matrix (visitor-added rows, self-fill example, min answered / per-row / per-column required), consent (inline {link} placeholder), upload, signature, repeater, and more. Embed with the Formkit Form block or [we_formkit id|slug].
+Field types include text, email, select, radio, checkboxes, matrix (visitor-added rows, self-fill example, min answered / per-row / per-column required), consent (inline {link} placeholder), upload, signature, repeater, and more. Choice option keys can be left empty and are auto-generated from the label (German-friendly: ä→ae, ß→ss). Embed with the Formkit Form block or [we_formkit id|slug].
 
 Author: webentwicklerin, Gabriele Laesser — https://webentwicklerin.at
 

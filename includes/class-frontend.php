@@ -1216,7 +1216,7 @@ final class Frontend {
 			<?php elseif ( 'textarea' === $type ) : ?>
 				<?php
 				$text_default = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
-				$ta_attrs     = $type_obj ? $type_obj->render_attributes( $field ) : array( 'rows' => '4' );
+				$ta_attrs     = $type_obj ? $type_obj->render_attributes( $field ) : array( 'rows' => '3' );
 				?>
 				<label class="<?php echo esc_attr( self::label_classes( $field ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
@@ -1708,10 +1708,14 @@ final class Frontend {
 			<?php self::echo_requirement_mark( $req, $ctype ); ?>
 			</label>
 			<?php if ( 'textarea' === $ctype ) : ?>
+				<?php
+				$ta_attrs = $type_obj ? $type_obj->render_attributes( $child ) : array( 'rows' => '3' );
+				unset( $ta_attrs['required'], $ta_attrs['aria-required'] );
+				?>
 				<textarea
+					<?php echo self::html_attrs( $ta_attrs ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					id="<?php echo esc_attr( $input_id ); ?>"
 					name="<?php echo esc_attr( $name ); ?>"
-					rows="3"
 					placeholder="<?php echo esc_attr( (string) ( $child['placeholder'] ?? '' ) ); ?>"
 					data-wek-repeater-input
 					data-sub-id="<?php echo esc_attr( $cid ); ?>"

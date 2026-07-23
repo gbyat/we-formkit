@@ -2045,7 +2045,7 @@ body.wek-builder-is-resizing iframe {
 }
 
 .wek-admin .wek-builder__field-preview--textarea {
-	min-height: 4.2rem;
+	min-height: calc( 1.25rem * var(--wek-ta-rows, 3) + 0.7rem );
 	line-height: 1.4;
 	padding: 0.55rem 0.75rem;
 	white-space: normal;
