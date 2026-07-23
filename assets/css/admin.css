@@ -1117,6 +1117,32 @@ body.wek-builder-is-resizing iframe {
 	margin-top: 0.65rem;
 }
 
+.wek-admin .wek-builder-sidebar .wek-builder__prefill-links {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	margin: 0.35rem 0 0.75rem;
+}
+
+.wek-admin .wek-builder-sidebar .wek-builder__prefill-links-title {
+	margin: 0.75rem 0 0.25rem;
+	font-weight: 600;
+}
+
+.wek-admin .wek-builder-sidebar .wek-builder__prefill-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+
+.wek-admin .wek-builder-sidebar .wek-builder__prefill-label {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .wek-admin .wek-builder-sidebar .wek-builder__options-fold .wek-builder__options,
 .wek-admin .wek-builder-sidebar .wek-builder__matrix-list-fold .wek-builder__matrix-list {
 	margin: 0;

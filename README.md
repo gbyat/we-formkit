@@ -6,7 +6,8 @@ Modular WordPress form builder with typed fields, entries, and a developer modul
 
 ## Features
 
-- **Block + shortcode** — Gutenberg block `we-formkit/form`, shortcodes `[we_formkit]` / `[we-formkit]` (`id` or `slug`)
+- **Block + shortcode** — Gutenberg block `we-formkit/form`, shortcodes `[we_formkit]` / `[we-formkit]` (`id` or `slug`; optional `prefill="anliegen:angebot,email:a@b.c"`)
+- **URL prefill** — query params match Field ID (or custom param): `?anliegen=angebot&email=name@example.com`; Select/Radio copy-links in the builder; works with page cache via JS
 - **Field types** — text, email, tel, url, textarea, number, select, radio, radio image, checkbox, checkboxes, **matrix**, date/time/datetime, **consent**, html, hidden, upload, signature, repeater
 - **Matrix** — rows × radio / checkbox / text / number columns; optional row select; visitor-added rows (max 1–20); self-fill mode with inactive example row when the catalog is empty; validation via minimum answered rows plus per-row / per-column required; conditionals per row
 - **Consent** — field label (optional) + consent text beside the checkbox; optional inline `{link}` (link text + URL; empty URL → form privacy URL, then site default)
@@ -26,7 +27,7 @@ No captcha, no foreign CDNs, no jQuery in Formkit assets. Block Editor line only
 
 ## Requirements
 
-- WordPress 6.5+
+- WordPress 6.9+
 - PHP 8.0+
 
 ## Usage

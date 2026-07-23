@@ -24,6 +24,13 @@ final class Frontend {
 	private static $appearance = null;
 
 	/**
+	 * Prefill map for the form currently being rendered (param => value).
+	 *
+	 * @var array<string, string>
+	 */
+	private static $prefill = array();
+
+	/**
 	 * @return void
 	 */
 	public static function register() {
@@ -85,8 +92,9 @@ final class Frontend {
 	public static function shortcode( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'id'   => '',
-				'slug' => '',
+				'id'      => '',
+				'slug'    => '',
+				'prefill' => '',
 			),
 			is_array( $atts ) ? $atts : array(),
 			'we_formkit'
@@ -94,8 +102,9 @@ final class Frontend {
 
 		return self::render_block(
 			array(
-				'formId' => absint( $atts['id'] ),
-				'slug'   => sanitize_title( $atts['slug'] ),
+				'formId'  => absint( $atts['id'] ),
+				'slug'    => sanitize_title( $atts['slug'] ),
+				'prefill' => (string) $atts['prefill'],
 			)
 		);
 	}
@@ -143,6 +152,8 @@ final class Frontend {
 					'noForms'           => __( 'No forms found. Create one under Formkit → Forms.', 'we-formkit' ),
 					'preview'           => __( 'The selected form will render on the front end.', 'we-formkit' ),
 					'selectInSidebar'   => __( 'Select a form in the block sidebar.', 'we-formkit' ),
+					'prefill'           => __( 'Prefill', 'we-formkit' ),
+					'prefillHelp'       => __( 'Optional. Format: anliegen:angebot,email:name@example.com — URL query overrides this.', 'we-formkit' ),
 				),
 			)
 		);
@@ -189,11 +200,15 @@ final class Frontend {
 				'keywords'        => array( 'form', 'formkit', 'contact' ),
 				'textdomain'      => 'we-formkit',
 				'attributes'      => array(
-					'formId' => array(
+					'formId'  => array(
 						'type'    => 'number',
 						'default' => 0,
 					),
-					'slug'   => array(
+					'slug'    => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'prefill' => array(
 						'type'    => 'string',
 						'default' => '',
 					),
@@ -243,6 +258,7 @@ final class Frontend {
 	public static function render_block( $attributes ) {
 		$form_id = isset( $attributes['formId'] ) ? absint( $attributes['formId'] ) : 0;
 		$slug    = isset( $attributes['slug'] ) ? sanitize_title( (string) $attributes['slug'] ) : '';
+		$prefill_attr = isset( $attributes['prefill'] ) ? (string) $attributes['prefill'] : '';
 
 		if ( $form_id <= 0 && '' !== $slug ) {
 			$form_id = Form_Schema::find_by_slug( $slug );
@@ -276,6 +292,9 @@ final class Frontend {
 				return '<p class="we-formkit-error" role="alert">' . esc_html__( 'This form is only available via a private link.', 'we-formkit' ) . '</p>';
 			}
 		}
+
+		// Shortcode/block first; URL query overrides (landing-page links win).
+		self::$prefill = Url_Prefill::merge( Url_Prefill::parse_attr( $prefill_attr ), Url_Prefill::from_query() );
 
 		$schema = Form_Schema::get( $form_id );
 		wp_enqueue_style( 'we-formkit-form' );
@@ -353,7 +372,9 @@ final class Frontend {
 
 		ob_start();
 		self::render_form( $form_id, $schema, $privacy_url );
-		return (string) ob_get_clean();
+		$html = (string) ob_get_clean();
+		self::$prefill = array();
+		return $html;
 	}
 
 	/**
@@ -678,6 +699,7 @@ final class Frontend {
 	 * @return void
 	 */
 	private static function render_field( array $field, $privacy_url ) {
+		$field    = Url_Prefill::apply( $field, self::$prefill );
 		$id       = $field['id'];
 		$type     = $field['type'];
 		$width    = isset( $field['width'] ) ? (string) $field['width'] : 'full';
@@ -705,6 +727,7 @@ final class Frontend {
 			( $hidden ? ' is-hidden' : '' ) .
 			( '' !== $css_class ? ' ' . $css_class : '' )
 		);
+		$prefill_param = Url_Prefill::is_allowed( $field ) ? Url_Prefill::param_name( $field ) : '';
 		?>
 		<div
 			class="<?php echo esc_attr( $field_class ); ?>"
@@ -712,6 +735,9 @@ final class Frontend {
 			data-field-id="<?php echo esc_attr( $id ); ?>"
 			data-field-type="<?php echo esc_attr( $type ); ?>"
 			data-field-label="<?php echo esc_attr( (string) ( $field['label'] ?? '' ) ); ?>"
+			<?php if ( '' !== $prefill_param ) : ?>
+				data-prefill-param="<?php echo esc_attr( $prefill_param ); ?>"
+			<?php endif; ?>
 			data-required="<?php echo $req ? '1' : '0'; ?>"
 			data-msg-required="<?php echo esc_attr( $msg_req ); ?>"
 			data-msg-invalid="<?php echo esc_attr( $msg_inv ); ?>"
@@ -750,6 +776,7 @@ final class Frontend {
 			<?php if ( 'checkbox' === $type || 'consent' === $type ) : ?>
 				<?php
 				$shows_title = self::field_shows_label( $field );
+				$checked     = self::field_default_is_checked( $field );
 				?>
 				<?php if ( $shows_title ) : ?>
 					<div class="<?php echo esc_attr( self::label_classes( $field ) ); ?>">
@@ -763,6 +790,7 @@ final class Frontend {
 						id="<?php echo esc_attr( $input_id ); ?>"
 						name="<?php echo esc_attr( $id ); ?>"
 						value="1"
+						<?php checked( $checked ); ?>
 						<?php echo $req ? 'required' : ''; ?>
 						aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
 					/>
@@ -834,12 +862,12 @@ final class Frontend {
 						?>
 					>
 						<?php
-						$default = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
+						$defaults = self::field_default_list( $field );
 						foreach ( $field['options'] as $option ) :
 							$oid    = $input_id . '-' . $option['value'];
 							$iname  = 'checkboxes' === $type ? $id . '[]' : $id;
 							$itype  = 'checkboxes' === $type ? 'checkbox' : 'radio';
-							$is_def = '' !== $default && (string) $option['value'] === $default;
+							$is_def = in_array( (string) $option['value'], $defaults, true );
 							?>
 							<label class="we-formkit__choice" for="<?php echo esc_attr( $oid ); ?>">
 								<input
@@ -916,7 +944,7 @@ final class Frontend {
 					<?php endif; ?>
 					<div class="we-formkit__choices" role="group" aria-describedby="<?php echo esc_attr( $desc_id . ' ' . $error_id ); ?>">
 						<?php
-						$default = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
+						$defaults = self::field_default_list( $field );
 						foreach ( ( $field['options'] ?? array() ) as $option ) :
 							$oid       = $input_id . '-' . $option['value'];
 							$image_url = isset( $option['image_url'] ) ? (string) $option['image_url'] : '';
@@ -926,7 +954,7 @@ final class Frontend {
 									$image_url = $from_id;
 								}
 							}
-							$is_def = '' !== $default && (string) $option['value'] === $default;
+							$is_def = in_array( (string) $option['value'], $defaults, true );
 							?>
 							<label class="we-formkit__choice we-formkit__choice--image" for="<?php echo esc_attr( $oid ); ?>">
 								<input
@@ -1177,6 +1205,9 @@ final class Frontend {
 					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 				<?php endif; ?>
 			<?php elseif ( 'textarea' === $type ) : ?>
+				<?php
+				$text_default = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
+				?>
 				<label class="<?php echo esc_attr( self::label_classes( $field ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
 					<?php self::echo_requirement_mark( $req, $type ); ?>
@@ -1188,7 +1219,7 @@ final class Frontend {
 					placeholder="<?php echo esc_attr( $field['placeholder'] ); ?>"
 					<?php echo $req ? 'required' : ''; ?>
 					aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
-				></textarea>
+				><?php echo esc_textarea( $text_default ); ?></textarea>
 				<?php if ( ! empty( $field['help'] ) ) : ?>
 					<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 				<?php endif; ?>
@@ -1276,11 +1307,13 @@ final class Frontend {
 				if ( 'datetime' === $type && ( ! isset( $input_attrs['type'] ) || 'datetime' === $input_attrs['type'] ) ) {
 					$input_attrs['type'] = 'datetime-local';
 				}
+				$text_default = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
 				?>
 				<input
 					<?php echo self::html_attrs( $input_attrs ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					id="<?php echo esc_attr( $input_id ); ?>"
 					name="<?php echo esc_attr( $id ); ?>"
+					value="<?php echo esc_attr( $text_default ); ?>"
 					aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
 				/>
 				<?php if ( ! empty( $field['help'] ) ) : ?>
@@ -1296,6 +1329,45 @@ final class Frontend {
 			<?php endif; ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Default value(s) for choice fields (comma-separated for checkboxes).
+	 *
+	 * @param array<string, mixed> $field Field config.
+	 * @return list<string>
+	 */
+	private static function field_default_list( array $field ): array {
+		$raw = isset( $field['default_value'] ) ? trim( (string) $field['default_value'] ) : '';
+		if ( '' === $raw ) {
+			return array();
+		}
+		if ( 'checkboxes' === ( $field['type'] ?? '' ) ) {
+			$parts = preg_split( '/\s*,\s*/', $raw );
+			if ( ! is_array( $parts ) ) {
+				return array( $raw );
+			}
+			return array_values(
+				array_filter(
+					array_map( 'strval', $parts ),
+					static function ( $part ) {
+						return '' !== $part;
+					}
+				)
+			);
+		}
+		return array( $raw );
+	}
+
+	/**
+	 * Whether a single checkbox/consent should render checked.
+	 *
+	 * @param array<string, mixed> $field Field config.
+	 * @return bool
+	 */
+	private static function field_default_is_checked( array $field ): bool {
+		$raw = isset( $field['default_value'] ) ? strtolower( trim( (string) $field['default_value'] ) ) : '';
+		return in_array( $raw, array( '1', 'true', 'yes', 'on', 'checked' ), true );
 	}
 
 	/**

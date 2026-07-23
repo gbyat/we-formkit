@@ -2,7 +2,7 @@
 	const { registerBlockType } = wp.blocks;
 	const { createElement: el, Fragment } = wp.element;
 	const { InspectorControls, useBlockProps } = wp.blockEditor;
-	const { PanelBody, SelectControl, Notice, Placeholder } = wp.components;
+	const { PanelBody, SelectControl, TextControl, Notice, Placeholder } = wp.components;
 
 	const config = window.weFormkitBlock || { forms: [], i18n: {} };
 	const i18n = config.i18n || {};
@@ -56,7 +56,17 @@
 										} );
 									},
 							  } )
-							: el( Notice, { status: 'warning', isDismissible: false }, i18n.noForms )
+							: el( Notice, { status: 'warning', isDismissible: false }, i18n.noForms ),
+						el( TextControl, {
+							label: i18n.prefill || 'Prefill',
+							help:
+								i18n.prefillHelp ||
+								'Optional. Format: anliegen:angebot,email:name@example.com — URL query overrides this.',
+							value: attributes.prefill || '',
+							onChange( value ) {
+								setAttributes( { prefill: value || '' } );
+							},
+						} )
 					)
 				),
 				el(

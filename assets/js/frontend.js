@@ -2150,6 +2150,112 @@
 		}
 	}
 
+	/**
+	 * Prefill fields from URL query (Field ID = param). Skipped when resuming a draft or smoke autofill.
+	 *
+	 * @param {HTMLFormElement} form Form.
+	 * @return {void}
+	 */
+	function applyUrlPrefill( form ) {
+		let params;
+		try {
+			params = new URLSearchParams( window.location.search );
+		} catch ( e ) {
+			return;
+		}
+		if ( params.get( 'wek_resume' ) || params.get( 'wek_autofill' ) === '1' ) {
+			return;
+		}
+
+		qsa( form, '[data-wek-field][data-prefill-param]' ).forEach( function ( fieldEl ) {
+			const param = fieldEl.getAttribute( 'data-prefill-param' );
+			if ( ! param ) {
+				return;
+			}
+			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
+			const all = params.getAll( param );
+			let raw = '';
+			if ( all.length > 1 ) {
+				raw = all.join( ',' );
+			} else if ( all.length === 1 ) {
+				raw = all[ 0 ];
+			} else {
+				return;
+			}
+			raw = String( raw || '' ).trim();
+			if ( ! raw ) {
+				return;
+			}
+
+			if ( type === 'checkboxes' ) {
+				const wanted = raw.split( /[\s,]+/ ).filter( Boolean );
+				qsa( fieldEl, 'input[type="checkbox"]' ).forEach( function ( input ) {
+					if ( input.getAttribute( 'data-wek-other' ) ) {
+						return;
+					}
+					input.checked = wanted.indexOf( String( input.value ) ) !== -1;
+				} );
+				syncCheckboxesMaxLock( fieldEl );
+				fieldEl.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				return;
+			}
+
+			if ( type === 'checkbox' || type === 'consent' ) {
+				const input = qs( fieldEl, 'input[type="checkbox"]' );
+				if ( input ) {
+					input.checked = [ '1', 'true', 'yes', 'on', 'checked' ].indexOf( raw.toLowerCase() ) !== -1;
+					input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+				return;
+			}
+
+			if ( type === 'radio' || type === 'radio_image' ) {
+				const radios = qsa( fieldEl, 'input[type="radio"]' );
+				let match = null;
+				radios.forEach( function ( input ) {
+					if ( String( input.value ) === raw ) {
+						match = input;
+					}
+				} );
+				if ( match ) {
+					match.checked = true;
+					match.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+				return;
+			}
+
+			if ( type === 'select' ) {
+				const select = qs( fieldEl, 'select' );
+				if ( select ) {
+					const opt = Array.prototype.find.call( select.options, function ( o ) {
+						return String( o.value ) === raw;
+					} );
+					if ( opt ) {
+						select.value = raw;
+						select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+					}
+				}
+				return;
+			}
+
+			if ( type === 'textarea' ) {
+				const ta = qs( fieldEl, 'textarea' );
+				if ( ta ) {
+					ta.value = raw;
+					ta.dispatchEvent( new Event( 'input', { bubbles: true } ) );
+				}
+				return;
+			}
+
+			const input = qs( fieldEl, 'input:not([type="hidden"]):not([type="file"]), input[type="hidden"]' );
+			if ( input && input.type !== 'file' ) {
+				input.value = raw;
+				input.dispatchEvent( new Event( 'input', { bubbles: true } ) );
+				input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+			}
+		} );
+	}
+
 	function scheduleAutofillSubmit( form, root, cfg ) {
 		const started = Number( cfg.started ) || Math.floor( Date.now() / 1000 );
 		const waitMs = Math.max( 500, ( 3.2 - ( Date.now() / 1000 - started ) ) * 1000 );
@@ -2913,6 +3019,7 @@
 
 		initConditionals( root, form );
 		initRepeaters( form );
+		applyUrlPrefill( form );
 
 		const cfg = window.weFormkit || {};
 		if ( cfg.autofill && wantsAutofill() ) {

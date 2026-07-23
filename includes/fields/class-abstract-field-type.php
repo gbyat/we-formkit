@@ -80,6 +80,14 @@ abstract class Abstract_Field_Type {
 
 		$field['messages'] = Validation_Messages::normalize_field_messages( $field['messages'] ?? null );
 
+		// URL prefill: on by default; optional alias param name.
+		if ( array_key_exists( 'allow_url_prefill', $field ) ) {
+			$field['allow_url_prefill'] = ! empty( $field['allow_url_prefill'] );
+		} else {
+			$field['allow_url_prefill'] = true;
+		}
+		$field['prefill_param'] = isset( $field['prefill_param'] ) ? sanitize_key( (string) $field['prefill_param'] ) : '';
+
 		return $field;
 	}
 

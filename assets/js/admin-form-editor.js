@@ -1859,11 +1859,271 @@
 			if ( hasCustom ) {
 				details.open = true;
 			}
-			details.appendChild(
-				el( 'summary', { text: i18n.validationMessages || 'Validation messages' } )
-			);
+			details.appendChild( el( 'summary', { text: i18n.validationMessages || 'Validation messages' } ) );
 			details.appendChild( body );
 			return details;
+		}
+
+		const PREFILL_TYPES = [
+			'text',
+			'email',
+			'tel',
+			'url',
+			'textarea',
+			'number',
+			'select',
+			'radio',
+			'radio_image',
+			'checkbox',
+			'checkboxes',
+			'consent',
+			'date',
+			'time',
+			'datetime',
+			'hidden',
+		];
+
+		function prefillParamFor( field ) {
+			const custom = String( field.prefill_param || '' )
+				.toLowerCase()
+				.replace( /[^a-z0-9_-]/g, '' );
+			if ( custom ) {
+				return custom;
+			}
+			return String( field.id || '' )
+				.toLowerCase()
+				.replace( /[^a-z0-9_-]/g, '' );
+		}
+
+		function prefillBaseStorageKey() {
+			const formId = ( window.weFormkitAdmin && window.weFormkitAdmin.formId ) || 0;
+			return 'wek_prefill_base_' + String( formId );
+		}
+
+		function readPrefillBaseUrl() {
+			try {
+				return String( window.sessionStorage.getItem( prefillBaseStorageKey() ) || '' );
+			} catch ( e ) {
+				return '';
+			}
+		}
+
+		function writePrefillBaseUrl( url ) {
+			try {
+				window.sessionStorage.setItem( prefillBaseStorageKey(), String( url || '' ) );
+			} catch ( e ) {
+				// ignore
+			}
+		}
+
+		function buildPrefillUrl( baseUrl, param, value ) {
+			const base = String( baseUrl || '' ).trim();
+			const q = encodeURIComponent( param ) + '=' + encodeURIComponent( value );
+			if ( ! base ) {
+				return '?' + q;
+			}
+			try {
+				const url = new URL( base, window.location.origin );
+				url.searchParams.set( param, value );
+				return url.toString();
+			} catch ( e ) {
+				const join = base.indexOf( '?' ) === -1 ? '?' : '&';
+				return base + join + q;
+			}
+		}
+
+		function copyText( text, button ) {
+			const done = function () {
+				const prev = button.textContent;
+				button.textContent = i18n.prefillCopied || 'Copied';
+				window.setTimeout( function () {
+					button.textContent = prev;
+				}, 1200 );
+			};
+			if ( navigator.clipboard && navigator.clipboard.writeText ) {
+				navigator.clipboard.writeText( text ).then( done ).catch( function () {
+					window.prompt( i18n.prefillCopy || 'Copy', text );
+				} );
+			} else {
+				window.prompt( i18n.prefillCopy || 'Copy', text );
+			}
+		}
+
+		function renderPrefillEditor( field ) {
+			if ( PREFILL_TYPES.indexOf( field.type ) === -1 ) {
+				return el( 'div' );
+			}
+
+			if ( typeof field.allow_url_prefill === 'undefined' ) {
+				field.allow_url_prefill = true;
+			}
+			if ( typeof field.prefill_param !== 'string' ) {
+				field.prefill_param = '';
+			}
+
+			const body = el( 'div', { className: 'wek-builder__prefill-body' } );
+
+			const allow = el( 'input', { type: 'checkbox' } );
+			allow.checked = field.allow_url_prefill !== false;
+			allow.addEventListener( 'change', function () {
+				field.allow_url_prefill = !! allow.checked;
+				syncHidden();
+				refreshSidebar();
+			} );
+			body.appendChild( toggleRow( i18n.prefillAllow || 'Allow URL / embed prefill', allow ) );
+
+			if ( field.allow_url_prefill === false ) {
+				return collapsiblePanel( i18n.prefillTitle || 'URL prefill', body, 'wek-builder__prefill', false );
+			}
+
+			body.appendChild(
+				fieldRow(
+					i18n.prefillParam || 'Custom query parameter',
+					textInput( field.prefill_param || '', function ( v ) {
+						field.prefill_param = String( v || '' )
+							.toLowerCase()
+							.replace( /[^a-z0-9_-]/g, '' );
+						syncHidden();
+					} )
+				)
+			);
+			body.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.prefillParamHint ||
+						'Optional. Leave empty to use the Field ID. Example: anliegen',
+				} )
+			);
+
+			const baseInput = el( 'input', {
+				type: 'url',
+				className: 'regular-text',
+				value: readPrefillBaseUrl(),
+				placeholder: 'https://example.com/contact/',
+			} );
+			baseInput.addEventListener( 'change', function () {
+				writePrefillBaseUrl( baseInput.value );
+			} );
+			baseInput.addEventListener( 'blur', function () {
+				writePrefillBaseUrl( baseInput.value );
+			} );
+			body.appendChild( fieldRow( i18n.prefillBaseUrl || 'Page URL (for copy links)', baseInput ) );
+			body.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.prefillBaseUrlHint ||
+						'Paste the public page where this form is embedded. Used only to build copyable links in the editor.',
+				} )
+			);
+
+			const param = function () {
+				return prefillParamFor( field ) || 'field';
+			};
+
+			const links = el( 'div', { className: 'wek-builder__prefill-links' } );
+			const choiceTypes = [ 'select', 'radio', 'radio_image', 'checkboxes' ];
+			if ( choiceTypes.indexOf( field.type ) !== -1 && Array.isArray( field.options ) ) {
+				field.options.forEach( function ( option ) {
+					const value = String( option.value || '' ).trim();
+					if ( ! value ) {
+						return;
+					}
+					const label = String( option.label || value );
+					const row = el( 'div', { className: 'wek-builder__prefill-row' } );
+					row.appendChild(
+						el( 'span', {
+							className: 'wek-builder__prefill-label',
+							text: label,
+						} )
+					);
+					const btn = el( 'button', {
+						type: 'button',
+						className: 'button button-small',
+						text: i18n.prefillCopy || 'Copy',
+					} );
+					btn.addEventListener( 'click', function () {
+						const url = buildPrefillUrl( baseInput.value || readPrefillBaseUrl(), param(), value );
+						copyText( url, btn );
+					} );
+					row.appendChild( btn );
+					links.appendChild( row );
+				} );
+			} else if ( field.type === 'checkbox' || field.type === 'consent' ) {
+				const row = el( 'div', { className: 'wek-builder__prefill-row' } );
+				row.appendChild(
+					el( 'span', {
+						className: 'wek-builder__prefill-label',
+						text: ( i18n.prefillExample || 'Example' ) + ': 1',
+					} )
+				);
+				const btn = el( 'button', {
+					type: 'button',
+					className: 'button button-small',
+					text: i18n.prefillCopy || 'Copy',
+				} );
+				btn.addEventListener( 'click', function () {
+					copyText( buildPrefillUrl( baseInput.value || readPrefillBaseUrl(), param(), '1' ), btn );
+				} );
+				row.appendChild( btn );
+				links.appendChild( row );
+			} else {
+				const sample =
+					field.type === 'email'
+						? 'name@example.com'
+						: field.type === 'number'
+							? '1'
+							: 'value';
+				const row = el( 'div', { className: 'wek-builder__prefill-row' } );
+				row.appendChild(
+					el( 'span', {
+						className: 'wek-builder__prefill-label',
+						text: ( i18n.prefillExample || 'Example' ) + ': ' + sample,
+					} )
+				);
+				const btn = el( 'button', {
+					type: 'button',
+					className: 'button button-small',
+					text: i18n.prefillCopy || 'Copy',
+				} );
+				btn.addEventListener( 'click', function () {
+					copyText( buildPrefillUrl( baseInput.value || readPrefillBaseUrl(), param(), sample ), btn );
+				} );
+				row.appendChild( btn );
+				links.appendChild( row );
+			}
+
+			if ( links.childNodes.length ) {
+				body.appendChild(
+					el( 'p', {
+						className: 'wek-builder__prefill-links-title',
+						text: i18n.prefillLinks || 'Prefill links',
+					} )
+				);
+				body.appendChild( links );
+			}
+
+			body.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.prefillMultiHint ||
+						'Several fields: append more parameters, e.g. ?anliegen=angebot&email=name@example.com',
+				} )
+			);
+			if ( field.type === 'checkboxes' ) {
+				body.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.prefillCheckboxesHint ||
+							'Checkboxes: comma-separated values, e.g. ?topics=a,b',
+					} )
+				);
+			}
+
+			return collapsiblePanel( i18n.prefillTitle || 'URL prefill', body, 'wek-builder__prefill', true );
 		}
 
 		function numberInput( value, onChange, attrs ) {
@@ -3611,11 +3871,9 @@
 					fieldRow(
 						i18n.id || 'Field ID',
 						textInput( field.id || '', function ( v ) {
-							field.id = isNested
-								? String( v || '' )
-										.toLowerCase()
-										.replace( /[^a-z0-9_-]/g, '_' )
-								: v;
+							field.id = String( v || '' )
+								.toLowerCase()
+								.replace( /[^a-z0-9_-]/g, '_' );
 							syncHidden();
 							const titleEl = aside.querySelector( '.wek-builder-sidebar__title' );
 							if ( titleEl ) {
@@ -3623,6 +3881,14 @@
 							}
 						} )
 					)
+				);
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.idPrefillHint ||
+							'Also the URL query parameter for prefill (e.g. ?anliegen=angebot). Prefer short lowercase IDs.',
+					} )
 				);
 				panel.appendChild(
 					fieldRow(
@@ -3677,6 +3943,10 @@
 
 				if ( [ 'radio', 'checkboxes', 'select', 'radio_image' ].indexOf( field.type ) !== -1 ) {
 					panel.appendChild( renderOptionsEditor( field ) );
+				}
+
+				if ( ! isNested ) {
+					panel.appendChild( renderPrefillEditor( field ) );
 				}
 
 				if ( field.type === 'checkboxes' ) {

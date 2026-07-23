@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- URL multi-field prefill via query params (Field ID / custom param), shortcode/block `prefill`, and builder copy-links for choice options.
+- Align readme “Requires at least” / requirements with plugin header (WordPress 6.9); “Tested up to” 7.1; sync wordpress.org changelog through 1.0.3.
+
 ## [1.0.3] - 2026-07-23
 
 - Enhance submit button customization by introducing new CSS styles for button widths and updating the admin form editor to support width selection. Implement JavaScript adjustments to ensure proper rendering of button widths in the frontend. Revise translation strings for clarity on button width options and descriptions.
