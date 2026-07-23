@@ -2241,7 +2241,7 @@
 			if ( ! Number.isFinite( maxCustom ) || maxCustom < 1 ) {
 				maxCustom = 2;
 			}
-			opts.max_custom_rows = Math.min( 5, maxCustom );
+			opts.max_custom_rows = Math.min( 20, maxCustom );
 			if ( typeof opts.min_answered_rows === 'undefined' || opts.min_answered_rows === '' ) {
 				opts.min_answered_rows = field.required ? 1 : 0;
 			}
@@ -2352,7 +2352,7 @@
 				}
 				const moved = items.splice( from, 1 )[ 0 ];
 				items.splice( to, 0, moved );
-				syncHidden();
+				flushSyncHidden();
 				refresh();
 			}
 
@@ -2437,6 +2437,24 @@
 				toolbar.appendChild( handle );
 				toolbar.appendChild( upBtn );
 				toolbar.appendChild( downBtn );
+
+				const remove = el( 'button', {
+					type: 'button',
+					className: 'button-link-delete wek-builder__matrix-remove',
+					title: i18n.remove || 'Remove',
+					'aria-label': i18n.remove || 'Remove',
+					text: '×',
+				} );
+				remove.addEventListener( 'click', function ( event ) {
+					stopSummaryToggle( event );
+					items.splice( index, 1 );
+					if ( typeof onRequiredChange === 'function' ) {
+						onRequiredChange();
+					}
+					flushSyncHidden();
+					refresh();
+				} );
+				toolbar.appendChild( remove );
 				summary.appendChild( toolbar );
 
 				let typeLabel = '';
@@ -2527,6 +2545,9 @@
 
 					const colReq = el( 'input', { type: 'checkbox' } );
 					colReq.checked = !! item.required;
+					colReq.title =
+						i18n.matrixColRequiredHint ||
+						'Only when the row is selected or filled.';
 					colReq.addEventListener( 'change', function () {
 						item.required = !! colReq.checked;
 						if ( typeof onRequiredChange === 'function' ) {
@@ -2537,35 +2558,23 @@
 					itemBody.appendChild(
 						toggleRow( i18n.required || 'Required', colReq )
 					);
-					itemBody.appendChild(
-						el( 'p', {
-							className: 'description',
-							text:
-								i18n.matrixColRequiredHint ||
-								'Only when the row is selected or filled.',
-						} )
-					);
 				}
-
-				const remove = el( 'button', {
-					type: 'button',
-					className: 'button-link-delete',
-					text: i18n.remove || 'Remove',
-				} );
-				remove.addEventListener( 'click', function () {
-					items.splice( index, 1 );
-					if ( typeof onRequiredChange === 'function' ) {
-						onRequiredChange();
-					}
-					syncHidden();
-					refresh();
-				} );
-				itemBody.appendChild( remove );
 
 				if ( kind === 'column' && item.type === 'radio' ) {
 					if ( ! Array.isArray( item.options ) ) {
 						item.options = [];
 					}
+					const optWrap = el( 'div', { className: 'wek-builder__matrix-col-options-wrap' } );
+					optWrap.appendChild(
+						el( 'p', {
+							className: 'wek-builder__matrix-col-options-label',
+							text:
+								( i18n.matrixRadioOptions || 'Radio options (column headers)' ) +
+								' (' +
+								item.options.length +
+								')',
+						} )
+					);
 					const optBody = el( 'div', { className: 'wek-builder__matrix-col-options' } );
 					item.options.forEach( function ( opt, oIndex ) {
 						const optRow = el( 'div', { className: 'wek-builder__matrix-opt-row' } );
@@ -2589,13 +2598,15 @@
 							text: '↑',
 							disabled: oIndex === 0,
 						} );
-						optUp.addEventListener( 'click', function () {
+						optUp.addEventListener( 'click', function ( event ) {
+							event.preventDefault();
+							event.stopPropagation();
 							if ( oIndex <= 0 ) {
 								return;
 							}
 							const moved = item.options.splice( oIndex, 1 )[ 0 ];
 							item.options.splice( oIndex - 1, 0, moved );
-							syncHidden();
+							flushSyncHidden();
 							refresh();
 						} );
 						const optDown = el( 'button', {
@@ -2605,26 +2616,37 @@
 							text: '↓',
 							disabled: oIndex >= item.options.length - 1,
 						} );
-						optDown.addEventListener( 'click', function () {
+						optDown.addEventListener( 'click', function ( event ) {
+							event.preventDefault();
+							event.stopPropagation();
 							if ( oIndex >= item.options.length - 1 ) {
 								return;
 							}
 							const moved = item.options.splice( oIndex, 1 )[ 0 ];
 							item.options.splice( oIndex + 1, 0, moved );
-							syncHidden();
+							flushSyncHidden();
 							refresh();
 						} );
 						const optRemove = el( 'button', {
 							type: 'button',
-							className: 'button-link-delete',
+							className: 'button-link-delete wek-builder__matrix-opt-remove',
 							text: '×',
 							title: i18n.remove || 'Remove',
+							'aria-label': i18n.remove || 'Remove',
 						} );
-						optRemove.addEventListener( 'click', function () {
+						optRemove.addEventListener( 'click', function ( event ) {
+							event.preventDefault();
+							event.stopPropagation();
+							if ( item.options.length <= 1 ) {
+								return;
+							}
 							item.options.splice( oIndex, 1 );
-							syncHidden();
+							flushSyncHidden();
 							refresh();
 						} );
+						if ( item.options.length <= 1 ) {
+							optRemove.disabled = true;
+						}
 						optRow.appendChild( optLabel );
 						optRow.appendChild( optUp );
 						optRow.appendChild( optDown );
@@ -2636,27 +2658,20 @@
 						className: 'button button-small',
 						text: i18n.addOption || 'Add option',
 					} );
-					addOpt.addEventListener( 'click', function () {
+					addOpt.addEventListener( 'click', function ( event ) {
+						event.preventDefault();
+						event.stopPropagation();
 						const n = item.options.length + 1;
 						item.options.push( {
 							value: 'opt_' + n,
 							label: ( i18n.optionPreview || 'Option' ) + ' ' + n,
 						} );
-						syncHidden();
+						flushSyncHidden();
 						refresh();
 					} );
 					optBody.appendChild( addOpt );
-					itemBody.appendChild(
-						collapsiblePanel(
-							( i18n.matrixRadioOptions || 'Radio options (column headers)' ) +
-								' (' +
-								item.options.length +
-								')',
-							optBody,
-							'wek-builder__matrix-col-options-fold',
-							true
-						)
-					);
+					optWrap.appendChild( optBody );
+					itemBody.appendChild( optWrap );
 				}
 
 				row.appendChild( itemBody );
@@ -2691,6 +2706,7 @@
 					} );
 				}
 				syncHidden();
+				flushSyncHidden();
 				refresh();
 			} );
 			body.appendChild( addBtn );
@@ -2707,15 +2723,115 @@
 		function renderMatrixEditor( field ) {
 			const opts = ensureMatrixOptions( field );
 			const wrap = el( 'div', { className: 'wek-builder__matrix-editor' } );
+
+			function onMatrixRequiredChange() {
+				syncMatrixRequiredFlag( field );
+				updateCanvasFieldLabel( selected, field.label );
+			}
+
 			wrap.appendChild(
 				el( 'p', {
 					className: 'description',
 					text:
 						i18n.matrixHint ||
-						'Add preset rows and/or allow visitor-added rows. With no presets, an inactive example row shows the grid until visitors add their own.',
+						'Preset rows and columns define the grid. Optional visitor-added rows and validation sit below.',
 				} )
 			);
 
+			const rowSelect = el( 'input', { type: 'checkbox' } );
+			rowSelect.checked = !! opts.row_select;
+			rowSelect.addEventListener( 'change', function () {
+				opts.row_select = rowSelect.checked;
+				syncHidden();
+			} );
+			wrap.appendChild(
+				toggleRow( i18n.matrixRowSelect || 'Show row select checkbox', rowSelect )
+			);
+
+			wrap.appendChild(
+				renderMatrixListEditor(
+					i18n.matrixRows || 'Rows',
+					opts.rows,
+					null,
+					'row',
+					onMatrixRequiredChange
+				)
+			);
+			wrap.appendChild(
+				renderMatrixListEditor(
+					i18n.matrixColumns || 'Columns',
+					opts.columns,
+					null,
+					'column',
+					onMatrixRequiredChange
+				)
+			);
+
+			const visitor = el( 'div', { className: 'wek-builder__matrix-section' } );
+			visitor.appendChild(
+				el( 'h4', {
+					className: 'wek-builder__matrix-section-title',
+					text: i18n.matrixVisitorSection || 'Visitor-added rows',
+				} )
+			);
+			const allowCustom = el( 'input', { type: 'checkbox' } );
+			allowCustom.checked = !! opts.allow_custom_rows;
+			const maxCustomInput = el( 'input', {
+				type: 'number',
+				min: '1',
+				max: '20',
+				step: '1',
+				value: String( opts.max_custom_rows || 2 ),
+			} );
+			maxCustomInput.disabled = ! allowCustom.checked;
+
+			function syncCustomRowsUi() {
+				opts.allow_custom_rows = allowCustom.checked;
+				maxCustomInput.disabled = ! allowCustom.checked;
+				let n = parseInt( maxCustomInput.value, 10 );
+				if ( ! Number.isFinite( n ) || n < 1 ) {
+					n = 2;
+				}
+				opts.max_custom_rows = Math.min( 20, n );
+				maxCustomInput.value = String( opts.max_custom_rows );
+				syncHidden();
+			}
+
+			allowCustom.addEventListener( 'change', syncCustomRowsUi );
+			maxCustomInput.addEventListener( 'change', syncCustomRowsUi );
+			maxCustomInput.addEventListener( 'blur', syncCustomRowsUi );
+
+			visitor.appendChild(
+				toggleRow( i18n.matrixAllowCustomRows || 'Allow visitor-added rows', allowCustom )
+			);
+			visitor.appendChild(
+				fieldRow( i18n.matrixMaxCustomRows || 'Max custom rows', maxCustomInput )
+			);
+			visitor.appendChild(
+				el( 'p', {
+					className: 'description',
+					text: i18n.matrixMaxCustomRowsHint || '1–20. How many rows visitors may add.',
+				} )
+			);
+			if ( ! opts.rows.length ) {
+				visitor.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.matrixRowsSelfFillHint ||
+							'No preset rows — visitors fill the matrix themselves (example row until they add one).',
+					} )
+				);
+			}
+			wrap.appendChild( visitor );
+
+			const validation = el( 'div', { className: 'wek-builder__matrix-section' } );
+			validation.appendChild(
+				el( 'h4', {
+					className: 'wek-builder__matrix-section-title',
+					text: i18n.matrixValidationSection || 'Validation',
+				} )
+			);
 			const minRowsInput = el( 'input', {
 				type: 'number',
 				min: '0',
@@ -2735,100 +2851,22 @@
 			}
 			minRowsInput.addEventListener( 'change', syncMinRows );
 			minRowsInput.addEventListener( 'blur', syncMinRows );
-			wrap.appendChild(
+			validation.appendChild(
 				fieldRow(
 					i18n.matrixMinAnsweredRows || 'Minimum answered rows',
 					minRowsInput
 				)
 			);
-			wrap.appendChild(
+			validation.appendChild(
 				el( 'p', {
 					className: 'description',
 					text:
 						i18n.matrixMinAnsweredRowsHint ||
-						'0 = optional. Replaces the generic Required toggle for this field.',
+						'0 = optional. Per-row / per-column Required is set on each item above.',
 				} )
 			);
+			wrap.appendChild( validation );
 
-			const rowSelect = el( 'input', { type: 'checkbox' } );
-			rowSelect.checked = !! opts.row_select;
-			rowSelect.addEventListener( 'change', function () {
-				opts.row_select = rowSelect.checked;
-				syncHidden();
-			} );
-			wrap.appendChild(
-				toggleRow( i18n.matrixRowSelect || 'Show row select checkbox', rowSelect )
-			);
-
-			const allowCustom = el( 'input', { type: 'checkbox' } );
-			allowCustom.checked = !! opts.allow_custom_rows;
-			const maxCustomInput = el( 'input', {
-				type: 'number',
-				min: '1',
-				max: '5',
-				step: '1',
-				value: String( opts.max_custom_rows || 2 ),
-			} );
-			maxCustomInput.disabled = ! allowCustom.checked;
-
-			function syncCustomRowsUi() {
-				opts.allow_custom_rows = allowCustom.checked;
-				maxCustomInput.disabled = ! allowCustom.checked;
-				let n = parseInt( maxCustomInput.value, 10 );
-				if ( ! Number.isFinite( n ) || n < 1 ) {
-					n = 2;
-				}
-				opts.max_custom_rows = Math.min( 5, n );
-				maxCustomInput.value = String( opts.max_custom_rows );
-				syncHidden();
-			}
-
-			allowCustom.addEventListener( 'change', syncCustomRowsUi );
-			maxCustomInput.addEventListener( 'change', syncCustomRowsUi );
-			maxCustomInput.addEventListener( 'blur', syncCustomRowsUi );
-
-			const customPair = el( 'div', { className: 'wek-builder__pair' } );
-			customPair.appendChild(
-				toggleRow( i18n.matrixAllowCustomRows || 'Allow visitor-added rows', allowCustom )
-			);
-			customPair.appendChild(
-				fieldRow( i18n.matrixMaxCustomRows || 'Max custom rows', maxCustomInput )
-			);
-			wrap.appendChild( customPair );
-
-			function onMatrixRequiredChange() {
-				syncMatrixRequiredFlag( field );
-				updateCanvasFieldLabel( selected, field.label );
-			}
-
-			if ( ! opts.rows.length ) {
-				wrap.appendChild(
-					el( 'p', {
-						className: 'description',
-						text:
-							i18n.matrixRowsSelfFillHint ||
-							'No preset rows — visitors add their own (self-fill). Per-row Required applies only to catalog rows you add below.',
-					} )
-				);
-			}
-			wrap.appendChild(
-				renderMatrixListEditor(
-					i18n.matrixRows || 'Rows',
-					opts.rows,
-					null,
-					'row',
-					onMatrixRequiredChange
-				)
-			);
-			wrap.appendChild(
-				renderMatrixListEditor(
-					i18n.matrixColumns || 'Columns',
-					opts.columns,
-					null,
-					'column',
-					onMatrixRequiredChange
-				)
-			);
 			return wrap;
 		}
 

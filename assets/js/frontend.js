@@ -1056,7 +1056,7 @@
 				qs( fieldEl, '[data-wek-matrix-add-row]' ).getAttribute( 'data-max-custom-rows' ) ) ||
 			'2';
 		const n = parseInt( raw, 10 );
-		return Number.isFinite( n ) && n > 0 ? Math.min( 5, n ) : 2;
+		return Number.isFinite( n ) && n > 0 ? Math.min( 20, n ) : 2;
 	}
 
 	function syncMatrixAddButton( fieldEl ) {

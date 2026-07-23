@@ -20,7 +20,7 @@ class Matrix_Field extends Abstract_Field_Type {
 
 	public const CUSTOM_ROW_PREFIX = 'custom_';
 
-	public const MAX_CUSTOM_ROWS_CAP = 5;
+	public const MAX_CUSTOM_ROWS_CAP = 20;
 
 	public function get_type(): string {
 		return 'matrix';
