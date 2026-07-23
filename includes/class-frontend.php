@@ -832,6 +832,7 @@ final class Frontend {
 									value=""
 									placeholder="<?php echo esc_attr__( 'Please specify…', 'we-formkit' ); ?>"
 									autocomplete="off"
+									hidden
 									data-wek-other-text
 									aria-label="<?php echo esc_attr( sprintf( /* translators: %s: Other option label */ __( '%s text', 'we-formkit' ), $other_label ) ); ?>"
 								/>

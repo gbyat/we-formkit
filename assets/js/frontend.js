@@ -675,6 +675,24 @@
 		} );
 	}
 
+	function syncCheckboxesOtherVisibility( fieldEl ) {
+		const otherBox = qs( fieldEl, 'input[type="checkbox"][data-wek-other]' );
+		const otherText = qs( fieldEl, '[data-wek-other-text]' );
+		if ( ! otherBox || ! otherText ) {
+			return;
+		}
+		const on = !! otherBox.checked;
+		otherText.hidden = ! on;
+		if ( ! on ) {
+			return;
+		}
+		if ( String( otherText.value || '' ).trim() === '' ) {
+			window.setTimeout( function () {
+				otherText.focus();
+			}, 0 );
+		}
+	}
+
 	function bindCheckboxesOther( root ) {
 		qsa( root, '[data-field-type="checkboxes"]' ).forEach( function ( fieldEl ) {
 			const otherBox = qs( fieldEl, 'input[type="checkbox"][data-wek-other]' );
@@ -684,21 +702,19 @@
 			}
 			otherBox.setAttribute( 'data-wek-other-bound', '1' );
 
+			syncCheckboxesOtherVisibility( fieldEl );
+
 			otherText.addEventListener( 'input', function () {
 				const hasText = String( otherText.value || '' ).trim() !== '';
 				if ( hasText && ! otherBox.checked ) {
 					otherBox.checked = true;
+					syncCheckboxesOtherVisibility( fieldEl );
 					otherBox.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 				}
 			} );
 
 			otherBox.addEventListener( 'change', function () {
-				if ( ! otherBox.checked ) {
-					return;
-				}
-				if ( String( otherText.value || '' ).trim() === '' ) {
-					otherText.focus();
-				}
+				syncCheckboxesOtherVisibility( fieldEl );
 			} );
 		} );
 	}
@@ -2097,6 +2113,7 @@
 						otherText.value =
 							otherEntry.indexOf( 'other:' ) === 0 ? otherEntry.slice( 6 ) : '';
 					}
+					syncCheckboxesOtherVisibility( fieldEl );
 					return;
 				}
 				if ( ( type === 'radio' || type === 'radio_image' ) && val ) {

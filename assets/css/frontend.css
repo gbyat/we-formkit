@@ -655,25 +655,50 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 }
 
 .we-formkit__choice--other {
-	flex-wrap: wrap;
-	align-items: center;
+	/* Normal grid cell; specify field appears under the label when checked. */
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	gap: 0;
 	cursor: default;
-	grid-column: 1 / -1;
+}
+
+.we-formkit__choice--other:has( [data-wek-other]:checked ) {
+	gap: 0.45rem;
 }
 
 .we-formkit__choice--other .we-formkit__choice-main {
 	display: inline-flex;
-	align-items: flex-start;
+	align-items: center;
 	gap: 0.65rem;
 	margin: 0;
+	padding: 0;
 	cursor: pointer;
-	flex: 0 1 auto;
+	flex: 0 0 auto;
 	min-width: 0;
+	max-width: 100%;
+	color: var(--wek-ink);
+	font-size: var(--wek-font-label);
+	font-weight: 600;
+	line-height: 1.4;
+	background: transparent;
+}
+
+.we-formkit__choice--other .we-formkit__choice-main span {
+	display: block;
+	margin: 0;
+	padding: 0;
+	color: var(--wek-ink);
+	font-size: var(--wek-font-label);
+	font-weight: 600;
+	line-height: 1.4;
+	white-space: nowrap;
 }
 
 .we-formkit__other-text {
-	flex: 1 1 10rem;
-	min-width: 8rem;
+	flex: 0 0 auto;
+	width: 100%;
+	min-width: 0;
 	max-width: 100%;
 	margin: 0;
 	padding: 0.35rem 0.5rem;
@@ -684,6 +709,10 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 	font: inherit;
 	font-size: var(--wek-font-input);
 	box-sizing: border-box;
+}
+
+.we-formkit__other-text[hidden] {
+	display: none !important;
 }
 
 .we-formkit__other-text:focus {
@@ -1113,6 +1142,12 @@ body .we-formkit .we-formkit__matrix-choice input[type="radio"],
 	margin: 1.25rem 0 0;
 }
 
+/* Theme `.entry-content p` often adds margin-bottom — keep action rows compact. */
+body .we-formkit p.we-formkit__actions,
+body .we-formkit .we-formkit__actions {
+	margin-bottom: 0;
+}
+
 .we-formkit__submit {
 	appearance: none;
 	border: 0;
@@ -1527,6 +1562,7 @@ body .we-formkit .we-formkit__matrix-add-row:disabled,
 .we-formkit__actions[hidden],
 .we-formkit__submit-slot[hidden] {
 	display: none !important;
+	margin: 0 !important;
 }
 
 .we-formkit__nav-btn {
