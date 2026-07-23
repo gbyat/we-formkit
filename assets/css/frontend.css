@@ -1173,6 +1173,36 @@ body .we-formkit .we-formkit__actions {
 	align-items: center;
 	justify-content: center;
 	gap: 0.5rem;
+	box-sizing: border-box;
+	max-width: 100%;
+}
+
+.we-formkit__submit--width-auto {
+	width: auto;
+}
+
+.we-formkit__submit--width-full {
+	width: 100%;
+}
+
+.we-formkit__submit--width-two_thirds {
+	width: 66.666%;
+}
+
+.we-formkit__submit--width-half {
+	width: 50%;
+}
+
+.we-formkit__submit--width-third {
+	width: 33.333%;
+}
+
+@media (max-width: 600px) {
+	.we-formkit__submit--width-two_thirds,
+	.we-formkit__submit--width-half,
+	.we-formkit__submit--width-third {
+		width: 100%;
+	}
 }
 
 .we-formkit__submit-icon {
@@ -1513,6 +1543,48 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 
 .we-formkit__submit-slot {
 	display: inline-flex;
+	max-width: 100%;
+}
+
+.we-formkit__submit-slot--width-full {
+	display: block;
+	width: 100%;
+}
+
+.we-formkit__submit-slot--width-full .we-formkit__submit {
+	width: 100%;
+}
+
+.we-formkit__submit-slot--width-two_thirds,
+.we-formkit__submit-slot--width-half,
+.we-formkit__submit-slot--width-third {
+	display: block;
+}
+
+.we-formkit__submit-slot--width-two_thirds {
+	width: 66.666%;
+}
+
+.we-formkit__submit-slot--width-half {
+	width: 50%;
+}
+
+.we-formkit__submit-slot--width-third {
+	width: 33.333%;
+}
+
+.we-formkit__submit-slot--width-two_thirds .we-formkit__submit,
+.we-formkit__submit-slot--width-half .we-formkit__submit,
+.we-formkit__submit-slot--width-third .we-formkit__submit {
+	width: 100%;
+}
+
+@media (max-width: 600px) {
+	.we-formkit__submit-slot--width-two_thirds,
+	.we-formkit__submit-slot--width-half,
+	.we-formkit__submit-slot--width-third {
+		width: 100%;
+	}
 }
 
 .we-formkit__submit-slot[hidden] {

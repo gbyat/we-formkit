@@ -527,8 +527,10 @@ final class Form_Editor {
 					'matrixColCheckbox'         => __( 'Checkbox', 'we-formkit' ),
 					'matrixColText'             => __( 'Text', 'we-formkit' ),
 					'matrixColNumber'           => __( 'Number', 'we-formkit' ),
+					/* translators: %d: 1-based column index. */
 					'matrixColumnSample'        => __( 'Column %d', 'we-formkit' ),
 					'matrixRadioOptions'        => __( 'Radio options (column headers)', 'we-formkit' ),
+					/* translators: %d: 1-based row index. */
 					'matrixRowSample'           => __( 'Row %d', 'we-formkit' ),
 					'matrixRowSample1'          => __( 'Row 1', 'we-formkit' ),
 					'matrixRowSample2'          => __( 'Row 2', 'we-formkit' ),
@@ -1676,6 +1678,7 @@ final class Form_Editor {
 						<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[attach_uploads]" value="1" <?php checked( ! empty( $n['attach_uploads'] ) ); ?> />
 						<?php esc_html_e( 'Attach uploaded files to this email', 'we-formkit' ); ?>
 					</label>
+					<p class="description"><?php esc_html_e( 'Signatures are shown inline in the message (not attached again as a file).', 'we-formkit' ); ?></p>
 				</td>
 			</tr>
 		</table>

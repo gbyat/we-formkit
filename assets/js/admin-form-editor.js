@@ -3454,6 +3454,18 @@
 					)
 				);
 				panel.appendChild(
+					el( 'label', { text: i18n.submitButtonWidth || 'Button width' } )
+				);
+				panel.appendChild( renderSubmitWidthPicker() );
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.submitButtonWidthHint ||
+							'Same column widths as fields. Auto fits the label (recommended).',
+					} )
+				);
+				panel.appendChild(
 					fieldRow(
 						i18n.submitIconSvg || 'SVG icon (optional)',
 						( function () {
@@ -5651,7 +5663,7 @@
 				el( 'div', { className: 'wek-builder__toolbar' }, [
 					el( 'button', {
 						type: 'button',
-						className: 'button button-secondary',
+						className: 'wek-builder__toolbar-btn wek-builder__toolbar-btn--accent',
 						text: i18n.addSection || 'Add section',
 						onClick: function () {
 							schema.sections.push( {
@@ -5670,7 +5682,7 @@
 					} ),
 					el( 'button', {
 						type: 'button',
-						className: 'button button-secondary',
+						className: 'wek-builder__toolbar-btn',
 						text: i18n.pasteSection || 'Paste section',
 						onClick: function () {
 							pasteSectionFromClipboard();
@@ -5678,7 +5690,7 @@
 					} ),
 					el( 'button', {
 						type: 'button',
-						className: 'button button-link',
+						className: 'wek-builder__toolbar-btn wek-builder__toolbar-btn--quiet',
 						text: i18n.collapseAllSections || 'Collapse all',
 						onClick: function () {
 							( schema.sections || [] ).forEach( function ( section ) {
@@ -5691,7 +5703,7 @@
 					} ),
 					el( 'button', {
 						type: 'button',
-						className: 'button button-link',
+						className: 'wek-builder__toolbar-btn wek-builder__toolbar-btn--quiet',
 						text: i18n.expandAllSections || 'Expand all',
 						onClick: function () {
 							( schema.sections || [] ).forEach( function ( section ) {
@@ -5710,6 +5722,7 @@
 				const submitChildren = [];
 				const iconSvg = String( submitButton.icon_svg || '' ).trim();
 				const hasIcon = iconSvg.indexOf( '<svg' ) !== -1;
+				const submitWidth = normalizeSubmitWidth( submitButton.width );
 				if ( hasIcon && submitButton.icon_position !== 'after' ) {
 					const iconBefore = el( 'span', {
 						className: 'wek-builder__submit-preview-icon',
@@ -5738,7 +5751,9 @@
 						{
 							type: 'button',
 							className:
-								'wek-builder__submit-preview' + ( submitSelected ? ' is-selected' : '' ),
+								'wek-builder__submit-preview wek-builder__submit-preview--width-' +
+								submitWidth +
+								( submitSelected ? ' is-selected' : '' ),
 							title: i18n.editSubmit || 'Edit submit button',
 							'aria-pressed': submitSelected ? 'true' : 'false',
 							onClick: function ( event ) {

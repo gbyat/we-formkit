@@ -556,7 +556,7 @@ final class Form_Schema {
 	 * @return string One of auto|full|two_thirds|half|third.
 	 */
 	public static function normalize_submit_width( $raw ): string {
-		$width = sanitize_key( (string) $raw );
+		$width   = sanitize_key( (string) $raw );
 		$allowed = array( 'auto', 'full', 'two_thirds', 'half', 'third' );
 		return in_array( $width, $allowed, true ) ? $width : 'auto';
 	}
