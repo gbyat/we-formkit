@@ -110,10 +110,12 @@ final class Form_Schema {
 		}
 
 		$normalized = array(
-			'version'  => 1,
-			'title'    => sanitize_text_field( (string) ( $schema['title'] ?? '' ) ),
-			'intro'    => wp_kses_post( (string) ( $schema['intro'] ?? '' ) ),
-			'sections' => $sections,
+			'version'     => 1,
+			'title'       => sanitize_text_field( (string) ( $schema['title'] ?? '' ) ),
+			'show_title'  => ! array_key_exists( 'show_title', $schema ) || ! empty( $schema['show_title'] ),
+			'intro'       => wp_kses_post( (string) ( $schema['intro'] ?? '' ) ),
+			'show_intro'  => ! array_key_exists( 'show_intro', $schema ) || ! empty( $schema['show_intro'] ),
+			'sections'    => $sections,
 		);
 
 		return self::repair_matrix_condition_refs( $normalized );

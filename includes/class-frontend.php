@@ -398,12 +398,21 @@ final class Frontend {
 			data-inline-scope="<?php echo esc_attr( (string) ( self::$appearance['inline_scope'] ?? 'required' ) ); ?>"
 			style="<?php echo esc_attr( Form_Style::css_variables_attr( $form_id ) ); ?>"
 		>
+			<?php
+			$show_form_title = ! array_key_exists( 'show_title', $schema ) || ! empty( $schema['show_title'] );
+			$show_form_intro = ! array_key_exists( 'show_intro', $schema ) || ! empty( $schema['show_intro'] );
+			$has_intro       = $show_form_intro && ! empty( $schema['intro'] );
+			if ( $show_form_title || $has_intro ) :
+				?>
 			<header class="we-formkit__header">
-				<h2 class="we-formkit__title"><?php echo esc_html( $title ); ?></h2>
-				<?php if ( ! empty( $schema['intro'] ) ) : ?>
+				<?php if ( $show_form_title ) : ?>
+					<h2 class="we-formkit__title"><?php echo esc_html( $title ); ?></h2>
+				<?php endif; ?>
+				<?php if ( $has_intro ) : ?>
 					<div class="we-formkit__intro"><?php echo wp_kses_post( $schema['intro'] ); ?></div>
 				<?php endif; ?>
 			</header>
+			<?php endif; ?>
 
 			<div class="we-formkit__status" data-wek-status role="status" aria-live="polite"></div>
 			<div class="we-formkit__info-docs" data-wek-info-docs hidden></div>
@@ -1207,17 +1216,17 @@ final class Frontend {
 			<?php elseif ( 'textarea' === $type ) : ?>
 				<?php
 				$text_default = isset( $field['default_value'] ) ? (string) $field['default_value'] : '';
+				$ta_attrs     = $type_obj ? $type_obj->render_attributes( $field ) : array( 'rows' => '4' );
 				?>
 				<label class="<?php echo esc_attr( self::label_classes( $field ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
 					<?php self::echo_requirement_mark( $req, $type ); ?>
 				</label>
 				<textarea
+					<?php echo self::html_attrs( $ta_attrs ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					id="<?php echo esc_attr( $input_id ); ?>"
 					name="<?php echo esc_attr( $id ); ?>"
-					rows="4"
 					placeholder="<?php echo esc_attr( $field['placeholder'] ); ?>"
-					<?php echo $req ? 'required' : ''; ?>
 					aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
 				><?php echo esc_textarea( $text_default ); ?></textarea>
 				<?php if ( ! empty( $field['help'] ) ) : ?>

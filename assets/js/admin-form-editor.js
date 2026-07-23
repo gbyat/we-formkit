@@ -668,6 +668,13 @@
 			if ( typeId === 'checkbox' ) {
 				typeOptions.choice_label = i18n.checkboxDefaultText || 'Yes';
 			}
+			if ( typeId === 'text' ) {
+				typeOptions.max_length = 200;
+			}
+			if ( typeId === 'textarea' ) {
+				typeOptions.rows = 4;
+				typeOptions.max_length = 5000;
+			}
 			if ( typeId === 'upload' ) {
 				typeOptions.max_files = 1;
 				typeOptions.max_file_size_mb = 5;
@@ -1460,6 +1467,120 @@
 			updateCanvasFieldPreview( field );
 		}
 
+		function slugifyOptionKey( label, fallback ) {
+			const map = {
+				ä: 'ae',
+				ö: 'oe',
+				ü: 'ue',
+				Ä: 'ae',
+				Ö: 'oe',
+				Ü: 'ue',
+				ß: 'ss',
+				æ: 'ae',
+				ø: 'oe',
+				å: 'aa',
+				Æ: 'ae',
+				Ø: 'oe',
+				Å: 'aa',
+			};
+			let text = String( label || '' );
+			text = text.replace( /[äöüÄÖÜßæøåÆØÅ]/g, function ( ch ) {
+				return map[ ch ] || ch;
+			} );
+			// Strip remaining diacritics (é → e, etc.).
+			try {
+				text = text.normalize( 'NFD' ).replace( /[\u0300-\u036f]/g, '' );
+			} catch ( e ) {
+				// ignore
+			}
+			let key = text
+				.toLowerCase()
+				.replace( /[^a-z0-9]+/g, '_' )
+				.replace( /^_+|_+$/g, '' );
+			if ( ! key ) {
+				key = String( fallback || 'option' )
+					.toLowerCase()
+					.replace( /[^a-z0-9]+/g, '_' )
+					.replace( /^_+|_+$/g, '' );
+			}
+			if ( ! key ) {
+				key = 'option';
+			}
+			return key.slice( 0, 64 );
+		}
+
+		function uniqueOptionValue( options, base, skipIndex ) {
+			let key = base || 'option';
+			const used = {};
+			( options || [] ).forEach( function ( opt, i ) {
+				if ( i === skipIndex ) {
+					return;
+				}
+				const v = String( ( opt && opt.value ) || '' );
+				if ( v ) {
+					used[ v ] = true;
+				}
+			} );
+			if ( ! used[ key ] ) {
+				return key;
+			}
+			let n = 2;
+			while ( used[ key + '_' + n ] ) {
+				n += 1;
+			}
+			return key + '_' + n;
+		}
+
+		function optionValueIsAuto( option ) {
+			if ( ! option ) {
+				return true;
+			}
+			if ( option.value_locked === true ) {
+				return false;
+			}
+			if ( option.value_locked === false ) {
+				return true;
+			}
+			const label = String( option.label || '' );
+			const value = String( option.value || '' );
+			if ( ! value ) {
+				return true;
+			}
+			const auto = slugifyOptionKey( label, '' );
+			if ( ! auto ) {
+				return true;
+			}
+			if ( value === auto ) {
+				return true;
+			}
+			const escaped = auto.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
+			return new RegExp( '^' + escaped + '_\\d+$' ).test( value );
+		}
+
+		function syncOptionAutoValue( field, oIndex, labelInput, valueInput ) {
+			const opt = field.options[ oIndex ];
+			if ( ! opt || ! optionValueIsAuto( opt ) ) {
+				return;
+			}
+			const prev = String( opt.value || '' );
+			const base = slugifyOptionKey( opt.label, 'option_' + ( oIndex + 1 ) );
+			const next = uniqueOptionValue( field.options, base, oIndex );
+			opt.value = next;
+			opt.value_locked = false;
+			if ( valueInput ) {
+				valueInput.value = next;
+				valueInput.placeholder =
+					next || i18n.optionValueAuto || 'auto from label';
+			}
+			if ( field.default_value === prev ) {
+				field.default_value = next;
+			}
+		}
+
+		function slugifyMatrixKey( label, fallback ) {
+			return slugifyOptionKey( label, fallback ).slice( 0, 40 );
+		}
+
 		function renderOptionsEditor( field ) {
 			if ( ! Array.isArray( field.options ) ) {
 				field.options = [];
@@ -1474,7 +1595,7 @@
 					className: 'description',
 					text:
 						i18n.optionsDefaultHint ||
-						'Drag to reorder. Mark one option as default, or leave unset to use the placeholder (empty value).',
+						'Enter labels; keys are filled in automatically (ä→ae, ß→ss, …). Override a key only when you need a custom value. Drag to reorder; mark one option as default, or leave unset for the placeholder.',
 				} )
 			);
 
@@ -1529,30 +1650,67 @@
 					refreshFieldOptionsUi( field );
 				} );
 
-				const valueInput = el( 'input', {
-					type: 'text',
-					className: 'regular-text',
-					placeholder: i18n.optionValue || 'value',
-					value: option.value || '',
-					'aria-label': i18n.optionValue || 'value',
-				} );
+				if ( optionValueIsAuto( option ) && option.label ) {
+					const base = slugifyOptionKey( option.label, 'option_' + ( oIndex + 1 ) );
+					option.value = uniqueOptionValue( field.options, base, oIndex );
+					option.value_locked = false;
+				}
+
 				const labelInput = el( 'input', {
 					type: 'text',
-					className: 'regular-text',
+					className: 'regular-text wek-builder__option-label',
 					placeholder: i18n.optionLabel || 'Label',
 					value: option.label || '',
 					'aria-label': i18n.optionLabel || 'Label',
 				} );
-				valueInput.addEventListener( 'input', function () {
-					const prev = field.options[ oIndex ].value;
-					field.options[ oIndex ].value = valueInput.value;
-					if ( field.default_value === prev ) {
-						field.default_value = valueInput.value;
-					}
-					syncHidden();
+				const valueInput = el( 'input', {
+					type: 'text',
+					className: 'regular-text wek-builder__option-value',
+					placeholder: i18n.optionValueAuto || 'auto from label',
+					value: option.value || '',
+					'aria-label': i18n.optionValue || 'Key (optional)',
+					title:
+						i18n.optionValueHint ||
+						'Optional. Leave empty or auto-generated from the label. Edit to set a custom key.',
 				} );
 				labelInput.addEventListener( 'input', function () {
 					field.options[ oIndex ].label = labelInput.value;
+					syncOptionAutoValue( field, oIndex, labelInput, valueInput );
+					syncHidden();
+				} );
+				valueInput.addEventListener( 'input', function () {
+					const raw = valueInput.value;
+					const prev = field.options[ oIndex ].value;
+					if ( ! String( raw ).trim() ) {
+						field.options[ oIndex ].value_locked = false;
+						syncOptionAutoValue( field, oIndex, labelInput, valueInput );
+						syncHidden();
+						return;
+					}
+					field.options[ oIndex ].value_locked = true;
+					field.options[ oIndex ].value = raw;
+					if ( field.default_value === prev ) {
+						field.default_value = raw;
+					}
+					syncHidden();
+				} );
+				valueInput.addEventListener( 'blur', function () {
+					const raw = String( valueInput.value || '' ).trim();
+					const prev = field.options[ oIndex ].value;
+					if ( ! raw ) {
+						field.options[ oIndex ].value_locked = false;
+						syncOptionAutoValue( field, oIndex, labelInput, valueInput );
+						syncHidden();
+						return;
+					}
+					const cleaned = slugifyOptionKey( raw, 'option_' + ( oIndex + 1 ) );
+					const next = uniqueOptionValue( field.options, cleaned, oIndex );
+					field.options[ oIndex ].value_locked = true;
+					field.options[ oIndex ].value = next;
+					valueInput.value = next;
+					if ( field.default_value === prev ) {
+						field.default_value = next;
+					}
 					syncHidden();
 				} );
 
@@ -1579,8 +1737,8 @@
 				);
 
 				row.appendChild( handle );
-				row.appendChild( valueInput );
 				row.appendChild( labelInput );
+				row.appendChild( valueInput );
 
 				if ( isRadioImage ) {
 					const imageIdInput = el( 'input', {
@@ -1659,9 +1817,16 @@
 					className: 'button',
 					text: i18n.addOption || 'Add option',
 					onClick: function () {
+						const n = field.options.length + 1;
+						const label = 'Option ' + n;
 						const next = {
-							value: 'option_' + ( field.options.length + 1 ),
-							label: 'Option ' + ( field.options.length + 1 ),
+							label: label,
+							value: uniqueOptionValue(
+								field.options,
+								slugifyOptionKey( label, 'option_' + n ),
+								-1
+							),
+							value_locked: false,
 						};
 						if ( isRadioImage ) {
 							next.image_id = 0;
@@ -2641,17 +2806,6 @@
 			field.required = min > 0 || rowReq || colReq;
 		}
 
-		function slugifyMatrixKey( label, fallback ) {
-			let key = String( label || '' )
-				.toLowerCase()
-				.replace( /[^a-z0-9]+/g, '_' )
-				.replace( /^_+|_+$/g, '' );
-			if ( ! key ) {
-				key = fallback || 'item';
-			}
-			return key.slice( 0, 40 );
-		}
-
 		function renderMatrixPreview( field ) {
 			const opts = ensureMatrixOptions( field );
 			const rows = opts.rows.slice( 0, 3 );
@@ -3283,6 +3437,61 @@
 			);
 			wrap.appendChild( validation );
 
+			return wrap;
+		}
+
+		function ensureTextLimits( field ) {
+			const opts = ensureTypeOptions( field );
+			if ( opts.max_length == null || opts.max_length === '' ) {
+				opts.max_length = field.type === 'textarea' ? 5000 : 200;
+			}
+			if ( field.type === 'textarea' && ( opts.rows == null || opts.rows === '' ) ) {
+				opts.rows = 4;
+			}
+			return opts;
+		}
+
+		function renderTextLimitsEditor( field ) {
+			const opts = ensureTextLimits( field );
+			const wrap = el( 'div', { className: 'wek-builder__text-limits' } );
+			if ( field.type === 'textarea' ) {
+				wrap.appendChild(
+					fieldRow(
+						i18n.textareaRows || 'Visible rows',
+						numberInput( opts.rows || 4, function ( v ) {
+							const n = parseInt( v, 10 );
+							opts.rows = ! isNaN( n ) && n > 0 ? Math.min( 40, n ) : 4;
+							syncHidden();
+						}, { min: '1', max: '40' } )
+					)
+				);
+			}
+			wrap.appendChild(
+				fieldRow(
+					i18n.maxLength || 'Maximum characters',
+					numberInput(
+						opts.max_length === 0 || opts.max_length ? String( opts.max_length ) : '',
+						function ( v ) {
+							if ( v === '' ) {
+								opts.max_length = 0;
+							} else {
+								const n = parseInt( v, 10 );
+								opts.max_length = ! isNaN( n ) && n >= 0 ? n : 0;
+							}
+							syncHidden();
+						},
+						{ min: '0', step: '1' }
+					)
+				)
+			);
+			wrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.maxLengthHint ||
+						'0 = no limit. Caps input length (helps against spam dumps in single-line fields).',
+				} )
+			);
 			return wrap;
 		}
 
@@ -3955,6 +4164,10 @@
 
 				if ( field.type === 'number' ) {
 					panel.appendChild( renderNumberOptionsEditor( field ) );
+				}
+
+				if ( field.type === 'text' || field.type === 'textarea' ) {
+					panel.appendChild( renderTextLimitsEditor( field ) );
 				}
 
 				if ( field.type === 'matrix' ) {

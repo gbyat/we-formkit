@@ -267,6 +267,46 @@ abstract class Abstract_Field_Type {
 	}
 
 	/**
+	 * Build a stable option value from a label (German-friendly transliteration).
+	 *
+	 * @param string $label    Display label.
+	 * @param string $fallback Fallback when empty.
+	 * @return string
+	 */
+	public static function slugify_option_value( $label, $fallback = 'option' ): string {
+		$text = (string) $label;
+		$map  = array(
+			'ä' => 'ae',
+			'ö' => 'oe',
+			'ü' => 'ue',
+			'Ä' => 'ae',
+			'Ö' => 'oe',
+			'Ü' => 'ue',
+			'ß' => 'ss',
+			'æ' => 'ae',
+			'ø' => 'oe',
+			'å' => 'aa',
+			'Æ' => 'ae',
+			'Ø' => 'oe',
+			'Å' => 'aa',
+		);
+		$text = strtr( $text, $map );
+		if ( function_exists( 'remove_accents' ) ) {
+			$text = remove_accents( $text );
+		}
+		$key = sanitize_title( $text );
+		$key = str_replace( '-', '_', $key );
+		$key = sanitize_key( $key );
+		if ( '' === $key ) {
+			$key = sanitize_key( (string) $fallback );
+		}
+		if ( '' === $key ) {
+			$key = 'option';
+		}
+		return substr( $key, 0, 64 );
+	}
+
+	/**
 	 * Normalize an options list to [{value, label}] shape.
 	 *
 	 * @param mixed $raw Raw options from config.
@@ -283,12 +323,23 @@ abstract class Abstract_Field_Type {
 			return array();
 		}
 
-		$out = array();
+		$out   = array();
+		$used  = array();
+		$index = 0;
 
 		foreach ( $raw as $line ) {
+			++$index;
+			$extra = array();
+
 			if ( is_array( $line ) ) {
 				$value = isset( $line['value'] ) ? sanitize_key( (string) $line['value'] ) : '';
-				$label = isset( $line['label'] ) ? sanitize_text_field( (string) $line['label'] ) : $value;
+				$label = isset( $line['label'] ) ? sanitize_text_field( (string) $line['label'] ) : '';
+				if ( isset( $line['image_id'] ) ) {
+					$extra['image_id'] = absint( $line['image_id'] );
+				}
+				if ( isset( $line['image_url'] ) ) {
+					$extra['image_url'] = esc_url_raw( (string) $line['image_url'] );
+				}
 			} else {
 				$line = trim( (string) $line );
 				if ( '' === $line ) {
@@ -296,17 +347,42 @@ abstract class Abstract_Field_Type {
 				}
 
 				$parts = array_map( 'trim', explode( '|', $line, 2 ) );
-				$value = sanitize_key( $parts[0] );
-				$label = isset( $parts[1] ) ? sanitize_text_field( $parts[1] ) : $value;
+				if ( isset( $parts[1] ) ) {
+					$value = sanitize_key( $parts[0] );
+					$label = sanitize_text_field( $parts[1] );
+				} else {
+					// Single token = label; value is derived below.
+					$value = '';
+					$label = sanitize_text_field( $parts[0] );
+				}
 			}
 
-			if ( '' === $value ) {
+			if ( '' === $label && '' === $value ) {
 				continue;
 			}
 
-			$out[] = array(
-				'value' => $value,
-				'label' => $label,
+			if ( '' === $label ) {
+				$label = $value;
+			}
+
+			if ( '' === $value ) {
+				$value = self::slugify_option_value( $label, 'option_' . $index );
+			}
+
+			$base = $value;
+			$n    = 2;
+			while ( isset( $used[ $value ] ) ) {
+				$value = substr( $base, 0, 60 ) . '_' . $n;
+				++$n;
+			}
+			$used[ $value ] = true;
+
+			$out[] = array_merge(
+				array(
+					'value' => $value,
+					'label' => $label,
+				),
+				$extra
 			);
 		}
 

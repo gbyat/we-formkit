@@ -168,9 +168,11 @@ final class Rest_Form_Settings {
 			)
 		);
 
-		$schema          = Form_Schema::get( $form_id );
-		$schema['title'] = $title;
-		$schema['intro'] = $intro;
+		$schema               = Form_Schema::get( $form_id );
+		$schema['title']      = $title;
+		$schema['intro']      = $intro;
+		$schema['show_title'] = ! array_key_exists( 'show_title', $params ) || ! empty( $params['show_title'] );
+		$schema['show_intro'] = ! array_key_exists( 'show_intro', $params ) || ! empty( $params['show_intro'] );
 		Form_Schema::save( $form_id, $schema );
 
 		if ( '' === $slug ) {
@@ -255,8 +257,10 @@ final class Rest_Form_Settings {
 			'secret_token' => (string) ( $secret['token'] ?? '' ),
 			'settings'     => array(
 				'title'                 => (string) ( $schema['title'] ?? get_the_title( $form_id ) ),
+				'show_title'            => ! array_key_exists( 'show_title', $schema ) || ! empty( $schema['show_title'] ),
 				'slug'                  => (string) get_post_meta( $form_id, Form_Schema::META_SLUG, true ),
 				'intro'                 => (string) ( $schema['intro'] ?? '' ),
+				'show_intro'            => ! array_key_exists( 'show_intro', $schema ) || ! empty( $schema['show_intro'] ),
 				'privacy_url'           => (string) get_post_meta( $form_id, Form_Schema::META_PRIVACY_URL, true ),
 				'secret_enabled'        => ! empty( $secret['enabled'] ),
 				'style_preset'          => (string) $style['preset'],

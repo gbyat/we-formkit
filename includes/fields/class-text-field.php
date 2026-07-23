@@ -30,9 +30,18 @@ class Text_Field extends Abstract_Field_Type {
 				'label'       => __( 'Maximum length', 'we-formkit' ),
 				'type'        => 'number',
 				'default'     => 0,
-				'description' => __( '0 = no limit.', 'we-formkit' ),
+				'description' => __( '0 = no limit. Caps how many characters visitors can enter (helps against spam dumps).', 'we-formkit' ),
 			),
 		);
+	}
+
+	public function normalize_config( array $field ): array {
+		$field = parent::normalize_config( $field );
+
+		$max = isset( $field['type_options']['max_length'] ) ? (int) $field['type_options']['max_length'] : 0;
+		$field['type_options']['max_length'] = max( 0, min( 10000, $max ) );
+
+		return $field;
 	}
 
 	public function sanitize( $value, array $field ) {

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - URL multi-field prefill via query params (Field ID / custom param), shortcode/block `prefill`, and builder copy-links for choice options.
+- Form Settings: show/hide form title and intro independently on the public form; fix missing intro field label; Design live preview matches front-end header vs section card.
+- Text / Textarea: maximum character limit (builder + HTML maxlength + server validate); new text defaults to 200, textarea to 5000.
+- Required validation skips fields that are hidden by field or section conditions (front-end + server).
+- Choice options: label-first editing; optional keys auto-generated with German-friendly transliteration (ä→ae, ß→ss, …); unique keys on clash.
 - Align readme “Requires at least” / requirements with plugin header (WordPress 6.9); “Tested up to” 7.1; sync wordpress.org changelog through 1.0.3.
 
 ## [1.0.3] - 2026-07-23

@@ -1417,6 +1417,20 @@
 		return '';
 	}
 
+	function fieldIsEffectivelyVisible( fieldEl ) {
+		if ( ! fieldEl ) {
+			return false;
+		}
+		if ( fieldEl.classList.contains( 'is-hidden' ) || fieldEl.getAttribute( 'aria-hidden' ) === 'true' ) {
+			return false;
+		}
+		const section = fieldEl.closest( '[data-wek-section]' );
+		if ( section && ( section.classList.contains( 'is-hidden' ) || section.getAttribute( 'aria-hidden' ) === 'true' ) ) {
+			return false;
+		}
+		return true;
+	}
+
 	function getFieldValidationMessage( fieldEl ) {
 		const type = fieldEl.getAttribute( 'data-field-type' ) || '';
 		if ( type === 'html' || type === 'hidden' ) {
@@ -1537,7 +1551,7 @@
 	}
 
 	function validateFieldLive( form, fieldEl, root ) {
-		if ( fieldEl.classList.contains( 'is-hidden' ) ) {
+		if ( ! fieldIsEffectivelyVisible( fieldEl ) ) {
 			clearFieldFeedback( fieldEl );
 			return true;
 		}
@@ -2413,7 +2427,7 @@
 			let ok = true;
 			const showSuccess = inlineValidationEnabled( root );
 			qsa( section, '[data-wek-field]' ).forEach( function ( fieldEl ) {
-				if ( fieldEl.classList.contains( 'is-hidden' ) ) {
+				if ( ! fieldIsEffectivelyVisible( fieldEl ) ) {
 					return;
 				}
 				const msg = getFieldValidationMessage( fieldEl );
@@ -2988,7 +3002,7 @@
 		let ok = true;
 		const showSuccess = inlineValidationEnabled( root );
 		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
-			if ( fieldEl.classList.contains( 'is-hidden' ) ) {
+			if ( ! fieldIsEffectivelyVisible( fieldEl ) ) {
 				return;
 			}
 			const msg = getFieldValidationMessage( fieldEl );

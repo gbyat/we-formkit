@@ -6,7 +6,7 @@
 import { createRoot, render, useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, Notice, Spinner } from '@wordpress/components';
+import { Button, Notice, Spinner, BaseControl } from '@wordpress/components';
 import { DataForm } from '@wordpress/dataviews/wp';
 import './style.css';
 
@@ -102,13 +102,23 @@ function IntroWysiwygEdit( { data, field, onChange } ) {
 	}, [ value ] );
 
 	return (
-		<div className="wek-dataform-wysiwyg">
+		<BaseControl
+			id={ INTRO_EDITOR_ID }
+			label={ field.label || __( 'Intro text', 'we-formkit' ) }
+			help={
+				field.description ||
+				__(
+					'Shown under the form title. Use the toolbar for basic formatting.',
+					'we-formkit'
+				)
+			}
+			className="wek-dataform-wysiwyg"
+		>
 			<textarea
 				id={ INTRO_EDITOR_ID }
 				name={ INTRO_EDITOR_ID }
 				className="wek-dataform-wysiwyg__textarea large-text"
 				defaultValue={ value }
-				aria-label={ field.label }
 				rows={ 8 }
 				onChange={ ( event ) => {
 					// Fallback when TinyMCE is unavailable or Text tab is active.
@@ -118,7 +128,7 @@ function IntroWysiwygEdit( { data, field, onChange } ) {
 					onChange( { [ field.id ]: event.target.value } );
 				} }
 			/>
-		</div>
+		</BaseControl>
 	);
 }
 
@@ -376,22 +386,31 @@ function ColorSchemePreview( { data } ) {
 						RADIUS_SECTION.md,
 				} }
 			>
-				<div className={ labelClass }>
-					<div className="wek-scheme-preview__title">
-						{ data.title || __( 'Contact request', 'we-formkit' ) }
+				{ data.show_title !== false || data.show_intro !== false ? (
+					<div className="wek-scheme-preview__header">
+						{ data.show_title !== false ? (
+							<div className="wek-scheme-preview__title">
+								{ data.title ||
+									__( 'Contact request', 'we-formkit' ) }
+							</div>
+						) : null }
+						{ data.show_intro !== false ? (
+							<div
+								className="wek-scheme-preview__intro"
+								dangerouslySetInnerHTML={ {
+									__html:
+										data.intro ||
+										__(
+											'We reply within one business day.',
+											'we-formkit'
+										),
+								} }
+							/>
+						) : null }
 					</div>
-					<div
-						className="wek-scheme-preview__intro"
-						dangerouslySetInnerHTML={ {
-							__html:
-								data.intro ||
-								__(
-									'We reply within one business day.',
-									'we-formkit'
-								),
-						} }
-					/>
+				) : null }
 
+				<div className={ labelClass }>
 					<div className="wek-scheme-preview__section">
 						<div className="wek-scheme-preview__section-title">
 							{ __( 'Details', 'we-formkit' ) }
@@ -523,8 +542,10 @@ function flattenSettings( payload ) {
 	const colors = payload.colors || {};
 	return {
 		title: payload.title || '',
+		show_title: payload.show_title !== false,
 		slug: payload.slug || '',
 		intro: payload.intro || '',
+		show_intro: payload.show_intro !== false,
 		privacy_url: payload.privacy_url || '',
 		secret_enabled: !! payload.secret_enabled,
 		style_preset: payload.style_preset || 'theme',
@@ -562,8 +583,10 @@ function toApiPayload( data ) {
 	} );
 	return {
 		title: data.title || '',
+		show_title: data.show_title !== false,
 		slug: data.slug || '',
 		intro: data.intro || '',
+		show_intro: data.show_intro !== false,
 		privacy_url: data.privacy_url || '',
 		secret_enabled: !! data.secret_enabled,
 		label_weight: data.label_weight || 'bold',
@@ -639,6 +662,16 @@ function FormSettingsApp() {
 				type: 'text',
 			},
 			{
+				id: 'show_title',
+				label: __( 'Show title on form', 'we-formkit' ),
+				type: 'boolean',
+				Edit: 'toggle',
+				description: __(
+					'When off, the title is kept for admin/listings but hidden on the public form.',
+					'we-formkit'
+				),
+			},
+			{
 				id: 'slug',
 				label: __( 'Slug', 'we-formkit' ),
 				type: 'text',
@@ -656,6 +689,16 @@ function FormSettingsApp() {
 					'we-formkit'
 				),
 				Edit: IntroWysiwygEdit,
+			},
+			{
+				id: 'show_intro',
+				label: __( 'Show intro on form', 'we-formkit' ),
+				type: 'boolean',
+				Edit: 'toggle',
+				description: __(
+					'When off, intro text is kept in settings but hidden on the public form.',
+					'we-formkit'
+				),
 			},
 			{
 				id: 'privacy_url',
@@ -972,8 +1015,10 @@ function FormSettingsApp() {
 					layout: { type: 'card', isOpened: true },
 					children: [
 						'title',
+						'show_title',
 						'slug',
 						'intro',
+						'show_intro',
 						'chrome_gap',
 						'privacy_url',
 						'secret_enabled',

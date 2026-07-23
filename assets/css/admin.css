@@ -1504,14 +1504,14 @@ body.wek-builder-is-resizing iframe {
 
 .wek-admin .wek-builder__option-row {
 	display: grid;
-	grid-template-columns: auto minmax(0, 0.9fr) minmax(0, 1.3fr) auto auto;
+	grid-template-columns: auto minmax(0, 1.4fr) minmax(0, 0.85fr) auto auto;
 	gap: 0.4rem;
 	align-items: center;
 	padding: 0.25rem 0;
 }
 
 .wek-admin .wek-builder__option-row.is-radio-image {
-	grid-template-columns: auto minmax(0, 0.7fr) minmax(0, 1fr) minmax(0, 0.55fr) minmax(0, 0.9fr) auto auto;
+	grid-template-columns: auto minmax(0, 1.1fr) minmax(0, 0.7fr) minmax(0, 0.55fr) minmax(0, 0.9fr) auto auto;
 }
 
 .wek-admin .wek-builder__option-row.is-dragging {

@@ -440,12 +440,17 @@ final class Form_Editor {
 					'contentGuardHint'          => __( 'Reject submissions where this field contains links or an email address (helps against bots).', 'we-formkit' ),
 					'blockLinks'                => __( 'Reject links (URLs)', 'we-formkit' ),
 					'blockEmails'               => __( 'Reject email addresses', 'we-formkit' ),
-					'options'                   => __( 'Options (value + label)', 'we-formkit' ),
-					'optionsDefaultHint'        => __( 'Drag to reorder. Mark one option as default, or leave unset to use the placeholder (empty value).', 'we-formkit' ),
+					'maxLength'                 => __( 'Maximum characters', 'we-formkit' ),
+					'maxLengthHint'             => __( '0 = no limit. Caps input length (helps against spam dumps in single-line fields).', 'we-formkit' ),
+					'textareaRows'              => __( 'Visible rows', 'we-formkit' ),
+					'options'                   => __( 'Options', 'we-formkit' ),
+					'optionsDefaultHint'        => __( 'Enter labels; keys are filled in automatically (ä→ae, ß→ss, …). Override a key only when you need a custom value. Drag to reorder; mark one option as default, or leave unset for the placeholder.', 'we-formkit' ),
 					'dragToReorder'             => __( 'Drag to reorder', 'we-formkit' ),
 					'defaultOption'             => __( 'Default', 'we-formkit' ),
 					'clearDefault'              => __( 'Clear default (use placeholder)', 'we-formkit' ),
-					'optionValue'               => __( 'value', 'we-formkit' ),
+					'optionValue'               => __( 'Key (optional)', 'we-formkit' ),
+					'optionValueAuto'           => __( 'auto from label', 'we-formkit' ),
+					'optionValueHint'           => __( 'Optional. Leave empty or auto-generated from the label. Edit to set a custom key.', 'we-formkit' ),
 					'optionLabel'               => __( 'Label', 'we-formkit' ),
 					'collapseLibrary'           => __( 'Collapse fields library', 'we-formkit' ),
 					'expandLibrary'             => __( 'Expand fields library', 'we-formkit' ),
@@ -1079,8 +1084,10 @@ final class Form_Editor {
 				'draftTtlDays'  => Drafts::allowed_ttl_days(),
 				'settings'      => array(
 					'title'                 => (string) $title,
+					'show_title'            => ! array_key_exists( 'show_title', $schema ) || ! empty( $schema['show_title'] ),
 					'slug'                  => (string) $slug,
 					'intro'                 => (string) ( $schema['intro'] ?? '' ),
+					'show_intro'            => ! array_key_exists( 'show_intro', $schema ) || ! empty( $schema['show_intro'] ),
 					'privacy_url'           => (string) $privacy,
 					'secret_enabled'        => ! empty( $secret['enabled'] ),
 					'style_preset'          => (string) $style_stored['preset'],
@@ -2403,6 +2410,12 @@ final class Form_Editor {
 			$current = Form_Schema::get( $form_id );
 			if ( ! isset( $decoded['intro'] ) && isset( $current['intro'] ) ) {
 				$decoded['intro'] = $current['intro'];
+			}
+			if ( ! isset( $decoded['show_title'] ) && array_key_exists( 'show_title', $current ) ) {
+				$decoded['show_title'] = $current['show_title'];
+			}
+			if ( ! isset( $decoded['show_intro'] ) && array_key_exists( 'show_intro', $current ) ) {
+				$decoded['show_intro'] = $current['show_intro'];
 			}
 		}
 
