@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-07-24
+
 - URL multi-field prefill via query params (Field ID / custom param), shortcode/block `prefill`, and builder copy-links for choice options.
 - Form Settings: show/hide form title and intro independently on the public form; fix missing intro field label; Design live preview matches front-end header vs section card.
 - Text / Textarea: maximum character limit (builder + HTML maxlength + server validate); new text defaults to 200, textarea to 5000.
@@ -17,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Inline validation icons: filled badge inset by control padding (not flush to the edge).
 - Design: Inline validation Off / required-only / all; live style only when enabled; submit still marks invalid required fields.
 - Align readme “Requires at least” / requirements with plugin header (WordPress 6.9); “Tested up to” 7.1; sync wordpress.org changelog through 1.0.3.
+
+[1.0.3]: https://github.com/gbyat/we-formkit/releases/tag/v1.0.3
 
 ## [1.0.3] - 2026-07-23
 
