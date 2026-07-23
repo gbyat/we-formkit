@@ -486,8 +486,12 @@ final class Frontend {
 					</div>
 				<?php endif; ?>
 
+				<?php
+				$submit_cfg   = Form_Schema::get_submit_button( $form_id );
+				$submit_width = Form_Schema::normalize_submit_width( $submit_cfg['width'] ?? 'auto' );
+				?>
 				<p class="we-formkit__actions we-formkit__actions--buttons">
-					<span class="we-formkit__submit-slot" data-wek-submit-wrap>
+					<span class="we-formkit__submit-slot we-formkit__submit-slot--width-<?php echo esc_attr( $submit_width ); ?>" data-wek-submit-wrap>
 						<?php self::render_submit_button( $form_id ); ?>
 					</span>
 					<?php if ( $save_enabled ) : ?>
@@ -645,10 +649,15 @@ final class Frontend {
 		$label    = (string) $submit['label'];
 		$icon     = (string) $submit['icon_svg'];
 		$position = (string) $submit['icon_position'];
+		$width    = Form_Schema::normalize_submit_width( $submit['width'] ?? 'auto' );
+		$classes  = 'we-formkit__submit we-formkit__submit--width-' . $width;
+		if ( '' !== $icon ) {
+			$classes .= ' we-formkit__submit--has-icon';
+		}
 		?>
 		<button
 			type="submit"
-			class="we-formkit__submit<?php echo '' !== $icon ? ' we-formkit__submit--has-icon' : ''; ?>"
+			class="<?php echo esc_attr( $classes ); ?>"
 			data-wek-submit
 			data-wek-submit-label="<?php echo esc_attr( $label ); ?>"
 		>

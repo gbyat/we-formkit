@@ -381,6 +381,7 @@ final class Form_Editor {
 					'label'         => (string) $submit['label'],
 					'icon_svg'      => (string) ( $submit['icon_svg'] ?? '' ),
 					'icon_position' => (string) ( $submit['icon_position'] ?? 'before' ),
+					'width'         => (string) ( $submit['width'] ?? 'auto' ),
 				),
 				'submitLabel'       => (string) $submit['label'],
 				'i18n'              => array(
@@ -550,6 +551,9 @@ final class Form_Editor {
 					'submitSettings'            => __( 'Submit button', 'we-formkit' ),
 					'submitSettingsHint'        => __( 'Shown at the end of the form. Save the form to apply changes on the front end.', 'we-formkit' ),
 					'submitButtonText'          => __( 'Submit button text', 'we-formkit' ),
+					'submitButtonWidth'         => __( 'Button width', 'we-formkit' ),
+					'submitButtonWidthHint'     => __( 'Same column widths as fields. Auto fits the label (recommended).', 'we-formkit' ),
+					'widthAuto'                 => __( 'Auto', 'we-formkit' ),
 					'submitIconSvg'             => __( 'SVG icon (optional)', 'we-formkit' ),
 					'submitIconSvgHint'         => __( 'Paste inline SVG markup (no scripts). Leave empty for text only.', 'we-formkit' ),
 					'iconPosition'              => __( 'Icon position', 'we-formkit' ),
@@ -907,11 +911,13 @@ final class Form_Editor {
 				'label'         => __( 'Submit form', 'we-formkit' ),
 				'icon_svg'      => '',
 				'icon_position' => 'before',
+				'width'         => 'auto',
 			);
 		?>
 		<input type="hidden" name="wek_submit_label" id="wek_submit_label" value="<?php echo esc_attr( (string) $submit_boot['label'] ); ?>" />
 		<input type="hidden" name="wek_submit_icon_svg" id="wek_submit_icon_svg" value="<?php echo esc_attr( (string) $submit_boot['icon_svg'] ); ?>" />
 		<input type="hidden" name="wek_submit_icon_position" id="wek_submit_icon_position" value="<?php echo esc_attr( (string) $submit_boot['icon_position'] ); ?>" />
+		<input type="hidden" name="wek_submit_width" id="wek_submit_width" value="<?php echo esc_attr( (string) ( $submit_boot['width'] ?? 'auto' ) ); ?>" />
 
 		<div class="wek-fields-bar">
 			<a class="wek-fields-bar__back" href="<?php echo esc_url( $forms_url ); ?>" title="<?php esc_attr_e( 'All Forms', 'we-formkit' ); ?>">
@@ -2433,6 +2439,7 @@ final class Form_Editor {
 				'label'         => isset( $_POST['wek_submit_label'] ) ? wp_unslash( (string) $_POST['wek_submit_label'] ) : '',
 				'icon_svg'      => isset( $_POST['wek_submit_icon_svg'] ) ? wp_unslash( (string) $_POST['wek_submit_icon_svg'] ) : '',
 				'icon_position' => isset( $_POST['wek_submit_icon_position'] ) ? wp_unslash( (string) $_POST['wek_submit_icon_position'] ) : 'before',
+				'width'         => isset( $_POST['wek_submit_width'] ) ? wp_unslash( (string) $_POST['wek_submit_width'] ) : 'auto',
 			)
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Missing

@@ -116,11 +116,17 @@
 			schema.sections = [];
 		}
 
+		function normalizeSubmitWidth( width ) {
+			const allowed = [ 'auto', 'full', 'two_thirds', 'half', 'third' ];
+			return allowed.indexOf( width ) !== -1 ? width : 'auto';
+		}
+
 		const bootSubmit = ( window.weFormkitAdmin && window.weFormkitAdmin.submitButton ) || {};
 		const submitButton = {
 			label: bootSubmit.label || ( window.weFormkitAdmin && window.weFormkitAdmin.submitLabel ) || i18n.submitPreview || 'Submit form',
 			icon_svg: bootSubmit.icon_svg || '',
 			icon_position: bootSubmit.icon_position === 'after' ? 'after' : 'before',
+			width: normalizeSubmitWidth( bootSubmit.width ),
 		};
 
 		/** @type {{ type: string, sIndex?: number, fIndex?: number, nIndex?: number }|null} */
@@ -416,6 +422,7 @@
 			const labelInput = document.getElementById( 'wek_submit_label' );
 			const iconInput = document.getElementById( 'wek_submit_icon_svg' );
 			const posInput = document.getElementById( 'wek_submit_icon_position' );
+			const widthInput = document.getElementById( 'wek_submit_width' );
 			if ( labelInput ) {
 				labelInput.value = submitButton.label || '';
 			}
@@ -424,6 +431,9 @@
 			}
 			if ( posInput ) {
 				posInput.value = submitButton.icon_position || 'before';
+			}
+			if ( widthInput ) {
+				widthInput.value = normalizeSubmitWidth( submitButton.width );
 			}
 		}
 
@@ -1322,6 +1332,13 @@
 				submitButton.label || i18n.submitPreview || 'Submit';
 			const iconSvg = String( submitButton.icon_svg || '' ).trim();
 			const hasIcon = iconSvg.indexOf( '<svg' ) !== -1;
+			const width = normalizeSubmitWidth( submitButton.width );
+			const selected = selection && selection.type === 'submit';
+			btn.className =
+				'wek-builder__submit-preview wek-builder__submit-preview--width-' +
+				width +
+				( selected ? ' is-selected' : '' );
+			btn.setAttribute( 'aria-pressed', selected ? 'true' : 'false' );
 			btn.innerHTML = '';
 			if ( hasIcon && submitButton.icon_position !== 'after' ) {
 				const iconBefore = el( 'span', {
@@ -1345,6 +1362,70 @@
 				iconAfter.innerHTML = iconSvg;
 				btn.appendChild( iconAfter );
 			}
+		}
+
+		function renderSubmitWidthPicker() {
+			submitButton.width = normalizeSubmitWidth( submitButton.width );
+			const wrap = el( 'div', { className: 'wek-builder__columns', role: 'group' } );
+			const spans = {
+				auto: 0,
+				full: 6,
+				two_thirds: 4,
+				half: 3,
+				third: 2,
+			};
+			[
+				{ value: 'auto', label: i18n.widthAuto || 'Auto' },
+				{ value: 'full', label: i18n.widthFull || 'Full' },
+				{ value: 'two_thirds', label: i18n.widthTwoThirds || 'Two thirds' },
+				{ value: 'half', label: i18n.widthHalf || 'Half' },
+				{ value: 'third', label: i18n.widthThird || 'One third' },
+			].forEach( function ( item ) {
+				const preview = el( 'div', { className: 'wek-builder__column-preview' } );
+				if ( item.value === 'auto' ) {
+					preview.classList.add( 'is-auto' );
+					preview.appendChild( el( 'span', { className: 'is-on is-auto-fit' } ) );
+				} else {
+					const onCount = spans[ item.value ];
+					for ( let i = 0; i < 6; i++ ) {
+						preview.appendChild(
+							el( 'span', {
+								className: i < onCount ? 'is-on' : '',
+							} )
+						);
+					}
+				}
+				wrap.appendChild(
+					el(
+						'button',
+						{
+							type: 'button',
+							className:
+								'wek-builder__column-btn' +
+								( submitButton.width === item.value ? ' is-active' : '' ),
+							'aria-pressed': submitButton.width === item.value ? 'true' : 'false',
+							title: item.label,
+							'data-width': item.value,
+							onClick: function () {
+								submitButton.width = normalizeSubmitWidth( item.value );
+								syncHidden();
+								updateSubmitPreview();
+								Array.prototype.forEach.call(
+									wrap.querySelectorAll( '.wek-builder__column-btn' ),
+									function ( btn ) {
+										const isActive =
+											btn.getAttribute( 'data-width' ) === submitButton.width;
+										btn.classList.toggle( 'is-active', isActive );
+										btn.setAttribute( 'aria-pressed', isActive ? 'true' : 'false' );
+									}
+								);
+							},
+						},
+						[ preview, el( 'strong', { text: item.label } ) ]
+					)
+				);
+			} );
+			return wrap;
 		}
 
 		function updateCanvasFieldPreview( field ) {

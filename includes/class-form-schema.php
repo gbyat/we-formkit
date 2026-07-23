@@ -520,10 +520,10 @@ final class Form_Schema {
 	}
 
 	/**
-	 * Submit button label + optional inline SVG icon.
+	 * Submit button label + optional inline SVG icon + width.
 	 *
 	 * @param int $form_id Form ID.
-	 * @return array{label:string,icon_svg:string,icon_position:string}
+	 * @return array{label:string,icon_svg:string,icon_position:string,width:string}
 	 */
 	public static function get_submit_button( $form_id ) {
 		$form_id = (int) $form_id;
@@ -547,7 +547,18 @@ final class Form_Schema {
 			'label'         => $label,
 			'icon_svg'      => self::sanitize_submit_icon_svg( $decoded['icon_svg'] ?? '' ),
 			'icon_position' => $position,
+			'width'         => self::normalize_submit_width( $decoded['width'] ?? 'auto' ),
 		);
+	}
+
+	/**
+	 * @param mixed $raw Raw width.
+	 * @return string One of auto|full|two_thirds|half|third.
+	 */
+	public static function normalize_submit_width( $raw ): string {
+		$width = sanitize_key( (string) $raw );
+		$allowed = array( 'auto', 'full', 'two_thirds', 'half', 'third' );
+		return in_array( $width, $allowed, true ) ? $width : 'auto';
 	}
 
 	/**
@@ -565,6 +576,7 @@ final class Form_Schema {
 			'label'         => $label,
 			'icon_svg'      => self::sanitize_submit_icon_svg( $data['icon_svg'] ?? '' ),
 			'icon_position' => $pos,
+			'width'         => self::normalize_submit_width( $data['width'] ?? 'auto' ),
 		);
 		update_post_meta( (int) $form_id, self::META_SUBMIT_BUTTON, wp_json_encode( $payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 	}

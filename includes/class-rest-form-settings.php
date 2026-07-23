@@ -184,7 +184,7 @@ final class Rest_Form_Settings {
 		Form_Style::save( $form_id, Form_Style::sanitize_from_request( $style_in ) );
 
 		// Submit button is edited on the Fields canvas; only update if explicitly sent.
-		if ( isset( $params['submit_label'] ) || isset( $params['submit_icon_svg'] ) || isset( $params['submit_icon_position'] ) ) {
+		if ( isset( $params['submit_label'] ) || isset( $params['submit_icon_svg'] ) || isset( $params['submit_icon_position'] ) || isset( $params['submit_width'] ) ) {
 			$current = Form_Schema::get_submit_button( $form_id );
 			Form_Schema::set_submit_button(
 				$form_id,
@@ -192,6 +192,7 @@ final class Rest_Form_Settings {
 					'label'         => isset( $params['submit_label'] ) ? (string) $params['submit_label'] : $current['label'],
 					'icon_svg'      => isset( $params['submit_icon_svg'] ) ? (string) $params['submit_icon_svg'] : $current['icon_svg'],
 					'icon_position' => isset( $params['submit_icon_position'] ) ? (string) $params['submit_icon_position'] : $current['icon_position'],
+					'width'         => isset( $params['submit_width'] ) ? (string) $params['submit_width'] : $current['width'],
 				)
 			);
 		}
