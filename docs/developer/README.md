@@ -337,7 +337,7 @@ Nonce: WordPress REST cookie nonce (`wp_rest`), sent as `X-WP-Nonce` and in the 
 | `wek_page` | Multipage step (1-based). Updated via `history.replaceState` while navigating; refresh restores that step. |
 | `wek_page_form` | Form post ID when several multipage forms share the page (scopes `wek_page`). |
 | `wek_form` + `token` | Secret embed routing (form **slug** + token). Do not reuse for multipage. |
-| `wek_autofill` / `wek_autosubmit` | Cap-gated smoke helpers (`=1`). |
+| `wek_autofill` / `wek_autosubmit` | Cap-gated smoke helpers (`=1`). Autofill fills every reachable control: all choice/matrix answers, **custom** checkboxes/matrix rows (add buttons), extra repeater row, signature stroke, upload blob, etc. Autosubmit waits for the timing spam window, jumps to the last multipage step, then submits. |
 
 ## Deferred modules
 

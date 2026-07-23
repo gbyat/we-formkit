@@ -1660,12 +1660,14 @@
 			case 'url':
 				return 'https://example.com/wek-smoke';
 			case 'number':
+			case 'range':
 				return '42';
 			case 'date':
 				return new Date().toISOString().slice( 0, 10 );
 			case 'time':
 				return '10:30';
 			case 'datetime':
+			case 'datetime-local':
 				return new Date().toISOString().slice( 0, 16 );
 			case 'textarea':
 				return 'WE Formkit smoke test — auto-filled textarea (' + stamp + ').';
@@ -1676,14 +1678,194 @@
 		}
 	}
 
+	function smokeStamp() {
+		return String( Date.now() ).slice( -5 );
+	}
+
+	function checkboxesCheckedCount( fieldEl ) {
+		return qsa( fieldEl, 'input[type="checkbox"]' ).filter( function ( box ) {
+			return box.checked;
+		} ).length;
+	}
+
+	function checkboxesSelectionRoom( fieldEl ) {
+		const max = parseInt( fieldEl.getAttribute( 'data-max-selected' ) || '0', 10 );
+		if ( max < 1 ) {
+			return Number.POSITIVE_INFINITY;
+		}
+		return Math.max( 0, max - checkboxesCheckedCount( fieldEl ) );
+	}
+
+	function autofillSignature( fieldEl ) {
+		const wrap = qs( fieldEl, '[data-wek-signature]' );
+		const canvas = wrap ? qs( wrap, 'canvas' ) : null;
+		const input = qs( fieldEl, '[data-wek-signature-input]' );
+		if ( ! canvas || ! input ) {
+			return;
+		}
+		const ctx = canvas.getContext( '2d' );
+		if ( ! ctx ) {
+			return;
+		}
+		const bg = ( wrap && wrap.getAttribute( 'data-bg' ) ) || '#ffffff';
+		const pen = ( wrap && wrap.getAttribute( 'data-pen' ) ) || '#222222';
+		ctx.fillStyle = bg;
+		ctx.fillRect( 0, 0, canvas.width, canvas.height );
+		ctx.strokeStyle = pen;
+		ctx.lineWidth = 2.2;
+		ctx.lineCap = 'round';
+		ctx.lineJoin = 'round';
+		ctx.beginPath();
+		ctx.moveTo( Math.max( 12, canvas.width * 0.08 ), canvas.height * 0.62 );
+		ctx.quadraticCurveTo(
+			canvas.width * 0.42,
+			canvas.height * 0.18,
+			canvas.width * 0.88,
+			canvas.height * 0.58
+		);
+		ctx.stroke();
+		input.value = canvas.toDataURL( 'image/png' );
+		input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	}
+
+	function autofillMatrixRow( row, stamp ) {
+		ensureMatrixRowOn( row );
+		const label = qs( row, '[data-wek-matrix-label]' );
+		if ( label && ! String( label.value || '' ).trim() ) {
+			setNativeValue( label, 'Smoke custom row ' + stamp );
+		}
+		const seenRadioNames = {};
+		qsa( row, '[data-wek-matrix-col]' ).forEach( function ( input ) {
+			if ( input.disabled ) {
+				return;
+			}
+			if ( input.type === 'radio' ) {
+				const name = input.name || '';
+				if ( seenRadioNames[ name ] ) {
+					return;
+				}
+				const already = qsa( row, 'input[type="radio"]' ).some( function ( radio ) {
+					return radio.name === name && radio.checked;
+				} );
+				seenRadioNames[ name ] = true;
+				if ( already ) {
+					return;
+				}
+				input.checked = true;
+				input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				return;
+			}
+			if ( input.type === 'checkbox' ) {
+				if ( ! input.checked ) {
+					input.checked = true;
+					input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+				return;
+			}
+			if ( ! String( input.value || '' ).trim() ) {
+				setNativeValue( input, sampleForType( input.type || 'text', 'matrix' ) );
+			}
+		} );
+	}
+
+	function autofillCheckboxesField( fieldEl, stamp ) {
+		const canCustom =
+			fieldEl.getAttribute( 'data-wek-checkboxes-custom' ) === '1' ||
+			!! qs( fieldEl, '[data-wek-checkboxes-add-other]' );
+		if ( canCustom ) {
+			let n = 0;
+			const maxOther = checkboxesMaxOther( fieldEl );
+			while ( n < maxOther && checkboxesSelectionRoom( fieldEl ) > 0 ) {
+				const item = addCheckboxesCustomItem(
+					fieldEl,
+					'Smoke custom option ' + ( n + 1 ) + ' ' + stamp
+				);
+				if ( ! item ) {
+					break;
+				}
+				n += 1;
+			}
+		}
+		qsa( fieldEl, 'input[type="checkbox"]' ).forEach( function ( box ) {
+			if ( box.checked || box.disabled ) {
+				return;
+			}
+			if ( checkboxesSelectionRoom( fieldEl ) <= 0 ) {
+				return;
+			}
+			box.checked = true;
+			box.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		} );
+		syncCheckboxesMaxLock( fieldEl );
+		syncCheckboxesAddButton( fieldEl );
+	}
+
+	function autofillRepeaterField( fieldEl ) {
+		const addBtn = qs( fieldEl, '[data-wek-repeater-add]' );
+		const maxItems = parseInt( fieldEl.getAttribute( 'data-max-items' ) || '50', 10 );
+		const rows = qsa( fieldEl, '[data-wek-repeater-row]' );
+		if (
+			addBtn &&
+			! addBtn.disabled &&
+			rows.length < maxItems &&
+			fieldEl.getAttribute( 'data-wek-smoke-repeater-added' ) !== '1'
+		) {
+			fieldEl.setAttribute( 'data-wek-smoke-repeater-added', '1' );
+			addBtn.click();
+		}
+		qsa( fieldEl, '[data-wek-repeater-input]' ).forEach( function ( input ) {
+			if ( input.type === 'checkbox' ) {
+				input.checked = true;
+			} else if ( input.tagName === 'SELECT' ) {
+				if ( input.options.length > 1 ) {
+					input.selectedIndex = 1;
+				} else if ( input.options.length ) {
+					input.selectedIndex = 0;
+				}
+			} else if ( ! String( input.value || '' ).trim() ) {
+				setNativeValue( input, sampleForType( input.type || 'text', input.getAttribute( 'data-sub-id' ) ) );
+			}
+			input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		} );
+	}
+
+	function autofillSelect( select ) {
+		if ( ! select || ! select.options.length ) {
+			return;
+		}
+		let pick = -1;
+		for ( let i = 0; i < select.options.length; i++ ) {
+			const opt = select.options[ i ];
+			if ( opt.disabled ) {
+				continue;
+			}
+			if ( String( opt.value || '' ).trim() === '' ) {
+				continue;
+			}
+			pick = i;
+			break;
+		}
+		if ( pick < 0 ) {
+			pick = 0;
+		}
+		select.selectedIndex = pick;
+		select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	}
+
+	/**
+	 * Cap-gated smoke helper: fill every reachable control (including matrix/checkboxes
+	 * custom add items, repeater rows, signature stroke, uploads).
+	 */
 	function autofillForm( form, root ) {
-		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
+		const stamp = smokeStamp();
+
+		function fillField( fieldEl ) {
 			if ( fieldEl.classList.contains( 'is-hidden' ) || fieldEl.getAttribute( 'aria-hidden' ) === 'true' ) {
 				return;
 			}
 			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
 			const labelEl = qs( fieldEl, '.we-formkit__label, legend' );
-			const label = labelEl ? labelEl.textContent.replace( /\*/, '' ).trim() : 'field';
+			const label = labelEl ? labelEl.textContent.replace( /\*/g, '' ).trim() : 'field';
 
 			if ( type === 'html' ) {
 				return;
@@ -1691,6 +1873,11 @@
 
 			if ( type === 'upload' ) {
 				qsa( fieldEl, 'input[type="file"]' ).forEach( fillFileInput );
+				return;
+			}
+
+			if ( type === 'signature' ) {
+				autofillSignature( fieldEl );
 				return;
 			}
 
@@ -1705,7 +1892,9 @@
 
 			if ( type === 'radio' || type === 'radio_image' ) {
 				const radios = qsa( fieldEl, 'input[type="radio"]' );
-				if ( radios.length && ! radios.some( function ( r ) { return r.checked; } ) ) {
+				if ( radios.length && ! radios.some( function ( r ) {
+					return r.checked;
+				} ) ) {
 					radios[ 0 ].checked = true;
 					radios[ 0 ].dispatchEvent( new Event( 'change', { bubbles: true } ) );
 				}
@@ -1713,96 +1902,75 @@
 			}
 
 			if ( type === 'checkboxes' ) {
-				const boxes = qsa( fieldEl, 'input[type="checkbox"]' );
-				if ( boxes.length ) {
-					boxes[ 0 ].checked = true;
-					boxes[ 0 ].dispatchEvent( new Event( 'change', { bubbles: true } ) );
-				}
+				autofillCheckboxesField( fieldEl, stamp );
 				return;
 			}
 
 			if ( type === 'matrix' ) {
-				const firstRow = qs( fieldEl, '[data-wek-matrix-row]' );
-				if ( firstRow ) {
-					const onBox = qs( firstRow, '[data-wek-matrix-on]' );
-					if ( onBox ) {
-						onBox.checked = true;
-						onBox.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				let customN = 0;
+				const maxCustom = matrixMaxCustomRows( fieldEl );
+				while ( customN < maxCustom ) {
+					const added = addMatrixCustomRow( fieldEl );
+					if ( ! added ) {
+						break;
 					}
-					const firstRadio = qs( firstRow, 'input[type="radio"]' );
-					if ( firstRadio ) {
-						firstRadio.checked = true;
-						firstRadio.dispatchEvent( new Event( 'change', { bubbles: true } ) );
-					}
+					customN += 1;
 				}
+				qsa( fieldEl, '[data-wek-matrix-row]' ).forEach( function ( row ) {
+					autofillMatrixRow( row, stamp );
+				} );
 				return;
 			}
 
 			if ( type === 'repeater' ) {
-				qsa( fieldEl, '[data-wek-repeater-input]' ).forEach( function ( input ) {
-					if ( input.type === 'checkbox' ) {
-						input.checked = true;
-					} else if ( input.tagName === 'SELECT' ) {
-						if ( input.options.length > 1 ) {
-							input.selectedIndex = 1;
-						} else if ( input.options.length ) {
-							input.selectedIndex = 0;
-						}
-					} else {
-						setNativeValue( input, sampleForType( input.type || 'text', input.getAttribute( 'data-sub-id' ) ) );
-					}
-					input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
-				} );
+				autofillRepeaterField( fieldEl );
 				return;
 			}
 
 			const select = qs( fieldEl, 'select' );
 			if ( select ) {
-				if ( select.options.length > 1 ) {
-					select.selectedIndex = 1;
-				} else if ( select.options.length ) {
-					select.selectedIndex = 0;
-				}
-				select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				autofillSelect( select );
 				return;
 			}
 
-			const input = qs( fieldEl, 'input:not([type="hidden"]):not([type="file"]), textarea' );
-			if ( input ) {
-				setNativeValue( input, sampleForType( type || input.type, label ) );
-			}
+			qsa( fieldEl, 'input:not([type="hidden"]):not([type="file"]):not([type="checkbox"]):not([type="radio"]), textarea' ).forEach(
+				function ( input ) {
+					if ( String( input.value || '' ).trim() ) {
+						return;
+					}
+					setNativeValue( input, sampleForType( type || input.type, label ) );
+				}
+			);
 
-			const hidden = qs( fieldEl, 'input[type="hidden"]' );
-			if ( hidden && type === 'hidden' ) {
-				setNativeValue( hidden, sampleForType( 'hidden', label ) );
+			if ( type === 'hidden' ) {
+				const hidden = qs( fieldEl, 'input[type="hidden"]' );
+				if ( hidden ) {
+					setNativeValue( hidden, sampleForType( 'hidden', label ) );
+				}
 			}
-		} );
+		}
 
+		qsa( form, '[data-wek-field]' ).forEach( fillField );
 		applyConditionals( root );
-		// Second pass: newly revealed conditional fields.
-		qsa( form, '[data-wek-field]' ).forEach( function ( fieldEl ) {
-			if ( fieldEl.classList.contains( 'is-hidden' ) ) {
-				return;
-			}
-			const type = fieldEl.getAttribute( 'data-field-type' ) || '';
-			if ( type === 'html' || type === 'upload' || type === 'checkbox' || type === 'consent' || type === 'radio' || type === 'radio_image' || type === 'checkboxes' || type === 'repeater' || type === 'matrix' ) {
-				return;
-			}
-			const input = qs( fieldEl, 'input:not([type="file"]), textarea, select' );
-			if ( ! input ) {
-				return;
-			}
-			if ( input.tagName === 'SELECT' ) {
-				if ( ! input.value && input.options.length ) {
-					input.selectedIndex = Math.min( 1, input.options.length - 1 );
-					input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
-				}
-				return;
-			}
-			if ( ! String( input.value || '' ).trim() ) {
-				setNativeValue( input, sampleForType( type || input.type, 'extra' ) );
-			}
-		} );
+		// Second pass: fields revealed by conditionals (full fill again for complex types).
+		qsa( form, '[data-wek-field]' ).forEach( fillField );
+		applyConditionals( root );
+	}
+
+	function goToLastMultipage( root ) {
+		const form = qs( root, '[data-wek-form]' );
+		if ( ! form ) {
+			return;
+		}
+		const sections = qsa( form, '[data-wek-section]' );
+		if ( sections.length < 2 ) {
+			return;
+		}
+		root.dispatchEvent(
+			new CustomEvent( 'wek-go-page', {
+				detail: { index: sections.length - 1 },
+			} )
+		);
 	}
 
 	function wantsAutofill() {
@@ -1826,6 +1994,8 @@
 			if ( form.getAttribute( 'data-wek-submitting' ) === '1' ) {
 				return;
 			}
+			// Multipage: submit control lives on the last step.
+			goToLastMultipage( root );
 			if ( typeof form.requestSubmit === 'function' ) {
 				form.requestSubmit();
 			} else {

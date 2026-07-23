@@ -179,6 +179,23 @@ body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="che
 	border-radius: 5px;
 }
 
+/* Match isolation specificity so :checked fill is not left as --wek-input. */
+body .we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"]:checked,
+body .we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"]:checked,
+.we-formkit .we-formkit__field .we-formkit__choice input[type="checkbox"]:checked,
+.we-formkit .we-formkit__field .we-formkit__control--choice input[type="checkbox"]:checked {
+	background-color: var(--wek-accent);
+	background-image: none;
+	border-color: var(--wek-accent);
+}
+
+body .we-formkit .we-formkit__matrix-choice input[type="checkbox"]:checked,
+.we-formkit .we-formkit__matrix-choice input[type="checkbox"]:checked {
+	background-color: var(--wek-accent);
+	background-image: none;
+	border-color: var(--wek-accent);
+}
+
 body .we-formkit .we-formkit__matrix-choice,
 body .we-formkit label.we-formkit__matrix-choice,
 .we-formkit .we-formkit__matrix-choice,
