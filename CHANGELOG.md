@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Choice options: label-first editing; optional keys auto-generated with German-friendly transliteration (ä→ae, ß→ss, …); unique keys on clash.
 - Textarea: height (rows) actually applied on the front end (CSS); default 3; independent of max characters; builder preview updates live.
 - Select: Placeholder setting in the builder (empty first option with custom label; default “Please select…”).
-- Inline validation icons: subtle inset check/× (aligned to control padding) instead of filled circular badges.
+- Inline validation icons: filled badge inset by control padding (not flush to the edge).
+- Design: Inline validation Off / required-only / all; live style only when enabled; submit still marks invalid required fields.
 - Align readme “Requires at least” / requirements with plugin header (WordPress 6.9); “Tested up to” 7.1; sync wordpress.org changelog through 1.0.3.
 
 ## [1.0.3] - 2026-07-23

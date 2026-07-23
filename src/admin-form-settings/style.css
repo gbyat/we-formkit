@@ -239,29 +239,27 @@
 
 .wek-scheme-preview__validity {
 	flex: 0 0 auto;
-	width: 1rem;
-	height: 1rem;
-	border-radius: 0;
+	width: 1.35rem;
+	height: 1.35rem;
+	border-radius: 50%;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	box-sizing: border-box;
-	background: transparent;
 }
 
 .wek-scheme-preview__validity.is-valid {
-	background: transparent;
-	color: var(--wek-accent);
+	background: var(--wek-accent);
+	color: var(--wek-on-accent);
 }
 
 .wek-scheme-preview__validity.is-valid::before {
 	content: "";
-	width: 0.28rem;
-	height: 0.52rem;
+	width: 0.35rem;
+	height: 0.65rem;
 	border: solid currentColor;
-	border-width: 0 1.5px 1.5px 0;
+	border-width: 0 2px 2px 0;
 	transform: rotate(45deg) translateY(-1px);
-	opacity: 0.9;
 }
 
 .wek-scheme-preview__help {

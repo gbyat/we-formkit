@@ -639,8 +639,13 @@ final class Form_Schema {
 		}
 
 		$inline_scope = isset( $data['inline_scope'] ) ? sanitize_key( (string) $data['inline_scope'] ) : 'required';
-		if ( ! in_array( $inline_scope, array( 'required', 'all' ), true ) ) {
+		if ( ! in_array( $inline_scope, array( 'off', 'required', 'all' ), true ) ) {
 			$inline_scope = 'required';
+		}
+		// Legacy: style "off" → scope off (keep a style for when re-enabled).
+		if ( 'off' === $inline ) {
+			$inline_scope = 'off';
+			$inline       = 'both';
 		}
 
 		$placement = isset( $data['help_placement'] ) ? sanitize_key( (string) $data['help_placement'] ) : 'below_label';
@@ -866,7 +871,7 @@ final class Form_Schema {
 			'we-formkit--help-' . str_replace( '_', '-', $a['help_placement'] ),
 			'we-formkit--help-style-' . $a['help_style'],
 		);
-		if ( 'off' !== $a['inline_validation'] ) {
+		if ( 'off' !== $a['inline_scope'] && 'off' !== $a['inline_validation'] ) {
 			$classes[] = 'we-formkit--inline-validation';
 			$classes[] = 'we-formkit--inline-feedback-' . $a['inline_validation'];
 		}

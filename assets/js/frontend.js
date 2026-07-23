@@ -1516,21 +1516,30 @@
 		return 'off';
 	}
 
-	function inlineValidationEnabled( root ) {
-		return inlineValidationMode( root ) !== 'off';
-	}
-
-	function inlineShowsIcons( root ) {
-		const mode = inlineValidationMode( root );
-		return mode === 'icon' || mode === 'both';
-	}
-
 	function inlineValidationScope( root ) {
 		if ( ! root ) {
 			return 'required';
 		}
 		const raw = String( root.getAttribute( 'data-inline-scope' ) || 'required' );
+		if ( raw === 'off' || raw === '0' ) {
+			return 'off';
+		}
 		return raw === 'all' ? 'all' : 'required';
+	}
+
+	function inlineValidationEnabled( root ) {
+		return (
+			inlineValidationMode( root ) !== 'off' &&
+			inlineValidationScope( root ) !== 'off'
+		);
+	}
+
+	function inlineShowsIcons( root ) {
+		if ( ! inlineValidationEnabled( root ) ) {
+			return false;
+		}
+		const mode = inlineValidationMode( root );
+		return mode === 'icon' || mode === 'both';
 	}
 
 	function applyFieldValidationResult( form, fieldEl, message, showSuccess ) {

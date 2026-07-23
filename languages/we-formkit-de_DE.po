@@ -94,13 +94,13 @@ msgstr "Formular konnte nicht dupliziert werden."
 #: includes/admin/class-form-editor.php:252
 #: includes/admin/class-form-editor.php:396
 #: includes/admin/class-form-editor.php:587
-#: src/admin-form-settings/index.jsx:661
+#: src/admin-form-settings/index.jsx:685
 msgid "Title"
 msgstr "Titel"
 
 #: includes/admin/class-form-editor.php:253
 #: includes/admin/class-form-editor.php:399
-#: src/admin-form-settings/index.jsx:676
+#: src/admin-form-settings/index.jsx:700
 msgid "Slug"
 msgstr "Slug"
 
@@ -261,8 +261,8 @@ msgid "Add option"
 msgstr "Option hinzufügen"
 
 #: includes/admin/class-form-editor.php:568
-#: src/admin-form-settings/index.jsx:456
-#: src/admin-form-settings/index.jsx:1014
+#: src/admin-form-settings/index.jsx:461
+#: src/admin-form-settings/index.jsx:1038
 msgid "General"
 msgstr "Allgemein"
 
@@ -360,33 +360,33 @@ msgstr "Speichere das Formular zuerst, um Einträge anzuzeigen."
 msgid "Build sections and fields here. Form settings, notifications, and confirmations are on the other tabs."
 msgstr "Baue hier Abschnitte und Felder. Formular-Einstellungen, Benachrichtigungen und Bestätigungen findest du in den anderen Tabs."
 
-#: src/admin-form-settings/index.jsx:678
+#: src/admin-form-settings/index.jsx:702
 msgid "Used in secret links and as a stable form key."
 msgstr "Wird in geheimen Links und als stabile Formular-Kennung verwendet."
 
-#: src/admin-form-settings/index.jsx:714
+#: src/admin-form-settings/index.jsx:738
 msgid "Require secret token in URL"
 msgstr "Geheim-Token in der URL verlangen"
 
-#: src/admin-form-settings/index.jsx:1282
+#: src/admin-form-settings/index.jsx:1308
 msgid "Regenerate token"
 msgstr "Token neu erzeugen"
 
-#: src/admin-form-settings/index.jsx:705
+#: src/admin-form-settings/index.jsx:729
 msgid "Privacy policy URL"
 msgstr "URL der Datenschutzerklärung"
 
-#: src/admin-form-settings/index.jsx:707
+#: src/admin-form-settings/index.jsx:731
 msgid "Optional. Falls back to the plugin default, then the site privacy policy."
 msgstr "Optional. Fallback: Plugin-Standard, dann Datenschutzerklärung der Website."
 
 #: src/admin-form-settings/index.jsx:107
-#: src/admin-form-settings/index.jsx:685
+#: src/admin-form-settings/index.jsx:709
 msgid "Intro text"
 msgstr "Einleitungstext"
 
 #: includes/admin/class-settings-page.php:533
-#: src/admin-form-settings/index.jsx:1322
+#: src/admin-form-settings/index.jsx:1348
 msgid "Save settings"
 msgstr "Einstellungen speichern"
 
@@ -474,7 +474,7 @@ msgid "Formkit Settings"
 msgstr "Formkit-Einstellungen"
 
 #: includes/admin/class-settings-page.php:117
-#: src/admin-form-settings/index.jsx:1197
+#: src/admin-form-settings/index.jsx:1223
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
@@ -813,8 +813,8 @@ msgid "Please choose a valid date and time for %s."
 msgstr "Bitte gültiges Datum und Uhrzeit für %s wählen."
 
 #: includes/fields/class-email-field.php:24
-#: src/admin-form-settings/index.jsx:421
-#: src/admin-form-settings/index.jsx:485
+#: src/admin-form-settings/index.jsx:426
+#: src/admin-form-settings/index.jsx:490
 msgid "Email"
 msgstr "E-Mail"
 
@@ -898,7 +898,7 @@ msgid "Select"
 msgstr "Auswahl"
 
 #: includes/fields/class-tel-field.php:24
-#: src/admin-form-settings/index.jsx:492
+#: src/admin-form-settings/index.jsx:497
 msgid "Phone"
 msgstr "Telefon"
 
@@ -1115,7 +1115,7 @@ msgid "Section settings"
 msgstr "Abschnittseinstellungen"
 
 #: includes/admin/class-form-editor.php:416
-#: src/admin-form-settings/index.jsx:518
+#: src/admin-form-settings/index.jsx:523
 msgid "Submit"
 msgstr "Absenden"
 
@@ -1258,7 +1258,7 @@ msgstr "Eine Seite"
 msgid "One section per page"
 msgstr "Ein Abschnitt pro Seite"
 
-#: src/admin-form-settings/index.jsx:1029
+#: src/admin-form-settings/index.jsx:1053
 msgid "Save & Resume"
 msgstr "Speichern & Fortsetzen"
 
@@ -1334,9 +1334,9 @@ msgstr "Antwort an"
 #: includes/admin/class-settings-page.php:309
 #: src/admin-form-settings/index.jsx:268
 #: src/admin-form-settings/index.jsx:276
-#: src/admin-form-settings/index.jsx:783
-#: src/admin-form-settings/index.jsx:799
-#: src/admin-form-settings/index.jsx:913
+#: src/admin-form-settings/index.jsx:807
+#: src/admin-form-settings/index.jsx:823
+#: src/admin-form-settings/index.jsx:937
 msgid "None"
 msgstr "Keine"
 
@@ -1372,7 +1372,7 @@ msgstr "Nachricht"
 
 #: includes/admin/class-form-editor.php:1664
 #: includes/class-merge-tags.php:94
-#: src/admin-form-settings/index.jsx:838
+#: src/admin-form-settings/index.jsx:842
 msgid "All fields"
 msgstr "Alle Felder"
 
@@ -1657,28 +1657,28 @@ msgstr "Privater Formkit-Ordner (empfohlen)"
 msgid "Media Library (not recommended for personal data)"
 msgstr "Mediathek (nicht empfohlen für personenbezogene Daten)"
 
-#: src/admin-form-settings/index.jsx:624
+#: src/admin-form-settings/index.jsx:648
 msgid "Match site theme"
 msgstr "Theme übernehmen"
 
-#: src/admin-form-settings/index.jsx:634
+#: src/admin-form-settings/index.jsx:658
 msgid "Custom"
 msgstr "Benutzerdefiniert"
 
-#: src/admin-form-settings/index.jsx:1089
+#: src/admin-form-settings/index.jsx:1115
 msgid "Colors"
 msgstr "Farben"
 
-#: src/admin-form-settings/index.jsx:1205
+#: src/admin-form-settings/index.jsx:1231
 msgid "Could not save settings."
 msgstr "Einstellungen konnten nicht gespeichert werden."
 
-#: src/admin-form-settings/index.jsx:1245
+#: src/admin-form-settings/index.jsx:1271
 msgid "Secret token"
 msgstr "Geheim-Token"
 
 #: includes/class-frontend.php:342
-#: src/admin-form-settings/index.jsx:1317
+#: src/admin-form-settings/index.jsx:1343
 msgid "Saving…"
 msgstr "Speichern…"
 
@@ -2374,64 +2374,64 @@ msgstr "Absende-Button bearbeiten"
 msgid "(required)"
 msgstr "(Pflichtfeld)"
 
-#: src/admin-form-settings/index.jsx:759
+#: src/admin-form-settings/index.jsx:783
 msgid "Label weight"
 msgstr "Label-Stärke"
 
-#: src/admin-form-settings/index.jsx:762
+#: src/admin-form-settings/index.jsx:786
 msgid "Normal"
 msgstr "Normal"
 
-#: src/admin-form-settings/index.jsx:763
+#: src/admin-form-settings/index.jsx:787
 msgid "Bold"
 msgstr "Fett"
 
-#: src/admin-form-settings/index.jsx:768
+#: src/admin-form-settings/index.jsx:792
 msgid "Required mark"
 msgstr "Pflicht-Markierung"
 
-#: src/admin-form-settings/index.jsx:770
+#: src/admin-form-settings/index.jsx:794
 msgid "Shown next to required field labels."
 msgstr "Wird neben Pflichtfeld-Labels angezeigt."
 
-#: src/admin-form-settings/index.jsx:777
+#: src/admin-form-settings/index.jsx:801
 msgid "Asterisk (*)"
 msgstr "Sternchen (*)"
 
-#: src/admin-form-settings/index.jsx:781
+#: src/admin-form-settings/index.jsx:805
 msgid "Text “(required)”"
 msgstr "Text „(Pflichtfeld)“"
 
-#: src/admin-form-settings/index.jsx:844
+#: src/admin-form-settings/index.jsx:868
 msgid "Help text placement"
 msgstr "Position des Hilfetexts"
 
-#: src/admin-form-settings/index.jsx:849
+#: src/admin-form-settings/index.jsx:873
 msgid "Below label"
 msgstr "Unter dem Label"
 
-#: src/admin-form-settings/index.jsx:853
+#: src/admin-form-settings/index.jsx:877
 msgid "Below field"
 msgstr "Unter dem Feld"
 
-#: src/admin-form-settings/index.jsx:859
+#: src/admin-form-settings/index.jsx:883
 msgid "Help text style"
 msgstr "Stil des Hilfetexts"
 
-#: src/admin-form-settings/index.jsx:862
+#: src/admin-form-settings/index.jsx:886
 msgid "Muted"
 msgstr "Gedämpft"
 
-#: src/admin-form-settings/index.jsx:863
+#: src/admin-form-settings/index.jsx:887
 msgid "Boxed"
 msgstr "Mit Kasten"
 
-#: src/admin-form-settings/index.jsx:1051
+#: src/admin-form-settings/index.jsx:1075
 msgid "Labels & help"
 msgstr "Labels & Hilfe"
 
 #: includes/admin/class-form-editor.php:588
-#: src/admin-form-settings/index.jsx:666
+#: src/admin-form-settings/index.jsx:690
 msgid "Show title on form"
 msgstr "Titel im Formular anzeigen"
 
@@ -2584,19 +2584,19 @@ msgstr "Wird verwendet, wenn eine Benachrichtigung den Absendernamen leer lässt
 msgid "Used when a notification leaves From email empty. Prefilled with the WordPress admin email (%s). For SMTP, use an address your provider allows."
 msgstr "Wird verwendet, wenn eine Benachrichtigung die Absender-E-Mail leer lässt. Vorausgefüllt mit der WordPress-Admin-E-Mail (%s). Bei SMTP eine Adresse verwenden, die der Anbieter erlaubt."
 
-#: src/admin-form-settings/index.jsx:868
+#: src/admin-form-settings/index.jsx:892
 msgid "Form font"
 msgstr "Formularschrift"
 
-#: src/admin-form-settings/index.jsx:870
+#: src/admin-form-settings/index.jsx:894
 msgid "Default inherits the theme / Site Editor typography. Optional choices come from theme.json and installed fonts."
 msgstr "Standardmäßig erbt das Theme / die Site-Editor-Typografie. Optionale Auswahl aus theme.json und installierten Schriften."
 
-#: src/admin-form-settings/index.jsx:877
+#: src/admin-form-settings/index.jsx:901
 msgid "Theme default (inherit)"
 msgstr "Theme-Standard (erben)"
 
-#: src/admin-form-settings/index.jsx:1065
+#: src/admin-form-settings/index.jsx:1091
 msgid "Typography"
 msgstr "Typografie"
 
@@ -2642,27 +2642,27 @@ msgstr "Pflaumentinte"
 msgid "Midnight"
 msgstr "Mitternacht"
 
-#: src/admin-form-settings/index.jsx:348
+#: src/admin-form-settings/index.jsx:353
 msgid "Live preview"
 msgstr "Live-Vorschau"
 
-#: src/admin-form-settings/index.jsx:394
+#: src/admin-form-settings/index.jsx:399
 msgid "Contact request"
 msgstr "Kontaktanfrage"
 
-#: src/admin-form-settings/index.jsx:403
+#: src/admin-form-settings/index.jsx:408
 msgid "We reply within one business day."
 msgstr "Wir antworten innerhalb eines Werktags."
 
-#: src/admin-form-settings/index.jsx:423
+#: src/admin-form-settings/index.jsx:428
 msgid "Used only for this reply."
 msgstr "Nur für diese Antwort verwendet."
 
-#: src/admin-form-settings/index.jsx:509
+#: src/admin-form-settings/index.jsx:514
 msgid "Please enter a valid email."
 msgstr "Bitte eine gültige E-Mail eingeben."
 
-#: src/admin-form-settings/index.jsx:990
+#: src/admin-form-settings/index.jsx:1014
 msgid "Color scheme"
 msgstr "Farbschema"
 
@@ -2670,98 +2670,98 @@ msgstr "Farbschema"
 msgid "Auto (closest scheme)"
 msgstr "Auto (ähnlichstes Schema)"
 
-#: src/admin-form-settings/index.jsx:416
+#: src/admin-form-settings/index.jsx:421
 msgid "Details"
 msgstr "Details"
 
-#: src/admin-form-settings/index.jsx:444
-#: src/admin-form-settings/index.jsx:453
+#: src/admin-form-settings/index.jsx:449
+#: src/admin-form-settings/index.jsx:458
 msgid "Topic"
 msgstr "Thema"
 
-#: src/admin-form-settings/index.jsx:459
+#: src/admin-form-settings/index.jsx:464
 msgid "Billing"
 msgstr "Abrechnung"
 
-#: src/admin-form-settings/index.jsx:462
+#: src/admin-form-settings/index.jsx:467
 msgid "Support"
 msgstr "Support"
 
-#: src/admin-form-settings/index.jsx:475
+#: src/admin-form-settings/index.jsx:480
 msgid "Preferred contact"
 msgstr "Bevorzugter Kontakt"
 
-#: src/admin-form-settings/index.jsx:502
+#: src/admin-form-settings/index.jsx:507
 msgid "I agree to the privacy policy"
 msgstr "Ich stimme der Datenschutzerklärung zu"
 
-#: src/admin-form-settings/index.jsx:889
+#: src/admin-form-settings/index.jsx:913
 msgid "Field spacing"
 msgstr "Feldabstände"
 
-#: src/admin-form-settings/index.jsx:891
+#: src/admin-form-settings/index.jsx:915
 msgid "Vertical and horizontal gaps between fields and section padding."
 msgstr "Vertikale und horizontale Abstände zwischen Feldern und Section-Innenabstand."
 
-#: src/admin-form-settings/index.jsx:896
-#: src/admin-form-settings/index.jsx:928
+#: src/admin-form-settings/index.jsx:920
+#: src/admin-form-settings/index.jsx:952
 msgid "Compact"
 msgstr "Kompakt"
 
-#: src/admin-form-settings/index.jsx:897
-#: src/admin-form-settings/index.jsx:929
+#: src/admin-form-settings/index.jsx:921
+#: src/admin-form-settings/index.jsx:953
 msgid "Cozy"
 msgstr "Gemütlich"
 
-#: src/admin-form-settings/index.jsx:900
-#: src/admin-form-settings/index.jsx:932
+#: src/admin-form-settings/index.jsx:924
+#: src/admin-form-settings/index.jsx:956
 msgid "Comfortable"
 msgstr "Großzügig"
 
-#: src/admin-form-settings/index.jsx:921
+#: src/admin-form-settings/index.jsx:945
 msgid "Input padding"
 msgstr "Eingabe-Innenabstand"
 
-#: src/admin-form-settings/index.jsx:938
+#: src/admin-form-settings/index.jsx:962
 msgid "Section title size"
 msgstr "Section-Titelgröße"
 
 #: src/admin-form-settings/index.jsx:269
 #: src/admin-form-settings/index.jsx:277
-#: src/admin-form-settings/index.jsx:914
-#: src/admin-form-settings/index.jsx:941
-#: src/admin-form-settings/index.jsx:951
-#: src/admin-form-settings/index.jsx:961
+#: src/admin-form-settings/index.jsx:938
+#: src/admin-form-settings/index.jsx:965
+#: src/admin-form-settings/index.jsx:975
+#: src/admin-form-settings/index.jsx:985
 msgid "Small"
 msgstr "Klein"
 
 #: src/admin-form-settings/index.jsx:270
 #: src/admin-form-settings/index.jsx:278
-#: src/admin-form-settings/index.jsx:915
-#: src/admin-form-settings/index.jsx:942
-#: src/admin-form-settings/index.jsx:952
-#: src/admin-form-settings/index.jsx:962
+#: src/admin-form-settings/index.jsx:939
+#: src/admin-form-settings/index.jsx:966
+#: src/admin-form-settings/index.jsx:976
+#: src/admin-form-settings/index.jsx:986
 msgid "Medium"
 msgstr "Mittel"
 
 #: src/admin-form-settings/index.jsx:271
 #: src/admin-form-settings/index.jsx:279
-#: src/admin-form-settings/index.jsx:916
-#: src/admin-form-settings/index.jsx:943
-#: src/admin-form-settings/index.jsx:953
-#: src/admin-form-settings/index.jsx:963
+#: src/admin-form-settings/index.jsx:940
+#: src/admin-form-settings/index.jsx:967
+#: src/admin-form-settings/index.jsx:977
+#: src/admin-form-settings/index.jsx:987
 msgid "Large"
 msgstr "Groß"
 
-#: src/admin-form-settings/index.jsx:948
+#: src/admin-form-settings/index.jsx:972
 msgid "Label size"
 msgstr "Labelgröße"
 
-#: src/admin-form-settings/index.jsx:958
+#: src/admin-form-settings/index.jsx:982
 msgid "Input text size"
 msgstr "Eingabetextgröße"
 
-#: src/admin-form-settings/index.jsx:1076
+#: src/admin-form-settings/index.jsx:1102
 msgid "Spacing & density"
 msgstr "Abstände & Dichte"
 
@@ -2769,15 +2769,15 @@ msgstr "Abstände & Dichte"
 msgid "Pill"
 msgstr "Pill"
 
-#: src/admin-form-settings/index.jsx:968
+#: src/admin-form-settings/index.jsx:992
 msgid "Input corners"
 msgstr "Eingabe-Ecken"
 
-#: src/admin-form-settings/index.jsx:978
+#: src/admin-form-settings/index.jsx:1002
 msgid "Button corners"
 msgstr "Button-Ecken"
 
-#: src/admin-form-settings/index.jsx:984
+#: src/admin-form-settings/index.jsx:1008
 msgid "Section corners"
 msgstr "Section-Ecken"
 
@@ -2786,23 +2786,23 @@ msgstr "Section-Ecken"
 msgid "(optional)"
 msgstr "(optional)"
 
-#: src/admin-form-settings/index.jsx:633
+#: src/admin-form-settings/index.jsx:657
 msgid "Custom (saved)"
 msgstr "Benutzerdefiniert (gespeichert)"
 
-#: src/admin-form-settings/index.jsx:788
+#: src/admin-form-settings/index.jsx:812
 msgid "Optional mark"
 msgstr "Optional-Markierung"
 
-#: src/admin-form-settings/index.jsx:790
+#: src/admin-form-settings/index.jsx:814
 msgid "Shown next to optional field labels."
 msgstr "Wird neben optionalen Feld-Labels angezeigt."
 
-#: src/admin-form-settings/index.jsx:797
+#: src/admin-form-settings/index.jsx:821
 msgid "Text “(optional)”"
 msgstr "Text „(optional)“"
 
-#: src/admin-form-settings/index.jsx:804
+#: src/admin-form-settings/index.jsx:828
 msgid "Inline validation"
 msgstr "Inline-Validierung"
 
@@ -2810,23 +2810,23 @@ msgstr "Inline-Validierung"
 msgid "On"
 msgstr "An"
 
-#: src/admin-form-settings/index.jsx:811
+#: src/admin-form-settings/index.jsx:835
 msgid "Off"
 msgstr "Aus"
 
-#: src/admin-form-settings/index.jsx:923
+#: src/admin-form-settings/index.jsx:947
 msgid "Inner padding for text inputs, selects, and radio/checkbox frames."
 msgstr "Innenabstand für Textfelder, Selects sowie Radio-/Checkbox-Rahmen."
 
-#: src/admin-form-settings/index.jsx:970
+#: src/admin-form-settings/index.jsx:994
 msgid "Applies to text fields, textareas, selects, and radio/checkbox frames."
 msgstr "Gilt für Textfelder, Textareas, Selects sowie Radio-/Checkbox-Rahmen."
 
-#: src/admin-form-settings/index.jsx:992
+#: src/admin-form-settings/index.jsx:1016
 msgid "Match site theme follows the site palette. Edit a swatch to switch to Custom — save to lock it."
 msgstr "„Match site theme“ folgt der Site-Palette. Farbe bearbeiten wechselt zu Custom — speichern zum Festschreiben."
 
-#: src/admin-form-settings/index.jsx:730
+#: src/admin-form-settings/index.jsx:754
 msgid "Keep drafts for"
 msgstr "Entwürfe behalten für"
 
@@ -2896,7 +2896,7 @@ msgstr "Fortschritt wurde gespeichert, aber die E-Mail konnte nicht gesendet wer
 msgid "Email for resume link"
 msgstr "E-Mail für Fortsetzungs-Link"
 
-#: src/admin-form-settings/index.jsx:749
+#: src/admin-form-settings/index.jsx:773
 msgid "Allow calendar reminder"
 msgstr "Kalender-Erinnerung erlauben"
 
@@ -2946,27 +2946,27 @@ msgstr[1] "%d Tage vor Ablauf"
 msgid "Email footer"
 msgstr "E-Mail-Fußzeile"
 
-#: src/admin-form-settings/index.jsx:720
+#: src/admin-form-settings/index.jsx:744
 msgid "Enable Save & Resume"
 msgstr "Speichern & Fortsetzen aktivieren"
 
-#: src/admin-form-settings/index.jsx:723
+#: src/admin-form-settings/index.jsx:747
 msgid "Visitors can save progress and continue later via email link."
 msgstr "Besucher können den Fortschritt speichern und später per E-Mail-Link fortsetzen."
 
-#: src/admin-form-settings/index.jsx:733
+#: src/admin-form-settings/index.jsx:757
 msgid "How long a resume link stays valid."
 msgstr "Wie lange ein Fortsetzungs-Link gültig bleibt."
 
-#: src/admin-form-settings/index.jsx:740
+#: src/admin-form-settings/index.jsx:764
 msgid "Show save after filled fields"
 msgstr "Speichern anzeigen nach ausgefüllten Feldern"
 
-#: src/admin-form-settings/index.jsx:742
+#: src/admin-form-settings/index.jsx:766
 msgid "Minimum filled fields before Save progress appears. 0 = always show."
 msgstr "Mindestanzahl ausgefüllter Felder, bevor „Fortschritt speichern“ erscheint. 0 = immer anzeigen."
 
-#: src/admin-form-settings/index.jsx:752
+#: src/admin-form-settings/index.jsx:776
 msgid "Lets visitors attach an .ics calendar appointment to the resume email. No further reminder emails are sent."
 msgstr "Besucher können optional einen .ics-Kalendertermin an die Fortsetzungs-Mail anhängen. Es werden keine weiteren Reminder-Mails gesendet."
 
@@ -3085,11 +3085,11 @@ msgstr "Design öffnen"
 msgid "Design"
 msgstr "Design"
 
-#: src/admin-form-settings/index.jsx:1320
+#: src/admin-form-settings/index.jsx:1346
 msgid "Save design"
 msgstr "Design speichern"
 
-#: src/admin-form-settings/index.jsx:1196
+#: src/admin-form-settings/index.jsx:1222
 msgid "Design saved."
 msgstr "Design gespeichert."
 
@@ -3451,44 +3451,32 @@ msgstr "Zentriert"
 msgid "Right"
 msgstr "Rechts"
 
-#: src/admin-form-settings/index.jsx:814
+#: src/admin-form-settings/index.jsx:857
 msgid "Border color"
 msgstr "Rahmenfarbe"
 
-#: src/admin-form-settings/index.jsx:816
+#: src/admin-form-settings/index.jsx:859
 msgid "Icons"
 msgstr "Icons"
 
-#: src/admin-form-settings/index.jsx:819
+#: src/admin-form-settings/index.jsx:862
 msgid "Icons and border"
 msgstr "Icons und Rahmen"
 
 #: src/admin-form-settings/index.jsx:110
-#: src/admin-form-settings/index.jsx:687
+#: src/admin-form-settings/index.jsx:711
 msgid "Shown under the form title. Use the toolbar for basic formatting."
 msgstr "Wird unter dem Formulartitel angezeigt. Symbolleiste für einfache Formatierung nutzen."
 
-#: src/admin-form-settings/index.jsx:806
-msgid "Live feedback after the visitor leaves a field. Prefer Border on dense fields such as matrices."
-msgstr "Live-Feedback, wenn der Besucher ein Feld verlässt. Bei dichten Feldern wie Matrizen besser Rahmen."
-
-#: src/admin-form-settings/index.jsx:825
-msgid "Inline validation applies to"
-msgstr "Inline-Validierung gilt für"
-
-#: src/admin-form-settings/index.jsx:827
-msgid "Required only keeps optional fields (e.g. matrix) quiet until submit."
-msgstr "Nur Pflichtfelder hält optionale Felder (z. B. Matrix) bis zum Absenden ruhig."
-
-#: src/admin-form-settings/index.jsx:834
+#: src/admin-form-settings/index.jsx:838
 msgid "Required fields only"
 msgstr "Nur Pflichtfelder"
 
-#: src/admin-form-settings/index.jsx:906
+#: src/admin-form-settings/index.jsx:930
 msgid "Space below intro"
 msgstr "Abstand unter Intro"
 
-#: src/admin-form-settings/index.jsx:908
+#: src/admin-form-settings/index.jsx:932
 msgid "Gap between the title/intro block and the first section (also below status messages)."
 msgstr "Abstand zwischen Titel/Intro und dem ersten Abschnitt (auch unter Statusmeldungen)."
 
@@ -3650,11 +3638,11 @@ msgstr "Optionale Zusatzklasse am Feld-Wrapper (durch Leerzeichen getrennt)."
 msgid "Clear selection"
 msgstr "Auswahl zurücksetzen"
 
-#: src/admin-form-settings/index.jsx:1253
+#: src/admin-form-settings/index.jsx:1279
 msgid "Append to the URL of the page that embeds this form:"
 msgstr "An die URL der Seite anhängen, die dieses Formular einbettet:"
 
-#: src/admin-form-settings/index.jsx:1269
+#: src/admin-form-settings/index.jsx:1295
 msgid "If that page URL already has a ?, replace the leading ? below with &."
 msgstr "Wenn die Seiten-URL schon ein ? enthält, das führende ? unten durch & ersetzen."
 
@@ -3961,15 +3949,15 @@ msgstr "Optional. Format: anliegen:angebot,email:name@example.com — URL-Query 
 msgid "0 = no limit. Caps how many characters visitors can enter (helps against spam dumps)."
 msgstr "0 = kein Limit. Begrenzt, wie viele Zeichen Besucher eingeben können (hilft gegen Spam-Dumps)."
 
-#: src/admin-form-settings/index.jsx:669
+#: src/admin-form-settings/index.jsx:693
 msgid "When off, the title is kept for admin/listings but hidden on the public form."
 msgstr "Wenn aus, bleibt der Titel für Admin/Listen erhalten, ist aber im öffentlichen Formular ausgeblendet."
 
-#: src/admin-form-settings/index.jsx:695
+#: src/admin-form-settings/index.jsx:719
 msgid "Show intro on form"
 msgstr "Einleitung im Formular anzeigen"
 
-#: src/admin-form-settings/index.jsx:698
+#: src/admin-form-settings/index.jsx:722
 msgid "When off, intro text is kept in settings but hidden on the public form."
 msgstr "Wenn aus, bleibt der Einleitungstext in den Einstellungen erhalten, ist aber im öffentlichen Formular ausgeblendet."
 
@@ -3986,3 +3974,15 @@ msgstr "Sichtbare Höhe des Feldes. Unabhängig von der maximalen Zeichenanzahl.
 #: includes/admin/class-form-editor.php:596
 msgid "Shown as the first empty choice (empty value) when no default option is selected. Leave blank to use “Please select…”."
 msgstr "Erscheint als erste leere Auswahl (leerer Wert), wenn keine Standard-Option gesetzt ist. Leer lassen für „Bitte wählen…“."
+
+#: src/admin-form-settings/index.jsx:830
+msgid "Live feedback while filling the form. Empty or invalid required fields are still marked on submit (and on Next in multipage)."
+msgstr "Live-Feedback beim Ausfüllen. Leere oder ungültige Pflichtfelder werden beim Absenden (und bei „Weiter“ in Mehrseiten-Formularen) weiterhin markiert."
+
+#: src/admin-form-settings/index.jsx:848
+msgid "Live feedback style"
+msgstr "Live-Feedback-Stil"
+
+#: src/admin-form-settings/index.jsx:850
+msgid "How live feedback looks. Prefer Border on dense fields such as matrices."
+msgstr "So sieht das Live-Feedback aus. Bei dichten Feldern wie Matrizen besser Rahmen."

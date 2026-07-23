@@ -332,15 +332,20 @@ function ColorSchemePreview( { data } ) {
 	const labelClass =
 		'wek-scheme-preview__card' +
 		( data.label_weight === 'normal' ? ' is-label-normal' : '' );
-	const showInline = data.inline_validation && data.inline_validation !== 'off';
+	const showInline =
+		data.inline_scope !== 'off' &&
+		data.inline_validation &&
+		data.inline_validation !== 'off';
 	const showInlineIcon =
-		data.inline_validation === 'icon' ||
-		data.inline_validation === 'both' ||
-		data.inline_validation === 'on';
+		showInline &&
+		( data.inline_validation === 'icon' ||
+			data.inline_validation === 'both' ||
+			data.inline_validation === 'on' );
 	const showInlineBorder =
-		data.inline_validation === 'border' ||
-		data.inline_validation === 'both' ||
-		data.inline_validation === 'on';
+		showInline &&
+		( data.inline_validation === 'border' ||
+			data.inline_validation === 'both' ||
+			data.inline_validation === 'on' );
 
 	return (
 		<div className="wek-scheme-preview" aria-live="polite">
@@ -540,6 +545,22 @@ function normalizeSaveResumeMin( value ) {
 
 function flattenSettings( payload ) {
 	const colors = payload.colors || {};
+	let inlineValidation = payload.inline_validation || 'both';
+	let inlineScope = payload.inline_scope || 'required';
+	if ( inlineValidation === 'on' ) {
+		inlineValidation = 'both';
+	}
+	// Legacy style "off" → scope off.
+	if ( inlineValidation === 'off' || inlineValidation === '0' ) {
+		inlineScope = 'off';
+		inlineValidation = 'both';
+	}
+	if ( [ 'icon', 'border', 'both' ].indexOf( inlineValidation ) === -1 ) {
+		inlineValidation = 'both';
+	}
+	if ( [ 'off', 'required', 'all' ].indexOf( inlineScope ) === -1 ) {
+		inlineScope = 'required';
+	}
 	return {
 		title: payload.title || '',
 		show_title: payload.show_title !== false,
@@ -552,8 +573,8 @@ function flattenSettings( payload ) {
 		label_weight: payload.label_weight || 'bold',
 		required_mark: payload.required_mark || 'asterisk',
 		optional_mark: payload.optional_mark || 'text',
-		inline_validation: payload.inline_validation || 'both',
-		inline_scope: payload.inline_scope || 'required',
+		inline_validation: inlineValidation,
+		inline_scope: inlineScope,
 		help_placement: payload.help_placement || 'below_label',
 		help_style: payload.help_style || 'muted',
 		font_family: payload.font_family || 'inherit',
@@ -592,8 +613,11 @@ function toApiPayload( data ) {
 		label_weight: data.label_weight || 'bold',
 		required_mark: data.required_mark || 'asterisk',
 		optional_mark: data.optional_mark || 'text',
-		inline_validation: data.inline_validation || 'both',
 		inline_scope: data.inline_scope || 'required',
+		inline_validation:
+			data.inline_validation && data.inline_validation !== 'off'
+				? data.inline_validation
+				: 'both',
 		help_placement: data.help_placement || 'below_label',
 		help_style: data.help_style || 'muted',
 		font_family: data.font_family || 'inherit',
@@ -800,15 +824,34 @@ function FormSettingsApp() {
 				],
 			},
 			{
-				id: 'inline_validation',
+				id: 'inline_scope',
 				label: __( 'Inline validation', 'we-formkit' ),
 				type: 'text',
 				description: __(
-					'Live feedback after the visitor leaves a field. Prefer Border on dense fields such as matrices.',
+					'Live feedback while filling the form. Empty or invalid required fields are still marked on submit (and on Next in multipage).',
 					'we-formkit'
 				),
 				elements: [
 					{ value: 'off', label: __( 'Off', 'we-formkit' ) },
+					{
+						value: 'required',
+						label: __( 'Required fields only', 'we-formkit' ),
+					},
+					{
+						value: 'all',
+						label: __( 'All fields', 'we-formkit' ),
+					},
+				],
+			},
+			{
+				id: 'inline_validation',
+				label: __( 'Live feedback style', 'we-formkit' ),
+				type: 'text',
+				description: __(
+					'How live feedback looks. Prefer Border on dense fields such as matrices.',
+					'we-formkit'
+				),
+				elements: [
 					{
 						value: 'border',
 						label: __( 'Border color', 'we-formkit' ),
@@ -817,25 +860,6 @@ function FormSettingsApp() {
 					{
 						value: 'both',
 						label: __( 'Icons and border', 'we-formkit' ),
-					},
-				],
-			},
-			{
-				id: 'inline_scope',
-				label: __( 'Inline validation applies to', 'we-formkit' ),
-				type: 'text',
-				description: __(
-					'Required only keeps optional fields (e.g. matrix) quiet until submit.',
-					'we-formkit'
-				),
-				elements: [
-					{
-						value: 'required',
-						label: __( 'Required fields only', 'we-formkit' ),
-					},
-					{
-						value: 'all',
-						label: __( 'All fields', 'we-formkit' ),
 					},
 				],
 			},
@@ -1054,8 +1078,10 @@ function FormSettingsApp() {
 						'label_weight',
 						'required_mark',
 						'optional_mark',
-						'inline_validation',
 						'inline_scope',
+						...( data.inline_scope !== 'off'
+							? [ 'inline_validation' ]
+							: [] ),
 						'help_placement',
 						'help_style',
 					],
@@ -1095,7 +1121,7 @@ function FormSettingsApp() {
 				},
 			],
 		} ),
-		[]
+		[ data.inline_scope ]
 	);
 
 	const onChange = useCallback( ( edits ) => {

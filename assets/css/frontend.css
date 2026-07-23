@@ -1008,16 +1008,16 @@ body .we-formkit .we-formkit__checkboxes-custom-actions {
 .we-formkit__validity {
 	display: none;
 	flex: 0 0 auto;
-	width: 1rem;
-	height: 1rem;
-	border-radius: 0;
+	width: 1.35rem;
+	height: 1.35rem;
+	border-radius: 50%;
 	align-items: center;
 	justify-content: center;
 	box-sizing: border-box;
 }
 
 /*
- * Pin the mark inside the control, inset by the same horizontal padding as the text.
+ * Pin the badge inside the control, inset by the same horizontal padding as the text.
  * (visibility:hidden still reserved flex space when display:inline-flex — keep absolute.)
  */
 .we-formkit--inline-feedback-icon .we-formkit__validity,
@@ -1048,7 +1048,7 @@ body .we-formkit .we-formkit__checkboxes-custom-actions {
 
 .we-formkit--inline-feedback-icon .we-formkit__fieldset > .we-formkit__field-reset,
 .we-formkit--inline-feedback-both .we-formkit__fieldset > .we-formkit__field-reset {
-	right: calc(var(--wek-control-pad-x) + 1.35rem);
+	right: calc(var(--wek-control-pad-x) + 1.5rem);
 }
 
 .we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__validity,
@@ -1057,10 +1057,10 @@ body .we-formkit .we-formkit__checkboxes-custom-actions {
 .we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__validity {
 	visibility: visible;
 	opacity: 1;
-	pointer-events: none;
+	pointer-events: auto;
 }
 
-/* Leave room for the inset mark so text/value does not run under it. */
+/* Leave room for the inset badge so text/value does not run under it. */
 .we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__control-row > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
 .we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__control-row > textarea,
 .we-formkit--inline-feedback-icon .we-formkit__field.is-invalid .we-formkit__control-row > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
@@ -1069,50 +1069,48 @@ body .we-formkit .we-formkit__checkboxes-custom-actions {
 .we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__control-row > textarea,
 .we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__control-row > input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
 .we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__control-row > textarea {
-	padding-right: calc(var(--wek-control-pad-x) + 1.25rem);
+	padding-right: calc(var(--wek-control-pad-x) + 1.6rem);
 }
 
 .we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__control-row > select,
 .we-formkit--inline-feedback-icon .we-formkit__field.is-invalid .we-formkit__control-row > select,
 .we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__control-row > select,
 .we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__control-row > select {
-	/* Chevron (~1.1rem) + mark + padding. */
-	padding-right: calc(var(--wek-control-pad-x) + 2.35rem);
+	/* Chevron + badge + padding. */
+	padding-right: calc(var(--wek-control-pad-x) + 2.7rem);
 	background-position:
-		calc(100% - (var(--wek-control-pad-x) + 1.35rem) - 5px) calc(50% - 2px),
-		calc(100% - (var(--wek-control-pad-x) + 1.35rem)) calc(50% - 2px);
+		calc(100% - (var(--wek-control-pad-x) + 1.55rem) - 5px) calc(50% - 2px),
+		calc(100% - (var(--wek-control-pad-x) + 1.55rem)) calc(50% - 2px);
 }
 
 .we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__validity,
 .we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__validity {
-	background: transparent;
-	color: var(--wek-accent);
+	background: var(--wek-accent);
+	color: var(--wek-on-accent);
 }
 
 .we-formkit--inline-feedback-icon .we-formkit__field.is-valid .we-formkit__validity::before,
 .we-formkit--inline-feedback-both .we-formkit__field.is-valid .we-formkit__validity::before {
 	content: "";
-	width: 0.28rem;
-	height: 0.52rem;
+	width: 0.35rem;
+	height: 0.65rem;
 	border: solid currentColor;
-	border-width: 0 1.5px 1.5px 0;
+	border-width: 0 2px 2px 0;
 	transform: rotate(45deg) translateY(-1px);
-	opacity: 0.9;
 }
 
 .we-formkit--inline-feedback-icon .we-formkit__field.is-invalid .we-formkit__validity,
 .we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__validity {
-	background: transparent;
-	color: var(--wek-danger);
+	background: var(--wek-danger);
+	color: #fff;
 }
 
 .we-formkit--inline-feedback-icon .we-formkit__field.is-invalid .we-formkit__validity::before,
 .we-formkit--inline-feedback-both .we-formkit__field.is-invalid .we-formkit__validity::before {
 	content: "×";
 	font-size: 0.95rem;
-	font-weight: 600;
+	font-weight: 700;
 	line-height: 1;
-	opacity: 0.95;
 }
 
 .we-formkit--inline-feedback-border .we-formkit__field.is-valid input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
