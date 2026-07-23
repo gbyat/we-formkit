@@ -31,6 +31,8 @@
 		"zip": "node scripts/build-release-zip.js",
 		"preflight": "node scripts/preflight-deploy.js",
 		"preflight:warn": "node scripts/preflight-deploy.js --warn-only",
+		"task-log:check": "node scripts/task-log-check.js",
+		"task-log:fix": "node scripts/task-log-check.js --fix",
 		"scan:sighthound": "node scripts/run-sighthound.js",
 		"scan:sighthound:sarif": "node scripts/run-sighthound.js --sarif",
 		"hooks:install": "node scripts/install-git-hooks.js",
