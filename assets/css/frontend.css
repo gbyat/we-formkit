@@ -33,6 +33,11 @@
 	margin: 0 auto;
 	font-family: var(--wek-font-family, inherit);
 	line-height: 1.5;
+	/* Honour theme sticky/admin-bar offset on hash / scrollIntoView (webentwicklerin sets the var). */
+	scroll-margin-top: var(
+		--webentwicklerin-scroll-padding-top,
+		var(--wp-admin--admin-bar--height, 0px)
+	);
 }
 
 /*

@@ -66,6 +66,7 @@
   "Custom query parameter": "Eigener Query-Parameter",
   "Optional. Leave empty to use the Field ID. Example: anliegen": "Optional. Leer lassen, um die Feld-ID zu verwenden. Beispiel: anliegen",
   "Page URL (for copy links)": "Seiten-URL (für Kopier-Links)",
+  "Paste the public page where this form is embedded. Copy links include #we-formkit-{formId} so the page scrolls to the form.": "Öffentliche Seite einfügen, auf der das Formular eingebettet ist. Kopier-Links enthalten #we-formkit-{formId}, damit die Seite zum Formular scrollt.",
   "Paste the public page where this form is embedded. Used only to build copyable links in the editor.": "Öffentliche Seite einfügen, auf der das Formular eingebettet ist. Nur zum Erzeugen kopierbarer Links im Editor.",
   "Prefill links": "Prefill-Links",
   "Copy": "Kopieren",

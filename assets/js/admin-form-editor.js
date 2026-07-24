@@ -2134,17 +2134,23 @@
 
 		function buildPrefillUrl( baseUrl, param, value ) {
 			const base = String( baseUrl || '' ).trim();
+			const formId = parseInt( ( window.weFormkitAdmin && window.weFormkitAdmin.formId ) || 0, 10 ) || 0;
+			const hash = formId > 0 ? 'we-formkit-' + String( formId ) : '';
 			const q = encodeURIComponent( param ) + '=' + encodeURIComponent( value );
 			if ( ! base ) {
-				return '?' + q;
+				return '?' + q + ( hash ? '#' + hash : '' );
 			}
 			try {
 				const url = new URL( base, window.location.origin );
 				url.searchParams.set( param, value );
+				if ( hash ) {
+					url.hash = hash;
+				}
 				return url.toString();
 			} catch ( e ) {
 				const join = base.indexOf( '?' ) === -1 ? '?' : '&';
-				return base + join + q;
+				const withoutHash = base.split( '#' )[ 0 ];
+				return withoutHash + join + q + ( hash ? '#' + hash : '' );
 			}
 		}
 
@@ -2230,7 +2236,7 @@
 					className: 'description',
 					text:
 						i18n.prefillBaseUrlHint ||
-						'Paste the public page where this form is embedded. Used only to build copyable links in the editor.',
+						'Paste the public page where this form is embedded. Copy links include #we-formkit-{formId} so the page scrolls to the form.',
 				} )
 			);
 

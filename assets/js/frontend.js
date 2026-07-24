@@ -2303,6 +2303,79 @@
 		} );
 	}
 
+	/**
+	 * Whether the URL carries a prefill value for any field on this form.
+	 *
+	 * @param {HTMLFormElement} form Form.
+	 * @return {boolean}
+	 */
+	function formHasUrlPrefillParams( form ) {
+		let params;
+		try {
+			params = new URLSearchParams( window.location.search );
+		} catch ( e ) {
+			return false;
+		}
+		if ( params.get( 'wek_resume' ) || params.get( 'wek_autofill' ) === '1' ) {
+			return false;
+		}
+		return qsa( form, '[data-wek-field][data-prefill-param]' ).some( function ( fieldEl ) {
+			const param = fieldEl.getAttribute( 'data-prefill-param' );
+			if ( ! param ) {
+				return false;
+			}
+			return params.getAll( param ).some( function ( value ) {
+				return String( value || '' ).trim() !== '';
+			} );
+		} );
+	}
+
+	/**
+	 * Smooth-scroll the form into view, honouring theme sticky/admin-bar scroll-padding.
+	 *
+	 * @param {HTMLElement} root Form root.
+	 * @return {void}
+	 */
+	function scrollFormIntoView( root ) {
+		if ( ! root || typeof root.getBoundingClientRect !== 'function' ) {
+			return;
+		}
+		const reduce =
+			window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+		const padRaw = window.getComputedStyle( document.documentElement ).scrollPaddingTop;
+		const pad = padRaw ? parseFloat( padRaw ) || 0 : 0;
+		const rect = root.getBoundingClientRect();
+		const viewH = window.innerHeight || document.documentElement.clientHeight || 0;
+
+		// Already sitting under the sticky bar, or fully visible — skip.
+		if ( rect.top >= pad - 4 && rect.top <= pad + 96 ) {
+			return;
+		}
+		if ( rect.top >= pad && rect.bottom <= viewH ) {
+			return;
+		}
+
+		const top = ( window.scrollY || window.pageYOffset || 0 ) + rect.top - pad - 8;
+		window.scrollTo( {
+			top: Math.max( 0, top ),
+			behavior: reduce ? 'auto' : 'smooth',
+		} );
+	}
+
+	/**
+	 * After layout + theme sticky padding settle, scroll to the form when URL prefill is present.
+	 *
+	 * @param {HTMLElement} root Form root.
+	 * @return {void}
+	 */
+	function scheduleScrollFormAfterPrefill( root ) {
+		window.requestAnimationFrame( function () {
+			window.setTimeout( function () {
+				scrollFormIntoView( root );
+			}, 80 );
+		} );
+	}
+
 	function scheduleAutofillSubmit( form, root, cfg ) {
 		const started = Number( cfg.started ) || Math.floor( Date.now() / 1000 );
 		const waitMs = Math.max( 500, ( 3.2 - ( Date.now() / 1000 - started ) ) * 1000 );
@@ -3067,6 +3140,9 @@
 		initConditionals( root, form );
 		initRepeaters( form );
 		applyUrlPrefill( form );
+		if ( formHasUrlPrefillParams( form ) ) {
+			scheduleScrollFormAfterPrefill( root );
+		}
 
 		const cfg = window.weFormkit || {};
 		if ( cfg.autofill && wantsAutofill() ) {

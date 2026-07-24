@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Stable HTML ids on form root (`we-formkit-{formId}`) and field wrappers (`wek-wrap-{formId}-{fieldId}`); prefill copy-links append the form hash.
+- After URL prefill, smooth-scroll to the form using the document `scroll-padding-top` (sticky nav / admin bar); `prefers-reduced-motion` respected.
+
 ## [1.0.4] - 2026-07-24
 
 - URL multi-field prefill via query params (Field ID / custom param), shortcode/block `prefill`, and builder copy-links for choice options.

@@ -422,7 +422,7 @@ final class Form_Editor {
 					'prefillParam'              => __( 'Custom query parameter', 'we-formkit' ),
 					'prefillParamHint'          => __( 'Optional. Leave empty to use the Field ID. Example: anliegen', 'we-formkit' ),
 					'prefillBaseUrl'            => __( 'Page URL (for copy links)', 'we-formkit' ),
-					'prefillBaseUrlHint'        => __( 'Paste the public page where this form is embedded. Used only to build copyable links in the editor.', 'we-formkit' ),
+					'prefillBaseUrlHint'        => __( 'Paste the public page where this form is embedded. Copy links include #we-formkit-{formId} so the page scrolls to the form.', 'we-formkit' ),
 					'prefillLinks'              => __( 'Prefill links', 'we-formkit' ),
 					'prefillCopy'               => __( 'Copy', 'we-formkit' ),
 					'prefillCopied'             => __( 'Copied', 'we-formkit' ),

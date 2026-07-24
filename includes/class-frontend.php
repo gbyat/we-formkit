@@ -24,11 +24,61 @@ final class Frontend {
 	private static $appearance = null;
 
 	/**
+	 * Form post ID while rendering (for stable HTML ids).
+	 *
+	 * @var int
+	 */
+	private static $current_form_id = 0;
+
+	/**
+	 * How many times each form ID was rendered on this request (duplicate embeds).
+	 *
+	 * @var array<int, int>
+	 */
+	private static $form_html_instances = array();
+
+	/**
 	 * Prefill map for the form currently being rendered (param => value).
 	 *
 	 * @var array<string, string>
 	 */
 	private static $prefill = array();
+
+	/**
+	 * Stable HTML id for a form root (`we-formkit-{id}`, or `…-{n}` if embedded twice).
+	 *
+	 * @param int $form_id Form post ID.
+	 * @return string
+	 */
+	public static function form_html_id( $form_id ) {
+		$form_id = (int) $form_id;
+		if ( $form_id <= 0 ) {
+			return 'we-formkit';
+		}
+		if ( ! isset( self::$form_html_instances[ $form_id ] ) ) {
+			self::$form_html_instances[ $form_id ] = 0;
+		}
+		++self::$form_html_instances[ $form_id ];
+		$n = self::$form_html_instances[ $form_id ];
+		$base = 'we-formkit-' . $form_id;
+		return 1 === $n ? $base : $base . '-' . $n;
+	}
+
+	/**
+	 * HTML id for a field wrapper (control inputs keep `wek-field-{fieldId}`).
+	 *
+	 * @param int    $form_id  Form post ID.
+	 * @param string $field_id Field id from schema.
+	 * @return string
+	 */
+	public static function field_wrap_html_id( $form_id, $field_id ) {
+		$form_id  = (int) $form_id;
+		$field_id = sanitize_html_class( (string) $field_id );
+		if ( '' === $field_id ) {
+			return 'wek-wrap';
+		}
+		return 'wek-wrap-' . $form_id . '-' . $field_id;
+	}
 
 	/**
 	 * @return void
@@ -384,12 +434,15 @@ final class Frontend {
 	 * @return void
 	 */
 	public static function render_form( $form_id, array $schema, $privacy_url ) {
-		$title            = $schema['title'] ? $schema['title'] : get_the_title( $form_id );
-		$pagination       = Form_Schema::get_pagination( $form_id );
-		self::$appearance = Form_Schema::get_appearance( $form_id );
-		$appearance_class = Form_Schema::appearance_root_classes( $form_id );
+		$title                 = $schema['title'] ? $schema['title'] : get_the_title( $form_id );
+		$pagination            = Form_Schema::get_pagination( $form_id );
+		self::$appearance      = Form_Schema::get_appearance( $form_id );
+		self::$current_form_id = (int) $form_id;
+		$appearance_class      = Form_Schema::appearance_root_classes( $form_id );
+		$root_html_id          = self::form_html_id( $form_id );
 		?>
 		<div
+			id="<?php echo esc_attr( $root_html_id ); ?>"
 			class="we-formkit <?php echo esc_attr( $appearance_class ); ?>"
 			data-we-formkit
 			data-form-id="<?php echo esc_attr( (string) $form_id ); ?>"
@@ -737,8 +790,10 @@ final class Frontend {
 			( '' !== $css_class ? ' ' . $css_class : '' )
 		);
 		$prefill_param = Url_Prefill::is_allowed( $field ) ? Url_Prefill::param_name( $field ) : '';
+		$wrap_html_id  = self::field_wrap_html_id( self::$current_form_id, (string) $id );
 		?>
 		<div
+			id="<?php echo esc_attr( $wrap_html_id ); ?>"
 			class="<?php echo esc_attr( $field_class ); ?>"
 			data-wek-field
 			data-field-id="<?php echo esc_attr( $id ); ?>"
