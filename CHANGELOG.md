@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-07-26
+
 - Name and Address mini-templates in the builder library (toggle slots, reorder); Address country presets (DACH+LI, EU, continents, world) with optional Other → text field; priority countries at top of the list + optional pre-select; semantic `field.role` for Spamfighterin / autocomplete.
 - Spam quarantine path: `we_formkit_spam_check` may return `{ action: quarantine }` — entry saved with `SUB_SPAM=1`, notification emails skipped, visitor still gets the normal success confirmation (used by WE Spamfighterin).
 - Stable HTML ids on form root (`we-formkit-{formId}`) and field wrappers (`wek-wrap-{formId}-{fieldId}`); prefill copy-links append the form hash.
 - After URL prefill, smooth-scroll to the form using the document `scroll-padding-top` (sticky nav / admin bar); `prefers-reduced-motion` respected.
+
+[1.0.4]: https://github.com/gbyat/we-formkit/releases/tag/v1.0.4
 
 ## [1.0.4] - 2026-07-24
 
