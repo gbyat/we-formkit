@@ -4218,15 +4218,14 @@
 		}
 
 		function renderFormScope( aside ) {
-			aside.appendChild(
-				el( 'div', { className: 'wek-builder-sidebar__head' }, [
-					el( 'h3', {
-						className: 'wek-builder-sidebar__title',
-						text: i18n.formScopeTitle || 'Form',
-					} ),
-				] )
+			const panel = el( 'div', { className: 'wek-builder-scope-panel' } );
+			panel.appendChild(
+				el( 'h3', {
+					className: 'wek-builder-sidebar__title',
+					text: i18n.formScopeTitle || 'Form',
+				} )
 			);
-			aside.appendChild(
+			panel.appendChild(
 				el( 'p', {
 					className: 'description',
 					text:
@@ -4243,7 +4242,7 @@
 					? window.weFormkitAdmin.designUrl
 					: '';
 			if ( ! formIdForUi || ! settingsUrl ) {
-				aside.appendChild(
+				panel.appendChild(
 					el( 'p', {
 						className: 'description',
 						text:
@@ -4251,9 +4250,10 @@
 							'Save the form once to unlock the shortcode and Form Settings link.',
 					} )
 				);
+				aside.appendChild( panel );
 				return;
 			}
-			const links = el( 'p', { className: 'wek-builder__row' } );
+			const links = el( 'div', { className: 'wek-builder-scope-panel__actions' } );
 			links.appendChild(
 				el( 'a', {
 					className: 'button',
@@ -4262,7 +4262,6 @@
 				} )
 			);
 			if ( designUrl ) {
-				links.appendChild( document.createTextNode( ' ' ) );
 				links.appendChild(
 					el( 'a', {
 						className: 'button',
@@ -4271,8 +4270,8 @@
 					} )
 				);
 			}
-			aside.appendChild( links );
-			aside.appendChild(
+			panel.appendChild( links );
+			panel.appendChild(
 				el( 'p', {
 					className: 'description',
 					text:
@@ -4280,16 +4279,16 @@
 						'Pagination (single page / one section per page) is in the toolbar above the canvas.',
 				} )
 			);
+			aside.appendChild( panel );
 		}
 
 		function renderIntegrationsScope( aside ) {
-			aside.appendChild(
-				el( 'div', { className: 'wek-builder-sidebar__head' }, [
-					el( 'h3', {
-						className: 'wek-builder-sidebar__title',
-						text: i18n.integrationsTitle || 'Integrations',
-					} ),
-				] )
+			const panel = el( 'div', { className: 'wek-builder-scope-panel' } );
+			panel.appendChild(
+				el( 'h3', {
+					className: 'wek-builder-sidebar__title',
+					text: i18n.integrationsTitle || 'Integrations',
+				} )
 			);
 
 			const sfi =
@@ -4298,7 +4297,7 @@
 					: null;
 
 			if ( ! sfi || ! sfi.active ) {
-				aside.appendChild(
+				panel.appendChild(
 					el( 'p', {
 						className: 'description',
 						text:
@@ -4306,7 +4305,7 @@
 							'No modules connected yet. Add-ons register here via we_formkit_register_modules.',
 					} )
 				);
-				aside.appendChild(
+				panel.appendChild(
 					el( 'p', {
 						className: 'description',
 						text:
@@ -4314,16 +4313,17 @@
 							'Planned modules include Spamfighter, Subscribe to Posts, and server-side PDF.',
 					} )
 				);
+				aside.appendChild( panel );
 				return;
 			}
 
-			aside.appendChild(
+			panel.appendChild(
 				el( 'h4', {
 					className: 'wek-builder-sidebar__subtitle',
 					text: i18n.spamfighterinTitle || 'WE Spamfighterin',
 				} )
 			);
-			aside.appendChild(
+			panel.appendChild(
 				el( 'p', {
 					className: 'description',
 					text:
@@ -4333,7 +4333,7 @@
 			);
 
 			if ( ! formIdForUi ) {
-				aside.appendChild(
+				panel.appendChild(
 					el( 'p', {
 						className: 'description',
 						text:
@@ -4341,6 +4341,7 @@
 							'Save the form once to unlock the shortcode and Form Settings link.',
 					} )
 				);
+				aside.appendChild( panel );
 				return;
 			}
 
@@ -4420,10 +4421,11 @@
 				}, 200 );
 			} );
 
-			aside.appendChild(
+			panel.appendChild(
 				fieldRow( i18n.spamfighterinFormKind || 'Form type', select )
 			);
-			aside.appendChild( status );
+			panel.appendChild( status );
+			aside.appendChild( panel );
 		}
 
 		function renderFieldInspector( aside ) {

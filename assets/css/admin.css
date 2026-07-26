@@ -780,7 +780,7 @@ body.wek-builder-is-resizing iframe {
 .wek-admin .wek-builder-scope {
 	display: flex;
 	gap: 0.15rem;
-	margin: 0.65rem 1rem 0.35rem;
+	margin: 0.75rem 1.1rem 0;
 	padding: 0.15rem;
 	border: 1px solid var(--wek-line);
 	border-radius: var(--wek-radius-sm);
@@ -789,7 +789,7 @@ body.wek-builder-is-resizing iframe {
 
 .wek-admin .wek-builder-col--side .wek-builder-scope {
 	margin-left: 1.85rem;
-	margin-right: 1rem;
+	margin-right: 1.1rem;
 }
 
 .wek-admin .wek-builder-scope__btn {
@@ -811,14 +811,47 @@ body.wek-builder-is-resizing iframe {
 	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 
-.wek-admin .wek-builder-sidebar__subtitle {
-	margin: 0.5rem 1rem 0.35rem;
-	font-size: 13px;
+.wek-admin .wek-builder-scope-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 0.85rem 1.1rem 1.25rem;
 }
 
-.wek-admin .wek-builder-col--side .wek-builder-sidebar__subtitle {
-	margin-left: 1.85rem;
-	margin-right: 1rem;
+.wek-admin .wek-builder-col--side .wek-builder-scope-panel {
+	padding-left: 1.85rem;
+	padding-right: 1.1rem;
+}
+
+.wek-admin .wek-builder-scope-panel > .wek-builder-sidebar__title,
+.wek-admin .wek-builder-scope-panel > .wek-builder-sidebar__subtitle,
+.wek-admin .wek-builder-scope-panel > .description,
+.wek-admin .wek-builder-scope-panel > .wek-builder__row,
+.wek-admin .wek-builder-scope-panel > .wek-builder-scope-panel__actions {
+	margin: 0;
+}
+
+.wek-admin .wek-builder-scope-panel > .wek-builder-sidebar__subtitle {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.wek-admin .wek-builder-scope-panel > .description {
+	font-size: 13px;
+	line-height: 1.45;
+	color: var(--wek-muted, #646970);
+}
+
+.wek-admin .wek-builder-scope-panel__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.wek-admin .wek-builder-scope-panel .wek-builder__sfi-status:empty {
+	display: none;
 }
 
 @media (min-width: 1101px) {
@@ -1124,6 +1157,10 @@ body.wek-builder-is-resizing iframe {
 
 .wek-admin .wek-builder-sidebar .wek-builder__row {
 	margin: 0 0 1rem;
+}
+
+.wek-admin .wek-builder-scope-panel > .wek-builder__row {
+	margin: 0;
 }
 
 .wek-admin .wek-builder-sidebar .wek-builder__validation {
