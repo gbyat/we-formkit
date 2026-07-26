@@ -716,7 +716,7 @@
 				];
 			}
 			return {
-				id: ( typeId || 'field' ) + '_' + Date.now().toString( 36 ),
+				id: nextFieldId( typeId || 'field' ),
 				type: typeId || 'text',
 				label: ( typeMeta && typeMeta.label ) || i18n.field || 'Field',
 				help: '',
@@ -730,7 +730,159 @@
 				width: 'full',
 				options: [],
 				show_when: null,
+				role: '',
 			};
+		}
+
+		let fieldIdSeq = 0;
+		function nextFieldId( prefix ) {
+			fieldIdSeq += 1;
+			return ( prefix || 'field' ) + '_' + Date.now().toString( 36 ) + fieldIdSeq.toString( 36 );
+		}
+
+		const roleLabels =
+			window.weFormkitAdmin && window.weFormkitAdmin.roleLabels
+				? window.weFormkitAdmin.roleLabels
+				: {};
+		const fieldPacks =
+			window.weFormkitAdmin && window.weFormkitAdmin.fieldPacks
+				? window.weFormkitAdmin.fieldPacks
+				: {};
+		const countryPresetsBoot =
+			window.weFormkitAdmin && window.weFormkitAdmin.countryPresets
+				? window.weFormkitAdmin.countryPresets
+				: { catalog: {}, otherValue: '__other__', defaultPreset: 'dach' };
+
+		function orderCountryOptions( options, priority, includeOther ) {
+			const otherValue = countryPresetsBoot.otherValue || '__other__';
+			const byCode = {};
+			( options || [] ).forEach( function ( o ) {
+				if ( ! o || ! o.value || o.value === otherValue ) {
+					return;
+				}
+				byCode[ String( o.value ).toUpperCase() ] = {
+					value: String( o.value ).toUpperCase(),
+					label: o.label,
+				};
+			} );
+			const out = [];
+			const used = {};
+			( priority || [] ).forEach( function ( code ) {
+				const key = String( code || '' ).toUpperCase();
+				if ( byCode[ key ] && ! used[ key ] ) {
+					out.push( byCode[ key ] );
+					used[ key ] = true;
+				}
+			} );
+			const rest = Object.keys( byCode )
+				.filter( function ( key ) {
+					return ! used[ key ];
+				} )
+				.map( function ( key ) {
+					return byCode[ key ];
+				} )
+				.sort( function ( a, b ) {
+					return String( a.label ).localeCompare( String( b.label ) );
+				} );
+			const merged = out.concat( rest );
+			if ( includeOther ) {
+				merged.push( {
+					value: otherValue,
+					label: i18n.otherCountry || 'Other',
+				} );
+			}
+			return merged;
+		}
+
+		function clonePackSlots( packId ) {
+			const pack = fieldPacks[ packId ];
+			const slots = pack && Array.isArray( pack.slots ) ? pack.slots : [];
+			return slots.map( function ( slot ) {
+				return {
+					role: slot.role,
+					enabled: !! slot.enabled,
+					width: slot.width || 'full',
+				};
+			} );
+		}
+
+		function buildPackFields( packId, slotsState, countryOpts ) {
+			const labels = roleLabels;
+			const otherValue = countryPresetsBoot.otherValue || '__other__';
+			const fields = [];
+			let countryFieldId = '';
+
+			slotsState.forEach( function ( slot ) {
+				if ( ! slot.enabled ) {
+					return;
+				}
+				const role = slot.role;
+				const label = labels[ role ] || role;
+
+				if ( role === 'country' ) {
+					const preset =
+						( countryOpts && countryOpts.preset ) ||
+						countryPresetsBoot.defaultPreset ||
+						'dach';
+					const includeOther = !!( countryOpts && countryOpts.includeOther );
+					const catalog = countryPresetsBoot.catalog || {};
+					const presetMeta = catalog[ preset ] || catalog.dach || {};
+					let options = Array.isArray( presetMeta.options )
+						? presetMeta.options.map( function ( o ) {
+								return { value: o.value, label: o.label };
+						  } )
+						: [];
+					const priority = Array.isArray( countryOpts && countryOpts.priority )
+						? countryOpts.priority.slice()
+						: [];
+					options = orderCountryOptions( options, priority, includeOther );
+
+					const countryField = createBlankField( 'select' );
+					countryField.label = label;
+					countryField.role = 'country';
+					countryField.width = slot.width || 'full';
+					countryField.options = options;
+					countryField.placeholder = i18n.pleaseSelect || '';
+					if ( countryOpts && countryOpts.defaultCountry ) {
+						countryField.default_value = String( countryOpts.defaultCountry );
+					}
+					countryFieldId = countryField.id;
+					fields.push( countryField );
+
+					if ( includeOther ) {
+						const otherField = createBlankField( 'text' );
+						otherField.label = labels.country_other || 'Other country';
+						otherField.role = 'country_other';
+						otherField.width = 'full';
+						otherField.show_when = {
+							relation: 'AND',
+							rules: [
+								{
+									field: countryFieldId,
+									op: 'equals',
+									value: otherValue,
+								},
+							],
+						};
+						fields.push( otherField );
+					}
+					return;
+				}
+
+				const field = createBlankField( 'text' );
+				field.label = label;
+				field.role = role;
+				field.width = slot.width || 'full';
+				if ( role === 'postal_code' ) {
+					field.type_options.max_length = 16;
+				}
+				if ( role === 'given_name' || role === 'family_name' ) {
+					field.required = true;
+				}
+				fields.push( field );
+			} );
+
+			return fields;
 		}
 
 		function patchCanvasSelection() {
@@ -4141,6 +4293,19 @@
 				} );
 				panel.appendChild( fieldRow( i18n.type || 'Type', typeSelect ) );
 
+				if ( field.role ) {
+					const roleLabel = roleLabels[ field.role ] || field.role;
+					panel.appendChild(
+						fieldRow(
+							i18n.semanticRole || 'Semantic role',
+							el( 'p', {
+								className: 'description',
+								text: roleLabel + ' (' + field.role + ')',
+							} )
+						)
+					);
+				}
+
 				panel.appendChild(
 					fieldRow(
 						i18n.id || 'Field ID',
@@ -5997,6 +6162,462 @@
 			render();
 		}
 
+		function insertFieldsAt( fields, dropLoc ) {
+			if ( ! fields || ! fields.length ) {
+				return;
+			}
+
+			let sIndex = 0;
+			let at = 0;
+
+			if ( dropLoc && dropLoc.scope === 'section' && schema.sections[ dropLoc.s ] ) {
+				sIndex = dropLoc.s;
+				const section = schema.sections[ sIndex ];
+				section.fields = section.fields || [];
+				if ( section.id ) {
+					setSectionCollapsed( section.id, false );
+				}
+				at = typeof dropLoc.index === 'number' ? dropLoc.index : section.fields.length;
+				at = Math.max( 0, Math.min( at, section.fields.length ) );
+			} else {
+				if ( ! schema.sections.length ) {
+					schema.sections.push( {
+						id: 'section_' + Date.now(),
+						title: i18n.section || 'Section',
+						show_title: true,
+						intro: '',
+						show_when: null,
+						fields: [],
+					} );
+				}
+				if ( selection && selection.type === 'field' && typeof selection.sIndex === 'number' ) {
+					sIndex = selection.sIndex;
+				} else if ( selection && selection.type === 'section' && typeof selection.sIndex === 'number' ) {
+					sIndex = selection.sIndex;
+				} else {
+					sIndex = schema.sections.length - 1;
+				}
+				const section = schema.sections[ sIndex ];
+				section.fields = section.fields || [];
+				at = section.fields.length;
+			}
+
+			const section = schema.sections[ sIndex ];
+			Array.prototype.splice.apply( section.fields, [ at, 0 ].concat( fields ) );
+			selection = { type: 'field', sIndex: sIndex, fIndex: at };
+			activeTab = 'general';
+			syncHidden();
+			render();
+		}
+
+		function closePackComposer() {
+			const existing = document.querySelector( '.wek-pack-composer' );
+			if ( existing && existing.parentNode ) {
+				existing.parentNode.removeChild( existing );
+			}
+		}
+
+		function openPackComposer( packId, dropLoc ) {
+			closePackComposer();
+			const pack = fieldPacks[ packId ];
+			if ( ! pack ) {
+				return;
+			}
+
+			const slotsState = clonePackSlots( packId );
+			const catalog = countryPresetsBoot.catalog || {};
+			const initialPreset = countryPresetsBoot.defaultPreset || 'dach';
+			const initialMeta = catalog[ initialPreset ] || {};
+			const countryOpts = {
+				preset: initialPreset,
+				includeOther: true,
+				priority: Array.isArray( initialMeta.default_priority )
+					? initialMeta.default_priority.slice()
+					: [],
+				defaultCountry: '',
+			};
+			if ( typeof initialMeta.include_other_default !== 'undefined' ) {
+				countryOpts.includeOther = !! initialMeta.include_other_default;
+			}
+			const home = countryPresetsBoot.homeCountry || '';
+			if ( home && countryOpts.priority.indexOf( home ) === -1 ) {
+				const presetOpts = initialMeta.options || [];
+				if (
+					presetOpts.some( function ( o ) {
+						return o.value === home;
+					} )
+				) {
+					countryOpts.priority.unshift( home );
+				}
+			}
+			if ( home && countryOpts.priority.indexOf( home ) !== -1 ) {
+				countryOpts.defaultCountry = home;
+			}
+
+			const overlay = el( 'div', {
+				className: 'wek-pack-composer',
+				role: 'dialog',
+				'aria-modal': 'true',
+			} );
+			const panel = el( 'div', { className: 'wek-pack-composer__panel' } );
+			const title =
+				packId === 'address'
+					? i18n.addressPackTitle || pack.label
+					: i18n.namePackTitle || pack.label;
+			panel.appendChild(
+				el( 'h2', { className: 'wek-pack-composer__title', text: title } )
+			);
+
+			const list = el( 'ul', { className: 'wek-pack-composer__slots' } );
+
+			function refreshList() {
+				list.innerHTML = '';
+				slotsState.forEach( function ( slot, index ) {
+					const row = el( 'li', { className: 'wek-pack-composer__slot' } );
+					const check = el( 'input', {
+						type: 'checkbox',
+						checked: slot.enabled ? 'checked' : undefined,
+					} );
+					check.addEventListener( 'change', function () {
+						slot.enabled = !! check.checked;
+						refreshCountryBlock();
+					} );
+					const labelText = roleLabels[ slot.role ] || slot.role;
+					row.appendChild(
+						el( 'label', { className: 'wek-pack-composer__slot-label' }, [
+							check,
+							el( 'span', { text: labelText } ),
+						] )
+					);
+
+					const up = el( 'button', {
+						type: 'button',
+						className: 'button-link',
+						text: '↑',
+						title: i18n.packMoveUp || 'Move up',
+						disabled: index === 0 ? 'disabled' : undefined,
+					} );
+					up.addEventListener( 'click', function () {
+						if ( index <= 0 ) {
+							return;
+						}
+						const tmp = slotsState[ index - 1 ];
+						slotsState[ index - 1 ] = slotsState[ index ];
+						slotsState[ index ] = tmp;
+						refreshList();
+						refreshCountryBlock();
+					} );
+					const down = el( 'button', {
+						type: 'button',
+						className: 'button-link',
+						text: '↓',
+						title: i18n.packMoveDown || 'Move down',
+						disabled: index === slotsState.length - 1 ? 'disabled' : undefined,
+					} );
+					down.addEventListener( 'click', function () {
+						if ( index >= slotsState.length - 1 ) {
+							return;
+						}
+						const tmp = slotsState[ index + 1 ];
+						slotsState[ index + 1 ] = slotsState[ index ];
+						slotsState[ index ] = tmp;
+						refreshList();
+						refreshCountryBlock();
+					} );
+					row.appendChild( el( 'span', { className: 'wek-pack-composer__moves' }, [ up, down ] ) );
+					list.appendChild( row );
+				} );
+			}
+
+			panel.appendChild( list );
+
+			const countryBlock = el( 'div', {
+				className: 'wek-pack-composer__country',
+				hidden: 'hidden',
+			} );
+			const presetSelect = el( 'select', {
+				className: 'wek-pack-composer__preset',
+			} );
+			Object.keys( catalog ).forEach( function ( id ) {
+				const opt = el( 'option', {
+					value: id,
+					text: catalog[ id ].label || id,
+				} );
+				if ( id === countryOpts.preset ) {
+					opt.selected = true;
+				}
+				presetSelect.appendChild( opt );
+			} );
+			presetSelect.addEventListener( 'change', function () {
+				countryOpts.preset = presetSelect.value;
+				const meta = catalog[ countryOpts.preset ] || {};
+				if ( typeof meta.include_other_default !== 'undefined' ) {
+					otherCheck.checked = !! meta.include_other_default;
+					countryOpts.includeOther = otherCheck.checked;
+				}
+				countryOpts.priority = Array.isArray( meta.default_priority )
+					? meta.default_priority.slice()
+					: [];
+				if (
+					countryOpts.defaultCountry &&
+					countryOpts.priority.indexOf( countryOpts.defaultCountry ) === -1
+				) {
+					const stillThere = ( meta.options || [] ).some( function ( o ) {
+						return o.value === countryOpts.defaultCountry;
+					} );
+					if ( ! stillThere ) {
+						countryOpts.defaultCountry = '';
+					}
+				}
+				refreshPriorityUi();
+				refreshDefaultSelect();
+			} );
+			const otherCheck = el( 'input', {
+				type: 'checkbox',
+				checked: countryOpts.includeOther ? 'checked' : undefined,
+			} );
+			otherCheck.addEventListener( 'change', function () {
+				countryOpts.includeOther = !! otherCheck.checked;
+			} );
+			countryBlock.appendChild(
+				el( 'label', { className: 'wek-pack-composer__country-preset' }, [
+					el( 'span', { text: i18n.countryList || 'Country list' } ),
+					presetSelect,
+				] )
+			);
+			countryBlock.appendChild(
+				el( 'label', { className: 'wek-pack-composer__country-other' }, [
+					otherCheck,
+					el( 'span', {
+						text:
+							i18n.includeOtherCountry ||
+							'Include “Other” (shows a text field when selected)',
+					} ),
+				] )
+			);
+
+			const priorityWrap = el( 'div', { className: 'wek-pack-composer__priority' } );
+			priorityWrap.appendChild(
+				el( 'strong', {
+					text: i18n.countryPriority || 'Show first (priority order)',
+				} )
+			);
+			priorityWrap.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.countryPriorityHint ||
+						'These countries appear at the top of the list; the rest stay A–Z.',
+				} )
+			);
+			const priorityList = el( 'ul', { className: 'wek-pack-composer__priority-list' } );
+			const addPriority = el( 'select', { className: 'wek-pack-composer__priority-add' } );
+			addPriority.addEventListener( 'change', function () {
+				const code = addPriority.value;
+				if ( ! code || countryOpts.priority.indexOf( code ) !== -1 ) {
+					addPriority.value = '';
+					return;
+				}
+				countryOpts.priority.push( code );
+				addPriority.value = '';
+				refreshPriorityUi();
+				refreshDefaultSelect();
+			} );
+
+			function labelForCode( code ) {
+				const meta = catalog[ countryOpts.preset ] || {};
+				const hit = ( meta.options || [] ).find( function ( o ) {
+					return o.value === code;
+				} );
+				return hit ? hit.label + ' (' + code + ')' : code;
+			}
+
+			function refreshPriorityUi() {
+				priorityList.innerHTML = '';
+				countryOpts.priority.forEach( function ( code, index ) {
+					const row = el( 'li', { className: 'wek-pack-composer__priority-item' } );
+					row.appendChild( el( 'span', { text: labelForCode( code ) } ) );
+					const up = el( 'button', {
+						type: 'button',
+						className: 'button-link',
+						text: '↑',
+						disabled: index === 0 ? 'disabled' : undefined,
+					} );
+					up.addEventListener( 'click', function () {
+						if ( index <= 0 ) {
+							return;
+						}
+						const tmp = countryOpts.priority[ index - 1 ];
+						countryOpts.priority[ index - 1 ] = countryOpts.priority[ index ];
+						countryOpts.priority[ index ] = tmp;
+						refreshPriorityUi();
+					} );
+					const down = el( 'button', {
+						type: 'button',
+						className: 'button-link',
+						text: '↓',
+						disabled:
+							index === countryOpts.priority.length - 1 ? 'disabled' : undefined,
+					} );
+					down.addEventListener( 'click', function () {
+						if ( index >= countryOpts.priority.length - 1 ) {
+							return;
+						}
+						const tmp = countryOpts.priority[ index + 1 ];
+						countryOpts.priority[ index + 1 ] = countryOpts.priority[ index ];
+						countryOpts.priority[ index ] = tmp;
+						refreshPriorityUi();
+					} );
+					const remove = el( 'button', {
+						type: 'button',
+						className: 'button-link',
+						text: '×',
+						title: i18n.remove || 'Remove',
+					} );
+					remove.addEventListener( 'click', function () {
+						countryOpts.priority = countryOpts.priority.filter( function ( c ) {
+							return c !== code;
+						} );
+						if ( countryOpts.defaultCountry === code ) {
+							countryOpts.defaultCountry = '';
+						}
+						refreshPriorityUi();
+						refreshDefaultSelect();
+					} );
+					row.appendChild(
+						el( 'span', { className: 'wek-pack-composer__moves' }, [ up, down, remove ] )
+					);
+					priorityList.appendChild( row );
+				} );
+
+				addPriority.innerHTML = '';
+				addPriority.appendChild(
+					el( 'option', {
+						value: '',
+						text: i18n.countryAddPriority || 'Add country to top',
+					} )
+				);
+				const meta = catalog[ countryOpts.preset ] || {};
+				( meta.options || [] ).forEach( function ( o ) {
+					if ( countryOpts.priority.indexOf( o.value ) !== -1 ) {
+						return;
+					}
+					addPriority.appendChild(
+						el( 'option', {
+							value: o.value,
+							text: o.label + ' (' + o.value + ')',
+						} )
+					);
+				} );
+			}
+
+			priorityWrap.appendChild( priorityList );
+			priorityWrap.appendChild( addPriority );
+			countryBlock.appendChild( priorityWrap );
+
+			const defaultSelect = el( 'select', { className: 'wek-pack-composer__default' } );
+			function refreshDefaultSelect() {
+				defaultSelect.innerHTML = '';
+				defaultSelect.appendChild(
+					el( 'option', {
+						value: '',
+						text: i18n.countryDefaultNone || 'None (placeholder)',
+					} )
+				);
+				const meta = catalog[ countryOpts.preset ] || {};
+				const codes = countryOpts.priority.length
+					? countryOpts.priority.concat(
+							( meta.options || [] )
+								.map( function ( o ) {
+									return o.value;
+								} )
+								.filter( function ( c ) {
+									return countryOpts.priority.indexOf( c ) === -1;
+								} )
+					  )
+					: ( meta.options || [] ).map( function ( o ) {
+							return o.value;
+					  } );
+				codes.forEach( function ( code ) {
+					defaultSelect.appendChild(
+						el( 'option', {
+							value: code,
+							text: labelForCode( code ),
+						} )
+					);
+				} );
+				defaultSelect.value = countryOpts.defaultCountry || '';
+			}
+			defaultSelect.addEventListener( 'change', function () {
+				countryOpts.defaultCountry = defaultSelect.value || '';
+				if (
+					countryOpts.defaultCountry &&
+					countryOpts.priority.indexOf( countryOpts.defaultCountry ) === -1
+				) {
+					countryOpts.priority.unshift( countryOpts.defaultCountry );
+					refreshPriorityUi();
+				}
+			} );
+			countryBlock.appendChild(
+				el( 'label', { className: 'wek-pack-composer__country-preset' }, [
+					el( 'span', { text: i18n.countryDefault || 'Pre-select' } ),
+					defaultSelect,
+				] )
+			);
+
+			panel.appendChild( countryBlock );
+
+			function refreshCountryBlock() {
+				const countryOn = slotsState.some( function ( s ) {
+					return s.role === 'country' && s.enabled;
+				} );
+				countryBlock.hidden = ! countryOn;
+				if ( countryOn ) {
+					refreshPriorityUi();
+					refreshDefaultSelect();
+				}
+			}
+
+			refreshList();
+			refreshCountryBlock();
+
+			const actions = el( 'div', { className: 'wek-pack-composer__actions' } );
+			const cancelBtn = el( 'button', {
+				type: 'button',
+				className: 'button',
+				text: i18n.packCancel || 'Cancel',
+			} );
+			cancelBtn.addEventListener( 'click', closePackComposer );
+			const insertBtn = el( 'button', {
+				type: 'button',
+				className: 'button button-primary',
+				text: i18n.packInsert || 'Insert fields',
+			} );
+			insertBtn.addEventListener( 'click', function () {
+				const enabled = slotsState.filter( function ( s ) {
+					return s.enabled;
+				} );
+				if ( ! enabled.length ) {
+					announce( i18n.packNeedOne || 'Enable at least one field.' );
+					return;
+				}
+				const fields = buildPackFields( packId, slotsState, countryOpts );
+				closePackComposer();
+				insertFieldsAt( fields, dropLoc || null );
+			} );
+			actions.appendChild( cancelBtn );
+			actions.appendChild( insertBtn );
+			panel.appendChild( actions );
+
+			overlay.appendChild( panel );
+			overlay.addEventListener( 'click', function ( event ) {
+				if ( event.target === overlay ) {
+					closePackComposer();
+				}
+			} );
+			document.body.appendChild( overlay );
+		}
+
 		function renderLibrary() {
 			const panel = el( 'aside', { className: 'wek-builder-library' } );
 
@@ -6010,6 +6631,49 @@
 				el( 'div', { className: 'wek-builder-library__search-wrap' }, [ search ] )
 			);
 
+			const tiles = [];
+
+			const templatesHeading = el( 'h3', {
+				className: 'wek-builder-library__heading',
+				text: i18n.templatesLibrary || 'Templates',
+			} );
+			panel.appendChild( templatesHeading );
+			const packGrid = el( 'div', { className: 'wek-builder-library__grid' } );
+			[ 'name', 'address' ].forEach( function ( packId ) {
+				const pack = fieldPacks[ packId ];
+				if ( ! pack ) {
+					return;
+				}
+				const label = pack.label || packId;
+				const iconClass = pack.icon || 'dashicons-plus-alt2';
+				const tile = el( 'button', {
+					type: 'button',
+					className: 'wek-builder-library__item wek-builder-library__item--pack',
+					title: label,
+				}, [
+					el( 'span', {
+						className: 'wek-builder-library__icon dashicons ' + iconClass,
+						'aria-hidden': 'true',
+					} ),
+					el( 'span', {
+						className: 'wek-builder-library__label',
+						text: label,
+					} ),
+				] );
+				tile.addEventListener( 'click', function () {
+					openPackComposer( packId, null );
+				} );
+				tiles.push( { node: tile, haystack: ( label + ' ' + packId + ' template' ).toLowerCase(), heading: templatesHeading } );
+				packGrid.appendChild( tile );
+			} );
+			panel.appendChild( packGrid );
+
+			const fieldsHeading = el( 'h3', {
+				className: 'wek-builder-library__heading',
+				text: i18n.fieldsLibrary || 'Fields',
+			} );
+			panel.appendChild( fieldsHeading );
+
 			const grid = el( 'div', { className: 'wek-builder-library__grid' } );
 			const empty = el( 'p', {
 				className: 'wek-builder-library__empty',
@@ -6017,7 +6681,6 @@
 			} );
 			empty.hidden = true;
 
-			const tiles = [];
 			fieldTypes.forEach( function ( item ) {
 				const typeId = item.type;
 				const label = item.label || typeId;
@@ -6037,7 +6700,7 @@
 					} ),
 				] );
 				bindLibraryDrag( tile, typeId );
-				tiles.push( { node: tile, haystack: ( label + ' ' + typeId ).toLowerCase() } );
+				tiles.push( { node: tile, haystack: ( label + ' ' + typeId ).toLowerCase(), heading: fieldsHeading } );
 				grid.appendChild( tile );
 			} );
 
@@ -6052,6 +6715,13 @@
 					}
 				} );
 				empty.hidden = visible !== 0;
+				templatesHeading.hidden = ! tiles.some( function ( t ) {
+					return t.heading === templatesHeading && ! t.node.hidden;
+				} );
+				fieldsHeading.hidden = ! tiles.some( function ( t ) {
+					return t.heading === fieldsHeading && ! t.node.hidden;
+				} );
+				packGrid.hidden = templatesHeading.hidden;
 			}
 
 			search.addEventListener( 'input', applyFilter );

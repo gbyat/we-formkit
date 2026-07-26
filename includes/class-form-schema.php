@@ -229,6 +229,7 @@ final class Form_Schema {
 		$field['show_when']  = self::normalize_rule( $field['show_when'] ?? null );
 		$field['show_label'] = ! array_key_exists( 'show_label', $field ) || ! empty( $field['show_label'] );
 		$field['css_class']  = self::normalize_css_class( $field['css_class'] ?? '' );
+		$field['role']       = Field_Roles::normalize( $field['role'] ?? '' );
 
 		return $field;
 	}

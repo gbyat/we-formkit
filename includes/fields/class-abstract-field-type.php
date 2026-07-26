@@ -7,6 +7,7 @@
 
 namespace Webentwicklerin\WeFormkit\Fields;
 
+use Webentwicklerin\WeFormkit\Field_Roles;
 use Webentwicklerin\WeFormkit\Validation_Messages;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -87,6 +88,8 @@ abstract class Abstract_Field_Type {
 			$field['allow_url_prefill'] = true;
 		}
 		$field['prefill_param'] = isset( $field['prefill_param'] ) ? sanitize_key( (string) $field['prefill_param'] ) : '';
+
+		$field['role'] = Field_Roles::normalize( $field['role'] ?? '' );
 
 		return $field;
 	}
@@ -254,6 +257,11 @@ abstract class Abstract_Field_Type {
 		if ( ! empty( $field['required'] ) ) {
 			$attrs['required']      = 'required';
 			$attrs['aria-required'] = 'true';
+		}
+
+		$ac = Field_Roles::autocomplete( $field['role'] ?? '' );
+		if ( '' !== $ac ) {
+			$attrs['autocomplete'] = $ac;
 		}
 
 		return $attrs;

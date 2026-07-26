@@ -2923,3 +2923,138 @@ body.wek-builder-is-resizing iframe {
 	border-color: var(--wek-accent, #2563eb);
 	background: #eff6ff;
 }
+
+.wek-admin .wek-builder-library__heading {
+	margin: 0.75rem 1rem 0.35rem;
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--wek-muted, #6b7280);
+}
+
+.wek-admin .wek-builder-library__item--pack {
+	border-style: dashed;
+}
+
+.wek-pack-composer {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1.5rem;
+	background: rgba(15, 23, 42, 0.45);
+}
+
+.wek-pack-composer__panel {
+	width: min(420px, 100%);
+	max-height: min(90vh, 640px);
+	overflow: auto;
+	padding: 1.15rem 1.25rem 1.25rem;
+	background: #fff;
+	border-radius: 8px;
+	box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+}
+
+.wek-pack-composer__title {
+	margin: 0 0 0.85rem;
+	font-size: 1.05rem;
+}
+
+.wek-pack-composer__slots {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: grid;
+	gap: 0.35rem;
+}
+
+.wek-pack-composer__slot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	padding: 0.4rem 0.55rem;
+	border: 1px solid #e4e4e7;
+	border-radius: 6px;
+}
+
+.wek-pack-composer__slot-label {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	margin: 0;
+	font-weight: 500;
+}
+
+.wek-pack-composer__moves {
+	display: inline-flex;
+	gap: 0.15rem;
+}
+
+.wek-pack-composer__moves .button-link {
+	min-width: 1.5rem;
+	padding: 0.1rem 0.35rem;
+	text-decoration: none;
+}
+
+.wek-pack-composer__country {
+	margin-top: 0.85rem;
+	padding-top: 0.85rem;
+	border-top: 1px solid #e4e4e7;
+	display: grid;
+	gap: 0.65rem;
+}
+
+.wek-pack-composer__country-preset,
+.wek-pack-composer__country-other {
+	display: grid;
+	gap: 0.35rem;
+	margin: 0;
+}
+
+.wek-pack-composer__country-other {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.45rem;
+}
+
+.wek-pack-composer__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.wek-pack-composer__priority {
+	display: grid;
+	gap: 0.4rem;
+}
+
+.wek-pack-composer__priority-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: grid;
+	gap: 0.3rem;
+}
+
+.wek-pack-composer__priority-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	padding: 0.35rem 0.5rem;
+	border: 1px solid #e4e4e7;
+	border-radius: 6px;
+	font-size: 0.9rem;
+}
+
+.wek-pack-composer__priority-add,
+.wek-pack-composer__default,
+.wek-pack-composer__preset {
+	width: 100%;
+	max-width: 100%;
+}

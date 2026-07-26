@@ -8,7 +8,9 @@
 namespace Webentwicklerin\WeFormkit\Admin;
 
 use Webentwicklerin\WeFormkit\Capabilities;
+use Webentwicklerin\WeFormkit\Country_Presets;
 use Webentwicklerin\WeFormkit\Drafts;
+use Webentwicklerin\WeFormkit\Field_Roles;
 use Webentwicklerin\WeFormkit\Fields\Repeater_Field;
 use Webentwicklerin\WeFormkit\Fields\Upload_Field;
 use Webentwicklerin\WeFormkit\Form_Info_Documents;
@@ -377,6 +379,22 @@ final class Form_Editor {
 					: '',
 				'modules'           => $modules_boot,
 				'fieldTypes'        => $field_types,
+				'fieldPacks'        => array(
+					'name'    => array(
+						'id'    => 'name',
+						'label' => __( 'Name', 'we-formkit' ),
+						'icon'  => 'dashicons-admin-users',
+						'slots' => Field_Roles::name_pack_slots(),
+					),
+					'address' => array(
+						'id'    => 'address',
+						'label' => __( 'Address', 'we-formkit' ),
+						'icon'  => 'dashicons-location',
+						'slots' => Field_Roles::address_pack_slots(),
+					),
+				),
+				'roleLabels'        => Field_Roles::labels(),
+				'countryPresets'    => Country_Presets::boot(),
 				'submitButton'      => array(
 					'label'         => (string) $submit['label'],
 					'icon_svg'      => (string) ( $submit['icon_svg'] ?? '' ),
@@ -409,6 +427,24 @@ final class Form_Editor {
 					'addField'                  => __( 'Add field', 'we-formkit' ),
 					'addSection'                => __( 'Add section', 'we-formkit' ),
 					'fieldsLibrary'             => __( 'Fields', 'we-formkit' ),
+					'templatesLibrary'          => __( 'Templates', 'we-formkit' ),
+					'namePackTitle'             => __( 'Name fields', 'we-formkit' ),
+					'addressPackTitle'          => __( 'Address fields', 'we-formkit' ),
+					'packInsert'                => __( 'Insert fields', 'we-formkit' ),
+					'packCancel'                => __( 'Cancel', 'we-formkit' ),
+					'packMoveUp'                => __( 'Move up', 'we-formkit' ),
+					'packMoveDown'              => __( 'Move down', 'we-formkit' ),
+					'countryList'               => __( 'Country list', 'we-formkit' ),
+					'includeOtherCountry'       => __( 'Include “Other” (shows a text field when selected)', 'we-formkit' ),
+					'otherCountry'              => __( 'Other', 'we-formkit' ),
+					'countryPriority'           => __( 'Show first (priority order)', 'we-formkit' ),
+					'countryPriorityHint'       => __( 'These countries appear at the top of the list; the rest stay A–Z. Use ↑↓ to reorder.', 'we-formkit' ),
+					'countryAddPriority'        => __( 'Add country to top', 'we-formkit' ),
+					'countryDefault'            => __( 'Pre-select', 'we-formkit' ),
+					'countryDefaultNone'        => __( 'None (placeholder)', 'we-formkit' ),
+					'packNeedOne'               => __( 'Enable at least one field.', 'we-formkit' ),
+					'semanticRole'              => __( 'Semantic role', 'we-formkit' ),
+					'roleNone'                  => __( 'None', 'we-formkit' ),
 					'searchFields'              => __( 'Search fields…', 'we-formkit' ),
 					'noFieldsMatch'             => __( 'No matching fields.', 'we-formkit' ),
 					'fieldSettings'             => __( 'Field settings', 'we-formkit' ),

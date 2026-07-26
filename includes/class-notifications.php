@@ -59,6 +59,14 @@ final class Notifications {
 			return;
 		}
 
+		// Quarantined spam: store the entry but do not notify.
+		if ( ! empty( $context['is_spam'] ) ) {
+			return;
+		}
+		if ( (int) get_post_meta( (int) $submission_id, Form_Schema::SUB_SPAM, true ) === 1 ) {
+			return;
+		}
+
 		$data         = isset( $context['data'] ) && is_array( $context['data'] ) ? $context['data'] : array();
 		$schema       = Form_Schema::get( $form_id );
 		$list         = Form_Notifications::get( $form_id );

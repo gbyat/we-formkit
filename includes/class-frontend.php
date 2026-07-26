@@ -1244,6 +1244,7 @@ final class Frontend {
 					$placeholder = __( 'Please select…', 'we-formkit' );
 				}
 				$show_empty = '' === $default;
+				$ac         = Field_Roles::autocomplete( isset( $field['role'] ) ? (string) $field['role'] : '' );
 				?>
 				<label class="<?php echo esc_attr( self::label_classes( $field ) ); ?>" for="<?php echo esc_attr( $input_id ); ?>">
 					<?php echo esc_html( $field['label'] ); ?>
@@ -1253,6 +1254,7 @@ final class Frontend {
 					id="<?php echo esc_attr( $input_id ); ?>"
 					name="<?php echo esc_attr( $id ); ?>"
 					<?php echo $req ? 'required' : ''; ?>
+					<?php echo '' !== $ac ? 'autocomplete="' . esc_attr( $ac ) . '"' : ''; ?>
 					aria-describedby="<?php echo esc_attr( trim( ( ! empty( $field['help'] ) ? $desc_id . ' ' : '' ) . $error_id ) ); ?>"
 				>
 					<?php if ( $show_empty ) : ?>

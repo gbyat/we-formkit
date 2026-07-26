@@ -165,11 +165,16 @@ final class Rest_Api {
 		/**
 		 * Extra spam check for validated submissions.
 		 *
-		 * Modules (e.g. the Akismet adapter) can return a WP_Error to reject the
-		 * submission. Return null / a non-error value to accept it. Runs after all
-		 * field validation, so $data holds sanitized, labeled values.
+		 * Modules may:
+		 * - return a WP_Error to hard-reject the submission;
+		 * - return an array with action=quarantine to save the entry as spam
+		 *   (SUB_SPAM=1) without notification emails, while still returning
+		 *   the normal success confirmation to the visitor;
+		 * - return null / any other value to accept the submission.
 		 *
-		 * @param mixed                $result  Null by default; WP_Error to reject.
+		 * Runs after all field validation, so $data holds sanitized values.
+		 *
+		 * @param mixed                $result  Null by default; WP_Error to reject; quarantine array.
 		 * @param array<string, mixed> $data    Validated submission values.
 		 * @param array<string, mixed> $schema  Form schema.
 		 * @param int                  $form_id Form ID.
@@ -178,6 +183,10 @@ final class Rest_Api {
 		if ( is_wp_error( $spam_check ) ) {
 			return $spam_check;
 		}
+
+		$is_quarantine = is_array( $spam_check )
+			&& isset( $spam_check['action'] )
+			&& 'quarantine' === $spam_check['action'];
 
 		$persisted = self::persist_signatures( $schema, $result['data'] );
 		if ( is_wp_error( $persisted ) ) {
@@ -222,7 +231,7 @@ final class Rest_Api {
 		update_post_meta( (int) $submission_id, Form_Schema::SUB_IP_HASH, Spam::hash_ip( $ip ) );
 		update_post_meta( (int) $submission_id, Form_Schema::SUB_SOURCE_URL, self::resolve_source_url( $params ) );
 		update_post_meta( (int) $submission_id, Form_Schema::SUB_READ, 0 );
-		update_post_meta( (int) $submission_id, Form_Schema::SUB_SPAM, 0 );
+		update_post_meta( (int) $submission_id, Form_Schema::SUB_SPAM, $is_quarantine ? 1 : 0 );
 		update_post_meta( (int) $submission_id, Form_Schema::SUB_NOTIFY_LOG, '[]' );
 		Merge_Tags::persist_request_meta( (int) $submission_id );
 
@@ -238,6 +247,8 @@ final class Rest_Api {
 			array(
 				'form_id' => $form_id,
 				'data'    => $result['data'],
+				'is_spam' => $is_quarantine,
+				'spam'    => $is_quarantine && is_array( $spam_check ) ? $spam_check : null,
 			)
 		);
 
