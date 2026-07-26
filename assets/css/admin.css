@@ -777,6 +777,50 @@ body.wek-builder-is-resizing iframe {
 	border-radius: 0 var(--wek-radius) var(--wek-radius) 0;
 }
 
+.wek-admin .wek-builder-scope {
+	display: flex;
+	gap: 0.15rem;
+	margin: 0.65rem 1rem 0.35rem;
+	padding: 0.15rem;
+	border: 1px solid var(--wek-line);
+	border-radius: var(--wek-radius-sm);
+	background: #f0f0f1;
+}
+
+.wek-admin .wek-builder-col--side .wek-builder-scope {
+	margin-left: 1.85rem;
+	margin-right: 1rem;
+}
+
+.wek-admin .wek-builder-scope__btn {
+	flex: 1 1 0;
+	margin: 0;
+	padding: 0.35rem 0.4rem;
+	border: 0;
+	border-radius: 3px;
+	background: transparent;
+	color: #2c3338;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.2;
+	cursor: pointer;
+}
+
+.wek-admin .wek-builder-scope__btn.is-active {
+	background: #fff;
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.wek-admin .wek-builder-sidebar__subtitle {
+	margin: 0.5rem 1rem 0.35rem;
+	font-size: 13px;
+}
+
+.wek-admin .wek-builder-col--side .wek-builder-sidebar__subtitle {
+	margin-left: 1.85rem;
+	margin-right: 1rem;
+}
+
 @media (min-width: 1101px) {
 	.wek-admin .wek-builder-col--lib,
 	.wek-admin .wek-builder-col--side {

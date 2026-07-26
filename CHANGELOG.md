@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Name and Address mini-templates in the builder library (toggle slots, reorder); Address country presets (DACH+LI, EU, continents, world) with optional Other → text field; priority countries at top of the list + optional pre-select; semantic `field.role` for Spamfighterin / autocomplete.
 - Template packs render as movable canvas groups (shared drag handle, duplicate/ungroup/delete); fields stay individually editable.
+- Builder sidebar scopes Field / Form / Integrations; Spamfighterin Form type per form when the hub plugin is active.
 - Spam quarantine path: `we_formkit_spam_check` may return `{ action: quarantine }` — entry saved with `SUB_SPAM=1`, notification emails skipped, visitor still gets the normal success confirmation (used by WE Spamfighterin).
 - Stable HTML ids on form root (`we-formkit-{formId}`) and field wrappers (`wek-wrap-{formId}-{fieldId}`); prefill copy-links append the form hash.
 - After URL prefill, smooth-scroll to the form using the document `scroll-padding-top` (sticky nav / admin bar); `prefers-reduced-motion` respected.

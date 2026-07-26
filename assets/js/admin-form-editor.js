@@ -132,6 +132,8 @@
 		/** @type {{ type: string, sIndex?: number, fIndex?: number, nIndex?: number }|null} */
 		let selection = null;
 		let activeTab = 'general';
+		/** @type {'field'|'form'|'integrations'} */
+		let sidebarScope = 'field';
 		const live = { node: null };
 		const CHROME_KEY = 'wek_formkit_builder_chrome';
 		const SECTION_CLIP_KEY = 'we-formkit-section-clipboard';
@@ -1039,6 +1041,9 @@
 
 		function selectItem( next, tab ) {
 			selection = next;
+			if ( next ) {
+				sidebarScope = 'field';
+			}
 			if ( tab ) {
 				activeTab = tab;
 			} else if ( next && ( next.type === 'section' || next.type === 'submit' ) && activeTab === 'appearance' ) {
@@ -4171,7 +4176,254 @@
 
 		function renderSidebar( aside ) {
 			aside.innerHTML = '';
+
+			const scopeBar = el( 'div', {
+				className: 'wek-builder-scope',
+				role: 'tablist',
+				'aria-label': i18n.scopeTabs || 'Settings scope',
+			} );
+			[
+				{ id: 'field', label: i18n.scopeField || 'Field' },
+				{ id: 'form', label: i18n.scopeForm || 'Form' },
+				{ id: 'integrations', label: i18n.scopeIntegrations || 'Integrations' },
+			].forEach( function ( scope ) {
+				scopeBar.appendChild(
+					el( 'button', {
+						type: 'button',
+						className:
+							'wek-builder-scope__btn' +
+							( sidebarScope === scope.id ? ' is-active' : '' ),
+						role: 'tab',
+						'aria-selected': sidebarScope === scope.id ? 'true' : 'false',
+						text: scope.label,
+						onClick: function () {
+							sidebarScope = scope.id;
+							flushSyncHidden();
+							refreshSidebar();
+						},
+					} )
+				);
+			} );
+			aside.appendChild( scopeBar );
+
+			if ( sidebarScope === 'form' ) {
+				renderFormScope( aside );
+				return;
+			}
+			if ( sidebarScope === 'integrations' ) {
+				renderIntegrationsScope( aside );
+				return;
+			}
 			renderFieldInspector( aside );
+		}
+
+		function renderFormScope( aside ) {
+			aside.appendChild(
+				el( 'div', { className: 'wek-builder-sidebar__head' }, [
+					el( 'h3', {
+						className: 'wek-builder-sidebar__title',
+						text: i18n.formScopeTitle || 'Form',
+					} ),
+				] )
+			);
+			aside.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.formScopeLead ||
+						'Quick links for this form. Save & Resume and privacy live under Form Settings; colors and layout under Design.',
+				} )
+			);
+			const settingsUrl =
+				window.weFormkitAdmin && window.weFormkitAdmin.settingsUrl
+					? window.weFormkitAdmin.settingsUrl
+					: '';
+			const designUrl =
+				window.weFormkitAdmin && window.weFormkitAdmin.designUrl
+					? window.weFormkitAdmin.designUrl
+					: '';
+			if ( ! formIdForUi || ! settingsUrl ) {
+				aside.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.saveFormFirst ||
+							'Save the form once to unlock the shortcode and Form Settings link.',
+					} )
+				);
+				return;
+			}
+			const links = el( 'p', { className: 'wek-builder__row' } );
+			links.appendChild(
+				el( 'a', {
+					className: 'button',
+					href: settingsUrl,
+					text: i18n.openFormSettings || 'Open Form Settings',
+				} )
+			);
+			if ( designUrl ) {
+				links.appendChild( document.createTextNode( ' ' ) );
+				links.appendChild(
+					el( 'a', {
+						className: 'button',
+						href: designUrl,
+						text: i18n.openDesign || 'Open Design',
+					} )
+				);
+			}
+			aside.appendChild( links );
+			aside.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.formScopePaginationHint ||
+						'Pagination (single page / one section per page) is in the toolbar above the canvas.',
+				} )
+			);
+		}
+
+		function renderIntegrationsScope( aside ) {
+			aside.appendChild(
+				el( 'div', { className: 'wek-builder-sidebar__head' }, [
+					el( 'h3', {
+						className: 'wek-builder-sidebar__title',
+						text: i18n.integrationsTitle || 'Integrations',
+					} ),
+				] )
+			);
+
+			const sfi =
+				window.weFormkitAdmin && window.weFormkitAdmin.spamfighterin
+					? window.weFormkitAdmin.spamfighterin
+					: null;
+
+			if ( ! sfi || ! sfi.active ) {
+				aside.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.integrationsEmpty ||
+							'No modules connected yet. Add-ons register here via we_formkit_register_modules.',
+					} )
+				);
+				aside.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.integrationsHint ||
+							'Planned modules include Spamfighter, Subscribe to Posts, and server-side PDF.',
+					} )
+				);
+				return;
+			}
+
+			aside.appendChild(
+				el( 'h4', {
+					className: 'wek-builder-sidebar__subtitle',
+					text: i18n.spamfighterinTitle || 'WE Spamfighterin',
+				} )
+			);
+			aside.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.spamfighterinFormKindHint ||
+						'Adjusts spam analysis for this form (contact vs application vs …).',
+				} )
+			);
+
+			if ( ! formIdForUi ) {
+				aside.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.saveFormFirst ||
+							'Save the form once to unlock the shortcode and Form Settings link.',
+					} )
+				);
+				return;
+			}
+
+			const choices = sfi.formKindChoices || {};
+			const defaultKind = sfi.defaultFormKind || 'contact';
+			const select = el( 'select', { className: 'wek-builder__select widefat' } );
+			const defaultLabel = choices[ defaultKind ] || defaultKind;
+			select.appendChild(
+				el( 'option', {
+					value: '',
+					text: ( i18n.spamfighterinSiteDefault || 'Site default (%s)' ).replace(
+						'%s',
+						defaultLabel
+					),
+					selected: ! sfi.formKind,
+				} )
+			);
+			Object.keys( choices ).forEach( function ( id ) {
+				select.appendChild(
+					el( 'option', {
+						value: id,
+						text: choices[ id ],
+						selected: sfi.formKind === id,
+					} )
+				);
+			} );
+
+			const status = el( 'p', {
+				className: 'description wek-builder__sfi-status',
+				text: '',
+			} );
+			let saveTimer = null;
+
+			function saveKind( kind ) {
+				status.textContent = i18n.spamfighterinSaving || 'Saving…';
+				const restUrl = sfi.restUrl;
+				const nonce = sfi.restNonce || '';
+				if ( ! restUrl ) {
+					status.textContent = i18n.spamfighterinSaveFailed || 'Could not save.';
+					return;
+				}
+				window
+					.fetch( restUrl, {
+						method: 'POST',
+						credentials: 'same-origin',
+						headers: {
+							'Content-Type': 'application/json',
+							'X-WP-Nonce': nonce,
+						},
+						body: JSON.stringify( {
+							source: 'formkit',
+							form_id: formIdForUi,
+							form_kind: kind,
+						} ),
+					} )
+					.then( function ( res ) {
+						if ( ! res.ok ) {
+							throw new Error( 'save failed' );
+						}
+						return res.json();
+					} )
+					.then( function ( data ) {
+						sfi.formKind = data.form_kind || '';
+						status.textContent = i18n.spamfighterinSaved || 'Saved.';
+					} )
+					.catch( function () {
+						status.textContent = i18n.spamfighterinSaveFailed || 'Could not save.';
+					} );
+			}
+
+			select.addEventListener( 'change', function () {
+				if ( saveTimer ) {
+					window.clearTimeout( saveTimer );
+				}
+				saveTimer = window.setTimeout( function () {
+					saveKind( select.value );
+				}, 200 );
+			} );
+
+			aside.appendChild(
+				fieldRow( i18n.spamfighterinFormKind || 'Form type', select )
+			);
+			aside.appendChild( status );
 		}
 
 		function renderFieldInspector( aside ) {

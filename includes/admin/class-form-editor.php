@@ -365,6 +365,24 @@ final class Form_Editor {
 			);
 		}
 
+		$spamfighterin_boot = array( 'active' => false );
+		if ( class_exists( '\\Webentwicklerin\\WeSpamfighterin\\Api\\Spam_Check' ) ) {
+			$sfi_bag     = class_exists( '\\Webentwicklerin\\WeSpamfighterin\\Core\\Settings_Store' )
+				? \Webentwicklerin\WeSpamfighterin\Core\Settings_Store::get_form_settings( 'formkit', (int) $form_id )
+				: array();
+			$sfi_all     = class_exists( '\\Webentwicklerin\\WeSpamfighterin\\Core\\Settings_Store' )
+				? \Webentwicklerin\WeSpamfighterin\Core\Settings_Store::get()
+				: array();
+			$spamfighterin_boot = array(
+				'active'           => true,
+				'restUrl'          => esc_url_raw( rest_url( 'we-spamfighterin/v1/form-settings' ) ),
+				'restNonce'        => wp_create_nonce( 'wp_rest' ),
+				'formKind'         => isset( $sfi_bag['form_kind'] ) ? (string) $sfi_bag['form_kind'] : '',
+				'formKindChoices'  => \Webentwicklerin\WeSpamfighterin\Api\Spam_Check::form_kind_choices(),
+				'defaultFormKind'  => (string) ( $sfi_all['default_form_kind'] ?? 'contact' ),
+			);
+		}
+
 		wp_localize_script(
 			'we-formkit-admin-form',
 			'weFormkitAdmin',
@@ -378,6 +396,7 @@ final class Form_Editor {
 					? admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $form_id . '&view=design' )
 					: '',
 				'modules'           => $modules_boot,
+				'spamfighterin'     => $spamfighterin_boot,
 				'fieldTypes'        => $field_types,
 				'fieldPacks'        => array(
 					'name'    => array(
@@ -422,6 +441,14 @@ final class Form_Editor {
 					'integrationsTitle'         => __( 'Integrations', 'we-formkit' ),
 					'integrationsEmpty'         => __( 'No modules connected yet. Add-ons register here via we_formkit_register_modules.', 'we-formkit' ),
 					'integrationsHint'          => __( 'Planned modules include Spamfighter, Subscribe to Posts, and server-side PDF.', 'we-formkit' ),
+					'spamfighterinTitle'        => __( 'WE Spamfighterin', 'we-formkit' ),
+					'spamfighterinFormKind'     => __( 'Form type', 'we-formkit' ),
+					'spamfighterinFormKindHint' => __( 'Adjusts spam analysis for this form (contact vs application vs …).', 'we-formkit' ),
+					/* translators: %s: default form type label from Spamfighterin settings. */
+					'spamfighterinSiteDefault'  => __( 'Site default (%s)', 'we-formkit' ),
+					'spamfighterinSaving'       => __( 'Saving…', 'we-formkit' ),
+					'spamfighterinSaved'        => __( 'Saved.', 'we-formkit' ),
+					'spamfighterinSaveFailed'   => __( 'Could not save.', 'we-formkit' ),
 					'untitledForm'              => __( 'Untitled form', 'we-formkit' ),
 					'remove'                    => __( 'Remove', 'we-formkit' ),
 					'addField'                  => __( 'Add field', 'we-formkit' ),
