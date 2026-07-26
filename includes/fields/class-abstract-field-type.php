@@ -91,7 +91,35 @@ abstract class Abstract_Field_Type {
 
 		$field['role'] = Field_Roles::normalize( $field['role'] ?? '' );
 
+		$pack_group = self::normalize_pack_group( $field['pack_group'] ?? null );
+		if ( null === $pack_group ) {
+			unset( $field['pack_group'] );
+		} else {
+			$field['pack_group'] = $pack_group;
+		}
+
 		return $field;
+	}
+
+	/**
+	 * Sanitize builder pack membership (Name/Address template groups).
+	 *
+	 * @param mixed $raw Raw pack_group.
+	 * @return array{id:string,pack:string}|null
+	 */
+	public static function normalize_pack_group( $raw ) {
+		if ( ! is_array( $raw ) ) {
+			return null;
+		}
+		$id   = sanitize_key( (string) ( $raw['id'] ?? '' ) );
+		$pack = sanitize_key( (string) ( $raw['pack'] ?? '' ) );
+		if ( '' === $id || ! in_array( $pack, array( 'name', 'address' ), true ) ) {
+			return null;
+		}
+		return array(
+			'id'   => $id,
+			'pack' => $pack,
+		);
 	}
 
 	/**

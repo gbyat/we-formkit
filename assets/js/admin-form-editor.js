@@ -885,6 +885,88 @@
 			return fields;
 		}
 
+		function packGroupId( field ) {
+			return field && field.pack_group && field.pack_group.id
+				? String( field.pack_group.id )
+				: '';
+		}
+
+		function stampPackGroup( fields, packId ) {
+			const pack = packId === 'address' ? 'address' : 'name';
+			const group = {
+				id: nextFieldId( 'pack' ),
+				pack: pack,
+			};
+			( fields || [] ).forEach( function ( field ) {
+				field.pack_group = { id: group.id, pack: group.pack };
+			} );
+			return fields;
+		}
+
+		/**
+		 * Contiguous run of fields sharing pack_group.id, or null.
+		 *
+		 * @return {{ start: number, length: number, id: string, pack: string }|null}
+		 */
+		function getPackRun( fields, index ) {
+			if ( ! Array.isArray( fields ) || index < 0 || index >= fields.length ) {
+				return null;
+			}
+			const id = packGroupId( fields[ index ] );
+			if ( ! id ) {
+				return null;
+			}
+			let start = index;
+			while ( start > 0 && packGroupId( fields[ start - 1 ] ) === id ) {
+				start -= 1;
+			}
+			let end = index;
+			while ( end < fields.length - 1 && packGroupId( fields[ end + 1 ] ) === id ) {
+				end += 1;
+			}
+			return {
+				start: start,
+				length: end - start + 1,
+				id: id,
+				pack: fields[ start ].pack_group.pack === 'address' ? 'address' : 'name',
+			};
+		}
+
+		function packLabel( pack ) {
+			if ( pack === 'address' ) {
+				return (
+					( fieldPacks.address && fieldPacks.address.label ) ||
+					i18n.addressPackTitle ||
+					'Address'
+				);
+			}
+			return (
+				( fieldPacks.name && fieldPacks.name.label ) ||
+				i18n.namePackTitle ||
+				'Name'
+			);
+		}
+
+		function clearPackGroup( field ) {
+			if ( field && field.pack_group ) {
+				delete field.pack_group;
+			}
+		}
+
+		function clearPackGroupIfOrphan( list, index ) {
+			const field = list[ index ];
+			const id = packGroupId( field );
+			if ( ! id ) {
+				return;
+			}
+			const left = index > 0 && packGroupId( list[ index - 1 ] ) === id;
+			const right =
+				index < list.length - 1 && packGroupId( list[ index + 1 ] ) === id;
+			if ( ! left && ! right ) {
+				clearPackGroup( field );
+			}
+		}
+
 		function patchCanvasSelection() {
 			if ( ! ui.sheet ) {
 				return;
@@ -4659,6 +4741,8 @@
 				return;
 			}
 
+			const fromPackId = packGroupId( moving );
+
 			const item = fromList.splice( from.index, 1 )[ 0 ];
 			let insertAt = typeof to.index === 'number' ? to.index : toList.length;
 
@@ -4672,6 +4756,13 @@
 			insertAt = Math.max( 0, Math.min( insertAt, toList.length ) );
 			toList.splice( insertAt, 0, item );
 
+			// Leave a pack when dropped outside its contiguous group (or into a repeater).
+			if ( fromPackId && to.scope === 'section' && sameList ) {
+				clearPackGroupIfOrphan( toList, insertAt );
+			} else if ( fromPackId && ( to.scope !== 'section' || ! sameList ) ) {
+				clearPackGroup( item );
+			}
+
 			if ( to.scope === 'repeater' ) {
 				selection = {
 					type: 'nested',
@@ -4682,6 +4773,44 @@
 			} else {
 				selection = { type: 'field', sIndex: to.s, fIndex: insertAt };
 			}
+			announce( i18n.moved || 'Item moved.' );
+			flushSyncHidden();
+			render( { skipSync: true } );
+		}
+
+		function relocatePack( fromS, start, length, toS, toIndex ) {
+			if (
+				fromS < 0 ||
+				toS < 0 ||
+				! schema.sections[ fromS ] ||
+				! schema.sections[ toS ] ||
+				length < 1
+			) {
+				return;
+			}
+			const fromList = schema.sections[ fromS ].fields || [];
+			const toList = schema.sections[ toS ].fields || [];
+			if ( start < 0 || start + length > fromList.length ) {
+				return;
+			}
+
+			if (
+				fromS === toS &&
+				( toIndex === start || toIndex === start + length )
+			) {
+				selection = { type: 'field', sIndex: fromS, fIndex: start };
+				return;
+			}
+
+			const slice = fromList.splice( start, length );
+			let insertAt = typeof toIndex === 'number' ? toIndex : toList.length;
+			if ( fromS === toS && start < insertAt ) {
+				insertAt -= length;
+			}
+			insertAt = Math.max( 0, Math.min( insertAt, toList.length ) );
+			Array.prototype.splice.apply( toList, [ insertAt, 0 ].concat( slice ) );
+
+			selection = { type: 'field', sIndex: toS, fIndex: insertAt };
 			announce( i18n.moved || 'Item moved.' );
 			flushSyncHidden();
 			render( { skipSync: true } );
@@ -4839,10 +4968,70 @@
 				return { scope: 'repeater', s: s, f: f, index: len };
 			}
 
+			const dragPackId = dragCard && dragCard.getAttribute( 'data-pack-id' );
+			const dragMemberId =
+				dragCard && dragCard.getAttribute( 'data-pack-member' )
+					? dragCard.getAttribute( 'data-pack-member' )
+					: '';
+
+			const packEl = elUnder.closest( '.wek-builder__pack' );
+			if ( packEl && packEl !== dragCard ) {
+				const s = parseInt( packEl.getAttribute( 'data-s' ), 10 );
+				const start = parseInt( packEl.getAttribute( 'data-pack-start' ), 10 );
+				const len = parseInt( packEl.getAttribute( 'data-pack-len' ), 10 );
+				const targetPackId = packEl.getAttribute( 'data-pack-id' ) || '';
+				const rect = packEl.getBoundingClientRect();
+				const before = clientY < rect.top + rect.height / 2;
+
+				// Reorder inside the same pack (field drag on member cards handled below).
+				if ( ! dragPackId && dragMemberId && dragMemberId === targetPackId ) {
+					const fieldCard = elUnder.closest( '.wek-builder__field:not([data-n])' );
+					if ( fieldCard && fieldCard !== dragCard ) {
+						const f = parseInt( fieldCard.getAttribute( 'data-f' ), 10 );
+						const fRect = fieldCard.getBoundingClientRect();
+						const fBefore = clientY < fRect.top + fRect.height / 2;
+						placeDropLine(
+							fieldCard.parentNode,
+							fBefore ? fieldCard : fieldCard.nextSibling
+						);
+						return { scope: 'section', s: s, f: null, index: fBefore ? f : f + 1 };
+					}
+				}
+
+				// Foreign field or whole pack: snap before/after the pack unit.
+				placeDropLine( packEl.parentNode, before ? packEl : packEl.nextSibling );
+				return {
+					scope: 'section',
+					s: s,
+					f: null,
+					index: before ? start : start + len,
+				};
+			}
+
 			const fieldCard = elUnder.closest( '.wek-builder__field:not([data-n])' );
 			if ( fieldCard && fieldCard !== dragCard && fieldCard.getAttribute( 'data-repeater' ) !== '1' ) {
 				const s = parseInt( fieldCard.getAttribute( 'data-s' ), 10 );
 				const f = parseInt( fieldCard.getAttribute( 'data-f' ), 10 );
+				const fields =
+					schema.sections[ s ] && Array.isArray( schema.sections[ s ].fields )
+						? schema.sections[ s ].fields
+						: [];
+				const run = getPackRun( fields, f );
+				if ( run && ( dragPackId || dragMemberId !== run.id ) ) {
+					const wrap = fieldCard.closest( '.wek-builder__pack' );
+					const rect = ( wrap || fieldCard ).getBoundingClientRect();
+					const before = clientY < rect.top + rect.height / 2;
+					placeDropLine(
+						( wrap || fieldCard ).parentNode,
+						before ? wrap || fieldCard : ( wrap || fieldCard ).nextSibling
+					);
+					return {
+						scope: 'section',
+						s: s,
+						f: null,
+						index: before ? run.start : run.start + run.length,
+					};
+				}
 				const rect = fieldCard.getBoundingClientRect();
 				const before = clientY < rect.top + rect.height / 2;
 				placeDropLine(
@@ -4868,6 +5057,56 @@
 			}
 
 			return null;
+		}
+
+		function bindPackDrag( handle, packEl, fromS, start, length ) {
+			handle.addEventListener( 'pointerdown', function ( event ) {
+				if ( event.button !== 0 ) {
+					return;
+				}
+				event.preventDefault();
+				event.stopPropagation();
+				packEl.classList.add( 'is-dragging' );
+				handle.setAttribute( 'aria-grabbed', 'true' );
+
+				const startX = event.clientX;
+				const startY = event.clientY;
+				let started = false;
+				let dropLoc = null;
+
+				const onMove = function ( e ) {
+					const dx = e.clientX - startX;
+					const dy = e.clientY - startY;
+					if ( ! started && Math.abs( dx ) + Math.abs( dy ) < 6 ) {
+						return;
+					}
+					started = true;
+					scheduleDropResolve( e.clientX, e.clientY, packEl, function ( loc ) {
+						dropLoc = loc;
+					} );
+				};
+
+				const onUp = function () {
+					document.removeEventListener( 'pointermove', onMove );
+					document.removeEventListener( 'pointerup', onUp );
+					document.removeEventListener( 'pointercancel', onUp );
+					handle.setAttribute( 'aria-grabbed', 'false' );
+					packEl.classList.remove( 'is-dragging' );
+					clearDropIndicators();
+					if ( ! started ) {
+						selectItem( { type: 'field', sIndex: fromS, fIndex: start } );
+						return;
+					}
+					if ( ! dropLoc || dropLoc.scope !== 'section' ) {
+						return;
+					}
+					relocatePack( fromS, start, length, dropLoc.s, dropLoc.index );
+				};
+
+				document.addEventListener( 'pointermove', onMove );
+				document.addEventListener( 'pointerup', onUp );
+				document.addEventListener( 'pointercancel', onUp );
+			} );
 		}
 
 		function bindFieldDrag( handle, card, fromLoc ) {
@@ -5697,14 +5936,20 @@
 				selection.type === 'field' &&
 				selection.sIndex === sIndex &&
 				selection.fIndex === fIndex;
-			const card = el( 'div', {
+			const memberId = packGroupId( field );
+			const run = memberId ? getPackRun( section.fields || [], fIndex ) : null;
+			const cardAttrs = {
 				className: widthClass( field.width, selected ),
 				'data-s': String( sIndex ),
 				'data-f': String( fIndex ),
 				tabindex: '0',
 				role: 'button',
 				'aria-pressed': selected ? 'true' : 'false',
-			} );
+			};
+			if ( memberId ) {
+				cardAttrs['data-pack-member'] = memberId;
+			}
+			const card = el( 'div', cardAttrs );
 
 			const handle = el( 'button', {
 				type: 'button',
@@ -5721,10 +5966,16 @@
 			] );
 			card.appendChild( main );
 
+			const fieldsLen = ( section.fields || [] ).length;
+			const canUp = run ? fIndex > run.start : fIndex > 0;
+			const canDown = run
+				? fIndex < run.start + run.length - 1
+				: fIndex < fieldsLen - 1;
+
 			card.appendChild(
 				renderFieldToolbar( {
-					canUp: fIndex > 0,
-					canDown: fIndex < ( section.fields || [] ).length - 1,
+					canUp: canUp,
+					canDown: canDown,
 					onEdit: function () {
 						selectItem( { type: 'field', sIndex: sIndex, fIndex: fIndex }, 'general' );
 					},
@@ -5736,6 +5987,9 @@
 						render();
 					},
 					onMoveUp: function () {
+						if ( ! canUp ) {
+							return;
+						}
 						const next = moveInArray( section.fields, fIndex, fIndex - 1 );
 						selection = { type: 'field', sIndex: sIndex, fIndex: next };
 						announce( i18n.moved || 'Item moved.' );
@@ -5743,6 +5997,9 @@
 						render();
 					},
 					onMoveDown: function () {
+						if ( ! canDown ) {
+							return;
+						}
 						const next = moveInArray( section.fields, fIndex, fIndex + 1 );
 						selection = { type: 'field', sIndex: sIndex, fIndex: next };
 						announce( i18n.moved || 'Item moved.' );
@@ -5795,6 +6052,137 @@
 			} );
 			bindFieldWidthResize( resize, field, card );
 			return card;
+		}
+
+		function renderPackGroup( section, sIndex, run ) {
+			const fields = section.fields || [];
+			const wrap = el( 'div', {
+				className: 'wek-builder__pack',
+				'data-s': String( sIndex ),
+				'data-pack-id': run.id,
+				'data-pack-start': String( run.start ),
+				'data-pack-len': String( run.length ),
+			} );
+
+			const handle = el( 'button', {
+				type: 'button',
+				className: 'wek-builder__handle',
+				title: i18n.packDragHandle || 'Drag template group',
+				'aria-label': i18n.packDragHandle || 'Drag template group',
+				'aria-grabbed': 'false',
+				text: '⋮⋮',
+			} );
+
+			const head = el( 'div', { className: 'wek-builder__pack-head' }, [
+				handle,
+				el( 'strong', {
+					className: 'wek-builder__pack-title',
+					text: packLabel( run.pack ),
+				} ),
+			] );
+			wrap.appendChild( head );
+
+			const canUp = run.start > 0;
+			const canDown = run.start + run.length < fields.length;
+
+			wrap.appendChild(
+				renderFieldToolbar( {
+					canUp: canUp,
+					canDown: canDown,
+					onEdit: function () {
+						selectItem( {
+							type: 'field',
+							sIndex: sIndex,
+							fIndex: run.start,
+						}, 'general' );
+					},
+					onDuplicate: function () {
+						const copies = [];
+						const newGroup = {
+							id: nextFieldId( 'pack' ),
+							pack: run.pack,
+						};
+						for ( let i = 0; i < run.length; i += 1 ) {
+							const copy = cloneFieldDeep( fields[ run.start + i ] );
+							copy.pack_group = { id: newGroup.id, pack: newGroup.pack };
+							copies.push( copy );
+						}
+						Array.prototype.splice.apply(
+							fields,
+							[ run.start + run.length, 0 ].concat( copies )
+						);
+						selection = {
+							type: 'field',
+							sIndex: sIndex,
+							fIndex: run.start + run.length,
+						};
+						syncHidden();
+						render();
+					},
+					onMoveUp: function () {
+						if ( ! canUp ) {
+							return;
+						}
+						const prevRun = getPackRun( fields, run.start - 1 );
+						const dest = prevRun ? prevRun.start : run.start - 1;
+						relocatePack( sIndex, run.start, run.length, sIndex, dest );
+					},
+					onMoveDown: function () {
+						if ( ! canDown ) {
+							return;
+						}
+						const after = run.start + run.length;
+						const nextRun = getPackRun( fields, after );
+						const dest = nextRun
+							? nextRun.start + nextRun.length
+							: after + 1;
+						relocatePack( sIndex, run.start, run.length, sIndex, dest );
+					},
+					onDelete: function () {
+						if (
+							! window.confirm(
+								i18n.packConfirmDelete ||
+									'Remove this template group and all its fields?'
+							)
+						) {
+							return;
+						}
+						fields.splice( run.start, run.length );
+						selection = null;
+						syncHidden();
+						render();
+					},
+				} )
+			);
+
+			const ungroupBtn = toolbarIconButton(
+				'dashicons-editor-unlink',
+				i18n.packUngroup || 'Ungroup',
+				function () {
+					for ( let i = run.start; i < run.start + run.length; i += 1 ) {
+						clearPackGroup( fields[ i ] );
+					}
+					announce( i18n.packUngrouped || 'Template group ungrouped.' );
+					syncHidden();
+					render();
+				}
+			);
+			const toolbar = wrap.querySelector( '.wek-builder__field-toolbar' );
+			if ( toolbar && toolbar.lastChild ) {
+				toolbar.insertBefore( ungroupBtn, toolbar.lastChild );
+			} else if ( toolbar ) {
+				toolbar.appendChild( ungroupBtn );
+			}
+
+			const inner = el( 'div', { className: 'wek-builder__pack-fields' } );
+			for ( let i = 0; i < run.length; i += 1 ) {
+				const fIndex = run.start + i;
+				inner.appendChild( renderFieldCard( section, fields[ fIndex ], sIndex, fIndex ) );
+			}
+			wrap.appendChild( inner );
+
+			bindPackDrag( handle, wrap, sIndex, run.start, run.length );
+			return wrap;
 		}
 
 		function renderSectionCard( section, sIndex ) {
@@ -5992,9 +6380,17 @@
 					} )
 				);
 			} else {
-				fields.forEach( function ( field, fIndex ) {
-					grid.appendChild( renderFieldCard( section, field, sIndex, fIndex ) );
-				} );
+				let i = 0;
+				while ( i < fields.length ) {
+					const run = getPackRun( fields, i );
+					if ( run && run.start === i ) {
+						grid.appendChild( renderPackGroup( section, sIndex, run ) );
+						i += run.length;
+					} else {
+						grid.appendChild( renderFieldCard( section, fields[ i ], sIndex, i ) );
+						i += 1;
+					}
+				}
 			}
 			box.appendChild( grid );
 
@@ -6331,6 +6727,11 @@
 
 			panel.appendChild( list );
 
+			/* Country options only apply to packs that include a country slot (Address). */
+			const packHasCountry = slotsState.some( function ( s ) {
+				return s.role === 'country';
+			} );
+
 			const countryBlock = el( 'div', {
 				className: 'wek-pack-composer__country',
 				hidden: 'hidden',
@@ -6565,9 +6966,14 @@
 				] )
 			);
 
-			panel.appendChild( countryBlock );
+			if ( packHasCountry ) {
+				panel.appendChild( countryBlock );
+			}
 
 			function refreshCountryBlock() {
+				if ( ! packHasCountry ) {
+					return;
+				}
 				const countryOn = slotsState.some( function ( s ) {
 					return s.role === 'country' && s.enabled;
 				} );
@@ -6602,6 +7008,7 @@
 					return;
 				}
 				const fields = buildPackFields( packId, slotsState, countryOpts );
+				stampPackGroup( fields, packId );
 				closePackComposer();
 				insertFieldsAt( fields, dropLoc || null );
 			} );

@@ -231,6 +231,13 @@ final class Form_Schema {
 		$field['css_class']  = self::normalize_css_class( $field['css_class'] ?? '' );
 		$field['role']       = Field_Roles::normalize( $field['role'] ?? '' );
 
+		$pack_group = Fields\Abstract_Field_Type::normalize_pack_group( $field['pack_group'] ?? null );
+		if ( null === $pack_group ) {
+			unset( $field['pack_group'] );
+		} else {
+			$field['pack_group'] = $pack_group;
+		}
+
 		return $field;
 	}
 
