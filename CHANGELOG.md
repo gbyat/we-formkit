@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-26
+
+- Refactor admin CSS and JavaScript to enhance sidebar layout and organization. Introduce a new scope panel for improved structure in the form and integrations sections. Update styles for better spacing and alignment, ensuring a more cohesive user experience. Adjust JavaScript to utilize the new panel structure for rendering sidebar content.
+- Implement builder sidebar scopes for Field, Form, and Integrations, enhancing user navigation and organization. Introduce Spamfighterin form type settings for improved spam analysis configuration. Update changelog to reflect these new features and adjustments. Enhance CSS styles for sidebar elements to improve layout and usability.
+- Enhance form builder with draggable template packs, allowing for improved organization and editing of fields. Introduce new functions for managing pack groups, including clear and relocate functionalities. Update translations for new features and refine changelog to reflect these enhancements.
+
+[1.0.5]: https://github.com/gbyat/we-formkit/releases/tag/v1.0.5
+
 ## [1.0.5] - 2026-07-26
 
 - Name and Address mini-templates in the builder library (toggle slots, reorder); Address country presets (DACH+LI, EU, continents, world) with optional Other → text field; priority countries at top of the list + optional pre-select; semantic `field.role` for Spamfighterin / autocomplete.
