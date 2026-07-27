@@ -2383,7 +2383,7 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 	}
 
 	.we-formkit__matrix-cell--radio:not(.we-formkit__matrix-cell--group-start),
-	.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start > .we-formkit__matrix-choice {
+	.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start > label.we-formkit__matrix-choice {
 		flex: 1 1 calc(50% - 0.35rem);
 		min-width: 0;
 		max-width: 100%;
@@ -2436,9 +2436,9 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 		width: 100%;
 	}
 
-	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice,
-	.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start > .we-formkit__matrix-choice,
-	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice {
+	body .we-formkit .we-formkit__matrix-cell--radio label.we-formkit__matrix-choice,
+	body .we-formkit .we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start > label.we-formkit__matrix-choice,
+	body .we-formkit .we-formkit__matrix-cell--checkbox label.we-formkit__matrix-choice {
 		display: flex;
 		justify-content: flex-start;
 		align-items: center;
@@ -2452,27 +2452,27 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 	}
 
 	/* Fill the equal flex slot — do not stretch to the whole row. */
-	.we-formkit__matrix-cell--radio:not(.we-formkit__matrix-cell--group-start) .we-formkit__matrix-choice {
+	body .we-formkit .we-formkit__matrix-cell--radio:not(.we-formkit__matrix-cell--group-start) label.we-formkit__matrix-choice {
 		width: 100%;
 	}
 
-	.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start > .we-formkit__matrix-choice {
+	body .we-formkit .we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start > label.we-formkit__matrix-choice {
 		width: auto;
 		align-self: stretch;
 	}
 
-	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice {
+	body .we-formkit .we-formkit__matrix-cell--checkbox label.we-formkit__matrix-choice {
 		width: 100%;
 	}
 
-	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice:has(:checked),
-	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice:has(:checked) {
+	body .we-formkit .we-formkit__matrix-cell--radio label.we-formkit__matrix-choice:has(:checked),
+	body .we-formkit .we-formkit__matrix-cell--checkbox label.we-formkit__matrix-choice:has(:checked) {
 		border-color: color-mix(in srgb, var(--wek-accent) 45%, transparent);
 		background: color-mix(in srgb, var(--wek-accent-soft) 55%, var(--wek-surface));
 	}
 
-	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice input,
-	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice input {
+	body .we-formkit .we-formkit__matrix-cell--radio label.we-formkit__matrix-choice input,
+	body .we-formkit .we-formkit__matrix-cell--checkbox label.we-formkit__matrix-choice input {
 		margin-top: 0;
 		align-self: center;
 	}
@@ -2480,13 +2480,13 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 	/* Very small screens: stack options full-width (still equal). */
 	@media (max-width: 420px) {
 		.we-formkit__matrix-cell--radio:not(.we-formkit__matrix-cell--group-start),
-		.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start > .we-formkit__matrix-choice {
+		.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start > label.we-formkit__matrix-choice {
 			flex: 1 1 100%;
 			min-width: 100%;
 			width: 100%;
 		}
 
-		.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start > .we-formkit__matrix-choice {
+		.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start > label.we-formkit__matrix-choice {
 			width: 100%;
 		}
 	}
