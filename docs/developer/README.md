@@ -132,7 +132,59 @@ Match on `$field['type']` when you care about all fields of a type; combine with
 | `we_formkit_register_field_types` | action | After core field types are registered `( $registry )` |
 | `we_formkit_register_modules` | action | Collect module definitions `( $registry )` — call `$registry->add( $id, $definition )` |
 | `we_formkit_module_registered` | action | After an **active + dependency-satisfied** module has been bootstrapped `( $id, $definition )` |
+| `we_formkit_builder_integrations` | filter | Builder sidebar → Integrations panels `( $panels, $form_id )` — return panel definitions (see below) |
 | `we_formkit_submission_created` | action | After a submission is stored `( $submission_id, $context )` — `$context` has `form_id`, `data`; notifications listen here |
+
+### Builder Integrations panels
+
+Third-party plugins (and modules) can add settings to **Builder → Integrations** without Formkit knowing about them:
+
+```php
+add_filter(
+	'we_formkit_builder_integrations',
+	static function ( array $panels, $form_id ) {
+		$panels[] = array(
+			'id'             => 'my-addon',
+			'title'          => 'My Addon',
+			'description'    => 'Optional short help text.',
+			'requiresFormId' => true, // hide fields until the form is saved
+			'fields'         => array(
+				array(
+					'name'    => 'mode',
+					'type'    => 'select', // select | textarea | text
+					'label'   => 'Mode',
+					'value'   => '',
+					'choices' => array(
+						''     => 'Default',
+						'strict' => 'Strict',
+					),
+				),
+				array(
+					'name'   => 'tags',
+					'type'   => 'textarea',
+					'label'  => 'Tags',
+					'format' => 'lines', // send as string[] (split on whitespace/commas)
+					'value'  => array( 'a', 'b' ),
+					'rows'   => 3,
+				),
+			),
+			'save'           => array(
+				'url'    => rest_url( 'my-addon/v1/form-settings' ),
+				'nonce'  => wp_create_nonce( 'wp_rest' ),
+				'method' => 'POST',
+				'body'   => array(
+					'form_id' => (int) $form_id, // JS refreshes form_id after first save
+				),
+			),
+		);
+		return $panels;
+	},
+	10,
+	2
+);
+```
+
+On change, Formkit POSTs JSON: `save.body` merged with field values. Keep business UI and REST in the add-on; Formkit only renders the schema.
 
 ### Filters — submit / mail / smart tags
 

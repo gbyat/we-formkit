@@ -365,23 +365,16 @@ final class Form_Editor {
 			);
 		}
 
-		$spamfighterin_boot = array( 'active' => false );
-		if ( class_exists( '\\Webentwicklerin\\WeSpamfighterin\\Api\\Spam_Check' ) ) {
-			$sfi_bag     = class_exists( '\\Webentwicklerin\\WeSpamfighterin\\Core\\Settings_Store' )
-				? \Webentwicklerin\WeSpamfighterin\Core\Settings_Store::get_form_settings( 'formkit', (int) $form_id )
-				: array();
-			$sfi_all     = class_exists( '\\Webentwicklerin\\WeSpamfighterin\\Core\\Settings_Store' )
-				? \Webentwicklerin\WeSpamfighterin\Core\Settings_Store::get()
-				: array();
-			$spamfighterin_boot = array(
-				'active'           => true,
-				'restUrl'          => esc_url_raw( rest_url( 'we-spamfighterin/v1/form-settings' ) ),
-				'restNonce'        => wp_create_nonce( 'wp_rest' ),
-				'formKind'         => isset( $sfi_bag['form_kind'] ) ? (string) $sfi_bag['form_kind'] : '',
-				'formKindChoices'  => \Webentwicklerin\WeSpamfighterin\Api\Spam_Check::form_kind_choices(),
-				'defaultFormKind'  => (string) ( $sfi_all['default_form_kind'] ?? 'contact' ),
-			);
-		}
+		/**
+		 * Builder Integrations sidebar panels (third-party add-ons).
+		 *
+		 * Each panel: id, title, optional description/fields/save. See docs/developer/README.md.
+		 *
+		 * @param array<int, array<string, mixed>> $panels  Panels.
+		 * @param int                              $form_id Form ID (0 when unsaved).
+		 */
+		$integrations = apply_filters( 'we_formkit_builder_integrations', array(), (int) $form_id );
+		$integrations = self::sanitize_builder_integrations( is_array( $integrations ) ? $integrations : array() );
 
 		wp_localize_script(
 			'we-formkit-admin-form',
@@ -396,7 +389,7 @@ final class Form_Editor {
 					? admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $form_id . '&view=design' )
 					: '',
 				'modules'           => $modules_boot,
-				'spamfighterin'     => $spamfighterin_boot,
+				'integrations'      => $integrations,
 				'fieldTypes'        => $field_types,
 				'fieldPacks'        => array(
 					'name'    => array(
@@ -439,16 +432,11 @@ final class Form_Editor {
 					'openDesign'                => __( 'Open Design', 'we-formkit' ),
 					'formScopePaginationHint'   => __( 'Pagination (single page / one section per page) is in the toolbar above the canvas.', 'we-formkit' ),
 					'integrationsTitle'         => __( 'Integrations', 'we-formkit' ),
-					'integrationsEmpty'         => __( 'No modules connected yet. Add-ons register here via we_formkit_register_modules.', 'we-formkit' ),
-					'integrationsHint'          => __( 'Planned modules include Spamfighter, Subscribe to Posts, and server-side PDF.', 'we-formkit' ),
-					'spamfighterinTitle'        => __( 'WE Spamfighterin', 'we-formkit' ),
-					'spamfighterinFormKind'     => __( 'Form type', 'we-formkit' ),
-					'spamfighterinFormKindHint' => __( 'Adjusts spam analysis for this form (contact vs application vs …).', 'we-formkit' ),
-					/* translators: %s: default form type label from Spamfighterin settings. */
-					'spamfighterinSiteDefault'  => __( 'Site default (%s)', 'we-formkit' ),
-					'spamfighterinSaving'       => __( 'Saving…', 'we-formkit' ),
-					'spamfighterinSaved'        => __( 'Saved.', 'we-formkit' ),
-					'spamfighterinSaveFailed'   => __( 'Could not save.', 'we-formkit' ),
+					'integrationsEmpty'         => __( 'No integrations connected yet. Add-ons register here via we_formkit_builder_integrations.', 'we-formkit' ),
+					'integrationsHint'          => __( 'Formkit modules and third-party plugins can add settings panels for this form.', 'we-formkit' ),
+					'integrationsSaving'        => __( 'Saving…', 'we-formkit' ),
+					'integrationsSaved'         => __( 'Saved.', 'we-formkit' ),
+					'integrationsSaveFailed'    => __( 'Could not save.', 'we-formkit' ),
 					'untitledForm'              => __( 'Untitled form', 'we-formkit' ),
 					'remove'                    => __( 'Remove', 'we-formkit' ),
 					'addField'                  => __( 'Add field', 'we-formkit' ),
@@ -715,6 +703,117 @@ final class Form_Editor {
 				'mimeChoices'       => Upload_Field::common_mime_choices(),
 			)
 		);
+	}
+
+	/**
+	 * Sanitize integrations panels for wp_localize_script.
+	 *
+	 * @param array<int, array<string, mixed>> $panels Raw panels from filter.
+	 * @return list<array<string, mixed>>
+	 */
+	private static function sanitize_builder_integrations( array $panels ) {
+		$out = array();
+
+		foreach ( $panels as $panel ) {
+			if ( ! is_array( $panel ) ) {
+				continue;
+			}
+
+			$id    = isset( $panel['id'] ) ? sanitize_key( (string) $panel['id'] ) : '';
+			$title = isset( $panel['title'] ) ? sanitize_text_field( (string) $panel['title'] ) : '';
+			if ( '' === $id || '' === $title ) {
+				continue;
+			}
+
+			$clean = array(
+				'id'             => $id,
+				'title'          => $title,
+				'description'    => isset( $panel['description'] ) ? sanitize_text_field( (string) $panel['description'] ) : '',
+				'requiresFormId' => ! isset( $panel['requiresFormId'] ) || (bool) $panel['requiresFormId'],
+				'fields'         => array(),
+			);
+
+			if ( ! empty( $panel['fields'] ) && is_array( $panel['fields'] ) ) {
+				foreach ( $panel['fields'] as $field ) {
+					if ( ! is_array( $field ) ) {
+						continue;
+					}
+					$name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+					if ( '' === $name ) {
+						continue;
+					}
+					$type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : 'text';
+					if ( ! in_array( $type, array( 'select', 'textarea', 'text' ), true ) ) {
+						$type = 'text';
+					}
+
+					$item = array(
+						'name'        => $name,
+						'type'        => $type,
+						'label'       => isset( $field['label'] ) ? sanitize_text_field( (string) $field['label'] ) : $name,
+						'hint'        => isset( $field['hint'] ) ? sanitize_text_field( (string) $field['hint'] ) : '',
+						'placeholder' => isset( $field['placeholder'] ) ? sanitize_text_field( (string) $field['placeholder'] ) : '',
+						'rows'        => isset( $field['rows'] ) ? max( 1, (int) $field['rows'] ) : 3,
+						'format'      => isset( $field['format'] ) && 'lines' === $field['format'] ? 'lines' : '',
+						'value'       => $field['value'] ?? '',
+						'choices'     => array(),
+					);
+
+					if ( 'lines' === $item['format'] && is_array( $item['value'] ) ) {
+						$lines = array();
+						foreach ( $item['value'] as $line ) {
+							$line = sanitize_text_field( (string) $line );
+							if ( '' !== $line ) {
+								$lines[] = $line;
+							}
+						}
+						$item['value'] = $lines;
+					} elseif ( is_scalar( $item['value'] ) || null === $item['value'] ) {
+						$item['value'] = null === $item['value'] ? '' : (string) $item['value'];
+					} else {
+						$item['value'] = '';
+					}
+
+					if ( 'select' === $type && ! empty( $field['choices'] ) && is_array( $field['choices'] ) ) {
+						foreach ( $field['choices'] as $choice_value => $choice_label ) {
+							$choice_key                     = sanitize_text_field( (string) $choice_value );
+							$item['choices'][ $choice_key ] = sanitize_text_field( (string) $choice_label );
+						}
+					}
+
+					$clean['fields'][] = $item;
+				}
+			}
+
+			if ( ! empty( $panel['save'] ) && is_array( $panel['save'] ) ) {
+				$save = $panel['save'];
+				$url  = isset( $save['url'] ) ? esc_url_raw( (string) $save['url'] ) : '';
+				if ( '' !== $url ) {
+					$body = array();
+					if ( ! empty( $save['body'] ) && is_array( $save['body'] ) ) {
+						foreach ( $save['body'] as $body_key => $body_val ) {
+							$key = sanitize_key( (string) $body_key );
+							if ( '' === $key ) {
+								continue;
+							}
+							if ( is_scalar( $body_val ) || null === $body_val ) {
+								$body[ $key ] = null === $body_val ? '' : $body_val;
+							}
+						}
+					}
+					$clean['save'] = array(
+						'url'    => $url,
+						'nonce'  => isset( $save['nonce'] ) ? sanitize_text_field( (string) $save['nonce'] ) : '',
+						'method' => isset( $save['method'] ) && 'PUT' === strtoupper( (string) $save['method'] ) ? 'PUT' : 'POST',
+						'body'   => $body,
+					);
+				}
+			}
+
+			$out[] = $clean;
+		}
+
+		return $out;
 	}
 
 	/**

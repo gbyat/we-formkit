@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Builder Integrations is generic: filter `we_formkit_builder_integrations` supplies panels (fields + optional REST save). Removed hardcoded Spamfighterin UI from Formkit; add-ons register their own panels.
+
 ## [1.1.0] - 2026-07-26
 
 - Refactor admin CSS and JavaScript to enhance sidebar layout and organization. Introduce a new scope panel for improved structure in the form and integrations sections. Update styles for better spacing and alignment, ensuring a more cohesive user experience. Adjust JavaScript to utilize the new panel structure for rendering sidebar content.

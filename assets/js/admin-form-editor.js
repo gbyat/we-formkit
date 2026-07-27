@@ -4291,18 +4291,18 @@
 				} )
 			);
 
-			const sfi =
-				window.weFormkitAdmin && window.weFormkitAdmin.spamfighterin
-					? window.weFormkitAdmin.spamfighterin
-					: null;
+			const integrations =
+				window.weFormkitAdmin && Array.isArray( window.weFormkitAdmin.integrations )
+					? window.weFormkitAdmin.integrations
+					: [];
 
-			if ( ! sfi || ! sfi.active ) {
+			if ( ! integrations.length ) {
 				panel.appendChild(
 					el( 'p', {
 						className: 'description',
 						text:
 							i18n.integrationsEmpty ||
-							'No modules connected yet. Add-ons register here via we_formkit_register_modules.',
+							'No integrations connected yet. Add-ons register here via we_formkit_builder_integrations.',
 					} )
 				);
 				panel.appendChild(
@@ -4310,30 +4310,43 @@
 						className: 'description',
 						text:
 							i18n.integrationsHint ||
-							'Planned modules include Spamfighter, Subscribe to Posts, and server-side PDF.',
+							'Formkit modules and third-party plugins can add settings panels for this form.',
 					} )
 				);
 				aside.appendChild( panel );
 				return;
 			}
 
-			panel.appendChild(
+			integrations.forEach( function ( integ ) {
+				renderIntegrationPanel( panel, integ );
+			} );
+			aside.appendChild( panel );
+		}
+
+		function renderIntegrationPanel( parent, integ ) {
+			if ( ! integ || ! integ.id ) {
+				return;
+			}
+
+			parent.appendChild(
 				el( 'h4', {
 					className: 'wek-builder-sidebar__subtitle',
-					text: i18n.spamfighterinTitle || 'WE Spamfighterin',
-				} )
-			);
-			panel.appendChild(
-				el( 'p', {
-					className: 'description',
-					text:
-						i18n.spamfighterinFormKindHint ||
-						'Adjusts spam analysis for this form (contact vs application vs …).',
+					text: integ.title || integ.id,
 				} )
 			);
 
-			if ( ! formIdForUi ) {
-				panel.appendChild(
+			if ( integ.description ) {
+				parent.appendChild(
+					el( 'p', {
+						className: 'description',
+						text: integ.description,
+					} )
+				);
+			}
+
+			const needsFormId = integ.requiresFormId !== false;
+			if ( needsFormId && ! formIdForUi ) {
+				parent.appendChild(
 					el( 'p', {
 						className: 'description',
 						text:
@@ -4341,61 +4354,65 @@
 							'Save the form once to unlock the shortcode and Form Settings link.',
 					} )
 				);
-				aside.appendChild( panel );
 				return;
 			}
 
-			const choices = sfi.formKindChoices || {};
-			const defaultKind = sfi.defaultFormKind || 'contact';
-			const select = el( 'select', { className: 'wek-builder__select widefat' } );
-			const defaultLabel = choices[ defaultKind ] || defaultKind;
-			select.appendChild(
-				el( 'option', {
-					value: '',
-					text: ( i18n.spamfighterinSiteDefault || 'Site default (%s)' ).replace(
-						'%s',
-						defaultLabel
-					),
-					selected: ! sfi.formKind,
-				} )
-			);
-			Object.keys( choices ).forEach( function ( id ) {
-				select.appendChild(
-					el( 'option', {
-						value: id,
-						text: choices[ id ],
-						selected: sfi.formKind === id,
-					} )
-				);
-			} );
-
+			const fields = Array.isArray( integ.fields ) ? integ.fields : [];
+			const controls = {};
 			const status = el( 'p', {
-				className: 'description wek-builder__sfi-status',
+				className: 'description wek-builder__integration-status',
 				text: '',
 			} );
 			let saveTimer = null;
 
-			function saveKind( kind ) {
-				status.textContent = i18n.spamfighterinSaving || 'Saving…';
-				const restUrl = sfi.restUrl;
-				const nonce = sfi.restNonce || '';
-				if ( ! restUrl ) {
-					status.textContent = i18n.spamfighterinSaveFailed || 'Could not save.';
+			function fieldValue( field ) {
+				const ctrl = controls[ field.name ];
+				if ( ! ctrl ) {
+					return field.value;
+				}
+				const raw = ctrl.value;
+				if ( field.format === 'lines' ) {
+					return raw
+						.split( /[\s,]+/ )
+						.map( function ( s ) {
+							return s.trim();
+						} )
+						.filter( Boolean );
+				}
+				return raw;
+			}
+
+			function collectBody() {
+				const save = integ.save || {};
+				const body = Object.assign( {}, save.body || {} );
+				// Keep form_id in sync when the form was saved after localize (new form → first save).
+				if ( Object.prototype.hasOwnProperty.call( body, 'form_id' ) && formIdForUi ) {
+					body.form_id = formIdForUi;
+				}
+				fields.forEach( function ( field ) {
+					if ( ! field || ! field.name ) {
+						return;
+					}
+					body[ field.name ] = fieldValue( field );
+				} );
+				return body;
+			}
+
+			function saveNow() {
+				const save = integ.save;
+				if ( ! save || ! save.url ) {
 					return;
 				}
+				status.textContent = i18n.integrationsSaving || 'Saving…';
 				window
-					.fetch( restUrl, {
-						method: 'POST',
+					.fetch( save.url, {
+						method: save.method || 'POST',
 						credentials: 'same-origin',
 						headers: {
 							'Content-Type': 'application/json',
-							'X-WP-Nonce': nonce,
+							'X-WP-Nonce': save.nonce || '',
 						},
-						body: JSON.stringify( {
-							source: 'formkit',
-							form_id: formIdForUi,
-							form_kind: kind,
-						} ),
+						body: JSON.stringify( collectBody() ),
 					} )
 					.then( function ( res ) {
 						if ( ! res.ok ) {
@@ -4404,28 +4421,91 @@
 						return res.json();
 					} )
 					.then( function ( data ) {
-						sfi.formKind = data.form_kind || '';
-						status.textContent = i18n.spamfighterinSaved || 'Saved.';
+						fields.forEach( function ( field ) {
+							if (
+								field &&
+								field.name &&
+								Object.prototype.hasOwnProperty.call( data, field.name )
+							) {
+								field.value = data[ field.name ];
+							}
+						} );
+						status.textContent = i18n.integrationsSaved || 'Saved.';
 					} )
 					.catch( function () {
-						status.textContent = i18n.spamfighterinSaveFailed || 'Could not save.';
+						status.textContent = i18n.integrationsSaveFailed || 'Could not save.';
 					} );
 			}
 
-			select.addEventListener( 'change', function () {
+			function scheduleSave() {
+				if ( ! integ.save || ! integ.save.url ) {
+					return;
+				}
 				if ( saveTimer ) {
 					window.clearTimeout( saveTimer );
 				}
-				saveTimer = window.setTimeout( function () {
-					saveKind( select.value );
-				}, 200 );
+				saveTimer = window.setTimeout( saveNow, 250 );
+			}
+
+			fields.forEach( function ( field ) {
+				if ( ! field || ! field.name ) {
+					return;
+				}
+
+				let control;
+				if ( field.type === 'select' ) {
+					control = el( 'select', { className: 'wek-builder__select widefat' } );
+					const choices =
+						field.choices && typeof field.choices === 'object' ? field.choices : {};
+					Object.keys( choices ).forEach( function ( id ) {
+						control.appendChild(
+							el( 'option', {
+								value: id,
+								text: choices[ id ],
+								selected: String( field.value || '' ) === String( id ),
+							} )
+						);
+					} );
+					control.addEventListener( 'change', scheduleSave );
+				} else if ( field.type === 'textarea' ) {
+					control = el( 'textarea', {
+						className: 'widefat',
+						rows: String( field.rows || 3 ),
+						placeholder: field.placeholder || '',
+					} );
+					if ( field.format === 'lines' && Array.isArray( field.value ) ) {
+						control.value = field.value.join( '\n' );
+					} else {
+						control.value = field.value != null ? String( field.value ) : '';
+					}
+					control.addEventListener( 'change', scheduleSave );
+					control.addEventListener( 'blur', scheduleSave );
+				} else {
+					control = el( 'input', {
+						type: 'text',
+						className: 'widefat',
+						value: field.value != null ? String( field.value ) : '',
+						placeholder: field.placeholder || '',
+					} );
+					control.addEventListener( 'change', scheduleSave );
+					control.addEventListener( 'blur', scheduleSave );
+				}
+
+				controls[ field.name ] = control;
+				parent.appendChild( fieldRow( field.label || field.name, control ) );
+				if ( field.hint ) {
+					parent.appendChild(
+						el( 'p', {
+							className: 'description',
+							text: field.hint,
+						} )
+					);
+				}
 			} );
 
-			panel.appendChild(
-				fieldRow( i18n.spamfighterinFormKind || 'Form type', select )
-			);
-			panel.appendChild( status );
-			aside.appendChild( panel );
+			if ( integ.save && integ.save.url ) {
+				parent.appendChild( status );
+			}
 		}
 
 		function renderFieldInspector( aside ) {
