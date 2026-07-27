@@ -39,6 +39,16 @@ class Radio_Image_Field extends Abstract_Field_Type {
 		$field            = parent::normalize_config( $field );
 		$field['options'] = $this->normalize_image_options( $field['options'] ?? array() );
 
+		if ( ! isset( $field['type_options'] ) || ! is_array( $field['type_options'] ) ) {
+			$field['type_options'] = array();
+		}
+
+		$size                                = isset( $field['type_options']['image_size'] ) ? sanitize_key( (string) $field['type_options']['image_size'] ) : 'medium';
+		$field['type_options']['image_size'] = in_array( $size, array( 'thumbnail', 'medium' ), true ) ? $size : 'medium';
+
+		$cols                             = isset( $field['type_options']['columns'] ) ? (int) $field['type_options']['columns'] : 2;
+		$field['type_options']['columns'] = max( 1, min( 4, $cols ) );
+
 		if ( isset( $field['type_options']['options'] ) ) {
 			$field['type_options']['options'] = $this->normalize_image_options( $field['type_options']['options'] );
 		}

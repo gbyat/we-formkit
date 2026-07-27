@@ -683,6 +683,10 @@
 				typeOptions.allowed_mime_types = 'image/jpeg, image/png, application/pdf';
 				typeOptions.storage_mode = 'uploads_only';
 			}
+			if ( typeId === 'radio_image' ) {
+				typeOptions.image_size = 'medium';
+				typeOptions.columns = 2;
+			}
 			if ( typeId === 'matrix' ) {
 				typeOptions.row_select = true;
 				typeOptions.row_label_align = 'left';
@@ -3931,6 +3935,61 @@
 			return opts;
 		}
 
+		function renderRadioImageDisplayEditor( field ) {
+			const opts = ensureTypeOptions( field );
+			if ( ! opts.image_size ) {
+				opts.image_size = 'medium';
+			}
+			if ( opts.columns == null || opts.columns === '' ) {
+				opts.columns = 2;
+			}
+			const body = el( 'div', { className: 'wek-builder__radio-image-display' } );
+			body.appendChild(
+				el( 'p', {
+					className: 'description',
+					text:
+						i18n.radioImageDisplayHint ||
+						'Image size uses WordPress media sizes (not full resolution). Columns apply from tablet width up; phones stay single-column.',
+				} )
+			);
+			body.appendChild(
+				fieldRow(
+					i18n.radioImageSize || 'Image size',
+					selectInput(
+						opts.image_size || 'medium',
+						[
+							{ value: 'thumbnail', label: i18n.imageSizeThumbnail || 'Thumbnail' },
+							{ value: 'medium', label: i18n.imageSizeMedium || 'Medium' },
+						],
+						function ( v ) {
+							opts.image_size = v === 'thumbnail' ? 'thumbnail' : 'medium';
+							syncHidden();
+						}
+					)
+				)
+			);
+			body.appendChild(
+				fieldRow(
+					i18n.radioImageColumns || 'Columns (desktop)',
+					numberInput(
+						opts.columns,
+						function ( v ) {
+							const n = parseInt( v, 10 );
+							opts.columns = isNaN( n ) ? 2 : Math.min( 4, Math.max( 1, n ) );
+							syncHidden();
+						},
+						{ min: '1', max: '4', step: '1' }
+					)
+				)
+			);
+			return collapsiblePanel(
+				i18n.radioImageDisplay || 'Display',
+				body,
+				'wek-builder__radio-image-display-panel',
+				false
+			);
+		}
+
 		function renderNumberOptionsEditor( field ) {
 			const opts = ensureNumberOptions( field );
 			const wrap = el( 'div', { className: 'wek-builder__number-options' } );
@@ -5092,6 +5151,10 @@
 
 				if ( [ 'radio', 'checkboxes', 'select', 'radio_image' ].indexOf( field.type ) !== -1 ) {
 					panel.appendChild( renderOptionsEditor( field ) );
+				}
+
+				if ( field.type === 'radio_image' ) {
+					panel.appendChild( renderRadioImageDisplayEditor( field ) );
 				}
 
 				if ( ! isNested ) {

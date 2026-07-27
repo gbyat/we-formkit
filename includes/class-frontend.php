@@ -59,7 +59,7 @@ final class Frontend {
 			self::$form_html_instances[ $form_id ] = 0;
 		}
 		++self::$form_html_instances[ $form_id ];
-		$n = self::$form_html_instances[ $form_id ];
+		$n    = self::$form_html_instances[ $form_id ];
 		$base = 'we-formkit-' . $form_id;
 		return 1 === $n ? $base : $base . '-' . $n;
 	}
@@ -163,7 +163,7 @@ final class Frontend {
 	 * @return void
 	 */
 	public static function register_assets() {
-		$style_path = WE_FORMKIT_PATH . 'assets/css/frontend.css';
+		$style_path  = WE_FORMKIT_PATH . 'assets/css/frontend.css';
 		$script_path = WE_FORMKIT_PATH . 'assets/js/frontend.js';
 		$style_ver   = file_exists( $style_path ) ? (string) filemtime( $style_path ) : WE_FORMKIT_VERSION;
 		$script_ver  = file_exists( $script_path ) ? (string) filemtime( $script_path ) : WE_FORMKIT_VERSION;
@@ -306,8 +306,8 @@ final class Frontend {
 	 * @return string
 	 */
 	public static function render_block( $attributes ) {
-		$form_id = isset( $attributes['formId'] ) ? absint( $attributes['formId'] ) : 0;
-		$slug    = isset( $attributes['slug'] ) ? sanitize_title( (string) $attributes['slug'] ) : '';
+		$form_id      = isset( $attributes['formId'] ) ? absint( $attributes['formId'] ) : 0;
+		$slug         = isset( $attributes['slug'] ) ? sanitize_title( (string) $attributes['slug'] ) : '';
 		$prefill_attr = isset( $attributes['prefill'] ) ? (string) $attributes['prefill'] : '';
 
 		if ( $form_id <= 0 && '' !== $slug ) {
@@ -422,7 +422,7 @@ final class Frontend {
 
 		ob_start();
 		self::render_form( $form_id, $schema, $privacy_url );
-		$html = (string) ob_get_clean();
+		$html          = (string) ob_get_clean();
 		self::$prefill = array();
 		return $html;
 	}
@@ -783,8 +783,8 @@ final class Frontend {
 			$min_sel = $limits['min'];
 			$max_sel = $limits['max'];
 		}
-		$css_class = isset( $field['css_class'] ) ? trim( (string) $field['css_class'] ) : '';
-		$field_class = trim(
+		$css_class     = isset( $field['css_class'] ) ? trim( (string) $field['css_class'] ) : '';
+		$field_class   = trim(
 			'we-formkit__field we-formkit__field--' . $type . ' we-formkit__field--width-' . $width .
 			( $hidden ? ' is-hidden' : '' ) .
 			( '' !== $css_class ? ' ' . $css_class : '' )
@@ -995,6 +995,15 @@ final class Frontend {
 					<?php endif; ?>
 				</fieldset>
 			<?php elseif ( 'radio_image' === $type ) : ?>
+				<?php
+				$ri_opts = isset( $field['type_options'] ) && is_array( $field['type_options'] ) ? $field['type_options'] : array();
+				$ri_size = isset( $ri_opts['image_size'] ) ? sanitize_key( (string) $ri_opts['image_size'] ) : 'medium';
+				if ( ! in_array( $ri_size, array( 'thumbnail', 'medium' ), true ) ) {
+					$ri_size = 'medium';
+				}
+				$ri_cols = isset( $ri_opts['columns'] ) ? (int) $ri_opts['columns'] : 2;
+				$ri_cols = max( 1, min( 4, $ri_cols ) );
+				?>
 				<fieldset class="we-formkit__fieldset">
 					<legend class="<?php echo esc_attr( self::label_classes( $field ) ); ?>">
 						<?php echo esc_html( $field['label'] ); ?>
@@ -1006,33 +1015,45 @@ final class Frontend {
 					<?php if ( ! empty( $field['help'] ) ) : ?>
 						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 					<?php endif; ?>
-					<div class="we-formkit__choices" role="group" aria-describedby="<?php echo esc_attr( $desc_id . ' ' . $error_id ); ?>">
+					<div
+						class="we-formkit__choices we-formkit__choices--images"
+						style="<?php echo esc_attr( '--wek-image-cols: ' . (string) $ri_cols . ';' ); ?>"
+						role="group"
+						aria-describedby="<?php echo esc_attr( $desc_id . ' ' . $error_id ); ?>"
+					>
 						<?php
 						$defaults = self::field_default_list( $field );
 						foreach ( ( $field['options'] ?? array() ) as $option ) :
 							$oid       = $input_id . '-' . $option['value'];
+							$image_id  = ! empty( $option['image_id'] ) ? (int) $option['image_id'] : 0;
 							$image_url = isset( $option['image_url'] ) ? (string) $option['image_url'] : '';
-							if ( '' === $image_url && ! empty( $option['image_id'] ) ) {
-								$from_id = wp_get_attachment_image_url( (int) $option['image_id'], 'medium' );
-								if ( is_string( $from_id ) ) {
+							if ( $image_id > 0 ) {
+								$from_id = wp_get_attachment_image_url( $image_id, $ri_size );
+								if ( is_string( $from_id ) && '' !== $from_id ) {
 									$image_url = $from_id;
 								}
 							}
 							$is_def = in_array( (string) $option['value'], $defaults, true );
 							?>
 							<label class="we-formkit__choice we-formkit__choice--image" for="<?php echo esc_attr( $oid ); ?>">
-								<input
-									type="radio"
-									id="<?php echo esc_attr( $oid ); ?>"
-									name="<?php echo esc_attr( $id ); ?>"
-									value="<?php echo esc_attr( $option['value'] ); ?>"
-									<?php echo $req ? 'required' : ''; ?>
-									<?php checked( $is_def ); ?>
-								/>
-								<?php if ( '' !== $image_url ) : ?>
-									<img src="<?php echo esc_url( $image_url ); ?>" alt="" class="we-formkit__choice-image" />
-								<?php endif; ?>
-								<span><?php echo esc_html( $option['label'] ); ?></span>
+								<span class="we-formkit__choice-media">
+									<?php if ( '' !== $image_url ) : ?>
+										<img src="<?php echo esc_url( $image_url ); ?>" alt="" class="we-formkit__choice-image" loading="lazy" decoding="async" />
+									<?php else : ?>
+										<span class="we-formkit__choice-image-placeholder" aria-hidden="true"></span>
+									<?php endif; ?>
+								</span>
+								<span class="we-formkit__choice-meta">
+									<input
+										type="radio"
+										id="<?php echo esc_attr( $oid ); ?>"
+										name="<?php echo esc_attr( $id ); ?>"
+										value="<?php echo esc_attr( $option['value'] ); ?>"
+										<?php echo $req ? 'required' : ''; ?>
+										<?php checked( $is_def ); ?>
+									/>
+									<span class="we-formkit__choice-text"><?php echo esc_html( $option['label'] ); ?></span>
+								</span>
 							</label>
 						<?php endforeach; ?>
 					</div>
@@ -1101,10 +1122,10 @@ final class Frontend {
 										<?php endif; ?>
 										<?php foreach ( $columns as $col ) : ?>
 											<?php
-											$col_type = (string) ( $col['type'] ?? 'radio' );
-											$opts     = isset( $col['options'] ) && is_array( $col['options'] ) ? $col['options'] : array();
-											$col_lab  = (string) ( $col['label'] ?? $col['id'] ?? '' );
-											$col_req  = ! empty( $col['required'] );
+											$col_type       = (string) ( $col['type'] ?? 'radio' );
+											$opts           = isset( $col['options'] ) && is_array( $col['options'] ) ? $col['options'] : array();
+											$col_lab        = (string) ( $col['label'] ?? $col['id'] ?? '' );
+											$col_req        = ! empty( $col['required'] );
 											$col_label_html = esc_html( $col_lab ) . ( $col_req ? ' <span class="we-formkit__req" aria-hidden="true">*</span>' : '' );
 											if ( 'radio' === $col_type && ! empty( $opts ) ) :
 												$span = count( $opts );
@@ -1747,13 +1768,13 @@ final class Frontend {
 			return;
 		}
 
-		$registry = Plugin::instance()->field_registry();
-		$type_obj = $registry ? $registry->get( $ctype ) : null;
-		$name     = sprintf( '%s[%s][%s]', $parent_id, $index, $cid );
-		$input_id = sprintf( 'wek-field-%s-%s-%s', $parent_id, $index, $cid );
-		$req      = ! empty( $child['required'] );
-		$label    = (string) ( $child['label'] ?? $cid );
-		$css_class = isset( $child['css_class'] ) ? trim( (string) $child['css_class'] ) : '';
+		$registry   = Plugin::instance()->field_registry();
+		$type_obj   = $registry ? $registry->get( $ctype ) : null;
+		$name       = sprintf( '%s[%s][%s]', $parent_id, $index, $cid );
+		$input_id   = sprintf( 'wek-field-%s-%s-%s', $parent_id, $index, $cid );
+		$req        = ! empty( $child['required'] );
+		$label      = (string) ( $child['label'] ?? $cid );
+		$css_class  = isset( $child['css_class'] ) ? trim( (string) $child['css_class'] ) : '';
 		$wrap_class = trim(
 			'we-formkit__repeater-control we-formkit__repeater-control--' . $ctype .
 			( '' !== $css_class ? ' ' . $css_class : '' )

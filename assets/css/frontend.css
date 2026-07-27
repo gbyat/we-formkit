@@ -927,20 +927,113 @@ body .we-formkit .we-formkit__checkboxes-custom-actions {
 .we-formkit__choice--image {
 	flex-direction: column;
 	align-items: stretch;
-	gap: 0.5rem;
+	gap: 0.65rem;
+	padding: 0.55rem;
+	overflow: hidden;
+	transition:
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease,
+		transform 0.2s ease;
 }
 
-.we-formkit__choice--image input[type="radio"] {
-	align-self: flex-start;
+.we-formkit__choice-media {
+	display: block;
+	overflow: hidden;
+	border-radius: calc(var(--wek-radius-input) - 2px);
+	background: color-mix(in srgb, var(--wek-line) 55%, var(--wek-surface));
+	aspect-ratio: 4 / 3;
 }
 
 .we-formkit__choice-image {
 	display: block;
 	width: 100%;
-	max-height: 8rem;
+	height: 100%;
 	object-fit: cover;
-	border-radius: var(--wek-radius-input);
+	transform: scale(1);
+	transition: transform 0.28s ease;
 }
+
+.we-formkit__choice-image-placeholder {
+	display: block;
+	width: 100%;
+	height: 100%;
+	min-height: 4.5rem;
+	background:
+		linear-gradient(135deg, color-mix(in srgb, var(--wek-line) 70%, transparent), transparent 60%),
+		color-mix(in srgb, var(--wek-line) 40%, var(--wek-surface));
+}
+
+.we-formkit__choice-meta {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	padding: 0 0.15rem 0.15rem;
+	min-width: 0;
+}
+
+.we-formkit__choice--image input[type="radio"] {
+	align-self: center;
+	flex: 0 0 auto;
+	margin: 0;
+}
+
+.we-formkit__choice-text {
+	min-width: 0;
+	line-height: 1.35;
+}
+
+.we-formkit__choices--images {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 640px) {
+	.we-formkit__choices--images {
+		grid-template-columns: repeat(var(--wek-image-cols, 2), minmax(0, 1fr));
+	}
+}
+
+.we-formkit__choice--image:hover {
+	background: color-mix(in srgb, var(--wek-accent-soft) 55%, var(--wek-surface));
+	border-color: color-mix(in srgb, var(--wek-accent) 35%, transparent);
+	box-shadow:
+		0 0.55rem 1.35rem color-mix(in srgb, var(--wek-ink) 12%, transparent),
+		0 0.15rem 0.35rem color-mix(in srgb, var(--wek-ink) 6%, transparent);
+	transform: translateY(-2px);
+}
+
+.we-formkit__choice--image:hover .we-formkit__choice-image {
+	transform: scale(1.045);
+}
+
+.we-formkit__choice--image:has(:checked) {
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--wek-accent) 22%, transparent),
+		0 0.35rem 0.9rem color-mix(in srgb, var(--wek-accent) 16%, transparent);
+	transform: none;
+}
+
+.we-formkit__choice--image:has(:checked) .we-formkit__choice-image {
+	transform: scale(1);
+}
+
+.we-formkit__choice--image:has(:focus-visible) {
+	transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.we-formkit__choice--image,
+	.we-formkit__choice-image {
+		transition: none;
+	}
+
+	.we-formkit__choice--image:hover,
+	.we-formkit__choice--image:hover .we-formkit__choice-image {
+		transform: none;
+	}
+}
+
+.we-formkit__error {
 	display: flex;
 	align-items: flex-start;
 	gap: 0.4rem;
