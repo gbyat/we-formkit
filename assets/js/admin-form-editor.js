@@ -4370,6 +4370,22 @@
 				if ( ! ctrl ) {
 					return field.value;
 				}
+				if ( field.type === 'checkboxes' ) {
+					const ids = [];
+					ctrl.querySelectorAll( 'input[type="checkbox"]' ).forEach( function ( box ) {
+						if ( box.checked ) {
+							ids.push( box.value );
+						}
+					} );
+					return ids;
+				}
+				if ( field.type === 'prompt_override' ) {
+					if ( ctrl._promptArea ) {
+						return ctrl._promptArea.value;
+					}
+					const area = ctrl.querySelector( 'textarea' );
+					return area ? area.value : field.value;
+				}
 				const raw = ctrl.value;
 				if ( field.format === 'lines' ) {
 					return raw
@@ -4466,7 +4482,92 @@
 							} )
 						);
 					} );
-					control.addEventListener( 'change', scheduleSave );
+					control.addEventListener( 'change', function () {
+						scheduleSave();
+						updatePromptPreviews();
+					} );
+				} else if ( field.type === 'prompt_override' ) {
+					const wrap = el( 'div', { className: 'wek-builder__prompt-override' } );
+					const preview = el( 'p', {
+						className: 'description wek-builder__prompt-preview',
+						text: '',
+					} );
+					const details = el( 'details', { className: 'wek-builder__prompt-details' } );
+					const summary = el( 'summary', {
+						text:
+							i18n.integrationsEditPrompt ||
+							'Show / edit prompt for this form',
+					} );
+					const area = el( 'textarea', {
+						className: 'widefat',
+						rows: String( field.rows || 5 ),
+						placeholder:
+							field.placeholder ||
+							i18n.integrationsPromptPlaceholder ||
+							'Leave empty to use the form-type prompt from Spamfighterin settings.',
+					} );
+					area.value = field.value != null ? String( field.value ) : '';
+					area.addEventListener( 'change', scheduleSave );
+					area.addEventListener( 'blur', scheduleSave );
+					details.appendChild( summary );
+					details.appendChild(
+						el( 'p', {
+							className: 'description',
+							text:
+								i18n.integrationsPromptTypeHint ||
+								'Type default (from settings):',
+						} )
+					);
+					details.appendChild( preview );
+					details.appendChild(
+						el( 'p', {
+							className: 'description',
+							text:
+								field.hint ||
+								i18n.integrationsPromptOverrideHint ||
+								'Optional override for this form only. Empty = use the type prompt above.',
+						} )
+					);
+					details.appendChild( area );
+					wrap.appendChild( details );
+					control = wrap;
+					control._promptArea = area;
+					control._promptPreview = preview;
+					control._kindField = field.kindField || 'form_kind';
+				} else if ( field.type === 'checkboxes' ) {
+					control = el( 'div', { className: 'wek-builder__integration-checks' } );
+					const choices = resolveCheckboxChoices( field );
+					const checked = Array.isArray( field.value ) ? field.value : [];
+					const checkedSet = {};
+					checked.forEach( function ( id ) {
+						checkedSet[ String( id ) ] = true;
+					} );
+					const ids = Object.keys( choices );
+					if ( ! ids.length ) {
+						control.appendChild(
+							el( 'p', {
+								className: 'description',
+								text:
+									i18n.integrationsNoFields ||
+									'No fields on this form yet.',
+							} )
+						);
+					} else {
+						ids.forEach( function ( id ) {
+							const input = el( 'input', {
+								type: 'checkbox',
+								value: id,
+							} );
+							input.checked = !! checkedSet[ id ];
+							input.addEventListener( 'change', scheduleSave );
+							control.appendChild(
+								el( 'label', { className: 'wek-builder__integration-check' }, [
+									input,
+									document.createTextNode( ' ' + choices[ id ] ),
+								] )
+							);
+						} );
+					}
 				} else if ( field.type === 'textarea' ) {
 					control = el( 'textarea', {
 						className: 'widefat',
@@ -4506,6 +4607,74 @@
 			if ( integ.save && integ.save.url ) {
 				parent.appendChild( status );
 			}
+
+			updatePromptPreviews();
+
+			function updatePromptPreviews() {
+				const meta = integ.meta && typeof integ.meta === 'object' ? integ.meta : {};
+				const prompts = meta.prompts && typeof meta.prompts === 'object' ? meta.prompts : {};
+				const defaultKind = meta.defaultFormKind || 'contact';
+
+				fields.forEach( function ( field ) {
+					if ( ! field || field.type !== 'prompt_override' ) {
+						return;
+					}
+					const ctrl = controls[ field.name ];
+					if ( ! ctrl || ! ctrl._promptPreview ) {
+						return;
+					}
+					const kindName = ctrl._kindField || 'form_kind';
+					const kindCtrl = controls[ kindName ];
+					let kind = kindCtrl && kindCtrl.value != null ? String( kindCtrl.value ) : '';
+					if ( ! kind ) {
+						kind = defaultKind;
+					}
+					const text = prompts[ kind ] || prompts[ defaultKind ] || '';
+					ctrl._promptPreview.textContent = text;
+				} );
+			}
+		}
+
+		function collectSchemaFieldChoices() {
+			const out = {};
+			const skip = { html: true };
+
+			function walk( fields ) {
+				( fields || [] ).forEach( function ( f ) {
+					if ( ! f || ! f.id ) {
+						return;
+					}
+					const type = f.type || '';
+					if ( skip[ type ] ) {
+						return;
+					}
+					const label = ( f.label || f.id ) + ' (' + f.id + ')';
+					out[ f.id ] = label;
+					if ( type === 'repeater' && Array.isArray( f.fields ) ) {
+						walk( f.fields );
+					}
+				} );
+			}
+
+			( schema.sections || [] ).forEach( function ( section ) {
+				walk( section.fields );
+			} );
+			return out;
+		}
+
+		function resolveCheckboxChoices( field ) {
+			let choices =
+				field.choices && typeof field.choices === 'object' ? Object.assign( {}, field.choices ) : {};
+			if ( field.choicesSource === 'formFields' ) {
+				choices = Object.assign( {}, collectSchemaFieldChoices(), choices );
+			}
+			( Array.isArray( field.value ) ? field.value : [] ).forEach( function ( id ) {
+				const key = String( id );
+				if ( key && ! choices[ key ] ) {
+					choices[ key ] = key;
+				}
+			} );
+			return choices;
 		}
 
 		function renderFieldInspector( aside ) {

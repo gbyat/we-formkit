@@ -159,23 +159,15 @@ final class Submissions {
 	 */
 	private static function list_redirect_url( $form_id, array $extra = array() ) {
 		$form_id = (int) $form_id;
-		if ( $form_id > 0 ) {
-			$args = array_merge(
-				array(
-					'page'    => 'we-formkit-form',
-					'form_id' => $form_id,
-					'view'    => 'entries',
-				),
-				$extra
-			);
-			return add_query_arg( $args, admin_url( 'admin.php' ) );
-		}
-		$args = array_merge(
+		$args    = array_merge(
 			array(
 				'page' => 'we-formkit-submissions',
 			),
 			$extra
 		);
+		if ( $form_id > 0 ) {
+			$args['form_id'] = $form_id;
+		}
 		return add_query_arg( $args, admin_url( 'admin.php' ) );
 	}
 
@@ -273,7 +265,7 @@ final class Submissions {
 	}
 
 	/**
-	 * @param int  $form_id  Optional form filter.
+	 * @param int  $form_id  Optional form filter (0 = all forms).
 	 * @param bool $embedded Inside form editor chrome.
 	 * @return void
 	 */
@@ -286,24 +278,47 @@ final class Submissions {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$search = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( (string) $_GET['s'] ) ) : '';
 
+		$form_id      = (int) $form_id;
+		$form_choices = ! $embedded ? self::form_filter_choices() : array();
+
 		$counts = self::count_tabs( $form_id );
 		$query  = self::query_entries( $form_id, $tab, $search );
 
-		$base_args = $form_id > 0
-			? array(
+		if ( $embedded ) {
+			$base_args = array(
 				'page'    => 'we-formkit-form',
-				'form_id' => (int) $form_id,
+				'form_id' => $form_id,
 				'view'    => 'entries',
-			)
-			: array(
+			);
+		} else {
+			$base_args = array(
 				'page' => 'we-formkit-submissions',
 			);
+			if ( $form_id > 0 ) {
+				$base_args['form_id'] = $form_id;
+			}
+		}
 
 		$list_url = add_query_arg( $base_args, admin_url( 'admin.php' ) );
 		?>
 		<?php if ( ! $embedded ) : ?>
 		<div class="wrap wek-admin">
-			<h1><?php esc_html_e( 'Submissions', 'we-formkit' ); ?></h1>
+			<h1><?php esc_html_e( 'Entries', 'we-formkit' ); ?></h1>
+			<p class="description">
+				<?php
+				if ( $form_id > 0 ) {
+					echo esc_html(
+						sprintf(
+							/* translators: %s: form title */
+							__( 'Showing entries for “%s”.', 'we-formkit' ),
+							get_the_title( $form_id ) ? get_the_title( $form_id ) : ( '#' . $form_id )
+						)
+					);
+				} else {
+					esc_html_e( 'All submissions across your forms.', 'we-formkit' );
+				}
+				?>
+			</p>
 		<?php else : ?>
 		<div class="wek-admin__entries-panel wek-admin__entries-panel--wide">
 			<h2><?php esc_html_e( 'Entries', 'we-formkit' ); ?></h2>
@@ -361,14 +376,34 @@ final class Submissions {
 
 		<form method="get" class="wek-entries-search" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
 			<?php foreach ( $base_args as $k => $v ) : ?>
+				<?php if ( 'form_id' === $k && ! $embedded && count( $form_choices ) > 1 ) : ?>
+					<?php continue; ?>
+				<?php endif; ?>
 				<input type="hidden" name="<?php echo esc_attr( $k ); ?>" value="<?php echo esc_attr( (string) $v ); ?>" />
 			<?php endforeach; ?>
 			<input type="hidden" name="tab" value="<?php echo esc_attr( $tab ); ?>" />
+			<?php if ( ! $embedded && count( $form_choices ) > 1 ) : ?>
+				<label class="screen-reader-text" for="wek-entries-form"><?php esc_html_e( 'Form', 'we-formkit' ); ?></label>
+				<select id="wek-entries-form" name="form_id" class="wek-entries-form-filter">
+					<option value="0" <?php selected( $form_id, 0 ); ?>><?php esc_html_e( 'All forms', 'we-formkit' ); ?></option>
+					<?php foreach ( $form_choices as $fid => $ftitle ) : ?>
+						<option value="<?php echo esc_attr( (string) (int) $fid ); ?>" <?php selected( $form_id, (int) $fid ); ?>>
+							<?php echo esc_html( $ftitle ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			<?php endif; ?>
 			<label class="screen-reader-text" for="wek-entries-s"><?php esc_html_e( 'Search entries', 'we-formkit' ); ?></label>
 			<input type="search" id="wek-entries-s" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Search by ID, title, answers, or source URL…', 'we-formkit' ); ?>" />
-			<?php submit_button( __( 'Search', 'we-formkit' ), '', '', false ); ?>
-			<?php if ( '' !== $search ) : ?>
-				<a class="button" href="<?php echo esc_url( add_query_arg( 'tab', $tab, $list_url ) ); ?>"><?php esc_html_e( 'Clear', 'we-formkit' ); ?></a>
+			<?php submit_button( __( 'Filter', 'we-formkit' ), '', '', false ); ?>
+			<?php
+			$show_clear = '' !== $search || ( ! $embedded && $form_id > 0 && count( $form_choices ) > 1 );
+			if ( $show_clear ) :
+				$clear_url = $embedded
+					? add_query_arg( 'tab', $tab, $list_url )
+					: add_query_arg( 'tab', $tab, admin_url( 'admin.php?page=we-formkit-submissions' ) );
+				?>
+				<a class="button" href="<?php echo esc_url( $clear_url ); ?>"><?php esc_html_e( 'Clear', 'we-formkit' ); ?></a>
 			<?php endif; ?>
 		</form>
 
@@ -462,6 +497,33 @@ final class Submissions {
 		</table>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Published forms for the entries filter (id => title).
+	 *
+	 * @return array<int, string>
+	 */
+	private static function form_filter_choices() {
+		$posts = get_posts(
+			array(
+				'post_type'              => Post_Types::FORM,
+				'post_status'            => array( 'publish', 'draft', 'private' ),
+				// phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- admin filter dropdown; capped.
+				'posts_per_page'         => 200,
+				'orderby'                => 'title',
+				'order'                  => 'ASC',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			)
+		);
+		$out = array();
+		foreach ( $posts as $post ) {
+			$title                  = get_the_title( $post );
+			$out[ (int) $post->ID ] = '' !== $title ? $title : ( '#' . (int) $post->ID );
+		}
+		return $out;
 	}
 
 	/**
@@ -793,10 +855,19 @@ final class Submissions {
 			<?php endif; ?>
 
 			<p class="wek-entry-view__nav">
-				<?php if ( $return_form > 0 ) : ?>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $return_form . '&view=entries' ) ); ?>">&larr; <?php esc_html_e( 'Back to form entries', 'we-formkit' ); ?></a>
-				<?php else : ?>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=we-formkit-submissions' ) ); ?>">&larr; <?php esc_html_e( 'Back to submissions', 'we-formkit' ); ?></a>
+				<?php
+				$back_args = array( 'page' => 'we-formkit-submissions' );
+				// Preserve list filter when opened from the global Entries screen.
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$list_filter = isset( $_GET['form_id'] ) ? absint( $_GET['form_id'] ) : 0;
+				if ( $list_filter > 0 ) {
+					$back_args['form_id'] = $list_filter;
+				}
+				?>
+				<a href="<?php echo esc_url( add_query_arg( $back_args, admin_url( 'admin.php' ) ) ); ?>">&larr; <?php esc_html_e( 'Back to entries', 'we-formkit' ); ?></a>
+				<?php if ( $form_id > 0 ) : ?>
+					|
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=we-formkit-form&form_id=' . (int) $form_id . '&view=entries' ) ); ?>"><?php esc_html_e( 'Form entries', 'we-formkit' ); ?></a>
 				<?php endif; ?>
 				|
 				<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=we-formkit-submissions&wek_export_pdf=1&autoprint=1&submission_id=' . (int) $submission_id ), 'wek_export_pdf_' . (int) $submission_id ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Export PDF', 'we-formkit' ); ?></a>

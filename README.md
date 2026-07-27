@@ -35,7 +35,7 @@ No captcha, no foreign CDNs, no jQuery in Formkit assets. Block Editor line only
 
 1. **WE Formkit → Forms** — create a form, edit Fields / Form Settings / Design / Notifications.
 2. Embed with the **Formkit Form** block or `[we_formkit id="123"]` / `[we_formkit slug="my-form"]`.
-3. Entries under **WE Formkit → Submissions**.
+3. Entries under **WE Formkit → Entries** (all forms by default; form filter when you have more than one).
 4. Global defaults under **WE Formkit → Settings**; optional integrations under **Modules**.
 
 ## Development

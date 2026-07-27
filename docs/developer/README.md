@@ -151,13 +151,27 @@ add_filter(
 			'fields'         => array(
 				array(
 					'name'    => 'mode',
-					'type'    => 'select', // select | textarea | text
+					'type'    => 'select', // select | textarea | text | checkboxes
 					'label'   => 'Mode',
 					'value'   => '',
 					'choices' => array(
 						''     => 'Default',
 						'strict' => 'Strict',
 					),
+				),
+				array(
+					'name'          => 'excluded_field_ids',
+					'type'          => 'checkboxes',
+					'label'         => 'Exclude fields',
+					'choicesSource' => 'formFields', // rebuild from live builder schema
+					'value'         => array( 'utm_source' ),
+				),
+				array(
+					'name'      => 'custom_prompt',
+					'type'      => 'prompt_override', // collapsed type prompt + optional override
+					'label'     => 'Prompt for this form',
+					'kindField' => 'mode',
+					'value'     => '',
 				),
 				array(
 					'name'   => 'tags',
@@ -167,6 +181,10 @@ add_filter(
 					'value'  => array( 'a', 'b' ),
 					'rows'   => 3,
 				),
+			),
+			'meta'           => array(
+				'prompts'         => array( 'strict' => 'Be strict…' ),
+				'defaultFormKind' => '',
 			),
 			'save'           => array(
 				'url'    => rest_url( 'my-addon/v1/form-settings' ),

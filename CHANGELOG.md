@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Global Entries screen lists submissions from all forms by default; form dropdown filter appears when more than one form exists.
 - Builder Integrations is generic: filter `we_formkit_builder_integrations` supplies panels (fields + optional REST save). Removed hardcoded Spamfighterin UI from Formkit; add-ons register their own panels.
+- Integrations field type `checkboxes` with optional `choicesSource: formFields` (live builder schema).
+- Integrations field type `prompt_override` (collapsed type-prompt preview + optional per-form override textarea).
 
 ## [1.1.0] - 2026-07-26
 

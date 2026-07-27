@@ -449,6 +449,11 @@ body.wek-scheme-violet .wek-admin {
 	clear: both;
 }
 
+.wek-admin .wek-entries-form-filter {
+	min-width: 12rem;
+	max-width: 20rem;
+}
+
 .wek-admin .wek-entries-search input[type="search"] {
 	min-width: min(100%, 22rem);
 	max-width: 28rem;
@@ -850,8 +855,54 @@ body.wek-builder-is-resizing iframe {
 	align-items: center;
 }
 
-.wek-admin .wek-builder-scope-panel .wek-builder__sfi-status:empty {
+.wek-admin .wek-builder-scope-panel .wek-builder__integration-status:empty {
 	display: none;
+}
+
+.wek-admin .wek-builder__integration-checks {
+	display: grid;
+	gap: 0.35rem;
+	max-height: 14rem;
+	overflow: auto;
+	padding: 0.35rem 0.15rem 0.35rem 0;
+	font-weight: 400;
+}
+
+.wek-admin .wek-builder__integration-check {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.4rem;
+	margin: 0;
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 1.35;
+	color: var(--wek-ink);
+}
+
+.wek-admin .wek-builder__prompt-override {
+	margin: 0.25rem 0 0.5rem;
+}
+
+.wek-admin .wek-builder__prompt-details {
+	margin: 0.35rem 0 0;
+	padding: 0.35rem 0.5rem;
+	border: 1px solid var(--wek-line, #c3c4c7);
+	background: #fff;
+}
+
+.wek-admin .wek-builder__prompt-details summary {
+	cursor: pointer;
+	font-weight: 600;
+	font-size: 12px;
+}
+
+.wek-admin .wek-builder__prompt-preview {
+	white-space: pre-wrap;
+	background: #f6f7f7;
+	padding: 0.5em;
+	border: 1px solid #dcdcde;
+	max-height: 8rem;
+	overflow: auto;
 }
 
 @media (min-width: 1101px) {

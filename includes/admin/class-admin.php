@@ -85,8 +85,8 @@ final class Admin {
 
 		add_submenu_page(
 			'we-formkit',
-			__( 'Submissions', 'we-formkit' ),
-			__( 'Submissions', 'we-formkit' ),
+			__( 'Entries', 'we-formkit' ),
+			__( 'Entries', 'we-formkit' ),
 			'manage_options',
 			'we-formkit-submissions',
 			array( Submissions::class, 'render' )
