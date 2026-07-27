@@ -1871,6 +1871,146 @@
 			return slugifyOptionKey( label, fallback ).slice( 0, 40 );
 		}
 
+		let optionImageFrame = null;
+		let optionImageFrameOnSelect = null;
+
+		/**
+		 * Open Media Library for a radio_image option (images only).
+		 *
+		 * @param {Function} onSelect Callback receiving { id, url }.
+		 */
+		function openOptionImageMedia( onSelect ) {
+			if ( typeof wp === 'undefined' || ! wp.media ) {
+				window.alert(
+					i18n.mediaLibraryMissing ||
+						'Media Library could not be loaded. Please refresh the page.'
+				);
+				return;
+			}
+			optionImageFrameOnSelect = onSelect;
+			if ( optionImageFrame ) {
+				optionImageFrame.open();
+				return;
+			}
+			optionImageFrame = wp.media( {
+				title: i18n.selectImageTitle || 'Select option image',
+				button: { text: i18n.useThisImage || 'Use this image' },
+				library: { type: 'image' },
+				multiple: false,
+			} );
+			optionImageFrame.on( 'select', function () {
+				if ( typeof optionImageFrameOnSelect !== 'function' ) {
+					return;
+				}
+				const file = optionImageFrame.state().get( 'selection' ).first().toJSON();
+				const url =
+					( file.sizes && file.sizes.medium && file.sizes.medium.url ) ||
+					( file.sizes && file.sizes.thumbnail && file.sizes.thumbnail.url ) ||
+					file.url ||
+					'';
+				optionImageFrameOnSelect( {
+					id: parseInt( file.id, 10 ) || 0,
+					url: url,
+				} );
+			} );
+			optionImageFrame.open();
+		}
+
+		/**
+		 * Compact Media Library control for one radio_image option.
+		 *
+		 * @param {Object} field Field.
+		 * @param {number} oIndex Option index.
+		 * @return {HTMLElement}
+		 */
+		function buildOptionImagePicker( field, oIndex ) {
+			const wrap = el( 'div', { className: 'wek-builder__option-image' } );
+			const preview = el( 'div', {
+				className: 'wek-builder__option-image-preview',
+				'aria-hidden': 'true',
+			} );
+			const actions = el( 'div', { className: 'wek-builder__option-image-actions' } );
+
+			function currentId() {
+				const n = parseInt( field.options[ oIndex ].image_id, 10 );
+				return isNaN( n ) ? 0 : n;
+			}
+
+			function currentUrl() {
+				return String( field.options[ oIndex ].image_url || '' );
+			}
+
+			function paintPreview() {
+				preview.textContent = '';
+				const url = currentUrl();
+				const id = currentId();
+				if ( url ) {
+					preview.appendChild(
+						el( 'img', {
+							src: url,
+							alt: '',
+						} )
+					);
+					return;
+				}
+				if ( id > 0 ) {
+					preview.appendChild(
+						el( 'span', {
+							className: 'wek-builder__option-image-id',
+							text: '#' + id,
+						} )
+					);
+					return;
+				}
+				preview.appendChild(
+					el( 'span', {
+						className: 'wek-builder__option-image-empty',
+						text: i18n.noImage || 'No image',
+					} )
+				);
+			}
+
+			const pickBtn = el( 'button', {
+				type: 'button',
+				className: 'button button-small',
+				text: currentId() || currentUrl() ? i18n.changeImage || 'Change image' : i18n.selectImage || 'Select image',
+				onClick: function () {
+					openOptionImageMedia( function ( picked ) {
+						field.options[ oIndex ].image_id = picked.id;
+						field.options[ oIndex ].image_url = picked.url;
+						paintPreview();
+						pickBtn.textContent =
+							picked.id || picked.url
+								? i18n.changeImage || 'Change image'
+								: i18n.selectImage || 'Select image';
+						clearBtn.hidden = ! ( picked.id || picked.url );
+						syncHidden();
+					} );
+				},
+			} );
+			const clearBtn = el( 'button', {
+				type: 'button',
+				className: 'button-link wek-builder__option-image-clear',
+				text: i18n.clearImage || 'Clear image',
+				onClick: function () {
+					field.options[ oIndex ].image_id = 0;
+					field.options[ oIndex ].image_url = '';
+					paintPreview();
+					pickBtn.textContent = i18n.selectImage || 'Select image';
+					clearBtn.hidden = true;
+					syncHidden();
+				},
+			} );
+			clearBtn.hidden = ! ( currentId() || currentUrl() );
+
+			paintPreview();
+			actions.appendChild( pickBtn );
+			actions.appendChild( clearBtn );
+			wrap.appendChild( preview );
+			wrap.appendChild( actions );
+			return wrap;
+		}
+
 		function renderOptionsEditor( field ) {
 			if ( ! Array.isArray( field.options ) ) {
 				field.options = [];
@@ -2031,33 +2171,7 @@
 				row.appendChild( valueInput );
 
 				if ( isRadioImage ) {
-					const imageIdInput = el( 'input', {
-						type: 'number',
-						className: 'small-text',
-						placeholder: 'image_id',
-						value:
-							option.image_id != null && option.image_id !== ''
-								? String( option.image_id )
-								: '',
-						min: '0',
-					} );
-					const imageUrlInput = el( 'input', {
-						type: 'text',
-						className: 'regular-text',
-						placeholder: 'image_url',
-						value: option.image_url || '',
-					} );
-					imageIdInput.addEventListener( 'input', function () {
-						const n = parseInt( imageIdInput.value, 10 );
-						field.options[ oIndex ].image_id = isNaN( n ) ? 0 : n;
-						syncHidden();
-					} );
-					imageUrlInput.addEventListener( 'input', function () {
-						field.options[ oIndex ].image_url = imageUrlInput.value;
-						syncHidden();
-					} );
-					row.appendChild( imageIdInput );
-					row.appendChild( imageUrlInput );
+					row.appendChild( buildOptionImagePicker( field, oIndex ) );
 				}
 
 				row.appendChild( defLabel );

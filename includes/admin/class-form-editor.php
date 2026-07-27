@@ -317,7 +317,7 @@ final class Form_Editor {
 		wp_enqueue_script(
 			'we-formkit-admin-form',
 			WE_FORMKIT_URL . 'assets/js/admin-form-editor.js',
-			array(),
+			array( 'jquery' ),
 			WE_FORMKIT_VERSION,
 			true
 		);
@@ -513,6 +513,13 @@ final class Form_Editor {
 					'optionValueAuto'                => __( 'auto from label', 'we-formkit' ),
 					'optionValueHint'                => __( 'Optional. Leave empty or auto-generated from the label. Edit to set a custom key.', 'we-formkit' ),
 					'optionLabel'                    => __( 'Label', 'we-formkit' ),
+					'selectImage'                    => __( 'Select image', 'we-formkit' ),
+					'changeImage'                    => __( 'Change image', 'we-formkit' ),
+					'clearImage'                     => __( 'Clear image', 'we-formkit' ),
+					'noImage'                        => __( 'No image', 'we-formkit' ),
+					'selectImageTitle'               => __( 'Select option image', 'we-formkit' ),
+					'useThisImage'                   => __( 'Use this image', 'we-formkit' ),
+					'mediaLibraryMissing'            => __( 'Media Library could not be loaded. Please refresh the page.', 'we-formkit' ),
 					'collapseLibrary'                => __( 'Collapse fields library', 'we-formkit' ),
 					'expandLibrary'                  => __( 'Expand fields library', 'we-formkit' ),
 					'collapseSettings'               => __( 'Collapse field settings', 'we-formkit' ),

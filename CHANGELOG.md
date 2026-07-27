@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Radio Image options: Media Library picker (select/change/clear + thumbnail) instead of raw image ID/URL fields.
+- PDF export settings (Formkit Settings): header/footer WYSIWYG, page numbers, site name toggle, A4/Letter — applied to printable entry export; server PDF (TCPDF) next.
 - Global Entries screen lists submissions from all forms by default; form dropdown filter appears when more than one form exists.
 - Builder Integrations is generic: filter `we_formkit_builder_integrations` supplies panels (fields + optional REST save). Removed hardcoded Spamfighterin UI from Formkit; add-ons register their own panels.
 - Integrations field type `checkboxes` with optional `choicesSource: formFields` (live builder schema).

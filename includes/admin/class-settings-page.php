@@ -464,6 +464,92 @@ final class Settings_Page {
 						</td>
 					</tr>
 					<tr>
+						<th colspan="2"><h2 class="title" style="margin:1.5rem 0 0;"><?php esc_html_e( 'PDF export', 'we-formkit' ); ?></h2></th>
+					</tr>
+					<tr>
+						<th><label for="wek_pdf_paper_size"><?php esc_html_e( 'Paper size', 'we-formkit' ); ?></label></th>
+						<td>
+							<select name="wek_settings[pdf_paper_size]" id="wek_pdf_paper_size">
+								<option value="A4" <?php selected( (string) ( $settings['pdf_paper_size'] ?? 'A4' ), 'A4' ); ?>><?php esc_html_e( 'A4', 'we-formkit' ); ?></option>
+								<option value="Letter" <?php selected( (string) ( $settings['pdf_paper_size'] ?? 'A4' ), 'Letter' ); ?>><?php esc_html_e( 'US Letter', 'we-formkit' ); ?></option>
+							</select>
+							<p class="description"><?php esc_html_e( 'Used for printable entry exports and the upcoming server PDF download.', 'we-formkit' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Document chrome', 'we-formkit' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="wek_settings[pdf_show_site_name]" value="1" <?php checked( ! empty( $settings['pdf_show_site_name'] ) ); ?> />
+								<?php esc_html_e( 'Show site name above the form title', 'we-formkit' ); ?>
+							</label>
+							<br />
+							<label>
+								<input type="checkbox" name="wek_settings[pdf_page_numbers]" value="1" <?php checked( ! empty( $settings['pdf_page_numbers'] ) ); ?> />
+								<?php esc_html_e( 'Show page numbers in the footer', 'we-formkit' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'Page numbers print reliably in the server PDF. Browser print support varies.', 'we-formkit' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="wek_pdf_header"><?php esc_html_e( 'Header', 'we-formkit' ); ?></label></th>
+						<td>
+							<div class="wek-email-footer-editor">
+								<?php
+								wp_editor(
+									(string) ( $settings['pdf_header'] ?? '' ),
+									'wek_pdf_header',
+									array(
+										'textarea_name' => 'wek_settings[pdf_header]',
+										'textarea_rows' => 4,
+										'media_buttons' => false,
+										'teeny'         => false,
+										'quicktags'     => true,
+										'editor_height' => 120,
+										'editor_class'  => 'wek-email-footer-editor__field',
+										'tinymce'       => array(
+											'toolbar1'    => 'bold,italic,underline,link,unlink,undo,redo,removeformat',
+											'toolbar2'    => '',
+											'content_css' => false,
+											'block_formats' => 'Paragraph=p',
+										),
+									)
+								);
+								?>
+							</div>
+							<p class="description"><?php esc_html_e( 'Optional block at the top of every exported entry (logo text, address, clinic letterhead).', 'we-formkit' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="wek_pdf_footer"><?php esc_html_e( 'Footer', 'we-formkit' ); ?></label></th>
+						<td>
+							<div class="wek-email-footer-editor">
+								<?php
+								wp_editor(
+									(string) ( $settings['pdf_footer'] ?? '' ),
+									'wek_pdf_footer',
+									array(
+										'textarea_name' => 'wek_settings[pdf_footer]',
+										'textarea_rows' => 4,
+										'media_buttons' => false,
+										'teeny'         => false,
+										'quicktags'     => true,
+										'editor_height' => 120,
+										'editor_class'  => 'wek-email-footer-editor__field',
+										'tinymce'       => array(
+											'toolbar1'    => 'bold,italic,underline,link,unlink,undo,redo,removeformat',
+											'toolbar2'    => '',
+											'content_css' => false,
+											'block_formats' => 'Paragraph=p',
+										),
+									)
+								);
+								?>
+							</div>
+							<p class="description"><?php esc_html_e( 'Optional block at the bottom (legal line, contact). Page numbers are separate.', 'we-formkit' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th colspan="2"><h2 class="title" style="margin:1.5rem 0 0;"><?php esc_html_e( 'Validation', 'we-formkit' ); ?></h2></th>
 					</tr>
 					<tr>

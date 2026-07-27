@@ -51,7 +51,49 @@ final class Settings {
 			'spam_rate_limit'          => true,
 			'spam_rate_max'            => 8,
 			'spam_store_ip_hash'       => true,
+			'pdf_header'               => '',
+			'pdf_footer'               => '',
+			'pdf_page_numbers'         => true,
+			'pdf_show_site_name'       => true,
+			'pdf_paper_size'           => 'A4',
 		);
+	}
+
+	/**
+	 * PDF export options (global).
+	 *
+	 * @return array{
+	 *   header:string,
+	 *   footer:string,
+	 *   page_numbers:bool,
+	 *   show_site_name:bool,
+	 *   paper_size:string
+	 * }
+	 */
+	public static function pdf_options() {
+		$settings = self::get();
+		$size     = isset( $settings['pdf_paper_size'] ) ? (string) $settings['pdf_paper_size'] : 'A4';
+		if ( ! in_array( $size, array( 'A4', 'Letter' ), true ) ) {
+			$size = 'A4';
+		}
+
+		return array(
+			'header'         => isset( $settings['pdf_header'] ) ? (string) $settings['pdf_header'] : '',
+			'footer'         => isset( $settings['pdf_footer'] ) ? (string) $settings['pdf_footer'] : '',
+			'page_numbers'   => ! empty( $settings['pdf_page_numbers'] ),
+			'show_site_name' => ! array_key_exists( 'pdf_show_site_name', $settings ) || ! empty( $settings['pdf_show_site_name'] ),
+			'paper_size'     => $size,
+		);
+	}
+
+	/**
+	 * Sanitized HTML for PDF header/footer blocks.
+	 *
+	 * @param string $html Stored HTML.
+	 * @return string
+	 */
+	public static function prepare_pdf_html( $html ) {
+		return self::prepare_email_html( $html );
 	}
 
 	/**
@@ -375,6 +417,13 @@ final class Settings {
 		$rate_max                  = isset( $input['spam_rate_max'] ) ? (int) $input['spam_rate_max'] : 8;
 		$out['spam_rate_max']      = max( 1, min( 100, $rate_max ) );
 		$out['spam_store_ip_hash'] = ! empty( $input['spam_store_ip_hash'] );
+
+		$out['pdf_header']         = isset( $input['pdf_header'] ) ? wp_kses_post( (string) $input['pdf_header'] ) : '';
+		$out['pdf_footer']         = isset( $input['pdf_footer'] ) ? wp_kses_post( (string) $input['pdf_footer'] ) : '';
+		$out['pdf_page_numbers']   = ! empty( $input['pdf_page_numbers'] );
+		$out['pdf_show_site_name'] = ! empty( $input['pdf_show_site_name'] );
+		$paper                     = isset( $input['pdf_paper_size'] ) ? sanitize_text_field( (string) $input['pdf_paper_size'] ) : 'A4';
+		$out['pdf_paper_size']     = in_array( $paper, array( 'A4', 'Letter' ), true ) ? $paper : 'A4';
 
 		update_option( self::DELETE_DATA_OPTION, $out['delete_data_on_uninstall'] );
 
