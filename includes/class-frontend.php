@@ -1056,7 +1056,9 @@ final class Frontend {
 									<?php else : ?>
 										<span class="we-formkit__choice-image-placeholder" aria-hidden="true"></span>
 									<?php endif; ?>
-									<span class="we-formkit__choice-check" aria-hidden="true"></span>
+									<?php if ( 'frame' === $ri_style ) : ?>
+										<span class="we-formkit__choice-check" aria-hidden="true"></span>
+									<?php endif; ?>
 								</span>
 								<span class="we-formkit__choice-meta">
 									<input
@@ -1064,6 +1066,7 @@ final class Frontend {
 										id="<?php echo esc_attr( $oid ); ?>"
 										name="<?php echo esc_attr( $id ); ?>"
 										value="<?php echo esc_attr( $option['value'] ); ?>"
+										<?php echo 'frame' === $ri_style ? 'class="we-formkit__sr-only"' : ''; ?>
 										<?php echo $req ? 'required' : ''; ?>
 										<?php checked( $is_def ); ?>
 									/>
