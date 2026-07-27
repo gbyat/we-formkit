@@ -2370,9 +2370,29 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 
 	.we-formkit__matrix-cell--number,
 	.we-formkit__matrix-cell--text,
-	.we-formkit__matrix-cell--radio,
 	.we-formkit__matrix-cell--checkbox {
 		flex: 1 1 100%;
+	}
+
+	/*
+	 * Radio columns: keep Option A/B on one wrapped row under the column title
+	 * (display:contents lets the group label span full width without forcing
+	 * the first option onto its own full-width card).
+	 */
+	.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start {
+		display: contents;
+	}
+
+	.we-formkit__matrix-cell--radio:not(.we-formkit__matrix-cell--group-start) {
+		flex: 1 1 calc(50% - 0.35rem);
+		min-width: min(100%, 8.5rem);
+		max-width: 100%;
+	}
+
+	.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start .we-formkit__matrix-choice {
+		flex: 1 1 calc(50% - 0.35rem);
+		min-width: min(100%, 8.5rem);
+		max-width: 100%;
 	}
 
 	.we-formkit__matrix-mobile-label,
@@ -2383,10 +2403,22 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 
 	.we-formkit__matrix-mobile-group {
 		display: block;
+		flex: 1 1 100%;
+		width: 100%;
 		font-weight: 600;
 		font-size: var(--wek-font-label);
-		margin: 0.15rem 0 0.35rem;
+		margin: 0.45rem 0 0.2rem;
+		padding-top: 0.45rem;
+		border-top: 1px solid var(--wek-line);
 		color: var(--wek-ink);
+	}
+
+	/* First column group under the row title — no extra rule above Spalte 1. */
+	.we-formkit__matrix th.we-formkit__matrix-row-label + .we-formkit__matrix-cell--select + .we-formkit__matrix-cell--group-start .we-formkit__matrix-mobile-group,
+	.we-formkit__matrix th.we-formkit__matrix-row-label + .we-formkit__matrix-cell--group-start .we-formkit__matrix-mobile-group {
+		margin-top: 0;
+		padding-top: 0;
+		border-top: 0;
 	}
 
 	.we-formkit__matrix-mobile-label {
@@ -2404,24 +2436,25 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 		overflow-wrap: break-word;
 	}
 
-	.we-formkit__matrix-cell--radio,
 	.we-formkit__matrix-cell--checkbox {
 		display: block;
 		width: 100%;
 	}
 
 	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice,
+	.we-formkit__matrix-cell--radio.we-formkit__matrix-cell--group-start .we-formkit__matrix-choice,
 	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice {
 		display: flex;
 		justify-content: flex-start;
-		align-items: flex-start;
+		align-items: center;
 		width: 100%;
 		box-sizing: border-box;
-		padding: 0.55rem 0.65rem;
+		padding: 0.45rem 0.55rem;
 		border: 1px solid var(--wek-line);
 		border-radius: var(--wek-radius-input, 8px);
 		background: var(--wek-accent-soft);
-		min-height: 2.5rem;
+		min-height: 2.35rem;
+		gap: 0.45rem;
 	}
 
 	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice:has(:checked),
@@ -2432,7 +2465,8 @@ body .we-formkit .we-formkit__checkboxes-add-other:disabled,
 
 	.we-formkit__matrix-cell--radio .we-formkit__matrix-choice input,
 	.we-formkit__matrix-cell--checkbox .we-formkit__matrix-choice input {
-		margin-top: 0.2rem;
+		margin-top: 0;
+		align-self: center;
 	}
 
 	.we-formkit__matrix-input-wrap {
