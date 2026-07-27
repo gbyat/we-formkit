@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Field setting “Show on frontend”: park a field without deleting it (kept in builder, skipped on frontend and validation).
 - Radio Image: option placement (under/beside/above), frame+checkmark selection style (radio properly hidden), desktop columns fixed; builder accordion headers share the same padding.
 - Matrix on narrow screens: radio options within a column are equal-width side-by-side; stack full-width on very small viewports.
 - Radio Image: card layout (image above, radio + label below), thumbnail/medium size + desktop columns, hover lift/shadow + light image zoom; Media Library picker for options.

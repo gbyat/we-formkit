@@ -199,6 +199,9 @@ class Repeater_Field extends Abstract_Field_Type {
 				if ( '' === $cid ) {
 					continue;
 				}
+				if ( ! Form_Schema::is_field_enabled( $child ) ) {
+					continue;
+				}
 
 				$type = $registry ? $registry->get( (string) ( $child['type'] ?? 'text' ) ) : null;
 				$raw  = array_key_exists( $cid, $row ) ? $row[ $cid ] : null;
@@ -287,6 +290,9 @@ class Repeater_Field extends Abstract_Field_Type {
 				$cid  = (string) ( $child['id'] ?? '' );
 				$type = $registry ? $registry->get( (string) ( $child['type'] ?? 'text' ) ) : null;
 				if ( '' === $cid || null === $type || ! $type->stores_value() ) {
+					continue;
+				}
+				if ( ! Form_Schema::is_field_enabled( $child ) ) {
 					continue;
 				}
 

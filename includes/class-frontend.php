@@ -761,6 +761,10 @@ final class Frontend {
 	 * @return void
 	 */
 	private static function render_field( array $field, $privacy_url ) {
+		if ( ! Form_Schema::is_field_enabled( $field ) ) {
+			return;
+		}
+
 		$field    = Url_Prefill::apply( $field, self::$prefill );
 		$id       = $field['id'];
 		$type     = $field['type'];
@@ -1751,7 +1755,12 @@ final class Frontend {
 		<div class="we-formkit__repeater-row" data-wek-repeater-row>
 			<div class="we-formkit__repeater-fields">
 				<?php foreach ( $item_fields as $child ) : ?>
-					<?php self::render_repeater_control( $parent_id, $child, $index_str ); ?>
+					<?php
+					if ( ! is_array( $child ) || ! Form_Schema::is_field_enabled( $child ) ) {
+						continue;
+					}
+					self::render_repeater_control( $parent_id, $child, $index_str );
+					?>
 				<?php endforeach; ?>
 			</div>
 			<button

@@ -2107,6 +2107,35 @@ body.wek-builder-is-resizing iframe {
 	box-shadow: 0 0 0 1px var(--wek-accent);
 }
 
+.wek-admin .wek-builder__field.is-parked {
+	opacity: 0.62;
+	background: repeating-linear-gradient(
+		-45deg,
+		transparent,
+		transparent 6px,
+		rgba(0, 0, 0, 0.03) 6px,
+		rgba(0, 0, 0, 0.03) 12px
+	);
+}
+
+.wek-admin .wek-builder__field.is-parked.is-selected {
+	opacity: 1;
+}
+
+.wek-admin .wek-builder__field-parked {
+	display: inline-block;
+	margin-left: 0.4rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--wek-muted, #646970) 18%, transparent);
+	color: var(--wek-muted, #646970);
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	vertical-align: middle;
+}
+
 .wek-admin .wek-builder__field-toolbar {
 	display: none;
 	position: absolute;

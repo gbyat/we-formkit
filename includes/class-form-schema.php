@@ -407,6 +407,16 @@ final class Form_Schema {
 	}
 
 	/**
+	 * Whether a field is active on the frontend (default true for legacy schemas).
+	 *
+	 * @param array<string, mixed> $field Field config.
+	 * @return bool
+	 */
+	public static function is_field_enabled( array $field ): bool {
+		return ! array_key_exists( 'enabled', $field ) || ! empty( $field['enabled'] );
+	}
+
+	/**
 	 * First email field ID in schema order, or empty string.
 	 *
 	 * @param array<string, mixed> $schema Schema.
@@ -1093,6 +1103,9 @@ final class Form_Schema {
 			foreach ( $section['fields'] as $field ) {
 				$id = isset( $field['id'] ) ? (string) $field['id'] : '';
 				if ( '' === $id ) {
+					continue;
+				}
+				if ( ! self::is_field_enabled( $field ) ) {
 					continue;
 				}
 				if ( ! Conditional::is_visible( $field['show_when'] ?? null, $values ) ) {

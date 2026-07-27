@@ -464,6 +464,9 @@ final class Rest_Api {
 			if ( empty( $field['type'] ) || 'upload' !== $field['type'] ) {
 				continue;
 			}
+			if ( ! Form_Schema::is_field_enabled( $field ) ) {
+				continue;
+			}
 
 			$type_obj = $registry ? $registry->get( 'upload' ) : null;
 			if ( ! $type_obj instanceof Upload_Field ) {

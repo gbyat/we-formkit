@@ -476,6 +476,31 @@
 			);
 		}
 
+		/**
+		 * Whether a field is shown on the frontend (default true).
+		 *
+		 * @param {Object|null} field Field config.
+		 * @return {boolean}
+		 */
+		function isFieldEnabled( field ) {
+			return ! field || field.enabled !== false;
+		}
+
+		/**
+		 * Extra card classes for parked/repeater/nested fields.
+		 *
+		 * @param {Object} field Field.
+		 * @param {string} [extra] Extra classes.
+		 * @return {string}
+		 */
+		function fieldCardExtraClass( field, extra ) {
+			let out = extra ? ' ' + String( extra ).trim() : '';
+			if ( ! isFieldEnabled( field ) ) {
+				out += ' is-parked';
+			}
+			return out;
+		}
+
 		function applyFieldWidthToCard( field, width ) {
 			field.width = normalizeWidth( width );
 			const selectedNow = getSelected();
@@ -488,13 +513,16 @@
 				const isSelected = card.classList.contains( 'is-selected' );
 				card.className =
 					widthClass( field.width, isSelected ) +
-					( card.className.indexOf( 'wek-builder__field--repeater' ) !== -1 ||
-					field.type === 'repeater'
-						? ' wek-builder__field--repeater'
-						: '' ) +
-					( card.className.indexOf( 'wek-builder__field--nested' ) !== -1
-						? ' wek-builder__field--nested'
-						: '' );
+					fieldCardExtraClass(
+						field,
+						( card.className.indexOf( 'wek-builder__field--repeater' ) !== -1 ||
+						field.type === 'repeater'
+							? 'wek-builder__field--repeater'
+							: '' ) +
+							( card.className.indexOf( 'wek-builder__field--nested' ) !== -1
+								? ' wek-builder__field--nested'
+								: '' )
+					);
 			}
 			const picker = ui.aside
 				? ui.aside.querySelector( '.wek-builder__columns' )
@@ -729,6 +757,7 @@
 				label: ( typeMeta && typeMeta.label ) || i18n.field || 'Field',
 				help: '',
 				required: false,
+				enabled: true,
 				show_label: typeId === 'checkbox' || typeId === 'consent' ? false : true,
 				css_class: '',
 				placeholder: '',
@@ -1586,6 +1615,17 @@
 						title: i18n.required || 'Required',
 						'aria-label': i18n.required || 'Required',
 						text: '*',
+					} )
+				);
+			}
+			if ( field && ! isFieldEnabled( field ) ) {
+				wrap.appendChild(
+					el( 'span', {
+						className: 'wek-builder__field-parked',
+						title:
+							i18n.showOnFrontendHint ||
+							'Hidden on the frontend. Turn on “Show on frontend” to use it again.',
+						text: i18n.parkedBadge || 'Hidden',
 					} )
 				);
 			}
@@ -5166,6 +5206,29 @@
 					ensureMatrixOptions( field );
 					syncMatrixRequiredFlag( field );
 				}
+
+				if ( typeof field.enabled === 'undefined' ) {
+					field.enabled = true;
+				}
+				const enabled = el( 'input', { type: 'checkbox' } );
+				enabled.checked = isFieldEnabled( field );
+				enabled.addEventListener( 'change', function () {
+					field.enabled = !! enabled.checked;
+					syncHidden();
+					render();
+				} );
+				panel.appendChild(
+					toggleRow( i18n.showOnFrontend || 'Show on frontend', enabled )
+				);
+				panel.appendChild(
+					el( 'p', {
+						className: 'description',
+						text:
+							i18n.showOnFrontendHint ||
+							'Turn off to hide this field on the frontend without deleting it. All settings stay intact.',
+					} )
+				);
+
 				panel.appendChild( renderValidationMessagesEditor( field ) );
 
 				if ( shouldShowPlaceholder( field.type ) ) {
@@ -6408,7 +6471,9 @@
 				selection.fIndex === fIndex &&
 				selection.nIndex === nIndex;
 			const card = el( 'div', {
-				className: widthClass( child.width, selected ) + ' wek-builder__field--nested',
+				className:
+					widthClass( child.width, selected ) +
+					fieldCardExtraClass( child, 'wek-builder__field--nested' ),
 				'data-s': String( sIndex ),
 				'data-f': String( fIndex ),
 				'data-n': String( nIndex ),
@@ -6534,7 +6599,9 @@
 				selection.sIndex === sIndex &&
 				selection.fIndex === fIndex;
 			const card = el( 'div', {
-				className: widthClass( field.width, selected ) + ' wek-builder__field--repeater',
+				className:
+					widthClass( field.width, selected ) +
+					fieldCardExtraClass( field, 'wek-builder__field--repeater' ),
 				'data-s': String( sIndex ),
 				'data-f': String( fIndex ),
 				'data-repeater': '1',
@@ -6664,7 +6731,7 @@
 			const memberId = packGroupId( field );
 			const run = memberId ? getPackRun( section.fields || [], fIndex ) : null;
 			const cardAttrs = {
-				className: widthClass( field.width, selected ),
+				className: widthClass( field.width, selected ) + fieldCardExtraClass( field ),
 				'data-s': String( sIndex ),
 				'data-f': String( fIndex ),
 				tabindex: '0',
