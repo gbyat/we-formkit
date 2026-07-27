@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Matrix on narrow screens: radio options within a column sit side-by-side under the column label (less vertical stacking).
+- Matrix on narrow screens: radio options within a column are equal-width side-by-side; stack full-width on very small viewports.
 - Radio Image: card layout (image above, radio + label below), thumbnail/medium size + desktop columns, hover lift/shadow + light image zoom; Media Library picker for options.
 - PDF export settings (Formkit Settings): header/footer WYSIWYG, page numbers, site name toggle, A4/Letter — applied to printable entry export; server PDF (TCPDF) next.
 - Global Entries screen lists submissions from all forms by default; form dropdown filter appears when more than one form exists.
