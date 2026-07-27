@@ -1003,6 +1003,20 @@ final class Frontend {
 				}
 				$ri_cols = isset( $ri_opts['columns'] ) ? (int) $ri_opts['columns'] : 2;
 				$ri_cols = max( 1, min( 4, $ri_cols ) );
+				$ri_pos  = isset( $ri_opts['option_position'] ) ? sanitize_key( (string) $ri_opts['option_position'] ) : 'below';
+				if ( ! in_array( $ri_pos, array( 'below', 'beside', 'above' ), true ) ) {
+					$ri_pos = 'below';
+				}
+				$ri_style = isset( $ri_opts['select_style'] ) ? sanitize_key( (string) $ri_opts['select_style'] ) : 'radio';
+				if ( ! in_array( $ri_style, array( 'radio', 'frame' ), true ) ) {
+					$ri_style = 'radio';
+				}
+				$ri_classes = array(
+					'we-formkit__choices',
+					'we-formkit__choices--images',
+					'we-formkit__choices--images-layout-' . $ri_pos,
+					'we-formkit__choices--images-select-' . $ri_style,
+				);
 				?>
 				<fieldset class="we-formkit__fieldset">
 					<legend class="<?php echo esc_attr( self::label_classes( $field ) ); ?>">
@@ -1016,7 +1030,7 @@ final class Frontend {
 						<p class="we-formkit__help" id="<?php echo esc_attr( $desc_id ); ?>"><?php echo esc_html( $field['help'] ); ?></p>
 					<?php endif; ?>
 					<div
-						class="we-formkit__choices we-formkit__choices--images"
+						class="<?php echo esc_attr( implode( ' ', $ri_classes ) ); ?>"
 						style="<?php echo esc_attr( '--wek-image-cols: ' . (string) $ri_cols . ';' ); ?>"
 						role="group"
 						aria-describedby="<?php echo esc_attr( $desc_id . ' ' . $error_id ); ?>"
@@ -1042,6 +1056,7 @@ final class Frontend {
 									<?php else : ?>
 										<span class="we-formkit__choice-image-placeholder" aria-hidden="true"></span>
 									<?php endif; ?>
+									<span class="we-formkit__choice-check" aria-hidden="true"></span>
 								</span>
 								<span class="we-formkit__choice-meta">
 									<input

@@ -49,6 +49,12 @@ class Radio_Image_Field extends Abstract_Field_Type {
 		$cols                             = isset( $field['type_options']['columns'] ) ? (int) $field['type_options']['columns'] : 2;
 		$field['type_options']['columns'] = max( 1, min( 4, $cols ) );
 
+		$pos                                      = isset( $field['type_options']['option_position'] ) ? sanitize_key( (string) $field['type_options']['option_position'] ) : 'below';
+		$field['type_options']['option_position'] = in_array( $pos, array( 'below', 'beside', 'above' ), true ) ? $pos : 'below';
+
+		$style                                 = isset( $field['type_options']['select_style'] ) ? sanitize_key( (string) $field['type_options']['select_style'] ) : 'radio';
+		$field['type_options']['select_style'] = in_array( $style, array( 'radio', 'frame' ), true ) ? $style : 'radio';
+
 		if ( isset( $field['type_options']['options'] ) ) {
 			$field['type_options']['options'] = $this->normalize_image_options( $field['type_options']['options'] );
 		}

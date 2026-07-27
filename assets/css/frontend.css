@@ -937,12 +937,29 @@ body .we-formkit .we-formkit__checkboxes-custom-actions {
 		transform 0.2s ease;
 }
 
+.we-formkit__choices--images-layout-above .we-formkit__choice--image {
+	flex-direction: column-reverse;
+}
+
+.we-formkit__choices--images-layout-beside .we-formkit__choice--image {
+	flex-direction: row;
+	align-items: center;
+}
+
 .we-formkit__choice-media {
 	display: block;
+	position: relative;
 	overflow: hidden;
 	border-radius: calc(var(--wek-radius-input) - 2px);
 	background: color-mix(in srgb, var(--wek-line) 55%, var(--wek-surface));
 	aspect-ratio: 4 / 3;
+	order: 1;
+}
+
+.we-formkit__choices--images-layout-beside .we-formkit__choice-media {
+	flex: 0 0 42%;
+	max-width: 9.5rem;
+	aspect-ratio: 1;
 }
 
 .we-formkit__choice-image {
@@ -964,12 +981,22 @@ body .we-formkit .we-formkit__checkboxes-custom-actions {
 		color-mix(in srgb, var(--wek-line) 40%, var(--wek-surface));
 }
 
+.we-formkit__choice-check {
+	display: none;
+}
+
 .we-formkit__choice-meta {
 	display: flex;
 	align-items: center;
 	gap: 0.55rem;
 	padding: 0 0.15rem 0.15rem;
 	min-width: 0;
+	order: 2;
+}
+
+.we-formkit__choices--images-layout-beside .we-formkit__choice-meta {
+	flex: 1 1 auto;
+	padding: 0;
 }
 
 .we-formkit__choice--image input[type="radio"] {
@@ -991,6 +1018,78 @@ body .we-formkit .we-formkit__checkboxes-custom-actions {
 	.we-formkit__choices--images {
 		grid-template-columns: repeat(var(--wek-image-cols, 2), minmax(0, 1fr));
 	}
+}
+
+/* Small screens: always label under image (readable cards). */
+@media (max-width: 639px) {
+	.we-formkit__choices--images .we-formkit__choice--image,
+	.we-formkit__choices--images-layout-above .we-formkit__choice--image,
+	.we-formkit__choices--images-layout-beside .we-formkit__choice--image {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.we-formkit__choices--images .we-formkit__choice-media {
+		flex: none;
+		max-width: none;
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		order: 1;
+	}
+
+	.we-formkit__choices--images .we-formkit__choice-meta {
+		order: 2;
+		flex: none;
+		padding: 0 0.15rem 0.15rem;
+	}
+}
+
+/* Frame selection: hide radio, highlight image + checkmark. */
+.we-formkit__choices--images-select-frame .we-formkit__choice-meta input[type="radio"] {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.we-formkit__choices--images-select-frame .we-formkit__choice-check {
+	display: none;
+	position: absolute;
+	top: 0.45rem;
+	right: 0.45rem;
+	width: 1.45rem;
+	height: 1.45rem;
+	border-radius: 50%;
+	background: var(--wek-accent);
+	box-shadow: 0 1px 4px color-mix(in srgb, var(--wek-ink) 25%, transparent);
+	z-index: 1;
+}
+
+.we-formkit__choices--images-select-frame .we-formkit__choice-check::after {
+	content: "";
+	position: absolute;
+	left: 0.42rem;
+	top: 0.28rem;
+	width: 0.35rem;
+	height: 0.65rem;
+	border: solid #fff;
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg);
+}
+
+.we-formkit__choices--images-select-frame .we-formkit__choice--image:has(:checked) .we-formkit__choice-media {
+	box-shadow:
+		inset 0 0 0 2px var(--wek-accent),
+		0 0 0 3px color-mix(in srgb, var(--wek-accent) 28%, transparent);
+}
+
+.we-formkit__choices--images-select-frame .we-formkit__choice--image:has(:checked) .we-formkit__choice-check {
+	display: block;
 }
 
 .we-formkit__choice--image:hover {
@@ -1015,6 +1114,10 @@ body .we-formkit .we-formkit__checkboxes-custom-actions {
 
 .we-formkit__choice--image:has(:checked) .we-formkit__choice-image {
 	transform: scale(1);
+}
+
+.we-formkit__choices--images-select-frame .we-formkit__choice--image:has(:checked) {
+	box-shadow: none;
 }
 
 .we-formkit__choice--image:has(:focus-visible) {
@@ -2534,8 +2637,12 @@ body .we-formkit .we-formkit__choices {
 }
 
 @media (min-width: 640px) {
-	body .we-formkit .we-formkit__choices {
+	body .we-formkit .we-formkit__choices:not(.we-formkit__choices--images) {
 		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+
+	body .we-formkit .we-formkit__choices--images {
+		grid-template-columns: repeat(var(--wek-image-cols, 2), minmax(0, 1fr)) !important;
 	}
 }
 
@@ -2558,6 +2665,32 @@ body .we-formkit .we-formkit__field .we-formkit__control--choice {
 	min-height: 0 !important;
 }
 
+/* Radio image cards: keep structured layout (not generic choice row). */
+body .we-formkit .we-formkit__field label.we-formkit__choice--image {
+	flex-direction: column !important;
+	align-items: stretch !important;
+	gap: 0.65rem !important;
+	padding: 0.55rem !important;
+}
+
+body .we-formkit .we-formkit__choices--images-layout-above label.we-formkit__choice--image {
+	flex-direction: column-reverse !important;
+}
+
+body .we-formkit .we-formkit__choices--images-layout-beside label.we-formkit__choice--image {
+	flex-direction: row !important;
+	align-items: center !important;
+}
+
+@media (max-width: 639px) {
+	body .we-formkit .we-formkit__choices--images label.we-formkit__choice--image,
+	body .we-formkit .we-formkit__choices--images-layout-above label.we-formkit__choice--image,
+	body .we-formkit .we-formkit__choices--images-layout-beside label.we-formkit__choice--image {
+		flex-direction: column !important;
+		align-items: stretch !important;
+	}
+}
+
 body .we-formkit .we-formkit__privacy-link {
 	display: inline !important;
 	font-size: inherit !important;
@@ -2568,8 +2701,8 @@ body .we-formkit .we-formkit__privacy-link {
 	padding: 0 !important;
 }
 
-body .we-formkit .we-formkit__choice > span,
-body .we-formkit label.we-formkit__choice span,
+body .we-formkit .we-formkit__choice:not(.we-formkit__choice--image) > span,
+body .we-formkit label.we-formkit__choice:not(.we-formkit__choice--image) > span,
 body .we-formkit .we-formkit__control--choice label {
 	color: var(--wek-ink);
 	display: flex !important;
@@ -2578,6 +2711,31 @@ body .we-formkit .we-formkit__control--choice label {
 	padding: 0 !important;
 	line-height: 1.25 !important;
 	min-height: 1.15rem;
+}
+
+body .we-formkit label.we-formkit__choice--image > .we-formkit__choice-media {
+	display: block !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	min-height: 0 !important;
+	align-items: unset !important;
+}
+
+body .we-formkit label.we-formkit__choice--image > .we-formkit__choice-meta {
+	display: flex !important;
+	align-items: center !important;
+	margin: 0 !important;
+	padding: 0 0.15rem 0.15rem !important;
+	min-height: 0 !important;
+	line-height: 1.35 !important;
+}
+
+body .we-formkit label.we-formkit__choice--image .we-formkit__choice-text {
+	display: block !important;
+	align-items: unset !important;
+	min-height: 0 !important;
+	padding: 0 !important;
+	margin: 0 !important;
 }
 
 /* Consent: label is multi-line copy with inline {link} — must not be a flex row. */

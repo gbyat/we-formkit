@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Radio Image: option placement (under/beside/above), frame+checkmark selection style, desktop columns fixed (were overridden to 2).
 - Matrix on narrow screens: radio options within a column are equal-width side-by-side; stack full-width on very small viewports.
 - Radio Image: card layout (image above, radio + label below), thumbnail/medium size + desktop columns, hover lift/shadow + light image zoom; Media Library picker for options.
 - PDF export settings (Formkit Settings): header/footer WYSIWYG, page numbers, site name toggle, A4/Letter — applied to printable entry export; server PDF (TCPDF) next.

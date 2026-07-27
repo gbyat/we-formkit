@@ -686,6 +686,8 @@
 			if ( typeId === 'radio_image' ) {
 				typeOptions.image_size = 'medium';
 				typeOptions.columns = 2;
+				typeOptions.option_position = 'below';
+				typeOptions.select_style = 'radio';
 			}
 			if ( typeId === 'matrix' ) {
 				typeOptions.row_select = true;
@@ -3943,13 +3945,19 @@
 			if ( opts.columns == null || opts.columns === '' ) {
 				opts.columns = 2;
 			}
+			if ( ! opts.option_position ) {
+				opts.option_position = 'below';
+			}
+			if ( ! opts.select_style ) {
+				opts.select_style = 'radio';
+			}
 			const body = el( 'div', { className: 'wek-builder__radio-image-display' } );
 			body.appendChild(
 				el( 'p', {
 					className: 'description',
 					text:
 						i18n.radioImageDisplayHint ||
-						'Image size uses WordPress media sizes (not full resolution). Columns apply from tablet width up; phones stay single-column.',
+						'Image size uses WordPress media sizes (not full resolution). Columns apply from tablet width up; phones stay single-column with the label under the image.',
 				} )
 			);
 			body.appendChild(
@@ -3979,6 +3987,43 @@
 							syncHidden();
 						},
 						{ min: '1', max: '4', step: '1' }
+					)
+				)
+			);
+			body.appendChild(
+				fieldRow(
+					i18n.radioImageOptionPosition || 'Option placement',
+					selectInput(
+						opts.option_position || 'below',
+						[
+							{ value: 'below', label: i18n.radioImagePosBelow || 'Under the image' },
+							{ value: 'beside', label: i18n.radioImagePosBeside || 'Beside the image' },
+							{ value: 'above', label: i18n.radioImagePosAbove || 'Above the image' },
+						],
+						function ( v ) {
+							opts.option_position =
+								v === 'beside' || v === 'above' ? v : 'below';
+							syncHidden();
+						}
+					)
+				)
+			);
+			body.appendChild(
+				fieldRow(
+					i18n.radioImageSelectStyle || 'Selection style',
+					selectInput(
+						opts.select_style || 'radio',
+						[
+							{ value: 'radio', label: i18n.radioImageSelectRadio || 'Show radio control' },
+							{
+								value: 'frame',
+								label: i18n.radioImageSelectFrame || 'Frame image (hide radio, show checkmark)',
+							},
+						],
+						function ( v ) {
+							opts.select_style = v === 'frame' ? 'frame' : 'radio';
+							syncHidden();
+						}
 					)
 				)
 			);
