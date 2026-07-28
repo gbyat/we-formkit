@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-07-28
+
 - Field setting “Show on frontend”: park a field without deleting it (kept in builder, skipped on frontend and validation).
 - Radio Image: option placement (under/beside/above), frame+checkmark selection style (radio properly hidden), desktop columns fixed; builder accordion headers share the same padding.
 - Matrix on narrow screens: radio options within a column are equal-width side-by-side; stack full-width on very small viewports.
@@ -16,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Builder Integrations is generic: filter `we_formkit_builder_integrations` supplies panels (fields + optional REST save). Removed hardcoded Spamfighterin UI from Formkit; add-ons register their own panels.
 - Integrations field type `checkboxes` with optional `choicesSource: formFields` (live builder schema).
 - Integrations field type `prompt_override` (collapsed type-prompt preview + optional per-form override textarea).
+
+[1.1.0]: https://github.com/gbyat/we-formkit/releases/tag/v1.1.0
 
 ## [1.1.0] - 2026-07-26
 

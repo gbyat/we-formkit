@@ -618,7 +618,7 @@ msgstr "Datenschutzerklärung"
 
 #: includes/admin/class-form-editor.php:681
 #: includes/class-frontend.php:1287
-#: includes/class-frontend.php:1829
+#: includes/class-frontend.php:1834
 msgid "Please select…"
 msgstr "Bitte wählen…"
 
@@ -1016,7 +1016,7 @@ msgstr "Weitere hinzufügen"
 #. translators: %d: row number (1-based).
 #: includes/admin/class-form-editor.php:637
 #: includes/class-frontend.php:381
-#: includes/fields/class-repeater-field.php:384
+#: includes/fields/class-repeater-field.php:390
 #, php-format
 msgid "Row %d"
 msgstr "Zeile %d"
@@ -1034,26 +1034,26 @@ msgid "Define the field group that is cloned for each row."
 msgstr "Definiere die Feldgruppe, die für jede Zeile geklont wird."
 
 #. translators: 1: field label, 2: max rows.
-#: includes/fields/class-repeater-field.php:247
+#: includes/fields/class-repeater-field.php:250
 #, php-format
 msgid "%1$s allows at most %2$d row(s)."
 msgstr "%1$s erlaubt höchstens %2$d Zeile(n)."
 
 #. translators: 1: field label, 2: min rows.
-#: includes/fields/class-repeater-field.php:259
-#: includes/fields/class-repeater-field.php:271
+#: includes/fields/class-repeater-field.php:262
+#: includes/fields/class-repeater-field.php:274
 #, php-format
 msgid "%1$s requires at least %2$d row(s)."
 msgstr "%1$s erfordert mindestens %2$d Zeile(n)."
 
 #. translators: 1: parent label, 2: row number (1-based), 3: nested field label.
-#: includes/fields/class-repeater-field.php:300
+#: includes/fields/class-repeater-field.php:306
 #, php-format
 msgid "%1$s — row %2$d: %3$s is required."
 msgstr "%1$s — Zeile %2$d: %3$s ist erforderlich."
 
 #. translators: 1: parent label, 2: row number (1-based), 3: nested error.
-#: includes/fields/class-repeater-field.php:318
+#: includes/fields/class-repeater-field.php:324
 #, php-format
 msgid "%1$s — row %2$d: %3$s"
 msgstr "%1$s — Zeile %2$d: %3$s"
@@ -3576,8 +3576,8 @@ msgstr "Weitere Zeile hinzufügen"
 #: includes/class-frontend.php:407
 #: includes/class-frontend.php:1546
 #: includes/class-frontend.php:1547
-#: includes/class-frontend.php:1765
-#: includes/class-frontend.php:1766
+#: includes/class-frontend.php:1770
+#: includes/class-frontend.php:1771
 msgid "Remove row"
 msgstr "Zeile entfernen"
 
