@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-07-28
+
+- Bump WPCS to 3.4.1 for CVE-2026-45293 so composer audit and release zip pass.
+
+[1.1.1]: https://github.com/gbyat/we-formkit/releases/tag/v1.1.1
+
 ## [1.1.1] - 2026-07-28
 
 - Field setting “Show on frontend”: park a field without deleting it (kept in builder, skipped on frontend and validation).
