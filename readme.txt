@@ -12,26 +12,48 @@ Modular WordPress form builder with typed fields, entries, and a developer modul
 
 == Description ==
 
-WE Formkit is a modular form builder for the Block Editor (plus shortcode). It includes a visual fields canvas, Form Settings and Design, notifications with Smart Tags, entries with CSV/JSON export and print, private uploads, Save & Resume, multipage sections (step deep link via ?wek_page=N), URL field prefill (query params / shortcode), spam controls, and an optional Modules API (e.g. Akismet).
+WE Formkit is a modular form builder for the Block Editor (plus shortcode). Visual fields canvas, Form Settings and Design, notifications with Smart Tags, entries with CSV/JSON export and print, private uploads, Save & Resume, multipage sections, URL field prefill, spam controls, and an optional Modules API (e.g. Akismet). Add-ons can register Integrations panels and use the spam quarantine hook (e.g. WE Spamfighterin).
 
-Field types include text, email, select, radio, checkboxes, matrix (visitor-added rows, self-fill example, min answered / per-row / per-column required), consent (inline {link} placeholder), upload, signature, repeater, and more. Choice option keys can be left empty and are auto-generated from the label (German-friendly: ä→ae, ß→ss). Embed with the Formkit Form block or [we_formkit id|slug].
+Field types include text, email, select, radio, radio image, checkboxes, matrix, consent, upload, signature, repeater, and more. Name/Address mini-templates, park fields without deleting them (Show on frontend), and choice keys auto-generated from labels (ä→ae, ß→ss). Embed with the Formkit Form block or [we_formkit id|slug].
+
+No captcha, no foreign CDNs, no jQuery in Formkit assets. Block Editor only (no Elementor).
 
 Author: webentwicklerin, Gabriele Laesser — https://webentwicklerin.at
+GitHub: https://github.com/gbyat/we-formkit
+
+== Planned ==
+
+* Server PDF download (TCPDF); print dialog works today
+* Calculation and Range field types
+* Survey analytics and payment gateways as later add-ons
+
+== Installation ==
+
+1. Upload the plugin folder to /wp-content/plugins/we-formkit/ or install the release ZIP.
+2. Activate WE Formkit through the Plugins screen.
+3. Open WE Formkit → Forms to create a form, then embed it with the block or shortcode.
 
 == Changelog ==
 
+See CHANGELOG.md in the plugin package for the full history.
+
+= 1.1.0 =
+* Builder sidebar scopes (Field / Form / Integrations), Name/Address templates, spam quarantine path, global Entries list, radio image and matrix improvements, Show on frontend, PDF print settings.
+
+= 1.0.5 =
+* Name/Address templates, pack groups, Spamfighterin Integrations when hub is active, prefill scroll-to-form.
+
+= 1.0.4 =
+* Smart Tags, URL prefill polish, multipage and Save & Resume refinements.
+
 = 1.0.3 =
-* Matrix: custom rows (max 20), self-fill example row, min answered / per-row / per-column required, clearer column labels.
-* Submit button: width options (auto / full / two thirds / half / third).
-* Docs and translations updated for matrix and submit width.
+* Matrix custom rows, submit button width options.
 
 = 1.0.2 =
-* Checkboxes: visitor-added custom options with limits and validation.
-* Admin smoke autofill covers checkboxes, matrix rows, and signatures.
-* Layout/CSS fixes for custom checkbox and matrix actions.
+* Checkboxes custom options; admin smoke autofill improvements.
 
 = 1.0.1 =
-* Multipage: keep current step in the URL (?wek_page=N) so refresh stays on that page.
+* Multipage step deep link (?wek_page=N).
 
 = 1.0.0 =
 * Initial public release.
