@@ -33,3 +33,10 @@ releases/
 sighthound-*.sarif
 sighthound-*.json
 results.sarif
+
+# Local scratch / form-export JSON in repo root (keep project config)
+/*.json
+!/package.json
+!/package-lock.json
+!/composer.json
+!/plugin.config.json
