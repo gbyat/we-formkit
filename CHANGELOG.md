@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-08-04
+
 - Fix WP 6.7+ `_load_textdomain_just_in_time` notice: bootstrap on `init` (not `plugins_loaded`) so translations are not loaded too early.
+
+[1.1.2]: https://github.com/gbyat/we-formkit/releases/tag/v1.1.2
 
 ## [1.1.2] - 2026-07-28
 
