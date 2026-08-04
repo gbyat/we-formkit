@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Fix WP 6.7+ `_load_textdomain_just_in_time` notice: bootstrap on `init` (not `plugins_loaded`) so translations are not loaded too early.
+
+- Fix WP 6.7+ `_load_textdomain_just_in_time` notice: bootstrap on `init` (not `plugins_loaded`) so translations are not loaded too early.
+
 ## [1.1.2] - 2026-07-28
 
 - Bump WPCS to 3.4.1 for CVE-2026-45293 so composer audit and release zip pass.

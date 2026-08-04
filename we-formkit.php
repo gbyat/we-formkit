@@ -38,9 +38,11 @@ if ( file_exists( $we_formkit_autoload ) ) {
 register_activation_hook( __FILE__, array( Webentwicklerin\WeFormkit\Plugin::class, 'activate' ) );
 register_deactivation_hook( __FILE__, array( Webentwicklerin\WeFormkit\Plugin::class, 'deactivate' ) );
 
+// WP 6.7+: load textdomain / call __() only on init or later (not plugins_loaded).
 add_action(
-	'plugins_loaded',
+	'init',
 	static function () {
 		Webentwicklerin\WeFormkit\Plugin::instance()->init();
-	}
+	},
+	0
 );

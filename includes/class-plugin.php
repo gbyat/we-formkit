@@ -96,6 +96,8 @@ final class Plugin {
 	 * @return void
 	 */
 	public static function activate() {
+		// Activation runs before init; load domain first so CPT labels do not JIT-load too early.
+		load_plugin_textdomain( 'we-formkit', false, dirname( plugin_basename( WE_FORMKIT_FILE ) ) . '/languages' );
 		Post_Types::register_types();
 		Capabilities::add_caps();
 		flush_rewrite_rules();
